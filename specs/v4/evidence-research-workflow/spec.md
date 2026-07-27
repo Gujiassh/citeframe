@@ -2,8 +2,8 @@
 
 ## 状态
 
-- 阶段：产品方向、R000 合同与两阶段 Git 恢复点已完成；进入 R100 Evaluation-first
-- 前置门：V3 M403A/M403B 与 R000 commit A/B 已完成；R100 exit gate 通过后，才能进入 R200/R300 实现
+- 阶段：产品方向、R000 合同、两阶段 Git 恢复点与 R100 Evaluation-first 已完成；进入 R200/R300
+- 前置门：V3 M403A/M403B、R000 commit A/B 与 R100 exit gate 已通过；R200/R300 必须继续遵守获批合同和 Quick 不变 oracle
 - 产品结论：M404 未完成前继续标记 `internal_preview`，本提案不替代真实用户价值验证
 - 需求发现：[requirements-discovery.md](requirements-discovery.md) 的 D001-D007 已于 2026-07-25 获批；该批准不构成字段/API/保存合同或实现授权
 - R000 批准：[r000-approval-record.md](r000-approval-record.md) 记录 Owner 于 2026-07-27 批准 `AP001-AP012` 推荐默认、无例外；commit A=`466e5a3`，approval record commit B 已形成；实现授权仍按阶段门禁执行
@@ -68,7 +68,7 @@ R700 Evaluation 是 Run 完成后的独立评测阶段，不是核心 DAG Step�
 
 实体、状态与关系范围以获批 data contract 为准，至少包含 Workflow/Prompt、PlanRevision/ExecutionSnapshot、Run/Step/Attempt/Event、Artifact/Claim/Evidence、Decision、Tool/Provider/Budget 与 Idempotency；API 覆盖 run/create/read/cancel/stream/decision/artifact。Evaluation persistence/API 只属于后续 R700 独立合同，不在 R000 内借用 Run 或 Artifact 临时拼装。
 
-这些新合同已按 [r000-approval-record.md](r000-approval-record.md) 冻结并批准，commit A=`466e5a3` 与 approval record commit B 已形成。R100 先完成 fixture/scorer/Quick baseline exit gate；R200/R300 实现仍必须在 R100 通过后执行。不得改变现有 Asset、EvidenceLocator、Citation、NoteSource、Chat SSE 或保存语义来迁就工作流。
+这些新合同已按 [r000-approval-record.md](r000-approval-record.md) 冻结并批准，commit A=`466e5a3` 与 approval record commit B 已形成。R100 fixture/scorer/Quick baseline exit gate 已通过，证据见 [`../../../docs/evals/r100-evaluation-first.md`](../../../docs/evals/r100-evaluation-first.md)。R200/R300 可以开始；不得改变现有 Asset、EvidenceLocator、Citation、NoteSource、Chat SSE 或保存语义来迁就工作流。
 
 ## 非目标
 

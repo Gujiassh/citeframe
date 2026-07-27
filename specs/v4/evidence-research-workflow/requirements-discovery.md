@@ -269,8 +269,8 @@ R000 approval record 还必须明确：本文件中的 `audio_range`、`video_ra
 2. `RD003` 已于 2026-07-25 经独立 code-backed review 关闭；R000 只可基于当前 Asset/Evidence 事实源设计，不能重新引入旧 Document/PDF-only 当前态描述。
 3. R000 `AP001-AP012` 已于 2026-07-27 全部按推荐默认批准、无例外；冻结输入保留审批前状态文字，批准事实只由 `r000-approval-record.md` 表达。
 4. contract snapshot commit A=`466e5a3` 与 approval record commit B 已形成；B 不记录自身 SHA，避免 Git commit 自引用。
-5. 当前推进 R100 Evaluation-first baseline，完成 fixture、scorer、可重放 Quick baseline 和运行边界。
-6. R100 全部通过后，R200/R300 依照已批准合同直接实现，不再重复请求产品决策。
+5. R100 Evaluation-first baseline 已通过，fixture、scorer、可重放 Quick baseline 和运行边界见 `docs/evals/r100-evaluation-first.md`。
+6. 当前进入 R200/R300，依照已批准合同直接实现，不再重复请求产品决策。
 7. 新模态另建 modality brief；不得把模态实现与 Research 账本合同混在同一未批准 slice。
 
 本文件中的候选模态 locator 和未进入 D001-D007 的建议不构成开发计划或字段/API 合同承诺。

@@ -1,0 +1,64 @@
+{
+  "schemaVersion": "r100-quick-baseline-v1",
+  "mode": "captured_reference",
+  "provider": "openai",
+  "model": "gpt-5.5",
+  "sourceExecutionArtifact": {
+    "path": "docs/evals/multimodal-execution-v1.json",
+    "sha256": "ef746eaf11b90d78138f27be07df75967a2012cf7465c12fa44c76b7cf3952c0"
+  },
+  "sourceGoldenAnswerOracle": {
+    "path": "docs/evals/multimodal-answer-oracle-v1.json",
+    "sha256": "04ff81587b5b75730875d94036d0028087039040de2d7573286c0ec5086d8f83"
+  },
+  "cases": [
+    {
+      "researchCaseId": "r100-compare-rise-drop",
+      "goldenCaseIds": ["answer-pdf-chart", "answer-image-trend"],
+      "assetScope": ["pdf-coordinate", "image-coordinate"],
+      "output": "The selected assets describe opposite changes. The PDF evidence says: \"Figure 1. Trend rises after the third point.\" The image observation says latency falls after the third release and that Release 4 begins the sustained drop. So, the PDF chart describes a rise after the third point, while the image observation describes a sustained drop beginning after the third release.",
+      "evidenceCaseIds": ["answer-pdf-chart", "answer-image-trend"],
+      "conflictDetected": true
+    },
+    {
+      "researchCaseId": "r100-synthesize-table-constraint",
+      "goldenCaseIds": ["answer-pdf-table", "answer-image-constraint"],
+      "assetScope": ["pdf-artifact-matrix", "image-coordinate"],
+      "output": "Atlas has a score of 91.4. The image instructs the reader to verify the chart and caption together.",
+      "evidenceCaseIds": ["answer-pdf-table", "answer-image-constraint"],
+      "conflictDetected": false
+    },
+    {
+      "researchCaseId": "r100-conflict-direction",
+      "goldenCaseIds": ["answer-pdf-chart", "answer-image-trend"],
+      "assetScope": ["pdf-coordinate", "image-coordinate"],
+      "output": "They are not directionally consistent: the PDF trend rises after the third point, while the image describes a sustained drop beginning at Release 4.",
+      "evidenceCaseIds": ["answer-pdf-chart", "answer-image-trend"],
+      "conflictDetected": true
+    },
+    {
+      "researchCaseId": "r100-locate-chart-caption",
+      "goldenCaseIds": ["answer-image-constraint"],
+      "assetScope": ["image-coordinate"],
+      "output": "Verify the chart and caption together before accepting the image observation.",
+      "evidenceCaseIds": ["answer-image-constraint"],
+      "conflictDetected": false
+    },
+    {
+      "researchCaseId": "r100-refuse-energy",
+      "goldenCaseIds": ["answer-refuse-pdf"],
+      "assetScope": ["pdf-artifact-matrix"],
+      "output": "The selected assets do not contain supporting evidence for Atlas energy consumption.",
+      "evidenceCaseIds": [],
+      "conflictDetected": false
+    },
+    {
+      "researchCaseId": "r100-refuse-customer",
+      "goldenCaseIds": ["answer-refuse-mixed"],
+      "assetScope": ["pdf-coordinate", "image-coordinate"],
+      "output": "The selected assets do not contain supporting evidence identifying which production customer approved the release.",
+      "evidenceCaseIds": [],
+      "conflictDetected": false
+    }
+  ]
+}

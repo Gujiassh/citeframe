@@ -39,6 +39,9 @@ R001-R007 已由以下获批交付物与 commit A/B 关闭；下一阶段为 R10
 
 R100 的退出条件是：同一 fixture、Asset scope、provider/model 下，Quick baseline、Research case、claim/evidence 标注、拒答规则、失败 taxonomy 和评分脚本均可重放；未完成前不能进入真实模型质量结论。
 
+R100 已于 2026-07-27 通过。Canonical 输入、scorer、测试和报告见 `docs/evals/r100-evaluation-first.md` 与
+`docs/evals/artifacts/r100-v1/`；报告明确保持 `modelQualityEvaluated=false` 和 `userValueValidated=false`。
+
 ## 3. R200 运行账本与版本
 
 - 实体范围以获批 data contract 为准：WorkflowVersion、PromptVersion、PlanRevision、ExecutionSnapshot、ResearchRun、ResearchStep、StepAttempt、RetryRequest、ResearchEvent、ResearchArtifact、HumanDecision、ToolCall、EvidenceHandle、BudgetLedger、ProviderCall、IdempotencyRecord、Claim/Evidence/ArtifactClaim 及其关系。

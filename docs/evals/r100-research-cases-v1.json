@@ -1,0 +1,93 @@
+{
+  "schemaVersion": "r100-research-cases-v1",
+  "referenceGoldenSet": {
+    "path": "docs/evals/multimodal-golden-v1.json",
+    "sha256": "4106659d928390b361af66ccd6ebf13c581cefe27ae8ffe906b478a2c578fa90",
+    "fixtureIds": ["pdf-coordinate", "pdf-artifact-matrix", "image-coordinate"]
+  },
+  "referenceRetrievalBaseline": {
+    "path": "docs/evals/retrieval-v1.jsonl",
+    "sha256": "4e5ce744c8e42986f976b87a1736f87e1603ea2a554ed0e15660d5120e1e5040",
+    "caseCount": 40
+  },
+  "referenceFailureTaxonomy": {
+    "path": "docs/evals/multimodal-failures-v1.json",
+    "sha256": "b99972c0394a7de09755599cb19892b48cfdfce07a0b64129d0914811a76b285",
+    "taxonomyVersion": "multimodal-failures-v1"
+  },
+  "cases": [
+    {
+      "id": "r100-compare-rise-drop",
+      "caseType": "comparison",
+      "question": "Compare the change described by the PDF chart with the image observation.",
+      "assetScope": ["pdf-coordinate", "image-coordinate"],
+      "expectedDisposition": "answer",
+      "expectedConflict": true,
+      "expectedEvidenceCaseIds": ["answer-pdf-chart", "answer-image-trend"],
+      "claims": [
+        {"id": "pdf-rise", "requiredConcepts": [["pdf"], ["trend"], ["rise", "rises", "increasing"], ["third point", "third data point"]], "supportedBy": ["answer-pdf-chart"]},
+        {"id": "image-drop", "requiredConcepts": [["image"], ["release 4", "release four"], ["sustained drop", "sustained decline"]], "supportedBy": ["answer-image-trend"]}
+      ]
+    },
+    {
+      "id": "r100-synthesize-table-constraint",
+      "caseType": "synthesis",
+      "question": "Summarize the Atlas score and the image's verification constraint.",
+      "assetScope": ["pdf-artifact-matrix", "image-coordinate"],
+      "expectedDisposition": "answer",
+      "expectedConflict": false,
+      "expectedEvidenceCaseIds": ["answer-pdf-table", "answer-image-constraint"],
+      "claims": [
+        {"id": "atlas-score", "requiredConcepts": [["atlas"], ["91.4"]], "supportedBy": ["answer-pdf-table"]},
+        {"id": "verify-pair", "requiredConcepts": [["verify", "verified"], ["chart"], ["caption"], ["together"]], "supportedBy": ["answer-image-constraint"]}
+      ]
+    },
+    {
+      "id": "r100-conflict-direction",
+      "caseType": "conflict",
+      "question": "Are the PDF trend and the image observation directionally consistent? Explain the conflict.",
+      "assetScope": ["pdf-coordinate", "image-coordinate"],
+      "expectedDisposition": "answer",
+      "expectedConflict": true,
+      "expectedEvidenceCaseIds": ["answer-pdf-chart", "answer-image-trend"],
+      "claims": [
+        {"id": "pdf-direction", "requiredConcepts": [["pdf"], ["trend"], ["rise", "rises", "increasing"]], "supportedBy": ["answer-pdf-chart"]},
+        {"id": "image-direction", "requiredConcepts": [["image"], ["drop", "decline", "falls"]], "supportedBy": ["answer-image-trend"]}
+      ]
+    },
+    {
+      "id": "r100-locate-chart-caption",
+      "caseType": "evidence_gap",
+      "question": "What evidence must be checked together before accepting the image observation?",
+      "assetScope": ["image-coordinate"],
+      "expectedDisposition": "answer",
+      "expectedConflict": false,
+      "expectedEvidenceCaseIds": ["answer-image-constraint"],
+      "claims": [
+        {"id": "paired-evidence", "requiredConcepts": [["verify", "verified"], ["chart"], ["caption"], ["together"]], "supportedBy": ["answer-image-constraint"]}
+      ]
+    },
+    {
+      "id": "r100-refuse-energy",
+      "caseType": "insufficiency",
+      "question": "What energy consumption does the PDF report for Atlas?",
+      "assetScope": ["pdf-artifact-matrix"],
+      "expectedDisposition": "refuse",
+      "expectedConflict": false,
+      "expectedEvidenceCaseIds": [],
+      "claims": [],
+      "forbiddenAnswerPatterns": ["\\b\\d+(?:\\.\\d+)?\\s*(?:kwh|mwh|joules?)\\b"]
+    },
+    {
+      "id": "r100-refuse-customer",
+      "caseType": "insufficiency",
+      "question": "Which production customer approved the release shown in these fixtures?",
+      "assetScope": ["pdf-coordinate", "image-coordinate"],
+      "expectedDisposition": "refuse",
+      "expectedConflict": false,
+      "expectedEvidenceCaseIds": [],
+      "claims": [],
+      "forbiddenAnswerPatterns": ["\\bcustomer\\s+[A-Z][a-z]+", "\\bapproved by\\s+[A-Z][a-z]+"]
+    }
+  ]
+}

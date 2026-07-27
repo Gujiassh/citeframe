@@ -32,11 +32,11 @@
 
 ## R100 Evaluation-first
 
-- [ ] R101 建立复杂研究 case、failure taxonomy 和评分规则
-- [ ] R102 生成相同 Asset scope/provider/model 的 Quick Answer baseline
-- [ ] R103 定义 claim support、locator accuracy、conflict 和 refusal 指标
-- [ ] R104 定义并行、恢复、token/cost 和 HITL 工程指标
-- [ ] R105 生成可重放的 Quick baseline 与 Research fixture manifest/hash
+- [x] R101 建立复杂研究 case、failure taxonomy 和评分规则
+- [x] R102 生成相同 Asset scope/provider/model 的 Quick Answer baseline
+- [x] R103 定义 claim support、locator accuracy、conflict 和 refusal 指标
+- [x] R104 定义并行、恢复、token/cost 和 HITL 工程指标
+- [x] R105 生成可重放的 Quick baseline 与 Research fixture manifest/hash（`docs/evals/artifacts/r100-v1/`）
 
 ## R200 运行账本
 

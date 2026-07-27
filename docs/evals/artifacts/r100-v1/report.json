@@ -1,0 +1,149 @@
+{
+  "schemaVersion": "r100-report-v1",
+  "status": "passed",
+  "engineeringGatePassed": true,
+  "modelQualityEvaluated": false,
+  "userValueValidated": false,
+  "productStage": "internal_preview",
+  "interpretation": "captured_reference_only; this is a fixture/scorer/replay gate, not a model-quality or user-value result",
+  "researchCaseCount": 6,
+  "quickBaseline": {
+    "replayable": true,
+    "provider": "openai",
+    "model": "gpt-5.5",
+    "caseCount": 6
+  },
+  "metrics": {
+    "claimSupportRate": 1.0,
+    "evidenceRecall": 1.0,
+    "locatorAccuracy": 1.0,
+    "conflictDetectionRate": 1.0,
+    "refusalRate": 1.0
+  },
+  "cases": [
+    {
+      "caseId": "r100-compare-rise-drop",
+      "caseType": "comparison",
+      "expectedDisposition": "answer",
+      "claimResults": [
+        {
+          "claimId": "pdf-rise",
+          "conceptMatch": true,
+          "evidenceSupported": true,
+          "supported": true
+        },
+        {
+          "claimId": "image-drop",
+          "conceptMatch": true,
+          "evidenceSupported": true,
+          "supported": true
+        }
+      ],
+      "claimSupportRate": 1.0,
+      "evidenceRecall": 1.0,
+      "locatorAccuracy": true,
+      "conflictDetectionMatch": true,
+      "correctRefusal": null,
+      "forbiddenMatches": []
+    },
+    {
+      "caseId": "r100-synthesize-table-constraint",
+      "caseType": "synthesis",
+      "expectedDisposition": "answer",
+      "claimResults": [
+        {
+          "claimId": "atlas-score",
+          "conceptMatch": true,
+          "evidenceSupported": true,
+          "supported": true
+        },
+        {
+          "claimId": "verify-pair",
+          "conceptMatch": true,
+          "evidenceSupported": true,
+          "supported": true
+        }
+      ],
+      "claimSupportRate": 1.0,
+      "evidenceRecall": 1.0,
+      "locatorAccuracy": true,
+      "conflictDetectionMatch": true,
+      "correctRefusal": null,
+      "forbiddenMatches": []
+    },
+    {
+      "caseId": "r100-conflict-direction",
+      "caseType": "conflict",
+      "expectedDisposition": "answer",
+      "claimResults": [
+        {
+          "claimId": "pdf-direction",
+          "conceptMatch": true,
+          "evidenceSupported": true,
+          "supported": true
+        },
+        {
+          "claimId": "image-direction",
+          "conceptMatch": true,
+          "evidenceSupported": true,
+          "supported": true
+        }
+      ],
+      "claimSupportRate": 1.0,
+      "evidenceRecall": 1.0,
+      "locatorAccuracy": true,
+      "conflictDetectionMatch": true,
+      "correctRefusal": null,
+      "forbiddenMatches": []
+    },
+    {
+      "caseId": "r100-locate-chart-caption",
+      "caseType": "evidence_gap",
+      "expectedDisposition": "answer",
+      "claimResults": [
+        {
+          "claimId": "paired-evidence",
+          "conceptMatch": true,
+          "evidenceSupported": true,
+          "supported": true
+        }
+      ],
+      "claimSupportRate": 1.0,
+      "evidenceRecall": 1.0,
+      "locatorAccuracy": true,
+      "conflictDetectionMatch": true,
+      "correctRefusal": null,
+      "forbiddenMatches": []
+    },
+    {
+      "caseId": "r100-refuse-energy",
+      "caseType": "insufficiency",
+      "expectedDisposition": "refuse",
+      "claimResults": [],
+      "claimSupportRate": null,
+      "evidenceRecall": 1.0,
+      "locatorAccuracy": true,
+      "conflictDetectionMatch": true,
+      "correctRefusal": true,
+      "forbiddenMatches": []
+    },
+    {
+      "caseId": "r100-refuse-customer",
+      "caseType": "insufficiency",
+      "expectedDisposition": "refuse",
+      "claimResults": [],
+      "claimSupportRate": null,
+      "evidenceRecall": 1.0,
+      "locatorAccuracy": true,
+      "conflictDetectionMatch": true,
+      "correctRefusal": true,
+      "forbiddenMatches": []
+    }
+  ],
+  "failureTaxonomy": {
+    "path": "docs/evals/multimodal-failures-v1.json",
+    "sha256": "b99972c0394a7de09755599cb19892b48cfdfce07a0b64129d0914811a76b285",
+    "taxonomyVersion": "multimodal-failures-v1"
+  },
+  "deepResearchRun": null
+}
