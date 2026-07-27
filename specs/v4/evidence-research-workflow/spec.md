@@ -2,9 +2,12 @@
 
 ## 状态
 
-- 阶段：设计提案，尚未批准实施
-- 前置门：先完成 V3 M403A；M403B 图片生产启用单独审批并完成后，再把本能力作为正式多模态演示主线
+- 阶段：产品方向、R000 合同与两阶段 Git 恢复点已完成；进入 R100 Evaluation-first
+- 前置门：V3 M403A/M403B 与 R000 commit A/B 已完成；R100 exit gate 通过后，才能进入 R200/R300 实现
 - 产品结论：M404 未完成前继续标记 `internal_preview`，本提案不替代真实用户价值验证
+- 需求发现：[requirements-discovery.md](requirements-discovery.md) 的 D001-D007 已于 2026-07-25 获批；该批准不构成字段/API/保存合同或实现授权
+- R000 批准：[r000-approval-record.md](r000-approval-record.md) 记录 Owner 于 2026-07-27 批准 `AP001-AP012` 推荐默认、无例外；commit A=`466e5a3`，approval record commit B 已形成；实现授权仍按阶段门禁执行
+- 冻结输入：[data-state-contract-draft.md](data-state-contract-draft.md)、[api-event-tool-contract-draft.md](api-event-tool-contract-draft.md) 与 [r000-approval-package.md](r000-approval-package.md) 保留审批前状态文字和获批 hash，不在原文件回填状态
 
 ## 目标
 
@@ -22,14 +25,15 @@ Planner
   -> Critic / conflict detection
   -> Human decision when required
   -> Synthesizer
-  -> ResearchArtifact
-  -> Evaluation
+  -> ResearchArtifact (Run complete)
 ```
+
+R700 Evaluation 是 Run 完成后的独立评测阶段，不是核心 DAG Step，也没有在 R000 获得 persistence/API 授权。
 
 ## 功能需求
 
 - FR-001：用户显式选择 `quick_answer` 或 `deep_research`，系统不得隐式把普通问题升级为高成本研究运行。
-- FR-002：每次运行冻结 Workspace、Asset scope、Workflow version、Prompt versions、provider/model 和预算快照。
+- FR-002：Create/每次 revision 冻结 planning snapshot；批准只校验并精确复制其中 Workspace、Asset scope、Workflow/Prompt、provider/retrieval、policy 和预算为 ExecutionSnapshot，不解析 latest Asset/config。
 - FR-003：Planner 只输出结构化研究计划；Researcher 按子问题和 Asset scope 通过注册工具检索，不直接访问数据库。
 - FR-004：Researcher fan-out 必须在运行证据中证明真实时间重叠，并受并发与预算上限约束。
 - FR-005：Verifier 对 claim 与 EvidenceLocator 的支持关系做 fail-closed 判定；未通过的 claim 不能进入最终报告。
@@ -62,9 +66,9 @@ Planner
 
 ## 数据与 API 影响提案
 
-实施预计新增版本化 Workflow/Prompt、ResearchRun、ResearchStep、ResearchEvent、ResearchArtifact 和 HumanDecision 持久化记录，以及 run/create/read/cancel/stream/decision/artifact/evaluation API。
+实体、状态与关系范围以获批 data contract 为准，至少包含 Workflow/Prompt、PlanRevision/ExecutionSnapshot、Run/Step/Attempt/Event、Artifact/Claim/Evidence、Decision、Tool/Provider/Budget 与 Idempotency；API 覆盖 run/create/read/cancel/stream/decision/artifact。Evaluation persistence/API 只属于后续 R700 独立合同，不在 R000 内借用 Run 或 Artifact 临时拼装。
 
-这些是新合同，当前尚未批准。正式实施前必须冻结字段、状态机、删除/恢复、权限、备份和旧版本重放语义。不得改变现有 Asset、EvidenceLocator、Citation、NoteSource、Chat SSE 或保存语义来迁就工作流。
+这些新合同已按 [r000-approval-record.md](r000-approval-record.md) 冻结并批准，commit A=`466e5a3` 与 approval record commit B 已形成。R100 先完成 fixture/scorer/Quick baseline exit gate；R200/R300 实现仍必须在 R100 通过后执行。不得改变现有 Asset、EvidenceLocator、Citation、NoteSource、Chat SSE 或保存语义来迁就工作流。
 
 ## 非目标
 

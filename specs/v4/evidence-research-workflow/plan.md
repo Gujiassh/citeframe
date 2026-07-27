@@ -2,35 +2,50 @@
 
 ## 0. 与当前主线衔接
 
-1. 完成当前 M403A binary ANN S2 diagnostic。
-2. 只有新的完整 S0/S1/S2 canonical 全部门通过，才关闭 M403A。
-3. 经单独批准完成 M403B，正式同步启用 Image 数据库目录、API registry、Worker adapter、caption 配置和 Web 上传入口。
-4. 同步 V3 SSoT、测试与运行证据，并在用户明确授权后形成可恢复的 Git commit/push 边界。
-5. V4 设计可以提前评审，但实现不得与未完成的 M403A/M403B 交叉修改同一数据、检索或 Chat 合同。
+1. M403A binary ANN S2 diagnostic 与新的完整 S0/S1/S2 canonical 已完成并关闭。
+2. M403B 已经单独批准并完成，Image 数据库目录、API registry、Worker adapter、caption 配置和 Web 上传入口已同步启用。
+3. V3 SSoT、测试与运行证据已同步；contract snapshot commit A=`466e5a3` 与 approval record commit B 已形成；push 另行授权。
+4. V4 R000 合同与两阶段 Git recovery point 已完成；R100 exit gate 通过前，不得修改 Research 持久化、API、Citation、Chat 或保存语义。
 
 M404 真实用户验证继续推进。它不阻塞内部技术演示开发，但未完成时 V4 仍是 `internal_preview`，不得宣称用户价值已验证。
 
 ## 1. R000 合同与语义 Oracle
 
-- 冻结固定 DAG、节点输入输出、状态机、事件协议和预算语义。
-- 冻结 Workflow/Prompt version、Run/Step/Event/Artifact/HumanDecision 数据合同。
-- 冻结现有 Asset scope、EvidenceLocator、Citation、NoteSource 和 Chat 语义不变条件。
+- `requirements-discovery.md` 的产品方向已获批；Owner 于 2026-07-27 批准 R000 字段、状态机、API、Research SSE、权限、保留/删除、成本和迁移影响合同。
+- 获批输入为 `data-state-contract-draft.md`、`api-event-tool-contract-draft.md` 和 `r000-approval-package.md` 的冻结 hash；批准事实与边界见 `r000-approval-record.md`，原输入保留审批前状态文字。
+- 已冻结固定 DAG、节点输入输出、状态机、事件协议和预算语义。
+- 已冻结 Workflow/Prompt version、Run/Step/Event/Artifact/HumanDecision 数据合同。
+- 已冻结现有 Asset scope、EvidenceLocator、Citation、NoteSource 和 Chat 语义不变条件。
 - 明确 LangGraph 只负责图执行/checkpoint，PostgreSQL 业务账本仍是运行事实来源。
-- 完成持久化、权限、删除、取消、备份恢复和版本重放影响评审并取得明确批准。
+- 已完成持久化、权限、删除、取消、备份恢复和版本重放影响评审并取得明确批准。
+
+R001-R007 已由以下获批交付物与 commit A/B 关闭；下一阶段为 R100 Evaluation-first：
+
+- 字段级 schema：实体字段、枚举、必填/可空、唯一键、外键、版本字段、敏感字段和保留期限。
+- 状态迁移表：Run/Step/HumanDecision 的合法迁移、终态、取消、超时、失败分支和恢复 checkpoint。
+- 事件合同：持久化 `seq`、事件类型、payload allowlist、重复事件、`Last-Event-ID` 重放和订阅权限。
+- Research event stream 必须与现有 Chat SSE 分离：独立 endpoint、事件命名空间、鉴权和 `Last-Event-ID` 重放语义；不得通过“扩展 Chat SSE”改变 Quick Answer 合同。
+- API 合同：create/read/cancel/stream/decision/artifact 的请求、响应、错误、幂等键和跨 Workspace 拒绝矩阵。Evaluation persistence/API 延后到 R700 独立合同。
+- 证据与 Artifact provenance：每个 claim、locator、sourceVersions、Artifact bytes/hash 和生成 Step 的绑定关系。
+- 变更影响包：Alembic upgrade/downgrade、dump/restore、删除/保留、Quick Answer 回归和 Citation/NoteSource/Chat 不变 oracle。
+- 评审记录：数据合同、权限、provider/tool boundary、成本上限、prompt-injection policy 和人工批准结果。
 
 ## 2. R100 Evaluation-first Baseline
 
 - 从现有黄金集和真实 PDF baseline 中构造复杂研究任务，不把原有 retrieval case 直接冒充 Agent 质量证明。
 - 覆盖比较、综合、冲突、证据不足和明确拒答。
-- 先冻结单 Agent baseline，再运行多 Agent；两者使用相同 Asset scope、provider/model 和评价规则。
-- 外部模型调用继续遵守显式批准边界；默认使用 scripted provider 验证编排，不把 scripted 输出当模型质量证据。
+- 冻结可重放的 Quick baseline；R100 不要求尚未实现的多 Agent 运行。
+- 冻结后续 Quick/Research 成对执行所需的相同 Asset scope、provider/model、标签和评价规则；实际多 Agent 执行在 R300/R400 后进入 R800/R700。
+
+R100 的退出条件是：同一 fixture、Asset scope、provider/model 下，Quick baseline、Research case、claim/evidence 标注、拒答规则、失败 taxonomy 和评分脚本均可重放；未完成前不能进入真实模型质量结论。
 
 ## 3. R200 运行账本与版本
 
-- 实现不可变 WorkflowVersion 和 PromptVersion 快照。
-- 实现 ResearchRun、ResearchStep、ResearchEvent、ResearchArtifact、HumanDecision 及迁移/恢复测试。
+- 实体范围以获批 data contract 为准：WorkflowVersion、PromptVersion、PlanRevision、ExecutionSnapshot、ResearchRun、ResearchStep、StepAttempt、RetryRequest、ResearchEvent、ResearchArtifact、HumanDecision、ToolCall、EvidenceHandle、BudgetLedger、ProviderCall、IdempotencyRecord、Claim/Evidence/ArtifactClaim 及其关系。
 - Artifact bytes 进入 MinIO，PostgreSQL 保存 metadata、hash、provenance 和状态。
 - 事件先持久化后推送，保证重连和审计使用同一事实源。
+
+R200 与 R300 只有在 R000 获批、两阶段 Git recovery point 已形成、R100 exit gate 通过、字段/API/事件接口已冻结且存在可执行 schema/contract tests 后才可另行授权。API/迁移 lane 拥有全部业务账本、ORM、migration 和原子 service；R300 Worker 只消费获批 service/ports，不得拥有或编辑表、ORM、migration，也不得自行推断账本行为。
 
 ## 4. R300 固定多 Agent 执行器
 
@@ -41,7 +56,7 @@ M404 真实用户验证继续推进。它不阻塞内部技术演示开发，但
 
 ## 5. R400 Streaming、HITL 与失败恢复
 
-- 扩展 SSE 为运行事件流，支持 `Last-Event-ID` 重放。
+- 实现独立 Research event stream，支持 `Last-Event-ID` 重放，不修改现有 Chat SSE。
 - 增加计划审批和冲突裁决两个受控暂停点。
 - 实现 cancel、timeout、bounded retry、checkpoint、lease/heartbeat 和失败分支恢复。
 - 验证 API/Worker 重启、客户端断线、provider timeout 和重复提交下的幂等持久化。
@@ -62,6 +77,7 @@ M404 真实用户验证继续推进。它不阻塞内部技术演示开发，但
 
 ## 8. R700 Evaluation Dashboard
 
+- R700 不消费 R000 的候选 Evaluation DTO 作为已批准合同；进入本阶段前必须单独冻结 Evaluation persistence、创建方式和 API。
 - 展示 suite -> run -> case -> claim/evidence failure 的逐层下钻。
 - 支持 Workflow/Prompt version 和 Quick/Research 成对比较。
 - 保存报告输入 hash、运行环境、provider/model 和原始 Artifact hash。
