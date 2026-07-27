@@ -4,11 +4,11 @@
 
 - 状态：Approved，2026-07-17
 - 建立日期：2026-07-16
-- 当前影响：批准合同已在 V3 Phase 1 完成 Asset/Evidence 数据、API、SSE、Viewer 与保存语义的一次受控切换；Image 合同已注册但摄取仍禁用
+- 当前影响：批准合同已在 V3 Phase 1 完成 Asset/Evidence 数据、API、SSE、Viewer 与保存语义的一次受控切换；M403B 已在不改变 Citation、NoteSource、Chat 和保存语义的前提下启用 PNG/JPEG/WebP Image 摄取
 
 ## 1. 问题
 
-当前 citation 可以稳定回到 PDF 页码，但表格单元格、图表区域、图片和扫描文本块仍需要用户在整页中继续翻找；独立图片也没有正式 Asset、检索与引用闭环。V3 需要引入 PDF/Image 区域级 Evidence，同时保持历史回答、笔记来源、删除和重索引语义稳定。
+本 RFC 起草时，citation 可以稳定回到 PDF 页码，但表格单元格、图表区域、图片和扫描文本块仍需要用户在整页中继续翻找；独立图片也没有正式 Asset、检索与引用闭环。V3 随后引入了 PDF/Image 区域级 Evidence，并保持历史回答、笔记来源、删除和重索引语义稳定。
 
 本 RFC 不把系统一次性改造成全模态平台。V3 只讨论 PDF 与图片，以及 `pdf_page`、`pdf_region`、`image_region`；Audio、Video 和 Omnilabel 不进入。
 
@@ -51,7 +51,7 @@ Phase 1 实施前的事实：
 - `EvidenceLocator`：带 discriminator 和版本的稳定源定位值。
 - `Citation`：回答生成时冻结 locator、展示快照和索引语义的证据记录。
 
-`Document/Page/Chunk` 已由 Asset/Representation/ContentUnit/Embedding 一次受控迁移取代，没有保留长期双模型业务层。Image 模块只注册合同，等 Phase 3 的摄取 adapter 与 Viewer 闭环后才启用入口。
+`Document/Page/Chunk` 已由 Asset/Representation/ContentUnit/Embedding 一次受控迁移取代，没有保留长期双模型业务层。Image Phase 3 闭环已经完成，M403B 进一步启用了 PNG/JPEG/WebP 生产摄取入口。
 
 ## 5. Locator 提案
 

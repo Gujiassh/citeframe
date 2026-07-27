@@ -14,8 +14,15 @@ export async function PUT(
 
   const { workspaceId, assetId } = await context.params;
   const objectKey = new URL(request.url).searchParams.get("objectKey");
+  const contentType = request.headers.get("content-type")?.trim();
   if (!objectKey) {
     return NextResponse.json({ error: { code: "object_key_required", message: "objectKey is required." } }, { status: 400 });
+  }
+  if (!contentType) {
+    return NextResponse.json(
+      { error: { code: "content_type_required", message: "Upload Content-Type is required." } },
+      { status: 415 },
+    );
   }
 
   const requestInit: RequestInit & { duplex?: "half" } = {
@@ -23,7 +30,7 @@ export async function PUT(
     cache: "no-store",
     headers: {
       ...buildApiHeaders(session.userId),
-      "content-type": request.headers.get("content-type") ?? "application/pdf",
+      "content-type": contentType,
     },
     body: request.body,
     duplex: "half",

@@ -4,9 +4,6 @@ import logging
 from datetime import UTC, datetime, timedelta
 from hashlib import sha256
 
-from sqlalchemy import delete, func, or_, select, update
-from sqlalchemy.orm import Session
-
 from ai_pdf_api.core.settings import settings
 from ai_pdf_api.modalities.ingestion import (
     GeneratedObject,
@@ -29,6 +26,8 @@ from ai_pdf_api.services.storage import (
     download_bytes,
     upload_bytes,
 )
+from sqlalchemy import delete, func, or_, select, update
+from sqlalchemy.orm import Session
 
 INGESTION_LEASE_TIMEOUT = timedelta(minutes=15)
 logger = logging.getLogger("ai_pdf_api.ingestion")
@@ -175,6 +174,13 @@ def process_ingestion_job(
             )
         adapter = ingestion_adapters.get(asset.asset_kind)
         payload = download_bytes(asset.object_key)
+        if asset.source_sha256 is not None:
+            payload_sha256 = sha256(payload).hexdigest()
+            if len(payload) != asset.byte_size or payload_sha256 != asset.source_sha256.lower():
+                raise IngestionError(
+                    "source_object_integrity_mismatch",
+                    "Downloaded source object does not match its persisted size or SHA-256.",
+                )
         snapshot = job.config_snapshot or {}
         now = datetime.now(UTC)
         latest_generation = db.scalar(

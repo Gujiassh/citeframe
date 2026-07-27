@@ -1,5 +1,6 @@
 import { ImageEvidenceRenderer } from "@/components/image-viewer";
 import { PdfEvidenceRenderer } from "@/components/pdf-viewer";
+import { IMAGE_UPLOAD_MIME_TYPES, PDF_UPLOAD_MIME_TYPE } from "@/lib/assets/production-upload";
 import { createEvidenceModuleRegistry } from "./registry";
 
 export const productionEvidenceRegistry = createEvidenceModuleRegistry([
@@ -7,14 +8,14 @@ export const productionEvidenceRegistry = createEvidenceModuleRegistry([
     assetKind: "pdf",
     locatorKinds: ["pdf_page", "pdf_region"],
     label: "PDF",
-    uploadAccept: ["application/pdf"],
+    uploadAccept: [PDF_UPLOAD_MIME_TYPE],
     EvidenceRenderer: PdfEvidenceRenderer,
   },
   {
     assetKind: "image",
     locatorKinds: ["image_region"],
     label: "Image",
-    uploadAccept: [],
+    uploadAccept: IMAGE_UPLOAD_MIME_TYPES,
     EvidenceRenderer: ImageEvidenceRenderer,
   },
 ]);

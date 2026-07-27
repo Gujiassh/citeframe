@@ -1,0 +1,123 @@
+{
+  "cleanup": {
+    "assetStatus": "deleted",
+    "contentUnitsRemaining": 0,
+    "deleteJobStatus": "succeeded",
+    "deleteStatus": 202,
+    "deletedAtPresent": true,
+    "embeddingsRemaining": 0,
+    "geometryRemaining": 0,
+    "orientedObjectExists": false,
+    "sourceObjectExists": false
+  },
+  "evidence": {
+    "assistantStatus": "completed",
+    "chatStatus": 200,
+    "citationRows": 6,
+    "inputEvidenceRows": 1,
+    "streamHasCitations": true,
+    "streamHasDone": true
+  },
+  "evidenceViewer": {
+    "detailStatus": 200,
+    "generation": 1,
+    "naturalSize": [
+      1200,
+      800
+    ],
+    "orientationApplied": true,
+    "orientedMime": "image/png",
+    "orientedSha256": "d4a6b49821f764ff2d767e20b61bb1a49bbbabb48d2051bd357b9af6fac973ba",
+    "orientedStatus": 200
+  },
+  "failureRetry": {
+    "cleanup": {
+      "assetStatus": "deleted",
+      "contentUnitsRemaining": 0,
+      "deleteJobStatus": "succeeded",
+      "deleteStatus": 202,
+      "deletedAtPresent": true,
+      "embeddingsRemaining": 0,
+      "geometryRemaining": 0,
+      "orientedObjectExists": false,
+      "sourceObjectExists": false
+    },
+    "failure": {
+      "assetStatus": "failed",
+      "attemptCount": 1,
+      "errorCode": "m403b_transient_failure",
+      "errorMessage": "Deterministic transient Image failure."
+    },
+    "retryAssetStatus": "ready",
+    "retryAttemptCount": 2,
+    "retryJobStatus": "succeeded",
+    "retryStatus": 200,
+    "sourceIdentityPreserved": true
+  },
+  "formatCoverage": {
+    "image/jpeg": {
+      "assetStatus": "ready",
+      "contentUnits": 9,
+      "deleteJobStatus": "succeeded",
+      "deleteStatus": 202,
+      "finalizeStatus": 200,
+      "orientedObjectExistsAfterDelete": false,
+      "putStatus": 204,
+      "representations": 3,
+      "sessionStatus": 201,
+      "sourceObjectExistsAfterDelete": false
+    },
+    "image/png": {
+      "assetStatus": "ready",
+      "finalizeStatus": 200,
+      "putStatus": 204,
+      "sessionStatus": 201
+    },
+    "image/webp": {
+      "assetStatus": "ready",
+      "contentUnits": 9,
+      "deleteJobStatus": "succeeded",
+      "deleteStatus": 202,
+      "finalizeStatus": 200,
+      "orientedObjectExistsAfterDelete": false,
+      "putStatus": 204,
+      "representations": 3,
+      "sessionStatus": 201,
+      "sourceObjectExistsAfterDelete": false
+    }
+  },
+  "mimeMismatch": {
+    "errorDetail": "Upload Content-Type does not match the upload session.",
+    "putStatus": 422,
+    "sessionStatus": 201
+  },
+  "modelQualityClaim": false,
+  "provider": "local-deterministic-stub",
+  "releaseGatePassed": true,
+  "retrieval": {
+    "assetIds": [
+      "d69a2094-60ba-4811-8132-449071684191"
+    ],
+    "count": 6,
+    "locatorKinds": [
+      "image_region"
+    ]
+  },
+  "schemaVersion": "m403b-production-acceptance-v1",
+  "source": "docs/fixtures/evidence-contract/image-coordinate-fixture.png",
+  "sourceSha256": "585b2489a7e6288d71636258b84e56610b345a1fc74ffd42967ee434678d8955",
+  "upload": {
+    "assetKind": "image",
+    "finalizeStatus": 200,
+    "mimeType": "image/png",
+    "putStatus": 204,
+    "sessionStatus": 201,
+    "title": "m403b-image"
+  },
+  "worker": {
+    "contentUnits": 9,
+    "expectedStatus": "ready",
+    "representations": 3,
+    "workerClaimed": true
+  }
+}

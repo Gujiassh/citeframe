@@ -3,15 +3,9 @@ from pathlib import Path
 from uuid import uuid4
 
 import pytest
-from alembic import command
-from alembic.config import Config
-from sqlalchemy import create_engine, delete, event, select, text
-from sqlalchemy.engine import make_url
-from sqlalchemy.exc import OperationalError
-from sqlalchemy.orm import Session, sessionmaker
-
 from ai_pdf_api.core.settings import settings
 from ai_pdf_api.db.base import Base
+from ai_pdf_api.modalities.evidence import EvidenceContractError
 from ai_pdf_api.modalities.image_ingestion import (
     ImageAnalysisResult,
     ImageNormalizationResult,
@@ -20,7 +14,6 @@ from ai_pdf_api.modalities.image_ingestion import (
     persist_image_analysis,
     persist_image_orientation,
 )
-from ai_pdf_api.modalities.evidence import EvidenceContractError
 from ai_pdf_api.modalities.pdf_ingestion import (
     PageArtifactResult,
     PageRegionResult,
@@ -49,12 +42,18 @@ from ai_pdf_api.models import (
 )
 from ai_pdf_api.schemas.chat import AllReadyAssetScope, SelectedAssetScope
 from ai_pdf_api.services.chat import complete_chat
-from ai_pdf_api.services.retrieval_experiments import LexicalCorpus
 from ai_pdf_api.services.retrieval import (
     retrieve_content,
     retrieve_lexical_content,
     retrieve_query_content,
 )
+from ai_pdf_api.services.retrieval_experiments import LexicalCorpus
+from alembic import command
+from alembic.config import Config
+from sqlalchemy import create_engine, delete, event, select, text
+from sqlalchemy.engine import make_url
+from sqlalchemy.exc import OperationalError
+from sqlalchemy.orm import Session, sessionmaker
 
 
 class MixedEmbeddingProvider:
@@ -1304,7 +1303,7 @@ def test_postgresql_mixed_retrieval_matches_sqlite_oracle(
                 "00000000-0000-0000-0000-000000001002",
                 "00000000-0000-0000-0000-000000001003",
             ]
-            assert db.execute(text("select version_num from alembic_version")).scalar_one() == "f2a4c6e8b0d1"
+            assert db.execute(text("select version_num from alembic_version")).scalar_one() == "a3c5e7f9b1d4"
             generated_column = db.execute(
                 text(
                     """

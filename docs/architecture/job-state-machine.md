@@ -1,5 +1,7 @@
 # 任务状态机设计
 
+> 文档状态：V1 历史状态机设计。本文保留早期 `Document`/`/documents` 任务流的推导，当前 Asset/Representation/ContentUnit、Image adapter、generation/CAS、`ingestion_jobs` 和 delete cleanup 合同以 `docs/architecture/database-design.md`、`docs/architecture/api-contracts.md`、`apps/worker/README.md` 与 `docs/architecture/implementation-progress.md` 为准。修改当前任务状态时必须先更新当前合同，不要直接照抄本文旧接口。
+
 ## 1. 文档定位
 
 这份文档定义：

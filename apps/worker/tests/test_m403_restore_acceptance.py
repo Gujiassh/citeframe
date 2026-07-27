@@ -2,11 +2,10 @@ from __future__ import annotations
 
 import copy
 import importlib.util
-from pathlib import Path
 import sys
+from pathlib import Path
 
 import pytest
-
 
 SCRIPT_PATH = Path(__file__).resolve().parents[1] / "scripts/m403_restore_acceptance.py"
 RUNNER_PATH = Path(__file__).resolve().parents[3] / "infra/scripts/run-m403-acceptance.sh"
@@ -92,9 +91,29 @@ def test_verify_rejects_unknown_snapshot_schema() -> None:
         m403.verify(before, after)
 
 
-def test_semantic_checks_cover_history_direct_note_and_deleted_objects() -> None:
+def test_semantic_checks_cover_history_direct_note_and_deleted_objects(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.delenv("M403_EXPECT_IMAGE_ENABLED", raising=False)
     checks = m403._semantic_checks(_semantic_rows(), _objects())
     assert all(checks.values())
+
+
+def test_semantic_checks_accept_enabled_image_catalog_when_explicit(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setenv("M403_EXPECT_IMAGE_ENABLED", "true")
+    rows = _semantic_rows()
+    rows["catalog"][1]["enabled"] = True
+
+    checks = m403._semantic_checks(rows, _objects())
+
+    assert checks["imageProductionEnabled"] is True
+
+
+def test_semantic_checks_reject_invalid_image_expectation(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setenv("M403_EXPECT_IMAGE_ENABLED", "enabled")
+
+    with pytest.raises(ValueError, match="must be true or false"):
+        m403._semantic_checks(_semantic_rows(), _objects())
 
 
 @pytest.mark.parametrize(
@@ -106,7 +125,12 @@ def test_semantic_checks_cover_history_direct_note_and_deleted_objects() -> None
         (lambda rows, objects: rows["message_retrieval_scope_assets"].reverse(), "selectedScopeOrder"),
     ],
 )
-def test_semantic_checks_fail_closed(mutation, expected: str) -> None:
+def test_semantic_checks_fail_closed(
+    monkeypatch: pytest.MonkeyPatch,
+    mutation,
+    expected: str,
+) -> None:
+    monkeypatch.delenv("M403_EXPECT_IMAGE_ENABLED", raising=False)
     rows = _semantic_rows()
     objects = _objects()
     mutation(rows, objects)
@@ -137,3 +161,13 @@ def test_runner_binds_historical_viewer_to_snapshot_oracles() -> None:
     assert 'before["rows"]["spatial_locator_regions"]' in runner
     assert '"imagePixelOraclePassed": image_pixel_oracle_passed' in runner
     assert '"regionOraclePassed": region_oracle_passed' in runner
+
+
+def test_runner_propagates_validated_image_catalog_expectation() -> None:
+    runner = RUNNER_PATH.read_text()
+    compose_override = (RUNNER_PATH.parents[1] / "docker/compose.m403.yml").read_text()
+
+    assert 'M403_EXPECT_IMAGE_ENABLED=${M403_EXPECT_IMAGE_ENABLED:-false}' in runner
+    assert "export M403_EXPECT_IMAGE_ENABLED" in runner
+    assert "m403_invalid_image_expectation" in runner
+    assert "M403_EXPECT_IMAGE_ENABLED: ${M403_EXPECT_IMAGE_ENABLED:-false}" in compose_override

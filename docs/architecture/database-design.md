@@ -3,13 +3,15 @@
 ## 1. 当前状态
 
 - 数据库：PostgreSQL + pgvector + pg_trgm
-- Alembic head：`f2a4c6e8b0d1`
+- Alembic head：`a3c5e7f9b1d4`
 - 运行时领域模型：Asset/Evidence
 - 已移除表：`documents`、`document_pages`、`document_chunks`、`document_tags`
-- 当前真实摄取：PDF 文本层与扫描 PDF OCR fallback
-- 已实现但尚未开放摄取：图片 `image_oriented/image_ocr/image_caption` Representation、方向后 geometry、`image_ocr_region/image_caption` ContentUnit、`image_region` locator、text embedding、Citation/NoteSource 历史快照与 Image Viewer；混合检索闭环待 M305
+- 当前生产摄取：PDF 文本层、扫描 PDF OCR fallback，以及经 M403B 发布门禁的 PNG/JPEG/WebP Image adapter
+- 图片 `image_oriented/image_ocr/image_caption` Representation、方向后 geometry、`image_ocr_region/image_caption` ContentUnit、`image_region` locator、text embedding、Citation/NoteSource 历史快照与 Image Viewer 已接入；M403B 的真实上传/检索/Evidence/恢复报告已通过并归档
 
 `c9d1e2f3a4b5` 是不可原地 downgrade 的一次性 Asset 迁移；`d0e2f4a6b8c1` 在其上增加 user-message 输入 Evidence。回到旧 Document 模型只能恢复迁移前的 PostgreSQL/MinIO 同批备份。
+
+`a3c5e7f9b1d4` 是生产 Image 启用的数据目录迁移，只把 `asset_types.image.enabled` 从 `false` 切换为 `true`；不新增表、字段、API payload 或保存语义，降级恢复为 `false`。
 
 ## 2. 设计原则
 

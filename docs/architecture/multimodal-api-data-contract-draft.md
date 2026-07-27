@@ -1,9 +1,11 @@
 # V3 PDF + Image 数据与 API Contract v1
 
+> 文档状态：V3 历史 Contract Draft，已批准并完成实施。当前运行时事实以 `docs/architecture/api-contracts.md`、`docs/architecture/database-design.md`、`docs/ssot/system-architecture.md` 和 `specs/v3/multimodal-workspace/` 为准；本文保留字段级迁移推导，不应把旧的“待进入 Phase 3”描述当作当前状态。
+
 ## 1. 状态
 
 - 状态：Approved；六项裁决已于 2026-07-17 明确批准
-- 当前影响：Phase 1 ORM、类型目录、模态注册表、migration、router、SSE 与 Web 已完成受控切换；Phase 2 PDF region 主链已接通，但 artifact 解析因 Critical 反例重新验收，关闭后再进入独立图片纵向链路
+- 当前影响：Phase 1-3 ORM、类型目录、模态注册表、migration、router、SSE 与 Web 已完成受控切换；M403B 已同步启用 PNG/JPEG/WebP Image 生产目录、Worker adapter、caption 配置和上传入口
 - 切换方式：同一仓库中的 Web/BFF/API/Worker 一次受控切换，不长期维护 `/documents` 与 `/assets` 两套业务接口
 
 ## 2. 目标数据库职责

@@ -89,7 +89,7 @@ Ingestion orchestrator 只负责 job claim、状态流转、事务边界、gener
 
 Adapter 的 generated object manifest 包含 representation namespace 内的对象键、bytes、Content-Type 和 SHA-256。共享 orchestrator 校验 manifest 后负责上传；上传后的 embedding 或数据库 commit 失败时按已上传键回收，Asset 删除时幂等删除源对象与所有非空 Representation object key。Adapter 不直接改写源对象，也不自行决定事务提交。
 
-M301-M304 已用 dormant Image adapter、共享 Evidence 主链、evidence-target resolver 和独立 renderer 验证 ingestion、locator、Citation/NoteSource、消息输入 Evidence与 Web 区域闭环。M305 进一步将共享候选收敛为模态无关结构，由注册表声明精确的 text channel 类型签名，并在 Dense/lexical 排序前应用 scope/current generation/current index/链条一致性约束；limit 按唯一 locator 位置补足，typed detail/regions 使用批量 fail-closed 校验。SQLite、PostgreSQL 混合 oracle 和最终 Critical 复审均通过。生产 Image 继续 disabled。
+M301-M304 已用 Image adapter、共享 Evidence 主链、evidence-target resolver 和独立 renderer 验证 ingestion、locator、Citation/NoteSource、消息输入 Evidence 与 Web 区域闭环。M305 进一步将共享候选收敛为模态无关结构，由注册表声明精确的 text channel 类型签名，并在 Dense/lexical 排序前应用 scope/current generation/current index/链条一致性约束；limit 按唯一 locator 位置补足，typed detail/regions 使用批量 fail-closed 校验。SQLite、PostgreSQL 混合 oracle 和最终 Critical 复审均通过。M403B 已把 PNG/JPEG/WebP Image adapter、类型目录、caption 配置和上传入口同步启用并通过真实 Worker、浏览器与备份恢复门禁。
 
 ## 5. Locator 扩展协议
 

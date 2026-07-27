@@ -6,7 +6,7 @@ FastAPI 业务后端入口。
 - 提供 `/health`、`/health/live`、`/health/ready`、`/v1/auth/*`、`/v1/workspaces*`、documents/ingestion、threads/messages、chat stream、notes/tags CRUD 与 document/note tag bindings 链路
 - 业务 API 只接受 BFF 注入的 `x-user-id` + `x-ai-pdf-internal-token`；登录/注册和健康检查保持公开
 - Workspace 的系统提示词、检索 top-k、入库 chunk size 已落真实表并由 `/v1/workspaces/{workspace_id}/settings` 持久化
-- 数据库结构现在通过显式版本步骤管理，不再依赖应用启动时自动建表
+- 数据库结构现在通过显式版本步骤管理，不再依赖应用启动时自动建表；当前 head 为 `a3c5e7f9b1d4`，该版本启用 `asset_types.image` 目录，不改变 API payload 或保存语义
 
 ## 本地常用命令
 
@@ -72,5 +72,5 @@ uv run alembic upgrade head
 ## 运行边界
 
 - `AI_PDF_API_INTERNAL_TOKEN` 必须和 Web BFF 使用同一个值；生产环境不要使用代码内置的本地开发默认值。
-- `/health` 和 `/health/live` 只表示进程存活；部署探针使用 `/health/ready`，它会检查数据库、对象存储、embedding provider 和 Chat generation 配置。
+- `/health` 和 `/health/live` 只表示进程存活；部署探针使用 `/health/ready`，它会检查数据库、对象存储、embedding provider 和 Chat generation 配置；生产 registry 启用 Image 时还会检查 caption provider/model/version 与共享 OpenAI 配置，但不会为 readiness 发起 caption 请求。
 - 上传请求由 API 按流读取到 `SpooledTemporaryFile`，超过 `AI_PDF_MAX_UPLOAD_BYTES`（默认 100 MB）或与 upload-session 的 `byteSize` 不一致会拒绝，避免整包常驻内存。

@@ -10,7 +10,7 @@ Citeframe 是一个面向需要反复审阅论文、技术规范、评测报告�
 
 核心目标不是提供一次性 PDF Chat，而是帮助用户基于多份复杂 PDF 与图片形成技术判断：先得到答案或结构化结论，再核验准确页码或图像区域，并把结论与证据沉淀在同一个项目上下文中。
 
-当前版本状态：V1 可用闭环、Chat-first 工作台、V2-A Hybrid/RRF、阶段 9 可复现部署基线、V3 Phase 1-3 以及 Phase 4 M401-M403A 均已完成；21-case 工程/全栈 Evidence、7-case 真实模型、销卷恢复和 500k/700k 检索容量门禁全部通过。运行时已迁移到 Asset/Evidence 稳定内核，并完成多模态 PDF、独立图片纵向链路和混合检索；PDF 仍是唯一启用摄取的正式 Asset 类型，Image 必须经 M403B 单独批准后才开放生产入口。
+当前版本状态：V1 可用闭环、Chat-first 工作台、V2-A Hybrid/RRF、阶段 9 可复现部署基线、V3 Phase 1-3 以及 Phase 4 M401-M403B 均已完成；21-case 工程/全栈 Evidence、7-case 真实模型、销卷恢复、500k/700k 检索容量和 PNG/JPEG/WebP 生产 Image 门禁全部通过。运行时已迁移到 Asset/Evidence 稳定内核，PDF 与 Image 均进入生产 registry；M404 真实用户价值仍为 `not_evaluable`，产品继续标记内部预览。
 
 ## 2. 目标用户
 
@@ -75,7 +75,7 @@ Chat UI、支持格式数量或接入某个模型本身不构成产品护城河�
 - ContentUnit 与可重建 embedding
 - 索引状态与失败原因
 
-当前代码已从 `Document/Page/Chunk` 受控迁移到 Asset/Representation/ContentUnit/Evidence；PDF adapter 已启用，Image adapter、Viewer、区域 Chat/Note 与混合检索已完成，但生产 adapter 和上传入口仍按 Phase 4 门禁保持 disabled。
+当前代码已从 `Document/Page/Chunk` 受控迁移到 Asset/Representation/ContentUnit/Evidence；PDF 与 Image adapter、Viewer、区域 Chat/Note、混合检索和精确上传入口已同步，M403B 工程发布门已关闭。
 
 V3 稳定内核不把 Asset 封死为 PDF/Image。部署版本通过封闭模态注册表启用类型；V3 只启用 PDF/Image，后续音频、视频和其他文件通过 adapter、类型目录、locator codec、检索通道和 Viewer renderer 接入，不再次迁移 Workspace/Asset/Chat/Citation/NoteSource 主链。
 
@@ -237,7 +237,7 @@ Note 是 Workspace 内的知识沉淀单元，支持：
 - **Evidence Viewer**：点击侧栏资产、citation 或笔记来源时按需打开，按 locator 使用 PDF 或 Image renderer；桌面端可拖拽调宽并保留 Chat 最小宽度，也可展开为全宽阅读模式。
 - **移动端证据层**：Chat 默认占满工作区，资产列表和 Evidence Viewer 分别覆盖主画布并保留明确返回动作，不允许横向溢出。
 
-默认主链为 `选择资产范围 -> 提问 -> 阅读回答 -> 点击引用 -> 核验证据 -> 返回追问或记笔记`。PDF 支持划词提问/记笔记和区域 Evidence；独立图片框选已接通 Ask AI、直接 Note、输入 Evidence 恢复与 frozen Viewer 跳转，生产入口仍等待 Phase 4 验收。
+默认主链为 `选择资产范围 -> 提问 -> 阅读回答 -> 点击引用 -> 核验证据 -> 返回追问或记笔记`。PDF 支持划词提问/记笔记和区域 Evidence；独立图片框选已接通 Ask AI、直接 Note、输入 Evidence 恢复与 frozen Viewer 跳转，M403B 后 PNG/JPEG/WebP 生产入口已启用。
 
 ## 8. 版本演进
 
@@ -265,7 +265,7 @@ Note 是 Workspace 内的知识沉淀单元，支持：
 - structured output 抽取模板
 - 索引重建与配置管理
 
-### 8.4 V3 多模态 PDF + 独立图片（下一阶段）
+### 8.4 V3 多模态 PDF + 独立图片（已完成）
 
 - 批准 Asset/Representation/ContentUnit/Embedding、locator、API 与迁移合同
 - 页面布局、段落区域和 OCR bbox
@@ -333,6 +333,6 @@ V1 成功的最低标准是：
 
 ## 12. 当前建议
 
-当前功能闭环和可复现部署已经建立。V3 已确认先做多模态 PDF + 独立图片，需要重做资产栏、Chat 证据范围、Evidence Viewer 和 Asset/Evidence 底层边界，不是给当前 PDF 页面加几个入口。
+当前功能闭环、可复现部署和 V3 PDF/Image 纵向链路已经建立。下一阶段是 V4 Evidence Research Workflow：Quick Answer 保持默认与既有保存语义，Deep Research 仅在用户显式选择且 R000 合同获批后进入实现。
 
-先批准六项数据/API/历史语义裁决与模态扩展协议，再进入受控 Asset 迁移和 PDF/Image 纵向实现。真实用户任务验证延期为 Beta 门禁，不阻塞内部工程开发，但未完成时不能宣称用户价值已验证。Audio、Video 继续分别立项，但接入时复用稳定内核；Omnilabel 的业务模型仍独立设计。
+真实用户任务验证仍是 Beta 门禁，未完成时不能宣称用户价值已验证。Audio、Video 与文档类新模态均需单独立项和价值门；Omnilabel 的业务模型继续独立设计。V4 R000 的产品裁决见 `specs/v4/evidence-research-workflow/requirements-discovery.md`。

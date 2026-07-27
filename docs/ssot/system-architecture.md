@@ -42,7 +42,7 @@ V1 架构不追求：
 - 超高吞吐搜索集群
 - 音频、视频和标注数据 Asset
 
-当前运行时已切换到 Asset/Evidence 合同，正式启用 PDF，Image 的 adapter、Evidence、Viewer、区域 Chat/Note 和混合检索已完成，但生产摄取保持关闭。PDF 支持可直接提取文本的页面与无文本层页面的 RapidOCR fallback；M403-M403A 工程验收已通过，但独立图片仍必须经 M403B 单独批准并同步 production contracts 后才开放。
+当前运行时已切换到 Asset/Evidence 合同，PDF 与 M403B Image adapter、Evidence、Viewer、区域 Chat/Note 和混合检索均已进入生产 registry 并通过发布门禁。PDF 支持可直接提取文本的页面与无文本层页面的 RapidOCR fallback；Image 只接受 PNG/JPEG/WebP，且不改变 Citation、NoteSource、Chat 或保存语义。
 
 ## 3. 顶层架构
 
@@ -147,7 +147,7 @@ FastAPI 主业务服务。
 
 ### 4.1 组成与组件划分
 
-前端采用 `Next.js App Router + React Context Provider + feature hooks + Tailwind CSS + Lucide Icons`。Provider 只暴露稳定的 WorkspaceContext API；Workspace、Documents、Chat、Notes/Tags 和视图状态分别由 feature hooks/纯工具模块承载。
+前端采用 `Next.js App Router + React Context Provider + feature hooks + Tailwind CSS + Lucide Icons`。Provider 只暴露稳定的 WorkspaceContext API；Workspace、Assets、Chat、Notes/Tags 和视图状态分别由 feature hooks/纯工具模块承载。
 
 1. `Shell & Navigation`
    - [WorkspaceSidebar](file:///home/cc/code/citeframe/apps/web/src/components/workspace-sidebar.tsx)：折叠/抽屉式导航栏。
@@ -155,9 +155,10 @@ FastAPI 主业务服务。
    - [WorkspaceList](file:///home/cc/code/citeframe/apps/web/src/components/workspace-list.tsx)：主门户 100% 宽度 cardless 行列表。
 
 2. `Evidence Workspace UI`
-   - 当前 [PdfViewer](file:///home/cc/code/citeframe/apps/web/src/components/pdf-viewer.tsx) 是 PDF-only 实现；V3 目标由 `EvidenceViewer` 调度 PDF/Image renderer。
-   - [PdfRenderer](file:///home/cc/code/citeframe/apps/web/src/components/pdf-renderer.tsx)：通过 PDF.js 文件流渲染原始页面 canvas、原生文本层和 annotation layer，保留图片、排版与 PDF 内置链接。
-   - [OutlineTree](file:///home/cc/code/citeframe/apps/web/src/components/outline-tree.tsx)：文档章节目录大纲树，支持基于 `${activeDocumentId}-${node.page}-${node.title}` 复合 Key 进行无冲突折叠。
+   - [EvidenceViewer](file:///home/cc/code/citeframe/apps/web/src/components/evidence-viewer.tsx)：通过 production Evidence registry 按 Asset 类型调度 `PdfEvidenceRenderer` 或 `ImageEvidenceRenderer`，共享 citation/note Evidence shell。
+   - [PdfEvidenceRenderer](file:///home/cc/code/citeframe/apps/web/src/components/pdf-viewer.tsx)：组合 PDF.js 页面 canvas、原生文本层、annotation layer 和类型化区域高亮，保留图片、排版与 PDF 内置链接。
+   - [ImageEvidenceRenderer](file:///home/cc/code/citeframe/apps/web/src/components/image-viewer.tsx)：显示图片 Representation，并按 `image_region` locator 渲染区域证据。
+   - [OutlineTree](file:///home/cc/code/citeframe/apps/web/src/components/outline-tree.tsx)：PDF 章节目录大纲树，使用 `activeAssetId` 参与节点 Key，避免切换 Asset 后复用旧折叠节点。
    - [SelectionPopover](file:///home/cc/code/citeframe/apps/web/src/components/selection-popover.tsx)：划词即时问答/记录笔记浮空菜单。
 
 3. `Knowledge UI`
@@ -168,8 +169,8 @@ FastAPI 主业务服务。
    - [SettingsPanel](file:///home/cc/code/citeframe/apps/web/src/components/settings-panel.tsx)：Prompt 参数调优。
 
 4. `BFF & Data Layer`
-   - Next.jsbff 路由转发。
-   - [workspace-context.tsx](file:///home/cc/code/citeframe/apps/web/src/lib/workspace-context.tsx) 只做 Provider 组合；数据域分别位于 `use-workspaces.ts`、`use-documents.ts`、`use-chat.ts`、`use-notes-tags.ts`，视图状态位于 `workspace-view-state.ts`。
+   - Next.js BFF 路由转发。
+   - [workspace-context.tsx](file:///home/cc/code/citeframe/apps/web/src/lib/workspace-context.tsx) 只做 Provider 组合；数据域分别位于 `use-workspaces.ts`、`use-assets.ts`、`use-chat.ts`、`use-notes-tags.ts`，视图状态位于 `workspace-view-state.ts`。
 
 ### 4.2 前端自适应布局引擎 (Responsive Drawer Engine)
 
@@ -217,14 +218,14 @@ FastAPI 是业务 API 的单一实现层，不把一半业务逻辑留在 Next.j
 - Workspace Prompt 配置
 - Workspace membership / role 校验结果消费
 
-#### `document service`
+#### `asset service`
 
 职责：
 
-- 文档记录创建
-- 文档状态流转
-- 文档删除和重试
-- 页面与 chunk 元数据读取
+- Asset 列表、详情、源文件与上传会话
+- 上传流接收、校验、finalize 和状态流转
+- 失败重试、重建索引、异步删除和清理重试
+- 当前或冻结 generation 的 Representation、ContentUnit 和 Evidence 读取边界
 
 #### `ingestion orchestrator`
 
@@ -281,14 +282,11 @@ Worker 是独立进程，不与 API 共用请求生命周期。
 
 Worker 任务：
 
-- `parse_pdf`
-- `generate_page_artifacts`
-- `chunk_document`
+- `ingest`
 - `embed_chunks`
-- `rebuild_index`
-- `delete_document_artifacts`
+- `delete_cleanup`
 
-当前已实现：Worker 通过 Postgres 轮询领取 `ingestion_jobs.status=queued` 的 `ingest/embed_chunks/delete_cleanup` 任务。共享 ingestion service 只按 `asset_kind` 从 Worker 提供的 `IngestionAdapterRegistry` 取 adapter，并编排 job、processing generation、事务、embedding 和失败状态；它不理解 PDF 页、OCR、artifact 或 bbox。`PdfIngestionAdapter` 独占文件 bytes 到页面文本、MediaBox/CropBox、rotation、display geometry、OCR fallback，以及表格、带可靠显式 caption 的向量图表和页内图片检测。PDF modality persister 负责 `pdf_page_layout/pdf_ocr/pdf_table/pdf_figure` Representation、canonical `pdf_pages`、`pdf_page/pdf_region` locator 和对应 ContentUnit。artifact 的离散源字符区间仅在摄取期用于精确校验和遮罩，不能压成虚假的连续持久化 offset；原生、OCR 和 artifact 路径都只产生一套可检索文本，避免重复 embedding。检索以 Workspace、ready、未删除、当前 index version 和 provider metadata 为硬边界，分别取得 Dense 与 PostgreSQL lexical 候选；`pdf_page` 按 Asset+页去重，`pdf_region` 按 locator 保持独立，再执行 RRF。Chat API 将候选交给 Responses API，转发 delta 流并持久化 immutable locator/sourceVersions citation；citation -> note 只接受当前 Workspace 的真实 citation，并复制完整 locator 与展示快照。
+当前已实现：Worker 通过 Postgres 轮询领取 `ingestion_jobs.status=queued` 的上述三类任务。`ingest` 由共享 ingestion service 按 `asset.asset_kind` 从 Worker 的 `IngestionAdapterRegistry` 选择 `PdfIngestionAdapter` 或 `ImageIngestionAdapter`；共享层负责编排 job、processing generation、事务、embedding 和失败状态，模态 adapter 负责生成对应 Representation、ContentUnit 与 locator。PDF 路径持久化 `pdf_page_layout/pdf_ocr/pdf_table/pdf_figure` Representation、canonical `pdf_pages`、`pdf_page/pdf_region` locator 和 ContentUnit；Image 路径生成 image-oriented Representation、`image_region` locator 和对应 ContentUnit。`embed_chunks` 激活当前 generation/index 的 embedding 投影，`delete_cleanup` 清理源对象、派生对象和内容记录。检索以 Workspace、ready、未删除、当前 index version 和 provider metadata 为硬边界，分别取得 Dense 与 PostgreSQL lexical 候选；`pdf_page` 按 Asset+页去重，区域 locator 保持独立，再执行 RRF。Chat API 将候选交给 Responses API，转发 delta 流并持久化 immutable locator/sourceVersions citation；citation -> note 只接受当前 Workspace 的真实 citation，并复制完整 locator 与展示快照。
 
 ### 5.4 任务编排方式
 
@@ -395,35 +393,33 @@ V1 使用 `MinIO` 作为本地 S3 兼容对象存储。
 
 ### 7.2 存储内容
 
-- 原始 PDF
-- 页面截图 / 预览图
-- 解析 JSON 产物
+- PDF 与 PNG/JPEG/WebP Asset 的原始源文件
+- 摄取 generation 下不可变的派生 Representation 对象
+- 当前 Image 路径生成的 image-oriented Representation
 - 后续可选导出文件
+
+PDF 页面、布局/OCR/表格/图片区域 Representation 元数据以及 PDF/Image ContentUnit 和 locator 当前持久化在 Postgres；文档不虚构尚未生成的 PDF 截图或解析 JSON 对象。
 
 ### 7.3 路径规范
 
-推荐路径：
+当前路径：
 
-- `workspaces/{workspaceId}/documents/{documentId}/original.pdf`
-- `workspaces/{workspaceId}/documents/{documentId}/pages/{page}.png`
-- `workspaces/{workspaceId}/documents/{documentId}/artifacts/parsed.json`
-- `workspaces/{workspaceId}/documents/{documentId}/artifacts/chunks.json`
+- 源文件：`workspaces/{workspaceId}/assets/{assetId}/original{suffix}`
+- 派生对象命名空间：`workspaces/{workspaceId}/assets/{assetId}/representations/{processingGeneration}/...`
+- Image 当前派生对象：`workspaces/{workspaceId}/assets/{assetId}/representations/{processingGeneration}/image-oriented.png`
 
 ### 7.4 上传策略
 
-默认采用 `浏览器直传 MinIO + 预签名 URL`：
+当前采用 `Browser -> Next.js BFF -> FastAPI -> MinIO` 流式上传：
 
-1. 浏览器向 Next.js 请求上传会话
-2. Next.js 转发给 FastAPI 创建文档与上传令牌
-3. 浏览器直接把 PDF 上传到 MinIO
-4. 浏览器调用 finalize
-5. FastAPI 创建 ingestion job
+1. Browser 通过 Next.js BFF 请求上传会话。
+2. FastAPI 创建 pending Asset，返回 BFF 上传 URL 与对象 key。
+3. Browser 把文件上传到 BFF，BFF 保留准确 `Content-Type` 并将请求体流式转发给 FastAPI。
+4. FastAPI 校验大小、MIME 和文件签名，将源文件流写入 MinIO，并记录源 SHA。
+5. Browser 通过 BFF 调用 finalize。
+6. FastAPI 创建 queued `ingest` job。
 
-好处：
-
-- 不让 Web 服务器承受大文件中转
-- 本地和云上都通用
-- 文件链路和业务链路分离
+Browser 不持有 MinIO 预签名直传地址；上传鉴权、字节校验和 Asset 状态更新都留在 API 业务边界内。
 
 ## 8. 鉴权架构
 
@@ -633,7 +629,7 @@ V1 支持两类：
 
 - `request_id`
 - `workspace_id`
-- `document_id`
+- `asset_id`
 - `thread_id`
 - `ingestion_job_id`
 
@@ -641,15 +637,15 @@ V1 支持两类：
 
 ### 13.1 上传与索引
 
-1. Browser 请求上传会话
-2. Web 校验用户与 workspace
-3. API 创建 document + ingestion_job
-4. Browser 直传 MinIO
-5. Browser finalize
-6. API 创建 queued ingestion job
-7. Worker 领取任务，提取文本；无文本层时执行 OCR fallback，再切块并持久化 pages/chunks
-8. Worker 批量 embedding 并写入 pgvector
-9. API/DB 更新状态为 `ready`
+1. Browser 通过 Next.js BFF 请求上传会话。
+2. Web 与 API 校验用户、Workspace、Asset 类型和上传约束。
+3. API 创建 pending Asset，返回 BFF 上传 URL 与对象 key。
+4. Browser 上传文件；BFF 将请求体和准确 `Content-Type` 流式转发给 API。
+5. API 校验字节并流式写入 MinIO，记录源 SHA。
+6. Browser 调用 finalize，API 创建 queued `ingest` job。
+7. Worker 领取任务，按 Asset kind 调度 PDF 或 Image ingestion adapter。
+8. Adapter 创建对应 Representation、ContentUnit 与 locator；共享 ingestion service 写入 embedding 并激活当前 generation/index。
+9. API/DB 将 Asset 状态更新为 `ready`。
 
 ### 13.2 Chat 问答
 
@@ -674,8 +670,8 @@ V1 支持两类：
 - 浏览器不可直连 Redis
 - 浏览器不可直连 FastAPI 私有业务接口
 - 模型调用密钥只存在服务端
-- 对象存储通过预签名 URL 控制访问
-- 删除文档时必须同步删除对象存储与向量引用关系
+- 对象存储由 BFF/API 校验用户、Workspace 与 Asset 归属后访问，Browser 不直接持有 MinIO 凭据或地址
+- 删除 Asset 时通过 `delete_cleanup` 同步清理源对象、派生对象、ContentUnit 与向量引用关系
 
 ## 15. 演进路线
 
@@ -700,7 +696,7 @@ V1 支持两类：
 - `pdf_page / pdf_region` 类型化 locator、Chat Citation/NoteSource 与 PDF Evidence Viewer
 - 旋转、非对称 CropBox、扫描、artifact、多区域、指定页跳转、框选草稿和移动端 fixture 验收，以及 artifact/失败 Chat 两轮 Critical 复验
 
-M402 的 21-case 工程执行、7-case 真实 BFF 全栈/像素 Evidence 与 7-case `openai / gpt-5.5` answer/refusal 均已通过。冻结 answer oracle、显式 opt-in runner 与独立复算门禁绑定 production prompt、Asset scope、Evidence 和 provider/model；回答质量使用移除数字 citation token 后的完整规范化输出 allowlist，未登记改写 fail closed。唯一一次获批外部执行无 provider 错误且 citation target 全覆盖；6 条正确改写经人工对照 Evidence 后加入冻结 allowlist，raw output/messages 与 capture-time diagnostics 保持不变，正式报告独立复算得到 `releaseGatePassed=true`。该本地证据链不宣称提供远程 provider 的密码学回执；若威胁模型包含整套 artifact 一致篡改，必须另接 provider 可验证回执或独立签名服务。M403 加强后的隔离 Compose 销卷恢复已通过恢复前后数据库/对象语义 SHA-256、桌面/移动端完整 raster/overlay 和最终容器/卷/网络零残留门。M403A 的 production Dense 使用 current-only cosine512/N + binary64/3N 两路 `MATERIALIZED` ANN candidate，identity 去重后只按原始 1024D cosine 精排；`f2a4c6e8b0d1` current-chain migration、scope trigger、两阶段 embedding 激活和 ANN/SQLite parity 已通过。fresh S0/S1/S2 canonical 三档全部通过，S2 9/9 Recall=`1.00`、load/index `2062.742s`、并发 p95 `246.531ms`，正式报告 `releaseGatePassed=true`。生产 Image 仍 disabled；M403B 是独立批准阶段，migration 的 HNSW 重建需维护窗口，不作零停机承诺。
+M402 的 21-case 工程执行、7-case 真实 BFF 全栈/像素 Evidence 与 7-case `openai / gpt-5.5` answer/refusal 均已通过。冻结 answer oracle、显式 opt-in runner 与独立复算门禁绑定 production prompt、Asset scope、Evidence 和 provider/model；回答质量使用移除数字 citation token 后的完整规范化输出 allowlist，未登记改写 fail closed。唯一一次获批外部执行无 provider 错误且 citation target 全覆盖；6 条正确改写经人工对照 Evidence 后加入冻结 allowlist，raw output/messages 与 capture-time diagnostics 保持不变，正式报告独立复算得到 `releaseGatePassed=true`。该本地证据链不宣称提供远程 provider 的密码学回执；若威胁模型包含整套 artifact 一致篡改，必须另接 provider 可验证回执或独立签名服务。M403 加强后的隔离 Compose 销卷恢复已通过恢复前后数据库/对象语义 SHA-256、桌面/移动端完整 raster/overlay 和最终容器/卷/网络零残留门。M403A 的 production Dense 使用 current-only cosine512/N + binary64/3N 两路 `MATERIALIZED` ANN candidate，identity 去重后只按原始 1024D cosine 精排；`f2a4c6e8b0d1` current-chain migration、scope trigger、两阶段 embedding 激活和 ANN/SQLite parity 已通过。fresh S0/S1/S2 canonical 三档全部通过，S2 9/9 Recall=`1.00`、load/index `2062.742s`、并发 p95 `246.531ms`。M403B 的 `a3c5e7f9b1d4` 已启用 Image 目录；PNG/JPEG/WebP 上传、源完整性、失败重试、检索/Evidence、长期 Worker 浏览器路径和 Image-enabled 销卷恢复均已通过，工程 `releaseGatePassed=true`。
 
 ## 16. 当前架构裁决
 
@@ -723,7 +719,7 @@ M402 的 21-case 工程执行、7-case 真实 BFF 全栈/像素 Evidence 与 7-c
 - `Representation`：原文件、OCR、布局、表格、caption、ASR 等不可变且可版本化的派生表示
 - `ContentUnit`：段落、区域、表格、图像或时间片段等可寻址检索/分析单元
 - `Embedding`：ContentUnit 的可重建索引投影，可存在多个空间和版本
-- `EvidenceLocator`：带 discriminator 的稳定定位值；当前运行时实现 `pdf_page / pdf_region`，`image_region` 合同已注册但摄取未启用
+- `EvidenceLocator`：带 discriminator 的稳定定位值；当前运行时已启用 `pdf_page / pdf_region / image_region`
 - `Citation`：回答生成时冻结 locator、标题、摘要、索引映射和版本语义的证据快照
 
 PDF/Image 不是稳定内核中的硬编码枚举。后端与 Web 使用部署期封闭注册表：每个模态模块提供字节验证、ingestion adapter、Representation/ContentUnit 类型、locator codec、retrieval channel 和 renderer。数据库类型目录与代码注册表不一致时 readiness 失败。后续 Audio/Video 允许增加模块和类型化 locator 明细表，但不得修改 Asset、Chat scope、Citation、NoteSource 或 Evidence Viewer shell 的核心职责。

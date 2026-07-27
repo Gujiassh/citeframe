@@ -44,14 +44,14 @@ V3 范围已确认为多模态 PDF + 独立图片，以下设计与破坏性合�
 4. 已完成 dormant 独立图片方向归一化、OCR、caption、区域 ContentUnit、`image_region` citation 和 Image Viewer。
 5. 已实现图片框选 Ask AI、直接 Note、消息输入 Evidence 与 frozen Viewer 跳转，M304B Critical 已通过并关闭 M304。
 6. M305 已融合文本 Dense、lexical、OCR/caption 候选和 Asset 范围过滤。
-7. M401-M403A 已完成；加强后的 M403 正式报告通过 PostgreSQL/MinIO 销卷恢复、完整 raster/overlay 历史回放与最终零残留门。M403A current-chain、cosine + binary 双索引和 binary64/3N fresh canonical 已通过：S0/S1/S2 全门通过，S2 9/9 Recall=`1.00`、load/index `2062.742s`、并发 p95 `246.531ms`，正式报告 `releaseGatePassed=true`。生产 Image 仍 disabled，M403B 需单独批准。
+7. M401-M403B 已完成。M403A current-chain、cosine + binary 双索引和 binary64/3N fresh canonical 已通过：S0/S1/S2 全门通过，S2 9/9 Recall=`1.00`、load/index `2062.742s`、并发 p95 `246.531ms`。M403B 已完成 PNG/JPEG/WebP 生产上传、immutable-source failure/retry、检索/Evidence、长期 Worker 桌面/移动浏览器链、Image-enabled PostgreSQL/MinIO 销卷恢复与完整 artifact 校验，工程门禁 `releaseGatePassed=true`。
 
 完成门禁：内部 PDF/图片黄金集达标；历史页码 citation 仍可回放；重处理不改变已保存证据含义；备份恢复通过。
 
 ## 5. Beta 与 Later
 
 - Beta 前完成至少 5 名目标用户、20 个真实任务和 5 份复杂资产的验证；未完成时只发布内部预览。
-- V4 Evidence Research Workflow 作为设计提案进入 `specs/v4/evidence-research-workflow/`：先完成 M403A，M403B 经单独批准启用 Image 并形成稳定 Git 边界后，再实现固定、版本化、可并行、可恢复、可审批、可观测和可评测的深度研究工作流。M404 可并行推进，但未完成时 V4 仍为内部预览。
+- V4 Evidence Research Workflow 作为下一实施阶段进入 `specs/v4/evidence-research-workflow/`：在 M403B 稳定 Git 边界上实现固定、版本化、可并行、可恢复、可审批、可观测和可评测的多 Agent 深度研究工作流。M404 与 V4 工程可并行推进，但 M404 未完成时产品仍为内部预览。
 - V4 提案包含 Evaluation Dashboard、Prompt/Workflow Version、ResearchArtifact、Streaming、Observability、Human in the Loop、真并行和失败恢复；不包含拖拽 Workflow、自由插件和自动长期记忆。
 - Audio：ASR、说话人和时间段 locator 独立立项。
 - Video：镜头、关键帧、字幕和时间段 locator 独立立项。

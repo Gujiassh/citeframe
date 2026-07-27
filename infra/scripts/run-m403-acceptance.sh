@@ -14,6 +14,8 @@ Usage: run-m403-acceptance.sh --output-dir PATH [--project citeframe-m403-NAME]
 
 Runs the real isolated Compose backup/restore and historical semantic oracle.
 The project is always removed, including all named volumes, before returning.
+M403_EXPECT_IMAGE_ENABLED defaults to false for the historical M403 gate; set
+it to true when validating M403B or any deployment at/after a3c5e7f9b1d4.
 EOF
 }
 
@@ -53,6 +55,12 @@ if [[ ! "$COMPOSE_PROJECT" =~ ^citeframe-m403-[a-z0-9][a-z0-9_-]*$ ]]; then
   printf 'm403_project_must_be_isolated project=%s\n' "$COMPOSE_PROJECT" >&2
   exit 2
 fi
+M403_EXPECT_IMAGE_ENABLED=${M403_EXPECT_IMAGE_ENABLED:-false}
+if [[ "$M403_EXPECT_IMAGE_ENABLED" != "true" && "$M403_EXPECT_IMAGE_ENABLED" != "false" ]]; then
+  printf 'm403_invalid_image_expectation value=%s expected=true_or_false\n' "$M403_EXPECT_IMAGE_ENABLED" >&2
+  exit 2
+fi
+export M403_EXPECT_IMAGE_ENABLED
 OUTPUT_DIR=$(realpath -m "$OUTPUT_DIR")
 if [[ -e "$OUTPUT_DIR" ]]; then
   printf 'm403_output_exists path=%s\n' "$OUTPUT_DIR" >&2
@@ -168,7 +176,8 @@ PY
 }
 trap cleanup EXIT INT TERM
 
-printf 'm403_start project=%s output=%s\n' "$COMPOSE_PROJECT" "$OUTPUT_DIR"
+printf 'm403_start project=%s output=%s expect_image_enabled=%s\n' \
+  "$COMPOSE_PROJECT" "$OUTPUT_DIR" "$M403_EXPECT_IMAGE_ENABLED"
 compose config > "$OUTPUT_DIR/compose-config.yml"
 sha256sum "$OUTPUT_DIR/compose-config.yml" > "$OUTPUT_DIR/compose-config.sha256"
 

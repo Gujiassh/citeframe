@@ -1,7 +1,6 @@
 from dataclasses import replace
 
 import pytest
-
 from ai_pdf_api.modalities.registry import (
     IMAGE_MODULE,
     PDF_MODULE,
@@ -15,14 +14,13 @@ from ai_pdf_api.modalities.registry import (
 )
 
 
-def test_production_registry_registers_image_but_enables_only_pdf_ingestion() -> None:
+def test_production_registry_enables_pdf_and_image_ingestion() -> None:
     registry = build_production_registry()
 
     assert registry.asset_kinds == frozenset({"pdf", "image"})
-    assert registry.enabled_asset_kinds == frozenset({"pdf"})
+    assert registry.enabled_asset_kinds == frozenset({"pdf", "image"})
     assert registry.inspect_upload("application/pdf", b"%PDF-1.7").asset_kind == "pdf"
-    with pytest.raises(ModalityContractError, match="not enabled for ingestion: image"):
-        registry.inspect_upload("image/png", b"\x89PNG\r\n\x1a\n")
+    assert registry.inspect_upload("image/png", b"\x89PNG\r\n\x1a\n").asset_kind == "image"
 
 
 def test_registry_rejects_mime_and_signature_mismatches() -> None:
@@ -54,10 +52,7 @@ def test_image_signature_must_match_declared_mime_type(
     header: bytes,
     matches: bool,
 ) -> None:
-    registry = ModalityRegistry(
-        (PDF_MODULE, replace(IMAGE_MODULE, enabled=True)),
-        embedding_spaces=(TypeRegistration("text"),),
-    )
+    registry = build_production_registry()
 
     if matches:
         assert registry.inspect_upload(declared_mime_type, header).asset_kind == "image"

@@ -5,10 +5,6 @@ from datetime import UTC, datetime
 from hashlib import sha256
 
 import pytest
-from sqlalchemy import create_engine, select
-from sqlalchemy.orm import Session, sessionmaker
-from sqlalchemy.pool import StaticPool
-
 from ai_pdf_api.db.base import Base
 from ai_pdf_api.modalities.image_ingestion import (
     IMAGE_ORIENTED_CONTENT_TYPE,
@@ -29,6 +25,7 @@ from ai_pdf_api.modalities.ingestion import (
 from ai_pdf_api.models import (
     Asset,
     AssetRepresentation,
+    ContentUnit,
     ImageRepresentationGeometry,
     IngestionJob,
     User,
@@ -37,9 +34,14 @@ from ai_pdf_api.models import (
 )
 from ai_pdf_api.routers.assets import get_asset_detail
 from ai_pdf_api.services.ingestion import process_ingestion_job
+from sqlalchemy import create_engine, select
+from sqlalchemy.orm import Session, sessionmaker
+from sqlalchemy.pool import StaticPool
 
 NORMALIZED_PAYLOAD = b"canonical-image-png"
 NORMALIZED_SHA256 = sha256(NORMALIZED_PAYLOAD).hexdigest()
+SOURCE_PAYLOAD = b"immutable-source-image"
+SOURCE_SHA256 = sha256(SOURCE_PAYLOAD).hexdigest()
 
 
 class StaticImageAdapter:
@@ -113,8 +115,8 @@ def _create_image_asset(db: Session, *, status: str = "parsing") -> Asset:
         source_filename="orientation-6.jpg",
         object_key="workspaces/workspace-image/assets/source/original.jpg",
         mime_type="image/jpeg",
-        byte_size=128,
-        source_sha256="a" * 64,
+        byte_size=len(SOURCE_PAYLOAD),
+        source_sha256=SOURCE_SHA256,
         status=status,
         current_processing_generation=1,
         current_index_version=1,
@@ -156,7 +158,7 @@ def test_generated_image_object_and_geometry_commit_together(
     uploads: list[tuple[str, bytes, str]] = []
     monkeypatch.setattr(
         "ai_pdf_api.services.ingestion.download_bytes",
-        lambda _key: b"immutable-source-image",
+        lambda _key: SOURCE_PAYLOAD,
     )
     monkeypatch.setattr(
         "ai_pdf_api.services.ingestion.upload_bytes",
@@ -189,9 +191,57 @@ def test_generated_image_object_and_geometry_commit_together(
         (representation.object_key, NORMALIZED_PAYLOAD, IMAGE_ORIENTED_CONTENT_TYPE)
     ]
     assert asset.object_key == "workspaces/workspace-image/assets/source/original.jpg"
-    assert asset.source_sha256 == "a" * 64
+    assert asset.source_sha256 == SOURCE_SHA256
     assert asset.status == "chunked"
     assert job.status == "succeeded"
+
+
+def test_source_object_integrity_mismatch_fails_initial_and_retry(
+    db_session: Session,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    asset = _create_image_asset(db_session)
+    first_job = _create_job(db_session, asset)
+    adapter_calls = 0
+
+    class CountingImageAdapter(StaticImageAdapter):
+        def ingest(self, db: Session, **kwargs: object) -> IngestionResult:
+            nonlocal adapter_calls
+            adapter_calls += 1
+            return super().ingest(db, **kwargs)
+
+    monkeypatch.setattr(
+        "ai_pdf_api.services.ingestion.download_bytes",
+        lambda _key: b"tampered-source-image",
+    )
+    adapters = IngestionAdapterRegistry((CountingImageAdapter(),))
+
+    process_ingestion_job(db_session, first_job.id, ingestion_adapters=adapters)
+
+    retry_job = _create_job(db_session, asset)
+    retry_job.attempt_count = 2
+    retry_job.config_snapshot = {"source": "retry"}
+    db_session.commit()
+    process_ingestion_job(db_session, retry_job.id, ingestion_adapters=adapters)
+
+    db_session.expire_all()
+    refreshed_asset = db_session.get(Asset, asset.id)
+    assert refreshed_asset is not None
+    assert refreshed_asset.status == "failed"
+    assert refreshed_asset.current_processing_generation == 1
+    assert refreshed_asset.byte_size == len(SOURCE_PAYLOAD)
+    assert refreshed_asset.source_sha256 == SOURCE_SHA256
+    assert adapter_calls == 0
+    assert first_job.status == "failed"
+    assert retry_job.status == "failed"
+    assert first_job.error_code == "source_object_integrity_mismatch"
+    assert retry_job.error_code == "source_object_integrity_mismatch"
+    assert db_session.scalars(
+        select(AssetRepresentation).where(AssetRepresentation.asset_id == asset.id)
+    ).all() == []
+    assert db_session.scalars(
+        select(ContentUnit).where(ContentUnit.asset_id == asset.id)
+    ).all() == []
 
 
 def test_generated_object_upload_failure_rolls_back_image_rows(
@@ -202,7 +252,7 @@ def test_generated_object_upload_failure_rolls_back_image_rows(
     job = _create_job(db_session, asset)
     monkeypatch.setattr(
         "ai_pdf_api.services.ingestion.download_bytes",
-        lambda _key: b"immutable-source-image",
+        lambda _key: SOURCE_PAYLOAD,
     )
     monkeypatch.setattr(
         "ai_pdf_api.services.ingestion.upload_bytes",
@@ -240,7 +290,7 @@ def test_commit_failure_deletes_uploaded_generated_object(
     stored: set[str] = set()
     monkeypatch.setattr(
         "ai_pdf_api.services.ingestion.download_bytes",
-        lambda _key: b"immutable-source-image",
+        lambda _key: SOURCE_PAYLOAD,
     )
     monkeypatch.setattr(
         "ai_pdf_api.services.ingestion.upload_bytes",
@@ -341,7 +391,7 @@ def test_ambiguous_upload_success_is_compensated(
     stored: set[str] = set()
     monkeypatch.setattr(
         "ai_pdf_api.services.ingestion.download_bytes",
-        lambda _key: b"immutable-source-image",
+        lambda _key: SOURCE_PAYLOAD,
     )
 
     def write_then_raise(key: str, _payload: bytes, _content_type: str) -> None:
@@ -377,7 +427,7 @@ def test_failed_compensation_is_durable_and_ingestion_retry_cleans_it(
     stored: set[str] = set()
     monkeypatch.setattr(
         "ai_pdf_api.services.ingestion.download_bytes",
-        lambda _key: b"immutable-source-image",
+        lambda _key: SOURCE_PAYLOAD,
     )
 
     def write_then_raise(key: str, _payload: bytes, _content_type: str) -> None:

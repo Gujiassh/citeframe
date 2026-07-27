@@ -17,7 +17,7 @@
 
 ## 2. 当前总状态
 
-当前项目状态：`V1、Chat-first 工作台、V2-A Hybrid/RRF、阶段 9 可复现单机生产基线、V3 Phase 1-3 以及 Phase 4 M401-M403A 已完成；binary64/3N fresh S0/S1/S2 canonical 三档全通过，正式报告 releaseGatePassed=true。`
+当前项目状态：`V1、Chat-first 工作台、V2-A Hybrid/RRF、阶段 9 可复现单机生产基线、V3 Phase 1-3 以及 Phase 4 M401-M403B 已完成；PDF 与 PNG/JPEG/WebP Image 生产工程门禁通过，M404 用户价值仍为 not_evaluable。`
 
 M403A 的逐次优化假设、实验手段、通过/否决结果、指标和 artifact 统一记录在 `docs/evals/m403a-optimization-log.md`；后续不得只更新最终结论而遗漏失败实验与运行环境证据。
 
@@ -29,7 +29,7 @@ M403A 的逐次优化假设、实验手段、通过/否决结果、指标和 art
 - 真实后端认证接口与 BFF session cookie 已接通
 - `users / workspaces / workspace_memberships` 最小真表链路已接通
 - 首页与工作区详情页的 workspace 可见范围、创建、归档已切到真实 BFF/API
-- API 侧已接入数据库结构版本步骤工具，当前数据库 head 为 `f2a4c6e8b0d1`；embedding current-chain 元数据迁移、current-only partial HNSW 与 scope trigger 已落地
+- API 侧已接入数据库结构版本步骤工具，当前数据库 head 为 `a3c5e7f9b1d4`；embedding current-chain、双 HNSW、scope trigger 与生产 Image catalog 已落地
 - Asset、向量检索、Chat thread/message/citation、notes/tags 已进入真实链路
 - 生产运行时已移除 `/documents` 和 Document 业务模型，历史 PDF 数据已机械迁移到 Asset/Evidence 内核
 
@@ -46,10 +46,10 @@ M403A 的逐次优化假设、实验手段、通过/否决结果、指标和 art
 | 7 | Embedding 与检索 | 已完成 | 已完成 | `vector(1024)`、HNSW、PostgreSQL FTS/pg_trgm、页级 RRF 和 Dense/Hybrid 显式策略已接通；40 条生产评测通过后默认使用 Hybrid |
 | 8 | Chat、citation、笔记与标签 | 已完成 | 已完成 | Chat `assetScope`、消息范围快照、不可变 locator/sourceVersions citation、notes、note_sources、tags、asset_tags、note_tags 真表、API、BFF 和 citation -> note 已接通 |
 | 9 | 部署、日志与观测 | 已完成 | 已完成 | 锁定镜像、迁移 gate、Prometheus、Worker 私网指标、同批备份销卷恢复、Caddy 安全入口和全业务 smoke 已通过 |
-| V3-1 | Asset/Evidence 基础迁移 | 已完成 | 已完成 | 不可逆迁移、封闭模态注册表、Asset API/Worker/Web、Chat scope、Evidence Viewer shell、历史快照 oracle 和 Critical 复审已完成；Image 仅注册合同，未启用摄取 |
+| V3-1 | Asset/Evidence 基础迁移 | 已完成 | 已完成 | 不可逆迁移、封闭模态注册表、Asset API/Worker/Web、Chat scope、Evidence Viewer shell、历史快照 oracle 和 Critical 复审已完成；Image 在该早期阶段仅注册合同，后续由 M403B 启用摄取 |
 | V3-2 | 多模态 PDF Evidence | 已完成 | 已完成 | 页面几何、layout/OCR、表格/图表/页内图片、`pdf_page/pdf_region` Citation/NoteSource、Viewer 区域交互与失败 Chat 回放已通过两轮 Critical 复验 |
-| V3-3 | 独立图片闭环 | 已完成 | M301-M305 已通过最终 Critical | 图片归一化、OCR/caption、Evidence 历史快照、Viewer、区域 Chat/Note 与混合检索已完成；生产 Image 仍 disabled，等待 Phase 4 工程验收 |
-| V3-4 | 质量与发布验收 | M401-M403A 已完成 | M403A 已完成 | M403 恢复门与 M403A binary64/3N canonical 均通过；S2 9/9 Recall `1.00`、load/index `2062.742s`、并发 p95 `246.531ms`；生产 Image 保持 disabled，M403B 待单独批准 |
+| V3-3 | 独立图片闭环 | 已完成 | M301-M305 已通过最终 Critical | 图片归一化、OCR/caption、Evidence 历史快照、Viewer、区域 Chat/Note 与混合检索已完成；M403B 已将生产 Image 正式启用 |
+| V3-4 | 质量与发布验收 | M401-M403B 已完成 | M403B 已完成 | M403 恢复、M403A binary64/3N canonical 与 M403B 三格式生产上传/恢复/浏览器门均通过；工程 `releaseGatePassed=true` |
 
 ## 4. 已完成的设计文档
 
@@ -63,15 +63,15 @@ M403A 的逐次优化假设、实验手段、通过/否决结果、指标和 art
 
 ## 5. 当前建议实施顺序
 
-V1、V2-A、阶段 9、V3 Phase 1-3 与 Phase 4 M401-M403 已完成。后续按以下顺序推进：
+V1、V2-A、阶段 9、V3 Phase 1-3 与 Phase 4 M401-M403B 已完成。后续按以下顺序推进：
 
-1. 经单独批准后执行 M403B，在同一发布中同步生产 Image 的 catalog/API/Worker/Web 合同并重跑上传、检索、Evidence 与恢复主链
-2. 真实用户验证作为 M404 Beta 门禁；数据不足时保持 `not_evaluable` 和内部预览
-3. M403B 形成稳定 Git 边界后，按已批准合同评审 V4 Evidence Research Workflow 的持久化/API 状态机，再进入实现
+1. 形成 M403B 稳定 Git 边界，进入 V4 Evidence Research Workflow 的持久化/API 状态机与多 Agent 执行实现
+2. 真实用户验证作为 M404 Beta 门并行推进；数据不足时保持 `not_evaluable` 和内部预览
+3. V4 每个切片继续沿用确定性 fixture、真实 BFF、恢复与独立复审门，不以“多 Agent”替代证据质量
 
 ## 6. 当前正在做什么
 
-当前：`M403 加强后的正式销卷恢复报告与 M403A binary64/3N fresh canonical 均已通过。S0/S1/S2 三档全部 seed/query/resource/cleanup gate 通过，正式报告 releaseGatePassed=true；图片摄取继续 disabled，下一阶段是需单独批准的 M403B。`
+当前：`M403B 已完成并启用生产 Image。PNG/JPEG/WebP 真实上传、immutable-source failure/retry、检索/Evidence、长期 Worker 桌面/390px 浏览器链、Image-enabled 销卷恢复和最终清理均通过；下一阶段是 V4 Evidence Research Workflow 多 Agent 实现，M404 继续 not_evaluable。`
 
 ## 7. M403A 当前切片
 
@@ -84,7 +84,7 @@ V1、V2-A、阶段 9、V3 Phase 1-3 与 Phase 4 M401-M403 已完成。后续按�
 - binary64/3N fresh S2 全门通过：load/index `2255.299s`，9/9 Recall `1.00`，Dense/lexical/Hybrid p95 `32.745/23.391/55.745ms`，8 并发 p95 `291.122ms`、吞吐 `56.405 req/s`，数据库 `7.159 GiB`，零错误、零 drift、零 cleanup 残留。S2-only 仍为 `debugOnly`。
 - fresh S0/S1/S2 canonical 已设置 `releaseGatePassed=true`：S2 load/index `2062.742s`，9/9 Recall `1.00`，Dense/lexical/Hybrid p95 `32.237/41.663/54.373ms`，8 并发 p95 `246.531ms`、吞吐 `61.069 req/s`，数据库 `7.159 GiB`，零错误、零 drift、零 cleanup 残留。正式证据为 `docs/evals/artifacts/m403a-v2/`。
 - 最终 migration `f2a4 -> e1f3 -> f2a4`、Alembic drift、API `278 passed`、Worker `93 passed`、Ruff、compileall、runner 语法、artifact SHA-256、canonical oracle 与 diff check 均通过；临时 test output/cache 已清理，正式 artifact 保留。
-- M403A 已完成；生产 Image 继续 disabled，M403B/M404 不提前开放。
+- M403A 完成时生产 Image 保持 disabled；该门已由后续单独批准并完成的 M403B 正式打开，M404 仍未提前宣称通过。
 
 收口结果：
 
@@ -95,7 +95,7 @@ V1、V2-A、阶段 9、V3 Phase 1-3 与 Phase 4 M401-M403 已完成。后续按�
 - `apps/web`、`apps/api`、`apps/worker` 基础工程已初始化
 - Workspace 列表与详情的最小 API/BFF/页面链路已建立
 - `users / workspaces / workspace_memberships` 最小真表、查询、创建、归档链路已落地
-- API 侧已从启动时自动建表切换到显式数据库版本步骤；当前 head 版本为 `d0e2f4a6b8c1`
+- API 侧已从启动时自动建表切换到显式数据库版本步骤；当前 head 版本为 `a3c5e7f9b1d4`
 - `assets / ingestion_jobs` 真表、迁移、列表、upload-session、二进制上传、finalize-upload、job 查询与删除链路已落地；Worker 通过 `IngestionAdapterRegistry` 按 `asset_kind` dispatch，API 共享 orchestrator 不再理解 PDF/OCR/page/bbox
 - `pdf_pages / content_units / content_unit_embeddings` 真表和迁移已落地；Worker 会领取 queued ingest job、回收超时任务，先提取文本层，必要时用 RapidOCR + ONNX Runtime 渲染页面并识别，再按页生成 ContentUnit、批量调用 embedding provider、写入向量并推进 `chunking -> embedding -> ready`，同时支持 `embed_chunks` 回填已有 ContentUnit。
 - 原始 PDF 文件流已接通 API/BFF；`PdfViewer` 使用 PDF.js canvas 作为主页面、text layer 支持原生 PDF 文本选取、扫描 PDF 使用透明 OCR block 层支持划词、annotation layer 支持 PDF 内置链接/批注，OCR 文本不覆盖源页面视觉内容
@@ -148,13 +148,13 @@ V1、V2-A、阶段 9、V3 Phase 1-3 与 Phase 4 M401-M403 已完成。后续按�
 
 ## 7. 下一步
 
-下一步：`M403A 已完成。生产 Image 继续 disabled；经单独批准后进入 M403B，再形成稳定 Git 边界并评审 V4 运行时合同。`
+下一步：`形成 M403B 稳定 Git 边界后，先完成并批准 V4 R000 字段级合同，再进入多 Agent Evidence Research Workflow 第一实施切片；M404 真实用户价值门并行保持 not_evaluable。`
 
 具体建议从这些内容开始：
 
-1. 以 `specs/v3/multimodal-workspace/` 的 Phase 4 M403-M403A 为当前开发入口。
-2. 完成全栈/像素、恢复与大语料容量验收后再决定是否启用 Image 上传入口。
-3. Phase 3-4 工程验收后执行真实用户任务验证；结果未完成前只作为内部预览。
+1. 以 `specs/v4/evidence-research-workflow/` 为下一开发入口，先冻结任务状态机、权限、可恢复执行和 Evidence 输出合同。
+2. M404 真实用户任务验证并行收集；结果未完成前产品继续作为内部预览。
+3. Audio/Video 仍按独立模态 adapter/locator/Viewer 立项，不和 V4 workflow 状态机混成一次迁移。
 
 ## 8. 当前不进入主线
 
@@ -211,3 +211,20 @@ V1、V2-A、阶段 9、V3 Phase 1-3 与 Phase 4 M401-M403 已完成。后续按�
 - 新增严格 `user-task-validation-manifest-v1`，结构化记录 participant/asset/task 资格；开发者自测、合成用户和模型代理不能计入真实目标用户，任务按 `(participant_id, task_id)` 去重，只有任务实际引用的真实复杂资产计数。
 - 只有 5 名真实目标用户、20 个合格任务完成、3 份复杂 PDF、2 张复杂图片及来源/版式多样性全部满足，质量门才进入 `pass/fail`；此前顶层和全部质量门都为 `not_evaluable`。
 - 自动报告始终固定 `userValueValidated=false`、`productStage=internal_preview`，因为 qualification evidence、继续使用意愿和七日复用仍需真实研究裁决。canonical 空报告 `docs/research/user-task-results-report.json` 由空 manifest + header-only CSV 生成，CLI 退出码为 `2`。
+
+## 2026-07-24：M403B 生产 Image 启用与发布验收（已完成）
+
+- Owner 已批准 M403B；冻结 oracle 为只接受精确 `application/pdf`、`image/png`、`image/jpeg`、`image/webp`，禁止 `image/*`、空 MIME、按扩展名猜测和 PDF fallback。Citation、NoteSource、Chat、Asset/Citation/NoteSource payload、持久化字段和保存语义保持不变。
+- 新增 Alembic `a3c5e7f9b1d4`，只把 `asset_types.image.enabled` 从 `false` 切换为 `true`；升级/降级均校验 catalog contract v1，不新增表或字段。API `IMAGE_MODULE` 与 Worker `ImageIngestionAdapter` 已进入生产 registry；caption provider 继续复用已冻结的 OpenAI provider/model/version/detail/token 配置。
+- Web production upload contract 统一暴露 PDF/PNG/JPEG/WebP MIME 与扩展名；两个侧栏入口共用该合同，空/未知/声明与扩展不一致在创建 upload-session 前 fail closed，BFF 缺失 Content-Type 返回 `415`，不再默认为 PDF。失败 Asset 展示截断错误原因，移动端 retry/delete 目标保持 `44px`。
+- API/Worker 强化：Worker 在 adapter 前校验下载源对象长度与已持久化 SHA-256，初次摄取和 retry 的篡改对象都以 `source_object_integrity_mismatch` fail closed；legacy `source_sha256=NULL` 合同不被重写。部署 Compose 与示例显式共享六个 `AI_PDF_IMAGE_CAPTION_*` 参数，Image 启用时 readiness 额外返回 `imageCaptionConfiguration`，不为探针调用 provider。
+- 生产 plumbing 报告 `docs/evals/artifacts/m403b-v2/`：PNG/JPEG/WebP 均经 API `201/204/200` 到 `ready`；MIME mismatch 为 `422`；确定性瞬态失败在同一源 key/bytes/hash 上从 attempt 1 `failed` 到 attempt 2 `succeeded`；PNG retrieval 6/6 为 `image_region`，Evidence Chat `inputEvidence=1`、Citation=6；两条删除链都要求 Asset `deleted`、`deleted_at`、job `succeeded`、派生内容行和对象零残留。
+- 浏览器报告 `docs/evals/artifacts/m403b-browser-v1/`：无 route interception 的真实 session/BFF/API/MinIO/长期 Worker 链在桌面上传 PNG/JPEG/WebP，在 `390x844` 上传 PNG；Viewer 像素 `1200x800`、34 个采样颜色、290 个非白采样，panel/viewer/surface 均在视口内，scroll width 等于 client width，移动端 6 个图像工具全部 `44x44`。初次真实运行发现 loading 分支提前跳过一次性 ResizeObserver，修复为 Viewer ready 后重新绑定；同时修正 Asset 删除按钮误用“删除工作区”文案。
+- 恢复报告 `docs/evals/artifacts/m403b-restore-v2/`：在最新代码上显式 `M403_EXPECT_IMAGE_ENABLED=true` 重跑，恢复前后语义 SHA 均为 `c4c8ab66e050bdbbaa33f3b3d0af3fd3f5fe21df3e6cca5988a3af113a86bd4d`；桌面/移动 PDF/Image raster/overlay 回放、9 个对象、27 类表/目录计数和最终容器/卷/网络零残留全部通过。目录 15 个正式文件均进入 `SHA256SUMS`。
+- 最终验证：API `285 passed, 1 warning`，Worker `96 passed`（其中 restore focused `12 passed`），Web `85 passed`，readiness focused `8 passed`，生产 browser `2 passed`；API/Worker Ruff、compileall、Web ESLint、TypeScript、Next production build、Alembic current/check、Compose config、artifact SHA 和 diff check 通过。Critical finding 已关闭，工程门禁 `releaseGatePassed=true`；deterministic provider 报告固定 `modelQualityClaim=false`，M404 用户价值仍为 `not_evaluable`。
+
+## 2026-07-24：文档一致性审计与 V4 计划补强
+
+- 当前主入口已同步 M403B/V4 状态，但整个文档集尚未宣称无漂移；当前数据库 head 为 `a3c5e7f9b1d4`，Image 已由 M403B 正式启用。旧 Document/PDF-only 章节的逐段清单记录在 V4 `requirements-discovery.md` 第 11 节，作为 R000 `RD003` 前置关闭，open 项不能作为 Research 合同输入。
+- 历史 V1/V2 规划、旧 Document 状态机、认证执行清单和 V3 Contract Draft 已加 legacy/历史状态说明，保留原始阶段证据但不再作为当前实现入口；Evidence RFC 与 migration impact 的 Image/restore 未完成项已同步关闭。
+- V4 方向、阶段和非目标已经明确，但 R000 仍未完成：新增字段级 schema、唯一/幂等键、状态迁移、事件 payload allowlist、API error matrix、provenance、删除/恢复和审批记录要求；在这些合同获批前不实现 Research 持久化或 API。

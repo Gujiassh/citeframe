@@ -3,15 +3,12 @@ from datetime import UTC, datetime, timedelta
 from typing import Literal
 
 import pytest
-from fastapi import FastAPI
-from fastapi.testclient import TestClient
-from sqlalchemy import create_engine, select
-from sqlalchemy.orm import Session, sessionmaker
-from sqlalchemy.pool import StaticPool
-
 from ai_pdf_api.db.base import Base
 from ai_pdf_api.db.session import get_db
-from ai_pdf_api.modalities.evidence import clone_evidence_locator, serialize_evidence_locator
+from ai_pdf_api.modalities.evidence import (
+    clone_evidence_locator,
+    serialize_evidence_locator,
+)
 from ai_pdf_api.modalities.ingestion import IngestionAdapterRegistry, IngestionResult
 from ai_pdf_api.modalities.pdf_ingestion import (
     PageArtifactResult,
@@ -27,17 +24,17 @@ from ai_pdf_api.modalities.text import estimate_token_count
 from ai_pdf_api.models import (
     Asset,
     AssetRepresentation,
-    ContentUnit,
-    ContentUnitEmbedding,
     ChatMessage,
     ChatThread,
+    ContentUnit,
+    ContentUnitEmbedding,
     EvidenceLocator,
     IngestionJob,
     MessageCitation,
     Note,
     NoteSource,
-    PdfPage,
     PdfLocatorDetail,
+    PdfPage,
     SpatialLocatorRegion,
     User,
     Workspace,
@@ -48,10 +45,14 @@ from ai_pdf_api.routers.jobs import router as jobs_router
 from ai_pdf_api.services.ingestion import (
     INGESTION_LEASE_TIMEOUT,
     claim_next_ingestion_job,
-    process_ingestion_job,
     process_embedding_job,
+    process_ingestion_job,
 )
-
+from fastapi import FastAPI
+from fastapi.testclient import TestClient
+from sqlalchemy import create_engine, select
+from sqlalchemy.orm import Session, sessionmaker
+from sqlalchemy.pool import StaticPool
 
 TEST_PDF_GEOMETRY = PdfPageGeometryResult(
     media_box_points=(0.0, 0.0, 612.0, 792.0),
@@ -436,9 +437,19 @@ def test_create_upload_session_rejects_unregistered_mime_type(client: TestClient
     assert response.json()["detail"] == "Unsupported MIME type: text/plain"
 
 
-def test_create_upload_session_rejects_registered_but_disabled_image(
+@pytest.mark.parametrize(
+    ("source_filename", "mime_type"),
+    [
+        ("diagram.png", "image/png"),
+        ("photo.jpg", "image/jpeg"),
+        ("chart.webp", "image/webp"),
+    ],
+)
+def test_create_upload_session_accepts_enabled_image_formats(
     client: TestClient,
     db_session: Session,
+    source_filename: str,
+    mime_type: str,
 ) -> None:
     owner = create_user(db_session, email="image-owner@example.com", name="Owner")
     workspace = create_workspace_with_membership(db_session, user=owner, name="Images")
@@ -450,15 +461,17 @@ def test_create_upload_session_rejects_registered_but_disabled_image(
             "x-user-id": owner.id,
         },
         json={
-            "sourceFilename": "diagram.png",
-            "mimeType": "image/png",
+            "sourceFilename": source_filename,
+            "mimeType": mime_type,
             "byteSize": 128,
         },
     )
 
-    assert response.status_code == 422
-    assert response.json()["detail"] == "Asset kind is not enabled for ingestion: image"
-    assert db_session.query(Asset).filter_by(workspace_id=workspace.id).count() == 0
+    assert response.status_code == 201
+    assert response.json()["asset"]["kind"] == "image"
+    assert response.json()["asset"]["mimeType"] == mime_type
+    assert response.json()["upload"]["headers"] == {"Content-Type": mime_type}
+    assert db_session.query(Asset).filter_by(workspace_id=workspace.id).count() == 1
 
 
 def test_binary_upload_and_finalize_creates_queued_ingestion_job(client: TestClient, db_session: Session) -> None:

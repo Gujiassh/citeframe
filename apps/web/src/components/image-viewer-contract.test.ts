@@ -9,6 +9,7 @@ test("image viewer retry refetches current detail and mobile controls expose 44p
   assert.match(source, /setCurrentGeometry\(null\);[\s\S]*setLoadAttempt/);
   assert.match(source, /h-11 w-11[\s\S]*sm:h-8 sm:w-8/);
   assert.match(source, /data-image-toolbar[\s\S]*overflow-x-auto/);
+  assert.match(source, /observer\.observe\(viewport\);[\s\S]*\}, \[viewerSource\.status\]\);/);
 });
 
 test("image viewer wires touch pan, pinch zoom, keyboard pan, and keyboard selection", () => {

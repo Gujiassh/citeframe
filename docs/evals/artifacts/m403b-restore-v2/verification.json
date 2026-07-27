@@ -1,0 +1,17 @@
+{
+  "afterSemanticSha256": "c4c8ab66e050bdbbaa33f3b3d0af3fd3f5fe21df3e6cca5988a3af113a86bd4d",
+  "beforeSemanticSha256": "c4c8ab66e050bdbbaa33f3b3d0af3fd3f5fe21df3e6cca5988a3af113a86bd4d",
+  "comparedFields": [
+    "workspaceId",
+    "semanticSha256",
+    "tableCounts",
+    "objectCount",
+    "checks",
+    "rows",
+    "objects",
+    "visualReplay"
+  ],
+  "mismatches": [],
+  "passed": true,
+  "schemaVersion": "m403-restore-verification-v1"
+}

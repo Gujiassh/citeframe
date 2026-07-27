@@ -1,5 +1,7 @@
 # 认证工作流任务清单
 
+> 文档状态：历史执行工作流。认证、membership、BFF session、notes/tags 和内部 token 已完成；当前实现事实以 `docs/architecture/implementation-progress.md`、`docs/ssot/system-architecture.md` 和代码测试为准。本文的“当前执行到模块 2”只表示当时的阶段记录，不是未完成任务。
+
 ## 1. 目标
 
 本工作流负责把早期 `mock 登录 + 本地工作区沙盒` 替换为正式认证链。当前原则是：mock 只保留 UI 壳，不再保留旧 mock 逻辑作为兼容目标。
@@ -72,7 +74,7 @@
 
 ## 3. 当前执行策略
 
-当前执行到：`模块 2：Workspace membership 真数据链（第一段）`
+历史执行记录（2026-07-08）：`模块 2：Workspace membership 真数据链（第一段）`
 
 当前状态：
 - 模块 1 已完成真实后端认证接入（register/login/logout/session），并已从前端 workspace mock 状态中拆出独立 auth context

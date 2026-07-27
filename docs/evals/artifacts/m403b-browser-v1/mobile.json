@@ -1,0 +1,147 @@
+{
+  "schemaVersion": "m403b-browser-evidence-v1",
+  "viewport": {
+    "name": "mobile",
+    "width": 390,
+    "height": 844
+  },
+  "upload": {
+    "assetId": "94dece59-edac-4d78-b4e6-c0b0b8fd0305",
+    "filename": "m403b-mobile-image.png"
+  },
+  "formatUploads": [],
+  "responseStatuses": [
+    {
+      "method": "POST",
+      "path": "/api/workspaces/4006fafc-b84b-41c5-bb67-d10c742878d2/assets/upload-session",
+      "status": 201,
+      "requestContentType": "application/json",
+      "responseContentType": "application/json"
+    },
+    {
+      "method": "PUT",
+      "path": "/api/workspaces/4006fafc-b84b-41c5-bb67-d10c742878d2/assets/94dece59-edac-4d78-b4e6-c0b0b8fd0305/upload?objectKey=workspaces%2F4006fafc-b84b-41c5-bb67-d10c742878d2%2Fassets%2F94dece59-edac-4d78-b4e6-c0b0b8fd0305%2Foriginal.png",
+      "status": 204,
+      "requestContentType": "image/png",
+      "responseContentType": null
+    },
+    {
+      "method": "POST",
+      "path": "/api/workspaces/4006fafc-b84b-41c5-bb67-d10c742878d2/assets/94dece59-edac-4d78-b4e6-c0b0b8fd0305/finalize-upload",
+      "status": 200,
+      "requestContentType": "application/json",
+      "responseContentType": "application/json"
+    },
+    {
+      "method": "GET",
+      "path": "/api/workspaces/4006fafc-b84b-41c5-bb67-d10c742878d2/assets",
+      "status": 200,
+      "requestContentType": null,
+      "responseContentType": "application/json"
+    },
+    {
+      "method": "GET",
+      "path": "/api/workspaces/4006fafc-b84b-41c5-bb67-d10c742878d2/assets/94dece59-edac-4d78-b4e6-c0b0b8fd0305",
+      "status": 200,
+      "requestContentType": null,
+      "responseContentType": "application/json"
+    },
+    {
+      "method": "GET",
+      "path": "/api/workspaces/4006fafc-b84b-41c5-bb67-d10c742878d2/assets/94dece59-edac-4d78-b4e6-c0b0b8fd0305",
+      "status": 200,
+      "requestContentType": null,
+      "responseContentType": "application/json"
+    },
+    {
+      "method": "GET",
+      "path": "/api/workspaces/4006fafc-b84b-41c5-bb67-d10c742878d2/assets/94dece59-edac-4d78-b4e6-c0b0b8fd0305/representations/current-image-oriented/file?processingGeneration=1",
+      "status": 200,
+      "requestContentType": null,
+      "responseContentType": "image/png"
+    }
+  ],
+  "pixels": {
+    "width": 1200,
+    "height": 800,
+    "uniqueColors": 34,
+    "nonWhiteSamples": 290
+  },
+  "layout": {
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "panel": {
+      "x": 0,
+      "y": 64,
+      "width": 390,
+      "height": 780
+    },
+    "viewer": {
+      "x": 1,
+      "y": 112,
+      "width": 389,
+      "height": 732
+    },
+    "imageViewport": {
+      "x": 1,
+      "y": 168,
+      "width": 389,
+      "height": 676
+    },
+    "surface": {
+      "x": 25,
+      "y": 392.5,
+      "width": 341,
+      "height": 227
+    },
+    "panelWithinViewport": true,
+    "viewerWithinPanel": true,
+    "surfaceWithinImageViewport": true,
+    "imageViewportOverflow": {
+      "clientWidth": 389,
+      "scrollWidth": 389
+    }
+  },
+  "pageOverflow": {
+    "viewportWidth": 390,
+    "documentWidth": 390,
+    "bodyWidth": 390
+  },
+  "mobileImageControls": [
+    {
+      "name": "pan",
+      "width": 44,
+      "height": 44
+    },
+    {
+      "name": "region-select",
+      "width": 44,
+      "height": 44
+    },
+    {
+      "name": "zoom-out",
+      "width": 44,
+      "height": 44
+    },
+    {
+      "name": "zoom-in",
+      "width": 44,
+      "height": 44
+    },
+    {
+      "name": "fit",
+      "width": 44,
+      "height": 44
+    },
+    {
+      "name": "actual-size",
+      "width": 44,
+      "height": 44
+    }
+  ],
+  "routeInterceptions": 0,
+  "screenshotPath": "mobile.png",
+  "passed": true
+}

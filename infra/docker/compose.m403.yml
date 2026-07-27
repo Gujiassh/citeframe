@@ -22,3 +22,7 @@ services:
     depends_on:
       provider-stub:
         condition: service_healthy
+
+  worker:
+    environment:
+      M403_EXPECT_IMAGE_ENABLED: ${M403_EXPECT_IMAGE_ENABLED:-false}

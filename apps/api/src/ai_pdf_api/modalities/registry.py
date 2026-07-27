@@ -328,14 +328,14 @@ PDF_MODULE = ModalityModule(
         ),
     ),
     metrics_namespace="pdf",
-    ingestion_config_snapshot=lambda: {},
+    ingestion_config_snapshot=dict,
 )
 
 
 IMAGE_MODULE = ModalityModule(
     asset_kind="image",
     contract_version=1,
-    enabled=False,
+    enabled=True,
     supported_mime_types=frozenset({"image/jpeg", "image/png", "image/webp"}),
     byte_inspector=_detect_image_mime_type,
     representation_types=(

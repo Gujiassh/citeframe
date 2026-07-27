@@ -1,5 +1,7 @@
 # Citeframe 详细系统架构设计
 
+> 文档状态：历史架构规划快照。本文保留 V1/V2 的设计推导，不是当前实现的唯一事实源；当前运行状态、Asset/Evidence 合同、数据库 head 和阶段进度以 `docs/ssot/`、`docs/architecture/implementation-progress.md`、`docs/architecture/api-contracts.md`、`docs/architecture/database-design.md` 与 `specs/v3/` 为准。本文中标注为“当前实现”的旧 Document、`/documents`、PDF-only 或规划中依赖，不能作为新代码实现依据。
+
 ## 1. 文档定位
 
 这份文档回答的不是“系统有哪些盒子”，而是“开发时每一层到底怎么组织、为什么这样组织、模块之间如何协作”。
@@ -47,18 +49,18 @@
 3. 检索与业务数据强耦合，V1 不值得独立上向量专用数据库
 4. 用户面向的是 Workspace，不是全局知识池
 5. V1 架构必须可讲清楚、可本地复现、可后续演进，而不是先做企业级重平台
-6. 当前运行时已采用 Asset/Evidence 内核；PDF adapter 在 Worker 内输出页面几何、原生文本和 RapidOCR region，Image 保持注册但摄取关闭
+6. 当前运行时已采用 Asset/Evidence 内核；PDF 与 Image adapter 在 Worker 内分别输出页面/图片几何、原生文本、RapidOCR 和 caption region，生产 Image 只接受 PNG/JPEG/WebP
 
 ### 2.3 当前文档范围
 
-当前运行时按 `Asset/Evidence + PDF adapter` 主链实现：
+当前运行时按 `Asset/Evidence + PDF/Image adapter` 主链实现：
 
 - 直接提取文本层 PDF；无文本层扫描 PDF 走 Worker 内部 OCR fallback
 - OCR 结果写入 `pdf_pages.legacy_ocr_blocks` 供透明选择层显示，同时形成 `pdf_ocr_region + pdf_region` 检索与 Evidence
 - 页面 MediaBox/CropBox、rotation、display geometry 与 normalized top-left region 已持久化并进入 Citation/NoteSource 快照
 - 表格、图表和页内图片区域已由 Phase 2 M202 产出 typed region Evidence；visual embedding 仍需评测证明必要性后单独批准
 
-后续 PDF 表格/figure 与 Image 通过各自 adapter、Representation/ContentUnit 类型、locator codec 和 renderer 接入，不把模态规则压回共享 ingestion 或 Chat。
+PDF 表格/figure 与独立 Image 已通过各自 adapter、Representation/ContentUnit 类型、locator codec 和 renderer 接入；后续新模态继续沿用该边界，不把模态规则压回共享 ingestion 或 Chat。
 
 ## 3. 总体架构结论
 

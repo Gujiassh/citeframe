@@ -61,12 +61,13 @@
 
 ## 6. 当前项目范围提醒
 
-当前实现基线仍是 `文本 PDF + 扫描 PDF OCR`；当前开发阶段是多模态 PDF + 独立图片工作区的合同审批与实施准备。
+当前实现基线是 `文本 PDF + 扫描 PDF OCR + PNG/JPEG/WebP Image`；M403B 生产 Image 工程门禁已经完成，当前开发阶段转入 V4 Evidence Research Workflow。
 
 当前主线包括：
 
 - Workspace
 - PDF 上传
+- PNG/JPEG/WebP Image 上传、OCR/caption 与区域 Evidence
 - 文本解析
 - chunk
 - embedding
@@ -76,7 +77,7 @@
 - 部署与观测
 - 扫描 PDF 的 Worker 内部 OCR fallback
 
-当前 V3 主线包含多模态 PDF 与独立图片，目标设计见 `docs/architecture/multimodal-*` 和 `specs/v3/multimodal-workspace/`。在 Evidence 合同获得明确批准前可继续 fixture、解析实验和 UI/迁移设计，但不改持久化、Citation API 或保存语义。音频、视频和 Omnilabel 不进入 V3。
+V3 多模态 PDF 与独立图片主线已经完成，目标设计与验收记录见 `docs/architecture/multimodal-*` 和 `specs/v3/multimodal-workspace/`。V4 仍须保持 Citation、NoteSource、Chat 与现有保存语义稳定；任何新增 Research 数据模型、API 或保存合同必须先在 `specs/v4/evidence-research-workflow/` 冻结。音频、视频和 Omnilabel 不进入 V3/V4 当前切片。
 
 ## 7. Git 提交约定
 

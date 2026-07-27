@@ -4,9 +4,8 @@ import urllib.request
 from collections.abc import Callable
 from threading import Event
 
-import pytest
-
 import ai_pdf_worker.main as worker
+import pytest
 from ai_pdf_worker.metrics import WORKER_JOBS
 
 
@@ -21,8 +20,8 @@ class SessionContext:
         return None
 
 
-def test_production_worker_keeps_image_adapter_dormant() -> None:
-    assert worker.INGESTION_ADAPTERS.asset_kinds == frozenset({"pdf"})
+def test_production_worker_enables_pdf_and_image_adapters() -> None:
+    assert worker.INGESTION_ADAPTERS.asset_kinds == frozenset({"pdf", "image"})
 
 
 def test_process_one_job_claims_and_handles_one_job(

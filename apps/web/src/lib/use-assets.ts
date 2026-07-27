@@ -13,6 +13,7 @@ import type {
 import { applyAssetTags } from "@/lib/notes/normalize";
 import type { TagDto } from "@/lib/notes/types";
 import type { WorkspaceLocale } from "@/lib/workspaces/normalize";
+import { getProductionUploadDescriptor } from "@/lib/assets/production-upload";
 import type { Asset } from "./workspace-context";
 import { getWorkspaceErrorMessage, readResponseJsonSafely } from "./use-workspaces";
 
@@ -284,15 +285,22 @@ export function useAssets({
       if (!workspaceId) {
         return;
       }
+      const uploadDescriptor = getProductionUploadDescriptor(file);
+      if (!uploadDescriptor) {
+        throw new Error(
+          locale === "en"
+            ? "Choose a PDF, PNG, JPEG, or WebP file."
+            : "请选择 PDF、PNG、JPEG 或 WebP 文件。",
+        );
+      }
 
       const uploadSessionResponse = await fetch(`/api/workspaces/${workspaceId}/assets/upload-session`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           sourceFilename: file.name,
-          mimeType: file.type || "application/pdf",
+          mimeType: uploadDescriptor.mimeType,
           byteSize: file.size,
-          title: file.name.replace(/\.pdf$/i, ""),
         }),
       });
 

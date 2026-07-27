@@ -7,6 +7,7 @@ import { useAuth } from "@/lib/auth/auth-context";
 import { useWorkspace, Asset } from "@/lib/workspace-context";
 import { useTheme } from "@/lib/theme-context";
 import { useTranslation } from "@/lib/i18n-context";
+import { PRODUCTION_UPLOAD_ACCEPT } from "@/lib/assets/production-upload";
 import { 
   Plus, Trash2, MessageSquare, 
   Tag as TagIcon, ChevronDown, UploadCloud, X, ChevronLeft, ChevronRight,
@@ -162,7 +163,7 @@ export function WorkspaceSidebar() {
             type="file"
             ref={fileInputRef}
             onChange={handleFileChange}
-            accept=".pdf"
+            accept={PRODUCTION_UPLOAD_ACCEPT}
             className="hidden"
           />
 
@@ -299,7 +300,7 @@ export function WorkspaceSidebar() {
               type="file"
               ref={fileInputRef}
               onChange={handleFileChange}
-              accept=".pdf"
+              accept={PRODUCTION_UPLOAD_ACCEPT}
               className="hidden"
             />
           </div>
@@ -320,6 +321,8 @@ export function WorkspaceSidebar() {
                 return (
                   <div
                     key={asset.id}
+                    data-asset-id={asset.id}
+                    data-asset-status={asset.status}
                     onClick={() => (asset.status === "chunked" || asset.status === "ready") && openAsset(asset.id)}
                     className={`group relative flex cursor-pointer items-center justify-between rounded-xl px-2.5 py-2 transition ${
                       isActive
@@ -350,6 +353,14 @@ export function WorkspaceSidebar() {
                             </>
                           )}
                         </div>
+                        {asset.status === "failed" && asset.errorMsg && (
+                          <div
+                            className="mt-1 line-clamp-2 text-[9px] font-medium leading-3 text-rose-600 dark:text-rose-400"
+                            title={asset.errorMsg}
+                          >
+                            {asset.errorMsg}
+                          </div>
+                        )}
                         {wsTags.length > 0 && (
                           <div className="mt-1 flex flex-wrap gap-1">
                             {wsTags.map((tag) => {
@@ -378,7 +389,7 @@ export function WorkspaceSidebar() {
                     <div className={`flex shrink-0 items-center gap-1 transition ${
                       (asset.status === "failed" || (asset.status === "deleting" && asset.errorMsg))
                         ? "opacity-100"
-                        : "opacity-0 group-hover:opacity-100"
+                        : "opacity-100 md:opacity-0 md:group-hover:opacity-100"
                     }`}>
                       {(asset.status === "failed" || (asset.status === "deleting" && asset.errorMsg)) && (
                         <button
@@ -392,7 +403,7 @@ export function WorkspaceSidebar() {
                               alert(error instanceof Error ? error.message : "Retry failed.");
                             });
                           }}
-                          className="p-1 text-zinc-400 transition hover:text-sky-500"
+                          className="flex h-11 w-11 items-center justify-center text-zinc-500 transition hover:text-sky-500 md:h-7 md:w-7"
                         >
                           <RotateCcw className="h-3 w-3" />
                         </button>
@@ -400,15 +411,15 @@ export function WorkspaceSidebar() {
                       {asset.status !== "deleting" && (
                         <button
                           type="button"
-                          title={t("dashboard.deleteTooltip")}
-                          aria-label={t("dashboard.deleteTooltip")}
+                          title={t("sidebar.deleteAsset")}
+                          aria-label={t("sidebar.deleteAsset")}
                           onClick={(event) => {
                             event.stopPropagation();
                             void deleteAsset(asset.id).catch((error) => {
                               alert(error instanceof Error ? error.message : "Delete failed.");
                             });
                           }}
-                          className="p-1 text-zinc-400 transition hover:text-rose-500"
+                          className="flex h-11 w-11 items-center justify-center text-zinc-500 transition hover:text-rose-500 md:h-7 md:w-7"
                         >
                           <Trash2 className="h-3 w-3" />
                         </button>

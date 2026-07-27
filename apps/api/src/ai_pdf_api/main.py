@@ -1,11 +1,11 @@
 from __future__ import annotations
 
-import httpx
 import logging
 import time
 from collections.abc import Awaitable, Callable
 from typing import Any
 
+import httpx
 from fastapi import FastAPI, Response, status
 from prometheus_client import CONTENT_TYPE_LATEST, generate_latest
 from sqlalchemy import text
@@ -21,9 +21,9 @@ from ai_pdf_api.core.settings import settings
 from ai_pdf_api.db.session import SessionLocal
 from ai_pdf_api.modalities.catalog import validate_database_catalog
 from ai_pdf_api.modalities.registry import build_production_registry
+from ai_pdf_api.routers.assets import router as assets_router
 from ai_pdf_api.routers.auth import router as auth_router
 from ai_pdf_api.routers.chat import router as chat_router
-from ai_pdf_api.routers.assets import router as assets_router
 from ai_pdf_api.routers.jobs import router as jobs_router
 from ai_pdf_api.routers.notes import router as notes_router
 from ai_pdf_api.routers.workspaces import router as workspaces_router
@@ -140,14 +140,28 @@ def _check_generation_provider() -> str:
     return "ok" if settings.generation_provider == "openai" and settings.openai_api_key else "not_configured"
 
 
+def _check_image_caption_configuration() -> str:
+    configured = (
+        settings.image_caption_provider == "openai"
+        and bool(settings.image_caption_model.strip())
+        and bool(settings.image_caption_version.strip())
+        and bool(settings.openai_api_key and settings.openai_api_key.strip())
+        and bool(settings.openai_api_base.strip())
+    )
+    return "ok" if configured else "not_configured"
+
+
 def readiness_checks() -> dict[str, str]:
-    return {
+    checks = {
         "database": _check_database(),
         "modalityCatalog": _check_modality_catalog(),
         "objectStorage": _check_storage(),
         "embeddingProvider": _check_embedding_provider(),
         "generationProvider": _check_generation_provider(),
     }
+    if "image" in modality_registry.enabled_asset_kinds:
+        checks["imageCaptionConfiguration"] = _check_image_caption_configuration()
+    return checks
 
 
 @app.get("/health")

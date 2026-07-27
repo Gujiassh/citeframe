@@ -1,19 +1,16 @@
 from __future__ import annotations
 
 import argparse
+import json
+import os
 from datetime import UTC, datetime, timedelta
 from hashlib import sha256
 from io import BytesIO
-import json
 from pathlib import Path
 from typing import Any
 from uuid import NAMESPACE_URL, uuid5
 
 import fitz
-from PIL import Image, ImageDraw
-from sqlalchemy import create_engine, inspect, select, text
-from sqlalchemy.orm import Session
-
 from ai_pdf_api.core.security import hash_password
 from ai_pdf_api.core.settings import settings
 from ai_pdf_api.models import (
@@ -40,12 +37,26 @@ from ai_pdf_api.models import (
     Workspace,
     WorkspaceMembership,
 )
-from ai_pdf_api.services.storage import build_storage_client, download_bytes, object_exists, upload_bytes
-
+from ai_pdf_api.services.storage import (
+    build_storage_client,
+    download_bytes,
+    object_exists,
+    upload_bytes,
+)
+from PIL import Image, ImageDraw
+from sqlalchemy import create_engine, inspect, select, text
+from sqlalchemy.orm import Session
 
 SCHEMA_VERSION = "m403-restore-acceptance-v1"
 NOW = datetime(2026, 1, 15, 8, 30, tzinfo=UTC)
 PASSWORD = "M403-restore-acceptance!"
+
+
+def _expect_image_enabled() -> bool:
+    value = os.environ.get("M403_EXPECT_IMAGE_ENABLED", "false").strip().lower()
+    if value not in {"true", "false"}:
+        raise ValueError("M403_EXPECT_IMAGE_ENABLED must be true or false")
+    return value == "true"
 
 
 def _id(name: str) -> str:
@@ -1138,8 +1149,10 @@ def _semantic_checks(rows: dict[str, list[dict[str, Any]]], objects: list[dict[s
     inputs = rows["message_input_evidence"]
     selected = rows["message_retrieval_scope_assets"]
     image_catalog = next(item for item in rows["catalog"] if item["kind"] == "image")
+    expect_image_enabled = _expect_image_enabled()
+    image_catalog_check = "imageProductionEnabled" if expect_image_enabled else "imageProductionDisabled"
     checks = {
-        "imageProductionDisabled": image_catalog["enabled"] is False,
+        image_catalog_check: image_catalog["enabled"] is expect_image_enabled,
         "activeAssetKinds": sorted(
             item["asset_kind"] for item in assets.values() if item["status"] == "ready" and item["deleted_at"] is None
         ) == ["image", "pdf"],

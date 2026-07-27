@@ -3,7 +3,7 @@
 ## 1. 状态与边界
 
 - 状态：Approved；Phase 1-2 与 Phase 3 M301-M305 已完成并通过最终 Critical 复审
-- V3 注册 Asset 类型：`pdf`、`image`；当前仅 `pdf` 启用摄取
+- V3 注册 Asset 类型：`pdf`、`image`；M403B 后两者均已启用生产摄取
 - V3 启用 Locator 类型：`pdf_page`、`pdf_region`、`image_region`
 - 扩展目标：后续 Audio/Video/文本办公文件/结构化记录通过注册模块与类型化 locator 接入
 - 不包含：V3 音视频产品功能、Omnilabel 业务模型、通用任意 JSON locator
@@ -196,4 +196,4 @@ Chat 请求已使用 discriminated `assetScope`；Citation 和 NoteSource 已使
 5. 是否接受 Chat `assetScope`、消息范围快照与 Asset/Citation/NoteSource 新 API 版本的一次受控切换。
 6. 是否接受旧 citation 只机械迁移为 `pdf_page`，以及源删除后只保留快照、不再打开 Viewer。
 
-Phase 1 已完成 Asset/Evidence 内核、PDF 运行时、Chat 范围、Citation/NoteSource 和 Evidence Viewer 切换。M301-M304 已完成 Image 格式与方向归一化、OCR/caption、区域 ContentUnit、text embedding、Citation/NoteSource 与消息输入 Evidence 历史快照、图片框选 Chat/Note 和 Viewer。M305 已实现注册表驱动的 PDF/Image text channel、模态无关候选、有界 RRF、limit 前唯一 locator 补足、批量 fail-closed Evidence 校验与 SQL 前置 Asset scope/current generation/current index/链条一致性过滤；混合 Chat/Citation、PostgreSQL oracle 和最终 Critical 复审均通过。数据库 `asset_types.enabled=false`，上传入口和生产 Worker 摄取保持关闭。
+Phase 1 已完成 Asset/Evidence 内核、PDF 运行时、Chat 范围、Citation/NoteSource 和 Evidence Viewer 切换。M301-M304 已完成 Image 格式与方向归一化、OCR/caption、区域 ContentUnit、text embedding、Citation/NoteSource 与消息输入 Evidence 历史快照、图片框选 Chat/Note 和 Viewer。M305 已实现注册表驱动的 PDF/Image text channel、模态无关候选、有界 RRF、limit 前唯一 locator 补足、批量 fail-closed Evidence 校验与 SQL 前置 Asset scope/current generation/current index/链条一致性过滤；混合 Chat/Citation、PostgreSQL oracle 和最终 Critical 复审均通过。M403B 已把 `asset_types.image.enabled`、上传入口和生产 Worker 摄取同步启用，且未改变 Citation、NoteSource、Chat 或保存语义。

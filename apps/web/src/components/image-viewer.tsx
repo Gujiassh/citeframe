@@ -197,7 +197,7 @@ export function ImageEvidenceRenderer({
     });
     observer.observe(viewport);
     return () => observer.disconnect();
-  }, []);
+  }, [viewerSource.status]);
 
   useEffect(() => {
     const handleEscape = (event: KeyboardEvent) => {

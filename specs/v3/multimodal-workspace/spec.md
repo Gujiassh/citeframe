@@ -4,7 +4,7 @@
 
 - 范围已确认：多模态 PDF + 独立图片
 - 产品/交互设计：已形成目标稿
-- 数据/API 实施：合同已批准，Phase 1-3 已完成并通过最终 Critical 复审；Phase 4 M401-M402 已完成，21-case 工程/全栈 Evidence 与 7-case 真实模型门禁全部通过
+- 数据/API 实施：合同已批准，Phase 1-3 已完成并通过最终 Critical 复审；Phase 4 M401-M403B 已完成，21-case 工程/全栈 Evidence、7-case 真实模型和 Image 生产工程门禁全部通过
 - 用户验证：延期到 Beta 验收，不阻塞内部实现
 
 ## 用户目标
@@ -24,7 +24,7 @@
 - FR-009：文本、OCR、caption 和视觉候选按独立检索通道融合，不默认共用向量空间。
 - FR-010：源删除、重处理、重索引和历史回放不能改写已保存 Evidence 的含义。
 - FR-011：所有 Workspace、Asset、ContentUnit、Citation 和 NoteSource 操作保持 Workspace 隔离。
-- FR-012：Phase 1 注册 PDF/Image 合同但只启用 PDF 摄取；完成 Phase 3 只证明 dormant Image 闭环成立。生产 Image 必须在 M403 恢复语义、M403A 容量验收和独立 Critical 复审通过后，另经 M403B 合同批准，才能同步启用数据库目录、API registry、Worker adapter 与 Web 上传入口。Audio/Video 不提供入口、adapter、renderer 或数据库启用记录，Omnilabel 业务模型不进入稳定内核。
+- FR-012：V3 生产 registry 已启用 PDF 与 PNG/JPEG/WebP Image；M403B 已在恢复语义、容量验收、独立 Critical 复审和独立批准完成后同步启用数据库目录、API registry、Worker adapter 与 Web 上传入口。Audio/Video 不提供入口、adapter、renderer 或数据库启用记录，Omnilabel 业务模型不进入稳定内核。
 - FR-013：Asset、Representation、ContentUnit、Embedding、retrieval scope、Citation、NoteSource 与 Evidence Viewer shell 必须保持模态无关。
 - FR-014：新增模态通过封闭后端/前端注册模块、类型目录、类型化 locator 表和 contract fixture 接入，不能修改已有 locator 含义或核心快照表。
 - FR-015：图片源对象与 `source_sha256` 不可变；方向归一化必须生成独立、不可变、按 processing generation 寻址的 `image_oriented` 表示，所有图片 locator 只解释该规范显示空间。

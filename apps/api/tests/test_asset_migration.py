@@ -1,24 +1,23 @@
 from __future__ import annotations
 
 import os
-from pathlib import Path
 import shutil
 import subprocess
+from pathlib import Path
 from tempfile import TemporaryDirectory
 from uuid import uuid4
 
 import pytest
+from ai_pdf_api.core.settings import settings
 from alembic import command
 from alembic.config import Config
 from sqlalchemy import create_engine, text
 from sqlalchemy.engine import URL, make_url
 from sqlalchemy.exc import IntegrityError, OperationalError
 
-from ai_pdf_api.core.settings import settings
-
-
 API_ROOT = Path(__file__).resolve().parents[1]
 LEGACY_HEAD = "a8c9d0e1f2a3"
+IMAGE_ENABLE_PREVIOUS_HEAD = "f2a4c6e8b0d1"
 
 
 def _migration_config(database_url: str) -> Config:
@@ -178,6 +177,11 @@ def _seed_legacy_contract(database_url: str) -> None:
 
 def _assert_migrated_contract(database_url: str) -> None:
     with create_engine(database_url).begin() as connection:
+        asset_types = connection.execute(
+            text("SELECT kind, contract_version, enabled FROM asset_types ORDER BY kind")
+        ).all()
+        assert asset_types == [("image", 1, True), ("pdf", 1, True)]
+
         asset = connection.execute(
             text(
                 "SELECT asset_kind, title, current_processing_generation, current_index_version "
@@ -230,14 +234,13 @@ def _assert_migrated_contract(database_url: str) -> None:
             "trg_content_unit_embeddings_scope_insert",
             "trg_content_unit_embeddings_scope_update",
         }
-        with pytest.raises(IntegrityError, match="projection does not match"):
-            with connection.begin_nested():
-                connection.execute(
-                    text(
-                        "UPDATE content_unit_embeddings "
-                        "SET processing_generation = 99 WHERE is_current IS TRUE"
-                    )
+        with pytest.raises(IntegrityError, match="projection does not match"), connection.begin_nested():
+            connection.execute(
+                text(
+                    "UPDATE content_unit_embeddings "
+                    "SET processing_generation = 99 WHERE is_current IS TRUE"
                 )
+            )
         with connection.begin_nested() as inactive_scope:
             connection.execute(
                 text(
@@ -496,6 +499,49 @@ def _dump_and_restore(source_url: str, restored_url: str) -> None:
             text=True,
             env=restored_environment,
         )
+
+
+def test_image_enable_migration_round_trip() -> None:
+    base_url = make_url(settings.database_url)
+    if not base_url.drivername.startswith("postgresql"):
+        pytest.skip("Image enable migration oracle requires PostgreSQL")
+
+    admin_url = _database_url(base_url, "postgres")
+    database_name = f"ai_pdf_image_enable_{uuid4().hex}"
+    admin_engine = create_engine(admin_url, isolation_level="AUTOCOMMIT")
+    try:
+        with admin_engine.connect() as connection:
+            connection.execute(text("SELECT 1"))
+            connection.execute(text(f'CREATE DATABASE "{database_name}"'))
+    except OperationalError:
+        admin_engine.dispose()
+        pytest.skip("Image enable migration oracle requires a reachable PostgreSQL server")
+
+    original_url = settings.database_url
+    database_url = _database_url(base_url, database_name)
+    try:
+        config = _migration_config(database_url)
+        command.upgrade(config, IMAGE_ENABLE_PREVIOUS_HEAD)
+        with create_engine(database_url).connect() as connection:
+            assert connection.scalar(text("SELECT enabled FROM asset_types WHERE kind='image'")) is False
+        command.upgrade(config, "head")
+        with create_engine(database_url).connect() as connection:
+            assert connection.scalar(text("SELECT enabled FROM asset_types WHERE kind='image'")) is True
+        command.downgrade(config, IMAGE_ENABLE_PREVIOUS_HEAD)
+        with create_engine(database_url).connect() as connection:
+            assert connection.scalar(text("SELECT enabled FROM asset_types WHERE kind='image'")) is False
+    finally:
+        settings.database_url = original_url
+        with admin_engine.connect() as connection:
+            connection.execute(
+                text(
+                    "SELECT pg_terminate_backend(pid) "
+                    "FROM pg_stat_activity WHERE datname = :name"
+                ),
+                {"name": database_name},
+            )
+            connection.execute(text(f'DROP DATABASE IF EXISTS "{database_name}"'))
+        admin_engine.dispose()
 
 
 def test_postgres_asset_migration_preserves_legacy_evidence_contract() -> None:

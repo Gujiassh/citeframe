@@ -6,8 +6,8 @@
 - FastAPI 前缀：`/v1`
 - 浏览器接口：同路径语义的 Next.js `/api` BFF
 - 已移除：`/documents`、`documentId` 和 Document 业务 DTO
-- 当前可用摄取闭环：PDF
-- 已实现但未开放的图片能力：PNG/JPEG/WebP 精确 MIME/签名校验、完整解码、EXIF 方向归一化、`image_oriented` geometry、RapidOCR、Responses API caption、`image_ocr/image_caption` Representation、区域 ContentUnit 与 text embedding。dormant Image adapter 不在生产 Worker registry；生产 registry 与数据库目录均为 disabled，公开 upload-session 在创建 Asset 前拒绝，Web 不展示图片上传入口
+- 当前可用摄取闭环：PDF、PNG、JPEG、WebP Image
+- Image 生产合同：精确 MIME/签名校验、完整解码、EXIF 方向归一化、`image_oriented` geometry、RapidOCR、Responses API caption、`image_ocr/image_caption` Representation、区域 ContentUnit 与 text embedding。Image adapter 已进入生产 Worker registry，数据库目录、API registry 与 Web 上传入口同步启用；未知、空或不匹配 MIME 均 fail closed
 
 本文件描述当前代码合同。目标态设计参见：
 
@@ -157,7 +157,7 @@ PDF detail：
 }
 ```
 
-图片 detail 类型已经冻结，并严格取 `asset.currentProcessingGeneration` 的 `image_oriented` geometry；geometry 非正或 `orientationApplied=false` 时服务端 fail closed。M301-M302 dormant 摄取已形成该数据，生产 Web/Worker 尚未开放图片纵向闭环：
+图片 detail 类型已经冻结，并严格取 `asset.currentProcessingGeneration` 的 `image_oriented` geometry；geometry 非正或 `orientationApplied=false` 时服务端 fail closed。M301-M302 已形成该数据；M403B 后生产 Web/Worker 图片纵向闭环已开放：
 
 ```json
 {
@@ -188,7 +188,7 @@ PDF detail：
 | DELETE | `/v1/workspaces/{workspaceId}/assets/{assetId}` | owner 创建 delete_cleanup job，返回 202 |
 | POST | `/v1/workspaces/{workspaceId}/assets/{assetId}/delete-retry` | owner 重试失败删除 |
 
-`/file` 始终返回 immutable 原始上传对象。图片 locator 与 `sourceVersions.representationId` 冻结的是实际支持结论的 `image_ocr` 或 `image_caption` Evidence Representation，不是显示对象。Image Viewer 使用两条权限保护的 oriented Representation 文件流：历史 Evidence 请求同时提交 frozen `processingGeneration` 与 Evidence `representationId`，服务端验证同 Workspace、同 Asset、同 generation 和允许的 OCR/caption kind 后解析 `image_oriented`；detail 与文件流查询的 Representation/geometry 连接也必须显式约束相同 Workspace 和 Asset，不能只依赖关系 ID。资产行预览先重新读取 Asset detail，再提交该响应的 `currentProcessingGeneration`，服务端与当前 Asset 代次精确对照，漂移时返回 409，Web 重试必须重新读取 detail，不能重复旧 generation。两者都不能直接渲染原图，也不能把 Evidence Representation、任意 UUID 或列表第一条当作显示对象，否则 EXIF 原始像素与 locator 坐标会错位。图片框选在 M304B 获批前只是 Web runtime 草稿，不属于当前 Chat/Note API。
+`/file` 始终返回 immutable 原始上传对象。图片 locator 与 `sourceVersions.representationId` 冻结的是实际支持结论的 `image_ocr` 或 `image_caption` Evidence Representation，不是显示对象。Image Viewer 使用两条权限保护的 oriented Representation 文件流：历史 Evidence 请求同时提交 frozen `processingGeneration` 与 Evidence `representationId`，服务端验证同 Workspace、同 Asset、同 generation 和允许的 OCR/caption kind 后解析 `image_oriented`；detail 与文件流查询的 Representation/geometry 连接也必须显式约束相同 Workspace 和 Asset，不能只依赖关系 ID。资产行预览先重新读取 Asset detail，再提交该响应的 `currentProcessingGeneration`，服务端与当前 Asset 代次精确对照，漂移时返回 409，Web 重试必须重新读取 detail，不能重复旧 generation。两者都不能直接渲染原图，也不能把 Evidence Representation、任意 UUID 或列表第一条当作显示对象，否则 EXIF 原始像素与 locator 坐标会错位。M304B 前图片框选只作为 Web runtime 草稿；该阶段已获批并实现，当前 Chat/Note API 以以下区域目标合同为准。
 
 M304B 后端已实现区域目标合同。Chat 和 Note 创建请求可增加默认空数组 `evidenceTargets`；当前唯一 variant 为 `image_region`，只包含 `assetId`、`processingGeneration`、固定 `coordinateSpace=image_normalized_top_left_v1` 和规范化 `regions`。服务端严格拒绝客户端提供 `representationId`、excerpt、width/height、orientation 或任意额外字段，重新解析同 Workspace/Asset/generation 的 OCR/caption Evidence，并为本次目标创建独立 locator。Chat 将快照保存在 user message 的 `inputEvidence` 数组并把 canonical oriented 区域作为当前请求的视觉输入；旧消息返回空数组，历史输入不隐式重新发送给模型。直接 NoteSource 的 `messageCitationId=null`。现有 `selectionText`、`assetScope`、`sourceCitationIds`、Citation 和历史保存语义不变。
 

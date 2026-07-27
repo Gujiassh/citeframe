@@ -8,20 +8,25 @@ Citeframe
 │  ├─ 登录 / 会话 / 隔离
 │  ├─ Workspace 创建 / 切换 / 归档
 │  └─ Prompt 与检索配置
-├─ PDF 资产接入
-│  ├─ 上传 / 失败重试 / 异步删除
-│  ├─ PDF.js 原文阅读 / 页码 / 目录
-│  └─ 文本层 / 扫描页 OCR 选择层
-├─ 知识处理
-│  ├─ 文本解析 / OCR fallback
-│  ├─ page / chunk / embedding
+├─ PDF / Image Asset 接入
+│  ├─ 上传 / finalize / 失败重试 / 重建索引
+│  ├─ 异步删除 / 清理重试 / 源完整性校验
+│  └─ PDF 与 PNG/JPEG/WebP 类型门禁
+├─ 类型化知识处理
+│  ├─ PDF 文本层 / OCR fallback / 布局与区域
+│  ├─ Image oriented Representation / 区域内容
+│  ├─ Representation / ContentUnit / Embedding 版本边界
 │  ├─ PostgreSQL lexical + pgvector Dense + RRF
-│  └─ 任务状态机 / 版本边界
+│  └─ ingest / embed_chunks / delete_cleanup 状态机
 ├─ 证据问答
-│  ├─ Chat-first 多文档问答
+│  ├─ Chat-first 全部 Asset / 显式 Asset 范围问答
 │  ├─ 流式回答 / 消息分支
-│  ├─ 页码 citation / 原文跳转
-│  └─ citation -> note / 标签
+│  ├─ pdf_page / pdf_region / image_region citation
+│  └─ citation -> note / 标签 / 历史 Evidence
+├─ Evidence Viewer
+│  ├─ PDF.js 原文 / 目录 / 文本选择 / 区域高亮
+│  ├─ Image Representation / 区域高亮
+│  └─ Citation / NoteSource 定位与版本化 Evidence
 └─ 运行基线
    ├─ 锁定镜像 / Alembic migration gate
    ├─ Prometheus / grep-friendly 日志
@@ -29,11 +34,11 @@ Citeframe
    └─ Caddy HTTPS 安全入口
 ```
 
-以上是当前已实现事实。正式数据模型已经切换为 `Asset -> Representation -> ContentUnit -> EvidenceLocator -> Citation/NoteSource`；PDF 是当前唯一启用摄取的 Asset 类型，Image 已注册合同但保持 disabled。
+以上是当前已实现事实。正式数据模型已经切换为 `Asset -> Representation -> ContentUnit -> EvidenceLocator -> Citation/NoteSource`；PDF 与 PNG/JPEG/WebP Image 都已进入生产摄取注册表，并共用稳定的 Asset/Evidence 主链。
 
-## 2. 当前阶段：多模态 PDF + 独立图片
+## 2. 当前阶段：M403B 工程启用完成，进入 V4 R000 草案审批
 
-Asset 和 Evidence 主链已经迁移完成；当前只正式支持 PDF 与图片，并按纵向闭环逐步启用：
+Asset 和 Evidence 主链已经迁移完成；PDF 与 PNG/JPEG/WebP Image 已正式进入生产 registry。M404 真实用户价值仍为 `not_evaluable`，V4 当前只进入 R000 合同草案与审批，尚未冻结或授权实现：
 
 - PDF/Image 统一资产列表、上传、处理状态、重试和删除
 - Chat 全部资产/显式资产范围

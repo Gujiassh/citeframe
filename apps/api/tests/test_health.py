@@ -1,12 +1,12 @@
-import logging
 import asyncio
+import logging
 from contextlib import contextmanager
-
-from fastapi.testclient import TestClient
+from types import SimpleNamespace
 
 import ai_pdf_api.main as main_module
 from ai_pdf_api.core.logging import APPLICATION_HANDLER_NAME
 from ai_pdf_api.core.metrics import HTTP_REQUEST_DURATION, HTTP_REQUESTS
+from fastapi.testclient import TestClient
 
 
 def test_application_logs_use_flat_info_formatter() -> None:
@@ -66,6 +66,77 @@ def test_readiness_returns_dependency_status_and_503_when_unavailable(monkeypatc
             "generationProvider": "ok",
         },
     }
+
+
+def test_readiness_surfaces_enabled_image_caption_configuration_without_provider_call(
+    monkeypatch,
+) -> None:
+    monkeypatch.setattr(
+        main_module,
+        "modality_registry",
+        SimpleNamespace(enabled_asset_kinds=frozenset({"pdf", "image"})),
+    )
+    monkeypatch.setattr(main_module.settings, "image_caption_provider", "openai")
+    monkeypatch.setattr(main_module.settings, "image_caption_model", "gpt-5.5")
+    monkeypatch.setattr(main_module.settings, "image_caption_version", "image-caption-v1")
+    monkeypatch.setattr(main_module.settings, "openai_api_key", "configured-key")
+    monkeypatch.setattr(main_module.settings, "openai_api_base", "https://api.openai.com/v1")
+    monkeypatch.setattr(main_module, "_check_database", lambda: "ok")
+    monkeypatch.setattr(main_module, "_check_modality_catalog", lambda: "ok")
+    monkeypatch.setattr(main_module, "_check_storage", lambda: "ok")
+    monkeypatch.setattr(main_module, "_check_embedding_provider", lambda: "ok")
+    monkeypatch.setattr(main_module, "_check_generation_provider", lambda: "ok")
+
+    def reject_provider_call(*_args, **_kwargs):
+        raise AssertionError("Image caption readiness must not call a provider.")
+
+    monkeypatch.setattr(main_module.httpx, "get", reject_provider_call)
+
+    assert main_module.readiness_checks() == {
+        "database": "ok",
+        "modalityCatalog": "ok",
+        "objectStorage": "ok",
+        "embeddingProvider": "ok",
+        "generationProvider": "ok",
+        "imageCaptionConfiguration": "ok",
+    }
+
+
+def test_readiness_fails_when_enabled_image_caption_is_not_configured(monkeypatch) -> None:
+    monkeypatch.setattr(main_module.settings, "openai_api_key", None)
+    monkeypatch.setattr(
+        main_module,
+        "readiness_checks",
+        lambda: {
+            "database": "ok",
+            "modalityCatalog": "ok",
+            "objectStorage": "ok",
+            "embeddingProvider": "ok",
+            "generationProvider": "ok",
+            "imageCaptionConfiguration": main_module._check_image_caption_configuration(),
+        },
+    )
+    client = TestClient(main_module.app)
+
+    response = client.get("/health/ready")
+
+    assert response.status_code == 503
+    assert response.json()["checks"]["imageCaptionConfiguration"] == "not_configured"
+
+
+def test_readiness_omits_image_caption_configuration_when_image_is_disabled(monkeypatch) -> None:
+    monkeypatch.setattr(
+        main_module,
+        "modality_registry",
+        SimpleNamespace(enabled_asset_kinds=frozenset({"pdf"})),
+    )
+    monkeypatch.setattr(main_module, "_check_database", lambda: "ok")
+    monkeypatch.setattr(main_module, "_check_modality_catalog", lambda: "ok")
+    monkeypatch.setattr(main_module, "_check_storage", lambda: "ok")
+    monkeypatch.setattr(main_module, "_check_embedding_provider", lambda: "ok")
+    monkeypatch.setattr(main_module, "_check_generation_provider", lambda: "ok")
+
+    assert "imageCaptionConfiguration" not in main_module.readiness_checks()
 
 
 def test_metrics_exposes_route_template_and_ingestion_job_counts(monkeypatch) -> None:

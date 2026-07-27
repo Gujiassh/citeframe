@@ -92,8 +92,17 @@ M304B 最终证据：`image_region` target 只接受 Asset、当前 generation�
   - [x] T403A-05 验证唯一位置补足、20 次热查询与 8 并发 32 次稳定性（fresh S1）
   - [x] T403A-06 记录 p50/p95/p99、吞吐、索引/数据库尺寸、建库耗时、存储成本并按冻结阈值判定；fresh canonical 三档全门通过
   - [x] T403A-07 实现批准的 cosine + binary HNSW 候选 union、identity 去重与原始 cosine 精排，验证两类索引计划、S1/S2 Recall、容量和迁移维护窗口
-- [ ] M403B 经独立批准后同步开放生产 Image 数据库/API/Worker/Web 合同；不属于本轮自动启用范围
+- [x] M403B 已独立批准并完成生产 Image 数据库/API/Worker/Web 合同与发布验收
+  - [x] T403B-01 冻结启用 oracle：仅开放 PNG/JPEG/WebP，不改变 Citation、NoteSource、Chat、持久化字段或保存语义
+  - [x] T403B-02 同步数据库目录、API registry、Worker Image adapter、caption 配置与 Web 上传入口；API 285、Worker 96、Web 85、Alembic current/check、compileall、lint/build 通过
+  - [x] T403B-03 验证真实上传、摄取、检索、Evidence、失败重试、删除与移动端用户路径
+    - [x] T403B-03a deterministic local-provider run：真实 API upload `201/204/200`、Worker ready、6 条 scoped retrieval、Evidence Chat `inputEvidence=1`/Citation=6、source/oriented cleanup zero
+    - [x] T403B-03b immutable-source failure/retry、MIME mismatch、ready delete、PNG/JPEG/WebP 长期 Worker 上传和 390x844 no-overflow browser evidence
+  - [x] T403B-04 重跑 PostgreSQL/MinIO 备份恢复并证明 PDF/Image 历史 Evidence 语义不变
+  - [x] T403B-05 完成全量门禁、Critical 复审和发布记录
 - [ ] M404 完成至少 5 名目标用户、20 个任务和 5 份复杂资产的 Beta 验证
+
+以下 M401-M403A 证据段按时间保留历史实验、失败关闭和最终验收过程；它们中的旧测试计数、旧 migration head 或“生产 Image disabled”只描述当时运行，不覆盖本文件顶部的当前任务状态和已完成的 M403B 结论。
 
 M403A current-chain 的历史 cosine-only canonical：current-only partial HNSW、scope trigger、两阶段 embedding 激活、latest/delete CAS 和 selected exact-vs-ANN oracle 已落地。`ef_construction=256` 完整 canonical 的 S2 最低 Recall 为 `0.90`；提高到 `512` 后，fresh S1 的 9 个 all-ready/selected case 全部 `1.00`，但该阶段完整 canonical 的 S2 `image-ocr:D1` 仍为 `0.90`。该次 S0/S1 全通过；S2 其余 Recall、HNSW/GIN、scope、D8、Dense/lexical/Hybrid p95 `16.0/20.4/36.0ms`、8 并发 p95 `261.8ms`、`63.09 req/s`、数据库 `7.07 GiB`、HNSW `1.67 GiB`、成本、资源和 cleanup 全通过。历史失败证据保存在 `docs/evals/artifacts/m403a-efconstruction512-failed/report.json`；最终完成结论以后文 binary64/3N canonical 为准。
 

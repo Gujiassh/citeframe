@@ -1,0 +1,311 @@
+{
+  "after": {
+    "objectCount": 9,
+    "semanticSha256": "c4c8ab66e050bdbbaa33f3b3d0af3fd3f5fe21df3e6cca5988a3af113a86bd4d",
+    "tableCounts": {
+      "alembic_version": 1,
+      "asset_representations": 8,
+      "asset_tags": 0,
+      "assets": 5,
+      "catalog": 2,
+      "chat_messages": 6,
+      "chat_threads": 1,
+      "content_unit_embeddings": 4,
+      "content_units": 4,
+      "evidence_locators": 12,
+      "image_locator_details": 7,
+      "image_representation_geometry": 3,
+      "ingestion_jobs": 1,
+      "message_citations": 4,
+      "message_input_evidence": 1,
+      "message_retrieval_scope_assets": 2,
+      "message_retrieval_scopes": 3,
+      "note_sources": 3,
+      "note_tags": 0,
+      "notes": 1,
+      "pdf_locator_details": 5,
+      "pdf_pages": 2,
+      "spatial_locator_regions": 10,
+      "tags": 0,
+      "users": 1,
+      "workspace_memberships": 1,
+      "workspaces": 1
+    }
+  },
+  "backup": {
+    "durationMs": 28608.696,
+    "hashes": {
+      "SHA256SUMS": "867f99dd5d17015a8f6fcf56ed278d33deca8a6440a4fb1c8dc5862fe3217931",
+      "manifest.env": "6da839a5fa31af1afd8136e0a8856db63659a622f803e3989fa0b8c5a557ef14",
+      "postgres.dump": "8317984efc15190547474378a77037305484dbabade69b9717048127a7e92fcd"
+    }
+  },
+  "before": {
+    "objectCount": 9,
+    "semanticSha256": "c4c8ab66e050bdbbaa33f3b3d0af3fd3f5fe21df3e6cca5988a3af113a86bd4d",
+    "tableCounts": {
+      "alembic_version": 1,
+      "asset_representations": 8,
+      "asset_tags": 0,
+      "assets": 5,
+      "catalog": 2,
+      "chat_messages": 6,
+      "chat_threads": 1,
+      "content_unit_embeddings": 4,
+      "content_units": 4,
+      "evidence_locators": 12,
+      "image_locator_details": 7,
+      "image_representation_geometry": 3,
+      "ingestion_jobs": 1,
+      "message_citations": 4,
+      "message_input_evidence": 1,
+      "message_retrieval_scope_assets": 2,
+      "message_retrieval_scopes": 3,
+      "note_sources": 3,
+      "note_tags": 0,
+      "notes": 1,
+      "pdf_locator_details": 5,
+      "pdf_pages": 2,
+      "spatial_locator_regions": 10,
+      "tags": 0,
+      "users": 1,
+      "workspace_memberships": 1,
+      "workspaces": 1
+    }
+  },
+  "finalCleanup": {
+    "composeDownExitCode": 0,
+    "containersRemaining": [],
+    "inspectionExitCodes": {
+      "containers": 0,
+      "networks": 0,
+      "volumes": 0
+    },
+    "networksRemaining": [],
+    "passed": true,
+    "volumesRemaining": []
+  },
+  "playwright": {
+    "desktop": {
+      "passed": true,
+      "semantic": [
+        {
+          "afterPixels": {
+            "colors": 8,
+            "height": 521,
+            "nonWhite": 7,
+            "pixelSha256": "0be12a48eabdacafe33b600ebe2eb051c4145b0fbfd96ccf60d17e4852707ccd",
+            "width": 403
+          },
+          "afterRegionGeometry": [
+            {
+              "height": 0.299994,
+              "width": 0.5,
+              "x": 0.119998,
+              "y": 0.179972
+            }
+          ],
+          "beforePixels": {
+            "colors": 8,
+            "height": 521,
+            "nonWhite": 7,
+            "pixelSha256": "0be12a48eabdacafe33b600ebe2eb051c4145b0fbfd96ccf60d17e4852707ccd",
+            "width": 403
+          },
+          "beforeRegionGeometry": [
+            {
+              "height": 0.299994,
+              "width": 0.5,
+              "x": 0.119998,
+              "y": 0.179972
+            }
+          ],
+          "citationId": "c5aff0a0-1ab0-5392-a859-7ad528e45e8c",
+          "expectedImagePixelSha256": null,
+          "expectedRegionGeometry": [
+            {
+              "height": 0.3,
+              "width": 0.5,
+              "x": 0.12,
+              "y": 0.18
+            }
+          ],
+          "imagePixelOraclePassed": true,
+          "kind": "pdf",
+          "passed": true,
+          "regionOraclePassed": true
+        },
+        {
+          "afterPixels": {
+            "colors": 4,
+            "height": 480,
+            "nonWhite": 95,
+            "pixelSha256": "ea169f70944819e409bc30bb89eccf66f0028f0b48d67ebb0bfaf331158d41c4",
+            "width": 640
+          },
+          "afterRegionGeometry": [
+            {
+              "height": 0.449982,
+              "width": 0.5,
+              "x": 0.149979,
+              "y": 0.199982
+            }
+          ],
+          "beforePixels": {
+            "colors": 4,
+            "height": 480,
+            "nonWhite": 95,
+            "pixelSha256": "ea169f70944819e409bc30bb89eccf66f0028f0b48d67ebb0bfaf331158d41c4",
+            "width": 640
+          },
+          "beforeRegionGeometry": [
+            {
+              "height": 0.449982,
+              "width": 0.5,
+              "x": 0.149979,
+              "y": 0.199982
+            }
+          ],
+          "citationId": "bfeb85b6-cebf-58e5-a57e-66706a679002",
+          "expectedImagePixelSha256": "ea169f70944819e409bc30bb89eccf66f0028f0b48d67ebb0bfaf331158d41c4",
+          "expectedRegionGeometry": [
+            {
+              "height": 0.45,
+              "width": 0.5,
+              "x": 0.15,
+              "y": 0.2
+            }
+          ],
+          "imagePixelOraclePassed": true,
+          "kind": "image",
+          "passed": true,
+          "regionOraclePassed": true
+        }
+      ],
+      "structurePassed": true
+    },
+    "mobile": {
+      "passed": true,
+      "semantic": [
+        {
+          "afterPixels": {
+            "colors": 9,
+            "height": 379,
+            "nonWhite": 8,
+            "pixelSha256": "739f2af209f92a95f7387e1a202d27a03b12508792ec2d38e0910d759fc56af3",
+            "width": 293
+          },
+          "afterRegionGeometry": [
+            {
+              "height": 0.299967,
+              "width": 0.5,
+              "x": 0.119987,
+              "y": 0.179997
+            }
+          ],
+          "beforePixels": {
+            "colors": 9,
+            "height": 379,
+            "nonWhite": 8,
+            "pixelSha256": "739f2af209f92a95f7387e1a202d27a03b12508792ec2d38e0910d759fc56af3",
+            "width": 293
+          },
+          "beforeRegionGeometry": [
+            {
+              "height": 0.299967,
+              "width": 0.5,
+              "x": 0.119987,
+              "y": 0.179997
+            }
+          ],
+          "citationId": "c5aff0a0-1ab0-5392-a859-7ad528e45e8c",
+          "expectedImagePixelSha256": null,
+          "expectedRegionGeometry": [
+            {
+              "height": 0.3,
+              "width": 0.5,
+              "x": 0.12,
+              "y": 0.18
+            }
+          ],
+          "imagePixelOraclePassed": true,
+          "kind": "pdf",
+          "passed": true,
+          "regionOraclePassed": true
+        },
+        {
+          "afterPixels": {
+            "colors": 4,
+            "height": 480,
+            "nonWhite": 95,
+            "pixelSha256": "ea169f70944819e409bc30bb89eccf66f0028f0b48d67ebb0bfaf331158d41c4",
+            "width": 640
+          },
+          "afterRegionGeometry": [
+            {
+              "height": 0.449951,
+              "width": 0.5,
+              "x": 0.149973,
+              "y": 0.199951
+            }
+          ],
+          "beforePixels": {
+            "colors": 4,
+            "height": 480,
+            "nonWhite": 95,
+            "pixelSha256": "ea169f70944819e409bc30bb89eccf66f0028f0b48d67ebb0bfaf331158d41c4",
+            "width": 640
+          },
+          "beforeRegionGeometry": [
+            {
+              "height": 0.449951,
+              "width": 0.5,
+              "x": 0.149973,
+              "y": 0.199951
+            }
+          ],
+          "citationId": "bfeb85b6-cebf-58e5-a57e-66706a679002",
+          "expectedImagePixelSha256": "ea169f70944819e409bc30bb89eccf66f0028f0b48d67ebb0bfaf331158d41c4",
+          "expectedRegionGeometry": [
+            {
+              "height": 0.45,
+              "width": 0.5,
+              "x": 0.15,
+              "y": 0.2
+            }
+          ],
+          "imagePixelOraclePassed": true,
+          "kind": "image",
+          "passed": true,
+          "regionOraclePassed": true
+        }
+      ],
+      "structurePassed": true
+    }
+  },
+  "project": "citeframe-m403-m403b-rerun-20260724t1200z",
+  "releaseGatePassed": true,
+  "restore": {
+    "destroyedContainers": true,
+    "destroyedVolumes": true,
+    "durationMs": 58417.938
+  },
+  "schemaVersion": "m403-restore-report-v2",
+  "verification": {
+    "afterSemanticSha256": "c4c8ab66e050bdbbaa33f3b3d0af3fd3f5fe21df3e6cca5988a3af113a86bd4d",
+    "beforeSemanticSha256": "c4c8ab66e050bdbbaa33f3b3d0af3fd3f5fe21df3e6cca5988a3af113a86bd4d",
+    "comparedFields": [
+      "workspaceId",
+      "semanticSha256",
+      "tableCounts",
+      "objectCount",
+      "checks",
+      "rows",
+      "objects",
+      "visualReplay"
+    ],
+    "mismatches": [],
+    "passed": true,
+    "schemaVersion": "m403-restore-verification-v1"
+  }
+}

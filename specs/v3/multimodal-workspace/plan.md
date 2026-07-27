@@ -30,7 +30,7 @@
 - 实现 Image Evidence Viewer、框选提问和框选笔记。
 - 验证全部资产与显式资产范围下的 PDF/图片混合问答。
 
-当前状态：M301-M305、M401-M403A 已完成。加强后的 M403 正式销卷恢复报告已通过完整数据库/对象语义、桌面/移动端 raster/overlay 和最终零残留门。M403A binary64/3N fresh S0/S1/S2 canonical 的三档全部通过，正式报告 `releaseGatePassed=true`；S2 9/9 Recall=`1.00`、load/index `2062.742s`、并发 p95 `246.531ms`。生产 Image 摄取保持 disabled，M403B 仍需单独批准。
+当前状态：M301-M305、M401-M403B 已完成。加强后的 M403 正式销卷恢复报告已通过完整数据库/对象语义、桌面/移动端 raster/overlay 和最终零残留门。M403A binary64/3N fresh S0/S1/S2 canonical 的三档全部通过，正式报告 `releaseGatePassed=true`；S2 9/9 Recall=`1.00`、load/index `2062.742s`、并发 p95 `246.531ms`。M403B 已完成 PNG/JPEG/WebP 生产上传、immutable-source retry、检索/Evidence、长期 Worker 浏览器链、Image-enabled 销卷恢复和 Critical 复审，工程发布门禁 `releaseGatePassed=true`。
 
 M305 不新增对外 API 字段。检索内部已为 `content_unit_embeddings` 增加 `asset_id / processing_generation / index_version / is_current` 投影字段，让 Dense ANN 在向量表内先过滤 current chain 和显式资产范围；这不改变 Asset、Citation、NoteSource、Chat 或保存语义。`f2a4c6e8b0d1` 完成回填、partial HNSW 和 current-scope trigger；摄取以 inactive 写入、latest CAS、Asset 指针切换、目标 provider 激活的同一事务维护 current 投影，Dense/SQLite 与外层 Representation/Locator 校验保持一致。PDF-only 评测适配器可以在边界上读取 PDF typed detail，但不能反向污染共享候选模型。
 
@@ -58,7 +58,7 @@ binary ef128 fresh S1 已通过 9/9 Recall、两类 plan、性能与 cleanup；�
 
 最终辅助预算已收敛并由 canonical 接受为 binary `ef_construction=64` + `3N`，主 cosine 保持 `512/N`。fresh S0/S1/S2 同一次执行全部通过；S2 load/index `2062.742s`，9/9 Recall=`1.00`，Dense/lexical/Hybrid p95 `32.237/41.663/54.373ms`，并发 p95 `246.531ms`、吞吐 `61.069 req/s`，数据库 `7.159 GiB`，零错误、零 drift、零 cleanup 残留。正式证据在 `docs/evals/artifacts/m403a-v2/`。
 
-M403A 通过后仍保持生产 Image disabled。M403B 是独立、需用户明确批准的生产启用阶段，必须在同一发布中同步数据库目录、API registry、Worker Image adapter、caption 配置与 Web PNG/JPEG/WebP 入口，并重跑真实上传到恢复主链；不得把启用合同夹带在容量验收中。
+M403B 是独立批准并完成的生产启用阶段：数据库目录、API registry、Worker Image adapter、caption 配置与 Web PNG/JPEG/WebP 入口已同步；真实上传、失败重试、删除、浏览器和恢复证据归档于 `docs/evals/artifacts/m403b-*`。M404 仍是独立真实用户价值门，未完成时产品继续标记内部预览。
 
 ## 质量门禁
 

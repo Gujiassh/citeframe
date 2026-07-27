@@ -64,7 +64,7 @@
 ### Stage 4：写路径与 API 切换
 
 - API、SSE 与前后端类型已经按同一受控版本切换完成。
-- 新合同可表达 `pdf_page`、`pdf_region` 或 `image_region`；当前 Worker/Chat 已产出并消费前两种，`image_region` 仍由 Phase 3 独立图片纵向链路启用。
+- 新合同可表达 `pdf_page`、`pdf_region` 或 `image_region`；当前 Worker/Chat 已产出并消费三种 locator，Image 生产启用由 M403B 单独门禁保护。
 - Citation -> Note 必须复制 locator 快照，不能只保存关联 ID。
 - 切换必须有可执行回滚点和数据库备份。
 
@@ -116,11 +116,11 @@
 Phase 1 已完成 PostgreSQL 层恢复 oracle，Phase 4 继续扩展完整销卷恢复：
 
 - [x] Asset、Representation、ContentUnit、Embedding 和 locator 主记录逐项一致。
-- [x] PDF region 数量、顺序、坐标、几何和版本逐行一致，并进入 custom `pg_dump` / 空库 `pg_restore` payload oracle；Image region 在 Phase 3 完成后加入同一门禁。
+- [x] PDF region 数量、顺序、坐标、几何和版本逐行一致，并进入 custom `pg_dump` / 空库 `pg_restore` payload oracle；Image region 已在 M403B 加入同一门禁。
 - [x] Citation 与 NoteSource 的 locator 快照一致。
 - [x] 初次 M403 已验证原 PDF/图片和必要版本化 Representation 对象 SHA-256 一致；加强后 M403 将重新确认该不变量。
-- [ ] 恢复后 Viewer 在相同 PDF/图片 fixture、相同 viewport 下高亮同一区域。
-- [x] 旧 page citation 与新 PDF region Citation/NoteSource 在成功重处理后保持 locator、region、excerpt 和 sourceVersions 快照不变；Image region 在 Phase 3 完成后加入历史回放门禁。
+- [x] 恢复后 Viewer 在相同 PDF/图片 fixture、相同 viewport 下高亮同一区域（M403B restore artifact）。
+- [x] 旧 page citation 与新 PDF region Citation/NoteSource 在成功重处理后保持 locator、region、excerpt 和 sourceVersions 快照不变；Image region 已在 M403B 加入历史回放门禁。
 
 备份格式变更需要提高 format version；旧 restore 脚本不得接受未知格式。
 
