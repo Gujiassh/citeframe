@@ -1,0 +1,125 @@
+{
+  "checks": {
+    "conflictResume": {
+      "evidence": {
+        "submittedConflictDecisions": 0
+      },
+      "passed": false,
+      "status": "fail"
+    },
+    "mainCompleted": {
+      "evidence": {
+        "runId": "9d869aea-41f1-4a8d-88fb-f1b7a2b3ca37",
+        "status": "failed",
+        "workerErrors": [
+          "ResearchError:Research run no longer accepts this result."
+        ]
+      },
+      "passed": false,
+      "status": "fail"
+    },
+    "parallelFanout": {
+      "evidence": {
+        "maxActive": 1,
+        "providerEntries": 4
+      },
+      "passed": false,
+      "status": "fail"
+    },
+    "scenarioExecution": {
+      "blockedReason": "scenario_exception",
+      "evidence": [
+        {
+          "message": "(psycopg.errors.DeadlockDetected) deadlock detected\nDETAIL:  Process 616 waits for ShareLock on transaction 806; blocked by process 615.\nProcess 615 waits for ShareLock on transaction 805; blocked by process 616.\nHINT:  See server log for query details.\nCONTEXT:  while locking tuple (0,22) in relation \"research_budget_ledgers\"\n[SQL: SELECT research_budget_ledgers.id, research_budget_ledgers.workspace_id, research_budget_ledgers.run_id, research_budget_ledgers.plan_revision_id, research_budget_le",
+          "type": "OperationalError"
+        }
+      ],
+      "passed": false,
+      "status": "blocked"
+    },
+    "sseReplay": {
+      "evidence": {
+        "allEventIds": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10,
+          11,
+          12,
+          13,
+          14,
+          15,
+          16,
+          17
+        ],
+        "cursor": 9,
+        "replayEventIds": [
+          10,
+          11,
+          12,
+          13,
+          14,
+          15,
+          16,
+          17
+        ]
+      },
+      "passed": true,
+      "status": "pass"
+    },
+    "transientRetry": {
+      "evidence": {
+        "failedAttempts": 1,
+        "retryAttempts": 0,
+        "transientProviderResponses": 0
+      },
+      "passed": false,
+      "status": "fail"
+    },
+    "uniqueFinal": {
+      "evidence": {
+        "apiFinalCount": 0,
+        "databaseFinalCount": 0
+      },
+      "passed": false,
+      "status": "fail"
+    },
+    "unsupportedWithheld": {
+      "evidence": {
+        "unsupportedClaims": 0,
+        "unsupportedFinalLinks": 0
+      },
+      "passed": false,
+      "status": "fail"
+    }
+  },
+  "engineeringGate": "fail",
+  "errors": [
+    {
+      "message": "(psycopg.errors.DeadlockDetected) deadlock detected\nDETAIL:  Process 616 waits for ShareLock on transaction 806; blocked by process 615.\nProcess 615 waits for ShareLock on transaction 805; blocked by process 616.\nHINT:  See server log for query details.\nCONTEXT:  while locking tuple (0,22) in relation \"research_budget_ledgers\"\n[SQL: SELECT research_budget_ledgers.id, research_budget_ledgers.workspace_id, research_budget_ledgers.run_id, research_budget_ledgers.plan_revision_id, research_budget_le",
+      "type": "OperationalError"
+    }
+  ],
+  "runs": {
+    "main": {
+      "artifactIds": [
+        "9a697706-c8c0-4211-85b5-9815a11c132a"
+      ],
+      "eventCount": 17,
+      "id": "9d869aea-41f1-4a8d-88fb-f1b7a2b3ca37",
+      "providerTimeline": {
+        "entryCount": 4,
+        "maxActive": 1,
+        "transientCount": 0
+      },
+      "status": "failed"
+    }
+  },
+  "schemaVersion": "citeframe-r800-research-acceptance-v1"
+}

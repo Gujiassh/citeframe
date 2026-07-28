@@ -1,0 +1,9 @@
+Attaching to citeframe-r800-deployment-v4_api_1
+api_1            | INFO:     Started server process [1]
+api_1            | INFO:     Waiting for application startup.
+api_1            | INFO:     Application startup complete.
+api_1            | INFO:     Uvicorn running on http://0.0.0.0:8000 (Press CTRL+C to quit)
+api_1            | INFO:     127.0.0.1:41884 - "GET /health/ready HTTP/1.1" 200 OK
+api_1            | INFO:     127.0.0.1:45128 - "GET /health/ready HTTP/1.1" 200 OK
+api_1            | INFO:     127.0.0.1:60344 - "GET /health/ready HTTP/1.1" 200 OK
+api_1            | INFO:     127.0.0.1:58578 - "GET /health/ready HTTP/1.1" 200 OK

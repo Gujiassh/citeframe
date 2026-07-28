@@ -1,15 +1,19 @@
 "use client";
 
 import React, { useEffect, useRef, useState } from "react";
-import { ArrowUp, Library, MessageCircleQuestion, X } from "lucide-react";
+import { ArrowUp, Library, MessageCircleQuestion, Search, X } from "lucide-react";
 
+import { useAuth } from "@/lib/auth/auth-context";
 import { isNearChatBottom } from "@/lib/chat-scroll";
 import type { InputEvidence } from "@/lib/chat/types";
 import { getLocatorSummary } from "@/lib/evidence/types";
 import { useTranslation } from "@/lib/i18n-context";
+import { canSubmitWorkspaceQuestion, type WorkspaceQuestionMode } from "@/lib/research/presentation";
+import { useResearch } from "@/lib/use-research";
 import { Citation, useWorkspace } from "@/lib/workspace-context";
 
 import { ChatBubble } from "./chat-bubble";
+import { ResearchRunPanel } from "./research-run-panel";
 
 export function ChatPanel() {
   const {
@@ -27,8 +31,10 @@ export function ChatPanel() {
   } = useWorkspace();
 
   const { t } = useTranslation();
+  const { user } = useAuth();
+  const [mode, setMode] = useState<WorkspaceQuestionMode>("quick");
   const [input, setInput] = useState("");
-  const [loading, setLoading] = useState(false);
+  const [quickLoading, setQuickLoading] = useState(false);
   const [showNoteEditorId, setShowNoteEditorId] = useState<string | null>(null);
   const [quickNoteTitle, setQuickNoteTitle] = useState("");
   const [quickNoteContent, setQuickNoteContent] = useState("");
@@ -40,6 +46,15 @@ export function ChatPanel() {
   const workspaceAssets = assets.filter((asset) => asset.workspaceId === currentWorkspace?.id);
   const readyAssetCount = workspaceAssets.filter((asset) => asset.status === "ready").length;
   const assetsReady = readyAssetCount > 0;
+  const research = useResearch(currentWorkspace?.id ?? "", selectedAssetIds, user?.userId ?? null);
+  const loading = mode === "quick" ? quickLoading : research.loading;
+  const canSubmit = canSubmitWorkspaceQuestion({
+    mode,
+    question: input,
+    assetsReady,
+    quickThreadReady: Boolean(activeThread),
+    busy: loading,
+  });
 
   const handleMessagesScroll = () => {
     const container = messagesContainerRef.current;
@@ -77,16 +92,22 @@ export function ChatPanel() {
 
   const submitMessage = async () => {
     const text = input.trim();
-    if (!text || loading || !activeThread) {
+    if (!canSubmit) {
       return;
     }
 
     setInput("");
-    setLoading(true);
+    if (mode === "research") {
+      await research.start(text);
+      composerRef.current?.focus();
+      return;
+    }
+
+    setQuickLoading(true);
     try {
       await sendMessage(text);
     } finally {
-      setLoading(false);
+      setQuickLoading(false);
       composerRef.current?.focus();
     }
   };
@@ -98,11 +119,11 @@ export function ChatPanel() {
 
   const handleEditMessage = async (messageId: string, content: string) => {
     if (loading) return;
-    setLoading(true);
+    setQuickLoading(true);
     try {
       await sendMessage(content, { editMessageId: messageId });
     } finally {
-      setLoading(false);
+      setQuickLoading(false);
     }
   };
 
@@ -160,7 +181,7 @@ export function ChatPanel() {
         <div className="mx-auto flex w-full max-w-4xl items-center justify-between gap-4">
           <div className="min-w-0">
             <h2 className="truncate text-sm font-semibold text-zinc-950 dark:text-white sm:text-base">
-              {activeThread ? activeThread.title : t("chat.header")}
+              {mode === "research" ? t("research.modeResearch") : activeThread ? activeThread.title : t("chat.header")}
             </h2>
             <div className="mt-1 flex items-center gap-1.5 text-[10px] font-medium text-zinc-500 dark:text-zinc-400">
               <Library className="h-3 w-3 text-emerald-600 dark:text-emerald-400" />
@@ -184,17 +205,65 @@ export function ChatPanel() {
               ) : null}
             </div>
           </div>
+          <div
+            role="tablist"
+            aria-label={t("research.modeLabel")}
+            className="grid shrink-0 grid-cols-2 rounded-md border border-border bg-background p-0.5"
+          >
+            <button
+              type="button"
+              role="tab"
+              aria-selected={mode === "quick"}
+              onClick={() => setMode("quick")}
+              className={`h-7 min-w-16 rounded px-2 text-[11px] font-semibold transition-colors ${mode === "quick" ? "bg-zinc-950 text-white dark:bg-white dark:text-zinc-950" : "text-zinc-500 hover:bg-zinc-100 hover:text-zinc-950 dark:hover:bg-zinc-900 dark:hover:text-white"}`}
+            >
+              {t("research.modeQuick")}
+            </button>
+            <button
+              type="button"
+              role="tab"
+              aria-selected={mode === "research"}
+              onClick={() => setMode("research")}
+              className={`h-7 min-w-20 rounded px-2 text-[11px] font-semibold transition-colors ${mode === "research" ? "bg-emerald-700 text-white dark:bg-emerald-500 dark:text-emerald-950" : "text-zinc-500 hover:bg-zinc-100 hover:text-zinc-950 dark:hover:bg-zinc-900 dark:hover:text-white"}`}
+            >
+              {t("research.modeResearch")}
+            </button>
+          </div>
         </div>
       </div>
 
       <div
         ref={messagesContainerRef}
-        data-chat-scroll
+        data-chat-scroll={mode === "quick" ? "" : undefined}
         onScroll={handleMessagesScroll}
         className="min-h-0 flex-1 overflow-y-auto scroll-smooth px-4 py-6 sm:px-8 sm:py-8"
       >
         <div className="mx-auto w-full max-w-4xl space-y-8">
-          {!activeThread || activeThread.messages.length === 0 ? (
+          {mode === "research" ? (
+            <ResearchRunPanel
+              key={`${currentWorkspace?.id ?? "none"}:${research.run?.id ?? "none"}:${research.run?.plan?.version ?? 0}`}
+              workspaceId={currentWorkspace?.id ?? ""}
+              run={research.run}
+              runs={research.runs}
+              artifacts={research.artifacts}
+              artifactContent={research.artifactContent}
+              artifactDetail={research.artifactDetail}
+              conflictArtifactContent={research.conflictArtifactContent}
+              conflictArtifactDetail={research.conflictArtifactDetail}
+              canManage={research.canManage}
+              loading={research.loading}
+              streamState={research.streamState}
+              error={research.error}
+              onSelectRun={(runId) => { void research.selectRun(runId); }}
+              onApprove={() => { void research.approve(); }}
+              onRevisePlan={(question, comment) => { void research.revisePlan(question, comment); }}
+              onCancelPlan={() => { void research.cancelPlan(); }}
+              onResolveConflict={(action) => { void research.resolveConflict(action); }}
+              onRetryStep={(step) => { void research.retryStep(step); }}
+              onOpenEvidence={openEvidence}
+              onCancel={() => { void research.cancel(); }}
+            />
+          ) : !activeThread || activeThread.messages.length === 0 ? (
             <div className="flex min-h-[45vh] flex-col items-center justify-center text-center text-zinc-400 dark:text-zinc-600">
               <span className="flex h-11 w-11 items-center justify-center rounded-full border border-border bg-background">
                 <MessageCircleQuestion className="h-5 w-5" />
@@ -226,7 +295,7 @@ export function ChatPanel() {
 
       <div className="shrink-0 border-t border-border bg-card px-3 py-3 sm:px-8 sm:py-4">
         <div className="mx-auto w-full max-w-4xl">
-          {selectionText ? (
+          {mode === "quick" && selectionText ? (
             <div className="mb-2 flex items-center justify-between gap-3 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 dark:border-amber-900/70 dark:bg-amber-950/30">
               <div className="min-w-0 flex-1">
                 <span className="block text-[9px] font-bold uppercase text-amber-700 dark:text-amber-400">
@@ -260,25 +329,27 @@ export function ChatPanel() {
                   void submitMessage();
                 }
               }}
-              disabled={!assetsReady || loading || !activeThread}
+              disabled={!assetsReady || loading || (mode === "quick" && !activeThread)}
               placeholder={
                 !assetsReady
                   ? t("chat.inputPlaceholderNoDocs")
-                  : !activeThread
+                  : mode === "research"
+                    ? t("research.placeholder")
+                    : !activeThread
                     ? t("chat.inputPlaceholderEmpty")
                     : t("chat.placeholder")
               }
-              aria-label={t("chat.placeholder")}
+              aria-label={mode === "research" ? t("research.placeholder") : t("chat.placeholder")}
               className="max-h-32 min-h-9 flex-1 resize-none bg-transparent px-2 py-2 text-sm leading-5 text-zinc-900 outline-none placeholder:text-zinc-400 disabled:cursor-not-allowed disabled:text-zinc-400 dark:text-zinc-100 dark:placeholder:text-zinc-600"
             />
             <button
               type="submit"
-              disabled={!input.trim() || loading || !activeThread || !assetsReady}
-              title={t("chat.send")}
-              aria-label={t("chat.send")}
-              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-zinc-950 text-white transition hover:bg-zinc-800 active:scale-95 disabled:cursor-not-allowed disabled:bg-zinc-200 disabled:text-zinc-400 dark:bg-white dark:text-zinc-950 dark:hover:bg-zinc-100 dark:disabled:bg-zinc-900 dark:disabled:text-zinc-700"
+              disabled={!canSubmit}
+              title={mode === "research" ? t("research.start") : t("chat.send")}
+              aria-label={mode === "research" ? t("research.start") : t("chat.send")}
+              className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-white transition active:scale-95 disabled:cursor-not-allowed disabled:bg-zinc-200 disabled:text-zinc-400 dark:disabled:bg-zinc-900 dark:disabled:text-zinc-700 ${mode === "research" ? "bg-emerald-700 hover:bg-emerald-600 dark:bg-emerald-500 dark:text-emerald-950 dark:hover:bg-emerald-400" : "bg-zinc-950 hover:bg-zinc-800 dark:bg-white dark:text-zinc-950 dark:hover:bg-zinc-100"}`}
             >
-              <ArrowUp className="h-4 w-4" />
+              {mode === "research" ? <Search className="h-4 w-4" /> : <ArrowUp className="h-4 w-4" />}
             </button>
           </form>
         </div>

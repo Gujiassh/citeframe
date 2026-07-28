@@ -2,12 +2,13 @@
 
 ## 状态
 
-- 阶段：产品方向、R000 合同、两阶段 Git 恢复点与 R100 Evaluation-first 已完成；进入 R200/R300
-- 前置门：V3 M403A/M403B、R000 commit A/B 与 R100 exit gate 已通过；R200/R300 必须继续遵守获批合同和 Quick 不变 oracle
+- 阶段：R000-R800 确定性工程基线已完成；R803 真实模型成对质量与 M404 目标用户价值仍未评估
+- 工程门：R800 v4 在真实 PostgreSQL/MinIO、生产 API/Worker/Web 镜像和 scripted provider 上通过；`engineeringGate=pass`、`releaseGatePassed=true`
 - 产品结论：M404 未完成前继续标记 `internal_preview`，本提案不替代真实用户价值验证
 - 需求发现：[requirements-discovery.md](requirements-discovery.md) 的 D001-D007 已于 2026-07-25 获批；该批准不构成字段/API/保存合同或实现授权
-- R000 批准：[r000-approval-record.md](r000-approval-record.md) 记录 Owner 于 2026-07-27 批准 `AP001-AP012` 推荐默认、无例外；commit A=`466e5a3`，approval record commit B 已形成；实现授权仍按阶段门禁执行
+- R000 批准：[r000-approval-record.md](r000-approval-record.md) 记录 Owner 于 2026-07-27 批准 `AP001-AP012` 推荐默认、无例外；commit A=`466e5a3`，approval record commit B 已形成；实现保持该冻结合同
 - 冻结输入：[data-state-contract-draft.md](data-state-contract-draft.md)、[api-event-tool-contract-draft.md](api-event-tool-contract-draft.md) 与 [r000-approval-package.md](r000-approval-package.md) 保留审批前状态文字和获批 hash，不在原文件回填状态
+- 运行证据：[`../../../docs/evals/r800-critical-review.md`](../../../docs/evals/r800-critical-review.md) 与 [`../../../docs/evals/artifacts/r800-v1/deployment-20260728-v4/`](../../../docs/evals/artifacts/r800-v1/deployment-20260728-v4/)
 
 ## 目标
 
@@ -28,7 +29,7 @@ Planner
   -> ResearchArtifact (Run complete)
 ```
 
-R700 Evaluation 是 Run 完成后的独立评测阶段，不是核心 DAG Step，也没有在 R000 获得 persistence/API 授权。
+R700 Evaluation 是 Run 完成后的独立评测阶段，不是核心 DAG Step，也没有在 R000 获得 persistence/API 授权。Owner 后续授权的独立合同见 [r700-evaluation-contract.md](r700-evaluation-contract.md)：浏览器只读、owner 可见、可信离线导入，且不修改核心 Run/Event/Artifact 合同。
 
 ## 功能需求
 
@@ -66,7 +67,7 @@ R700 Evaluation 是 Run 完成后的独立评测阶段，不是核心 DAG Step�
 
 ## 数据与 API 影响提案
 
-实体、状态与关系范围以获批 data contract 为准，至少包含 Workflow/Prompt、PlanRevision/ExecutionSnapshot、Run/Step/Attempt/Event、Artifact/Claim/Evidence、Decision、Tool/Provider/Budget 与 Idempotency；API 覆盖 run/create/read/cancel/stream/decision/artifact。Evaluation persistence/API 只属于后续 R700 独立合同，不在 R000 内借用 Run 或 Artifact 临时拼装。
+实体、状态与关系范围以获批 data contract 为准，至少包含 Workflow/Prompt、PlanRevision/ExecutionSnapshot、Run/Step/Attempt/Event、Artifact/Claim/Evidence、Decision、Tool/Provider/Budget 与 Idempotency；API 覆盖 run/create/read/cancel/stream/decision/artifact。Evaluation persistence/API 使用后续获批的独立 R700 合同，不在 R000 内借用 Run 或 Artifact 临时拼装。
 
 这些新合同已按 [r000-approval-record.md](r000-approval-record.md) 冻结并批准，commit A=`466e5a3` 与 approval record commit B 已形成。R100 fixture/scorer/Quick baseline exit gate 已通过，证据见 [`../../../docs/evals/r100-evaluation-first.md`](../../../docs/evals/r100-evaluation-first.md)。R200/R300 可以开始；不得改变现有 Asset、EvidenceLocator、Citation、NoteSource、Chat SSE 或保存语义来迁就工作流。
 
@@ -92,3 +93,14 @@ Research Memory 暂由经过验证的 ResearchArtifact、Citation 和用户主�
 - SC-006：SSE 断线重连后事件序列完整、单调且可重放。
 - SC-007：最终报告中的每个事实 claim 都能回到冻结 EvidenceLocator；源 Asset 重处理不改写历史 provenance。
 - SC-008：Dashboard 可复现同一批 case 的单 Agent/多 Agent质量、延迟、成本和恢复对比。
+
+## 当前验收状态
+
+- `SC-001`：通过 API/Worker/Web 全量回归保持 Quick、Citation、NoteSource 和保存合同不变。
+- `SC-002`：R800 v4 provider timeline 记录 `maxActive=2`，三个 Researcher 分支真实重叠且未超过上限。
+- `SC-003`：三个 unsupported Claims 均未进入最终 Artifact。
+- `SC-004`：冲突 Decision 提交并在 API/Worker 重启链后恢复完成。
+- `SC-005`：一次 transient provider failure 只产生一次分支 retry，最终 Artifact 唯一。
+- `SC-006`：47 个持久化 Event 在 cursor 24 后完整重放 25-47。
+- `SC-007`：最终 Claim/Evidence/Artifact provenance 与恢复前后对象字节/hash 通过。
+- `SC-008`：Dashboard 与 immutable importer 已完成工程实现；真实模型 Quick/Research 成对质量报告仍为 `not_evaluable`，不能以 scripted provider 补齐。

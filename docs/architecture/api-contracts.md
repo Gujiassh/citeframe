@@ -2,12 +2,13 @@
 
 ## 1. 当前状态
 
-- 运行时版本：V3 Asset/Evidence
+- 运行时版本：V3 Asset/Evidence + V4 Evidence Research engineering baseline
 - FastAPI 前缀：`/v1`
 - 浏览器接口：同路径语义的 Next.js `/api` BFF
 - 已移除：`/documents`、`documentId` 和 Document 业务 DTO
 - 当前可用摄取闭环：PDF、PNG、JPEG、WebP Image
 - Image 生产合同：精确 MIME/签名校验、完整解码、EXIF 方向归一化、`image_oriented` geometry、RapidOCR、Responses API caption、`image_ocr/image_caption` Representation、区域 ContentUnit 与 text embedding。Image adapter 已进入生产 Worker registry，数据库目录、API registry 与 Web 上传入口同步启用；未知、空或不匹配 MIME 均 fail closed
+- Research 生产合同：显式 Research Run、独立 persisted Event SSE、creator-only plan/conflict/retry/cancel controls、immutable Artifact/Claim/Evidence provenance 与 owner-only Evaluation reads
 
 本文件描述当前代码合同。目标态设计参见：
 
@@ -399,7 +400,32 @@ NoteSource 与 Citation 使用同一 Evidence envelope：
 | POST | `/v1/workspaces/{workspaceId}/assets/{assetId}/tags` | 替换 Asset tag 集合 |
 | POST | `/v1/workspaces/{workspaceId}/notes/{noteId}/tags` | 替换 Note tag 集合 |
 
-## 10. 合同门禁
+## 10. Research 与 Evaluation
+
+Research 使用独立错误 envelope：`error.code/message/requestId/retryable/details`。Create/decision/retry/cancel 写请求使用冻结 state version、输入 hash 与 idempotency 约束；不能以 last-write-wins 覆盖并发状态。
+
+### 10.1 Research endpoints
+
+| Method | Path | 语义 |
+| --- | --- | --- |
+| GET/POST | `/v1/workspaces/{workspaceId}/research-runs` | 列表/显式创建 Research Run |
+| GET | `/v1/workspaces/{workspaceId}/research-runs/{runId}` | 读取持久化 Run/Step/Decision/Artifact 视图 |
+| POST | `/v1/workspaces/{workspaceId}/research-runs/{runId}/cancel` | creator 取消，按 Run state CAS 提交 |
+| POST | `/v1/workspaces/{workspaceId}/research-runs/{runId}/plan-decisions/{decisionId}` | creator 绑定 frozen plan 输入提交决定 |
+| POST | `/v1/workspaces/{workspaceId}/research-runs/{runId}/conflict-decisions/{decisionId}` | creator 提交 bound conflict 决定 |
+| POST | `/v1/workspaces/{workspaceId}/research-runs/{runId}/steps/{stepId}/retry` | creator 对允许的失败 Step 请求 retry |
+| GET | `/v1/workspaces/{workspaceId}/research-runs/{runId}/events` | 独立 SSE；按 persisted seq 与 `Last-Event-ID` replay |
+| GET | `/v1/workspaces/{workspaceId}/research-runs/{runId}/artifacts` | Artifact 列表 |
+| GET | `/v1/workspaces/{workspaceId}/research-runs/{runId}/artifacts/{artifactId}` | 读取完整 provenance detail |
+| GET | `/v1/workspaces/{workspaceId}/research-runs/{runId}/artifacts/{artifactId}/content` | 校验 bytes/hash 后返回内容 |
+
+Research SSE 与 Chat SSE 不共享 endpoint、事件命名空间或恢复 cursor。member 可读取 Workspace 内 Run/Artifact，只有创建者可提交运行控制；所有路径校验 URL Workspace 与资源全链一致。
+
+### 10.2 Evaluation endpoints
+
+`evaluation-suites`、`evaluations`、run cases 与 case detail 均位于 `/v1/workspaces/{workspaceId}` 下，只允许 Workspace owner 读取并返回 `Cache-Control: no-store`。浏览器没有 Evaluation 写 endpoint；可信离线 importer 原子写入 immutable rows。
+
+## 11. 合同门禁
 
 以下变化属于破坏性合同变化，实施前必须同步 schema、调用方、测试、fixtures、迁移与本文档：
 
@@ -409,3 +435,4 @@ NoteSource 与 Citation 使用同一 Evidence envelope：
 - 修改 Asset 删除、重索引或 `sourceAvailable` 语义
 - 修改上传 MIME/签名校验或开放新的生产摄取模态
 - 修改 Workspace 隔离或 owner 权限边界
+- 修改 Research state/version/idempotency、Research SSE replay、Artifact provenance 或 Evaluation owner-only/append-only 边界

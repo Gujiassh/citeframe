@@ -1,0 +1,5 @@
+citeframe-r800-deployment-v2_caddy_config
+citeframe-r800-deployment-v2_caddy_data
+citeframe-r800-deployment-v2_minio_data
+citeframe-r800-deployment-v2_postgres_data
+citeframe-r800-deployment-v2_redis_data

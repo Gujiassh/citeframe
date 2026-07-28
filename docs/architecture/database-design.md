@@ -3,15 +3,20 @@
 ## 1. 当前状态
 
 - 数据库：PostgreSQL + pgvector + pg_trgm
-- Alembic head：`a3c5e7f9b1d4`
+- Alembic head：`e8f1a2b3c4d5`
 - 运行时领域模型：Asset/Evidence
 - 已移除表：`documents`、`document_pages`、`document_chunks`、`document_tags`
 - 当前生产摄取：PDF 文本层、扫描 PDF OCR fallback，以及经 M403B 发布门禁的 PNG/JPEG/WebP Image adapter
 - 图片 `image_oriented/image_ocr/image_caption` Representation、方向后 geometry、`image_ocr_region/image_caption` ContentUnit、`image_region` locator、text embedding、Citation/NoteSource 历史快照与 Image Viewer 已接入；M403B 的真实上传/检索/Evidence/恢复报告已通过并归档
+- V4 Research/Evaluation ledger、Workflow/Prompt v2、immutable Artifact/Claim/Evidence provenance 与 provider/tool/budget accounting 已接入；R800 v4 的 PostgreSQL/MinIO 空部署恢复通过
+
+当前 schema 以本文件的表分组、字段职责和 Alembic head 为准。`database-er-legacy-document.mmd` 与 `database-er.mmd` / `database-er.svg` 均为历史快照，不得作为当前迁移或模型实现输入。
 
 `c9d1e2f3a4b5` 是不可原地 downgrade 的一次性 Asset 迁移；`d0e2f4a6b8c1` 在其上增加 user-message 输入 Evidence。回到旧 Document 模型只能恢复迁移前的 PostgreSQL/MinIO 同批备份。
 
 `a3c5e7f9b1d4` 是生产 Image 启用的数据目录迁移，只把 `asset_types.image.enabled` 从 `false` 切换为 `true`；不新增表、字段、API payload 或保存语义，降级恢复为 `false`。
+
+`b4d6f8a0c2e4` 增加获批 Research 账本，`c5e7a9b1d3f6` 增加 append-only Evaluation 账本，`e8f1a2b3c4d5` 增加 production Workflow/Prompt v2。已有业务引用时 downgrade fail closed；空引用往返保留 v1 Workflow/Prompt。
 
 ## 2. 设计原则
 
@@ -22,6 +27,7 @@
 5. 运行时 UI 状态不进入持久化模型。
 6. 新模态通过封闭代码注册表与数据库类型目录共同启用；目录和部署注册表不一致时 readiness 失败。
 7. 不使用文件名、列表顺序、名称当 ID 或“第一个非空字段”推断数据语义。
+8. Research runtime 状态、provider/tool usage 与 Artifact provenance 进入 PostgreSQL；模型消息历史、credential 和思维链不持久化。
 
 ## 3. 表分组
 
@@ -71,6 +77,16 @@
 - `tags`
 - `asset_tags`
 - `note_tags`
+
+### 3.7 Research 与 Evaluation
+
+- `prompt_versions`、`workflow_versions`、`workflow_prompt_bindings`
+- `research_runs`、`research_plan_revisions`、`research_execution_snapshots`
+- `research_steps`、`research_step_dependencies`、`research_step_attempts`、`research_step_retry_requests`
+- `research_events`、`human_decisions`、`human_decision_claims`
+- `research_artifacts`、`research_claims`、`research_evidence_snapshots` 与 provenance 关系表
+- `research_provider_calls`、`research_tool_calls`、`research_budget_ledgers`、`research_idempotency_records`
+- `research_evaluation_suites`、`research_evaluation_runs`、`research_evaluation_case_results`、`research_evaluation_claim_results`
 
 ## 4. 稳定内核
 
@@ -362,9 +378,22 @@ Citation 后续删除或源 Asset 软删除时，NoteSource 自身仍可读；AP
 - Workspace 过滤直接
 - 删除和查询语义明确
 
-## 10. Job 与删除语义
+## 10. Research 与 Evaluation 账本
 
-### 10.1 `ingestion_jobs`
+Research 表按职责分为四组：
+
+1. immutable versions/snapshots：Workflow、Prompt、PlanRevision、ExecutionSnapshot 与冻结 Asset/Prompt bindings；
+2. mutable execution ledger：Run、Step、Attempt、Event、Decision、Retry、provider/tool call 与 BudgetLedger；
+3. immutable outputs：Artifact bytes metadata、Claim、Evidence snapshot/handle 与 exact provenance mappings；
+4. independent Evaluation：trusted importer 写入 append-only suite/run/case/claim rows，浏览器仅 owner 可读。
+
+API service 是唯一事务所有者。Worker 通过 service ports 更新账本，不直接定义 ORM 或 migration。共享 provider/tool 事务使用 `Attempt -> Step -> Run -> call -> BudgetLedger` 锁序，并在锁查询后刷新 identity map。
+
+完整字段、状态、唯一键和删除/保留语义以获批 V4 data contract、Alembic migration 与 ORM 为准；本文件不重复复制 30 余张表的字段清单。运行边界见 `research-workflow-runtime.md`。
+
+## 11. Job 与删除语义
+
+### 11.1 `ingestion_jobs`
 
 关键字段：
 
@@ -379,7 +408,7 @@ Citation 后续删除或源 Asset 软删除时，NoteSource 自身仍可读；AP
 
 `config_snapshot` 冻结 chunk/embedding 等运行配置；Worker 不应在执行历史 job 时无条件读取最新 Workspace 配置。
 
-### 10.2 删除
+### 11.2 删除
 
 删除分两步：
 
@@ -388,7 +417,7 @@ Citation 后续删除或源 Asset 软删除时，NoteSource 自身仍可读；AP
 
 Asset 身份、Representation、EvidenceLocator、Citation 与 NoteSource 快照保留。`pdf_locator_details.page_id` 在页面删除后可为 null；这正是历史页码快照与当前页面实体分离的原因。
 
-## 11. Workspace 隔离
+## 12. Workspace 隔离
 
 数据库外键不能单独证明两个资源属于同一 Workspace，因此 service/query 层必须同时约束：
 
@@ -398,9 +427,9 @@ asset.workspace_id = :workspace_id
 locator.workspace_id = :workspace_id
 ```
 
-Chat scope、Citation -> Note、Tag binding、Job 查询和 Viewer detail 都必须执行该检查。禁止仅凭全局 UUID 命中后返回资源。
+Chat scope、Citation -> Note、Tag binding、Job、Viewer、Research 与 Evaluation 查询都必须执行该检查。禁止仅凭全局 UUID 命中后返回资源。
 
-## 12. 迁移与恢复 oracle
+## 13. 迁移与恢复 oracle
 
 Phase 1 已验证：
 
@@ -412,14 +441,22 @@ Phase 1 已验证：
 - 旧 Document 表不存在
 - PostgreSQL custom `pg_dump` -> 空库 `pg_restore --single-transaction` 后 Asset/Evidence/Citation/NoteSource payload 全等
 
-Phase 4 仍需完成：
+Phase 4 已完成：
 
 - 销毁卷后的 PostgreSQL + MinIO 同批恢复
 - 图片与版本化 Representation 对象字节 SHA-256
 - `pdf_region/image_region` 数量、顺序、几何和 Viewer 像素定位
 - 历史页、区域、已删除源 citation 与 NoteSource 全链路回放
 
-## 13. 变更门禁
+V4 R800 v4 已验证：
+
+- legacy 到 `e8f1a2b3c4d5` 的完整 Alembic upgrade；
+- Research Run/Step/Event/Decision/Claim/Evidence/provider/tool/budget 与 Evaluation 行快照；
+- MinIO plan/checkpoint/conflict/final Artifact bytes/hash；
+- 销卷后空部署 restore 的前后语义 SHA 全等；
+- 最终容器、卷、网络和 secret env 零残留。
+
+## 14. 变更门禁
 
 以下变化必须先获得明确合同批准：
 
@@ -429,5 +466,6 @@ Phase 4 仍需完成：
 - 修改消息实际 Asset 范围的保存方式
 - 修改 Embedding space 或向量维度
 - 为新模态启用数据库目录、Worker adapter 或 Web renderer
+- 修改 Research lock order、budget/save semantics、Workflow/Prompt version 或 Evaluation append-only 语义
 
 批准后必须同步 Alembic、ORM、Pydantic schema、API fixtures、Worker/Web 调用方、单元测试、恢复 oracle 与本文件。

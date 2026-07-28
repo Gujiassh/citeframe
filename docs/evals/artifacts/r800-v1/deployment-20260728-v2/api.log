@@ -1,0 +1,23 @@
+Attaching to citeframe-r800-deployment-v2_api_1
+api_1            | INFO:     Started server process [1]
+api_1            | INFO:     Waiting for application startup.
+api_1            | INFO:     Application startup complete.
+api_1            | INFO:     Uvicorn running on http://0.0.0.0:8000 (Press CTRL+C to quit)
+api_1            | INFO:     127.0.0.1:52204 - "GET /health/ready HTTP/1.1" 200 OK
+api_1            | INFO:     127.0.0.1:50220 - "GET /health/ready HTTP/1.1" 200 OK
+api_1            | INFO:     127.0.0.1:45498 - "GET /health/ready HTTP/1.1" 200 OK
+api_1            | INFO:     127.0.0.1:45500 - "GET /health/ready HTTP/1.1" 200 OK
+api_1            | INFO:     172.24.0.9:46214 - "POST /v1/workspaces/f54c7366-4a49-5eda-8373-dcd80bd5df6d/research-runs HTTP/1.1" 201 Created
+api_1            | INFO:     172.24.0.9:46214 - "GET /v1/workspaces/f54c7366-4a49-5eda-8373-dcd80bd5df6d/research-runs/9d869aea-41f1-4a8d-88fb-f1b7a2b3ca37 HTTP/1.1" 200 OK
+api_1            | INFO:     172.24.0.9:46214 - "GET /v1/workspaces/f54c7366-4a49-5eda-8373-dcd80bd5df6d/research-runs/9d869aea-41f1-4a8d-88fb-f1b7a2b3ca37 HTTP/1.1" 200 OK
+api_1            | INFO:     172.24.0.9:46214 - "POST /v1/workspaces/f54c7366-4a49-5eda-8373-dcd80bd5df6d/research-runs/9d869aea-41f1-4a8d-88fb-f1b7a2b3ca37/plan-decisions/4b856609-d6a3-4bbc-a4c8-c5e7f8e2135b HTTP/1.1" 200 OK
+api_1            | INFO:     172.24.0.9:46214 - "GET /v1/workspaces/f54c7366-4a49-5eda-8373-dcd80bd5df6d/research-runs/9d869aea-41f1-4a8d-88fb-f1b7a2b3ca37 HTTP/1.1" 200 OK
+api_1            | INFO:     172.24.0.9:46214 - "GET /v1/workspaces/f54c7366-4a49-5eda-8373-dcd80bd5df6d/research-runs/9d869aea-41f1-4a8d-88fb-f1b7a2b3ca37 HTTP/1.1" 200 OK
+api_1            | INFO:     172.24.0.9:46214 - "GET /v1/workspaces/f54c7366-4a49-5eda-8373-dcd80bd5df6d/research-runs/9d869aea-41f1-4a8d-88fb-f1b7a2b3ca37/artifacts HTTP/1.1" 200 OK
+api_1            | INFO:     172.24.0.9:46214 - "GET /v1/workspaces/f54c7366-4a49-5eda-8373-dcd80bd5df6d/research-runs/9d869aea-41f1-4a8d-88fb-f1b7a2b3ca37/events HTTP/1.1" 200 OK
+api_1            | INFO:     172.24.0.9:46214 - "GET /v1/workspaces/f54c7366-4a49-5eda-8373-dcd80bd5df6d/research-runs/9d869aea-41f1-4a8d-88fb-f1b7a2b3ca37/events HTTP/1.1" 200 OK
+api_1            | INFO:     172.24.0.9:46214 - "POST /v1/workspaces/f54c7366-4a49-5eda-8373-dcd80bd5df6d/research-runs HTTP/1.1" 201 Created
+api_1            | INFO:     172.24.0.9:46214 - "GET /v1/workspaces/f54c7366-4a49-5eda-8373-dcd80bd5df6d/research-runs/534dfa9a-96ad-4048-92bb-ef3dfb939167 HTTP/1.1" 200 OK
+api_1            | INFO:     172.24.0.9:46214 - "GET /v1/workspaces/f54c7366-4a49-5eda-8373-dcd80bd5df6d/research-runs/534dfa9a-96ad-4048-92bb-ef3dfb939167 HTTP/1.1" 200 OK
+api_1            | INFO:     172.24.0.9:46214 - "POST /v1/workspaces/f54c7366-4a49-5eda-8373-dcd80bd5df6d/research-runs/534dfa9a-96ad-4048-92bb-ef3dfb939167/plan-decisions/24ff129e-8a8c-454d-b116-0412a48e7c6c HTTP/1.1" 200 OK
+api_1            | INFO:     127.0.0.1:49760 - "GET /health/ready HTTP/1.1" 200 OK

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import logging
+import os
 import signal
 from collections.abc import Callable
 from threading import Event
@@ -14,10 +15,16 @@ from ai_pdf_api.services.ingestion import (
     process_ingestion_job,
 )
 from ai_pdf_api.services.providers import get_embedding_provider
+from ai_pdf_api.core.research_observability import (
+    configure_research_observability,
+    observe_research_recovery,
+    research_log,
+)
 
 from ai_pdf_worker.image_ingestion import ImageIngestionAdapter
 from ai_pdf_worker.metrics import WORKER_ACTIVE_JOBS, WORKER_JOBS, start_metrics_server
 from ai_pdf_worker.pdf_ingestion import PdfIngestionAdapter
+from ai_pdf_worker.research_runtime import ResearchWorkProcessor, build_default_research_service
 
 POLL_INTERVAL_SECONDS = 1.0
 RETRY_INITIAL_DELAY_SECONDS = 1.0
@@ -34,32 +41,70 @@ logger = logging.getLogger("ai_pdf_worker")
 
 ProcessJob = Callable[[], bool]
 WaitForStop = Callable[[float], bool]
+ResearchProcessorFactory = Callable[[], ResearchWorkProcessor]
+
+# Tests and ingestion-only deployments leave this unset.  ``main`` enables it
+# explicitly, so importing the worker never makes Research a hidden dependency.
+RESEARCH_PROCESSOR_FACTORY: ResearchProcessorFactory | None = None
+_PREFER_RESEARCH = False
+
+
+def _process_ingestion_job(db: object) -> bool:
+    job_id = claim_next_ingestion_job(db)
+    if job_id is None:
+        return False
+
+    logger.info("worker_job_claimed job_id=%s lane=ingestion", job_id)
+    WORKER_JOBS.labels(outcome="claimed").inc()
+    WORKER_ACTIVE_JOBS.inc()
+    try:
+        process_ingestion_job(
+            db,
+            job_id,
+            ingestion_adapters=INGESTION_ADAPTERS,
+            embedding_provider=get_embedding_provider(),
+        )
+    except Exception:
+        WORKER_JOBS.labels(outcome="error").inc()
+        raise
+    finally:
+        WORKER_ACTIVE_JOBS.dec()
+    WORKER_JOBS.labels(outcome="handled").inc()
+    logger.info("worker_job_handled job_id=%s lane=ingestion", job_id)
+    return True
+
+
+def _process_research_job() -> bool:
+    if RESEARCH_PROCESSOR_FACTORY is None:
+        return False
+    processor = RESEARCH_PROCESSOR_FACTORY()
+    WORKER_ACTIVE_JOBS.inc()
+    try:
+        if not processor.process_one():
+            return False
+    except Exception:
+        WORKER_JOBS.labels(outcome="error").inc()
+        raise
+    finally:
+        WORKER_ACTIVE_JOBS.dec()
+    WORKER_JOBS.labels(outcome="research_claimed").inc()
+    WORKER_JOBS.labels(outcome="research_handled").inc()
+    return True
 
 
 def process_one_job() -> bool:
-    with SessionLocal() as db:
-        job_id = claim_next_ingestion_job(db)
-        if job_id is None:
-            return False
-
-        logger.info("worker_job_claimed job_id=%s", job_id)
-        WORKER_JOBS.labels(outcome="claimed").inc()
-        WORKER_ACTIVE_JOBS.inc()
-        try:
-            process_ingestion_job(
-                db,
-                job_id,
-                ingestion_adapters=INGESTION_ADAPTERS,
-                embedding_provider=get_embedding_provider(),
-            )
-        except Exception:
-            WORKER_JOBS.labels(outcome="error").inc()
-            raise
-        finally:
-            WORKER_ACTIVE_JOBS.dec()
-        WORKER_JOBS.labels(outcome="handled").inc()
-        logger.info("worker_job_handled job_id=%s", job_id)
-        return True
+    global _PREFER_RESEARCH
+    lanes = ("research", "ingestion") if _PREFER_RESEARCH else ("ingestion", "research")
+    for lane in lanes:
+        if lane == "research":
+            handled = _process_research_job()
+        else:
+            with SessionLocal() as db:
+                handled = _process_ingestion_job(db)
+        if handled:
+            _PREFER_RESEARCH = lane == "ingestion"
+            return True
+    return False
 
 
 def _retry_delay(
@@ -122,7 +167,7 @@ def run_worker(
             has_job = process_job()
         except Exception as error:
             consecutive_errors += 1
-            logger.exception(
+            logger.error(
                 "worker_iteration_failed attempt=%s max_consecutive_errors=%s error_type=%s",
                 consecutive_errors,
                 max_consecutive_errors,
@@ -138,6 +183,15 @@ def run_worker(
                     type(error).__name__,
                 )
                 raise
+
+            observe_research_recovery("retry")
+            research_log(
+                logger,
+                tag="research_retry",
+                status="retry",
+                level=logging.WARNING,
+                fields={"attempt_number": consecutive_errors, "reason_code": type(error).__name__},
+            )
 
             delay_seconds = _retry_delay(
                 consecutive_errors,
@@ -156,6 +210,13 @@ def run_worker(
             continue
 
         if consecutive_errors:
+            observe_research_recovery("recovered")
+            research_log(
+                logger,
+                tag="research_recovery",
+                status="recovered",
+                fields={"attempt_number": consecutive_errors},
+            )
             logger.info("worker_error_recovered previous_errors=%s", consecutive_errors)
             consecutive_errors = 0
 
@@ -169,11 +230,23 @@ def run_worker(
 
 
 def main() -> None:
+    global RESEARCH_PROCESSOR_FACTORY
     logging.basicConfig(
         level=logging.INFO,
         format="%(asctime)s %(levelname)s %(name)s %(message)s",
     )
     stop_event = Event()
+    configure_research_observability(
+        service_name=settings.research_otel_service_name,
+        endpoint=settings.research_otel_endpoint,
+        export_timeout_seconds=settings.research_otel_export_timeout_seconds,
+    )
+    previous_factory = RESEARCH_PROCESSOR_FACTORY
+    RESEARCH_PROCESSOR_FACTORY = lambda: ResearchWorkProcessor(
+        SessionLocal,
+        build_default_research_service(),
+        worker_instance_id=os.environ.get("AI_PDF_WORKER_INSTANCE_ID"),
+    )
     start_metrics_server(settings.worker_metrics_host, settings.worker_metrics_port)
     _install_signal_handlers(stop_event)
     logger.info(
@@ -185,14 +258,17 @@ def main() -> None:
         RETRY_MAX_DELAY_SECONDS,
     )
     try:
-        run_worker(stop_event=stop_event)
-    except KeyboardInterrupt:
-        logger.info("worker_stopped reason=keyboard_interrupt")
-    except Exception as error:
-        logger.exception("worker_fatal error_type=%s", type(error).__name__)
-        raise
-    else:
-        logger.info("worker_stopped reason=stop_event")
+        try:
+            run_worker(stop_event=stop_event)
+        except KeyboardInterrupt:
+            logger.info("worker_stopped reason=keyboard_interrupt")
+        except Exception as error:
+            logger.error("worker_fatal error_type=%s", type(error).__name__)
+            raise
+        else:
+            logger.info("worker_stopped reason=stop_event")
+    finally:
+        RESEARCH_PROCESSOR_FACTORY = previous_factory
 
 
 if __name__ == "__main__":

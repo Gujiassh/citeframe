@@ -18,6 +18,12 @@ from ai_pdf_api.models.evidence_locator import (
     PdfLocatorDetail,
     SpatialLocatorRegion,
 )
+from ai_pdf_api.models.evaluation import (
+    ResearchEvaluationCaseResult,
+    ResearchEvaluationClaimResult,
+    ResearchEvaluationRun,
+    ResearchEvaluationSuite,
+)
 from ai_pdf_api.models.image_representation_geometry import ImageRepresentationGeometry
 from ai_pdf_api.models.ingestion_job import IngestionJob
 from ai_pdf_api.models.message_citation import MessageCitation
@@ -30,6 +36,38 @@ from ai_pdf_api.models.note import Note
 from ai_pdf_api.models.note_source import NoteSource
 from ai_pdf_api.models.note_tag import NoteTag
 from ai_pdf_api.models.pdf_page import PdfPage
+from ai_pdf_api.models.research_artifact import (
+    HumanDecision,
+    HumanDecisionClaim,
+    ResearchArtifact,
+    ResearchArtifactClaim,
+    ResearchArtifactPromptVersion,
+    ResearchClaim,
+    ResearchClaimEvidence,
+    ResearchEvidenceSnapshot,
+)
+from ai_pdf_api.models.research_execution import (
+    ResearchBudgetLedger,
+    ResearchEvent,
+    ResearchEvidenceHandle,
+    ResearchIdempotencyRecord,
+    ResearchProviderCall,
+    ResearchStep,
+    ResearchStepAttempt,
+    ResearchStepDependency,
+    ResearchStepRetryRequest,
+    ResearchToolCall,
+    ResearchToolCallInputHandle,
+)
+from ai_pdf_api.models.research_run import (
+    ResearchExecutionAsset,
+    ResearchExecutionPromptVersion,
+    ResearchExecutionSnapshot,
+    ResearchPlanRevision,
+    ResearchPlanRevisionAsset,
+    ResearchRun,
+)
+from ai_pdf_api.models.research_versions import PromptVersion, WorkflowPromptBinding, WorkflowVersion
 from ai_pdf_api.models.tag import Tag
 from ai_pdf_api.models.user import User
 from ai_pdf_api.models.workspace import Workspace
@@ -49,6 +87,8 @@ __all__ = [
     "EvidenceLocator",
     "ImageLocatorDetail",
     "ImageRepresentationGeometry",
+    "HumanDecision",
+    "HumanDecisionClaim",
     "IngestionJob",
     "LocatorType",
     "MessageCitation",
@@ -60,10 +100,40 @@ __all__ = [
     "NoteTag",
     "PdfLocatorDetail",
     "PdfPage",
+    "PromptVersion",
+    "ResearchArtifact",
+    "ResearchArtifactClaim",
+    "ResearchArtifactPromptVersion",
+    "ResearchBudgetLedger",
+    "ResearchClaim",
+    "ResearchClaimEvidence",
+    "ResearchEvaluationCaseResult",
+    "ResearchEvaluationClaimResult",
+    "ResearchEvaluationRun",
+    "ResearchEvaluationSuite",
+    "ResearchEvent",
+    "ResearchEvidenceHandle",
+    "ResearchEvidenceSnapshot",
+    "ResearchExecutionAsset",
+    "ResearchExecutionPromptVersion",
+    "ResearchExecutionSnapshot",
+    "ResearchIdempotencyRecord",
+    "ResearchPlanRevision",
+    "ResearchPlanRevisionAsset",
+    "ResearchProviderCall",
+    "ResearchRun",
+    "ResearchStep",
+    "ResearchStepAttempt",
+    "ResearchStepDependency",
+    "ResearchStepRetryRequest",
+    "ResearchToolCall",
+    "ResearchToolCallInputHandle",
     "RepresentationType",
     "SpatialLocatorRegion",
     "Tag",
     "User",
     "Workspace",
     "WorkspaceMembership",
+    "WorkflowPromptBinding",
+    "WorkflowVersion",
 ]

@@ -24,7 +24,8 @@
 14. `../architecture/modality-extension-contract.md`
 15. `../../specs/v3/multimodal-workspace/spec.md`
 16. `../../specs/v4/evidence-research-workflow/`
+17. `../architecture/research-workflow-runtime.md`
 
 `specs/v1/`、`specs/v2/retrieval-quality/` 和 `specs/v2/deployment-baseline/` 均作为完成基线保留。`specs/v3/evidence-contract/` 保留研究协议与早期合同发现记录；当前 V3 主线由 `specs/v3/multimodal-workspace/` 管理，范围为多模态 PDF + 独立图片。
 
-当前 V3 M401-M403B 已完成，M404 仍是独立 Beta 用户价值门；V4 目前只完成设计提案，R000 字段级合同尚未批准，不能把 V4 目录中的计划描述当作已实现 API 或数据库事实。
+当前 V3 M401-M403B 与 V4 R000-R800 确定性工程基线已完成。R800 scripted provider 只证明工程行为；R803 真实模型成对质量与 M404 目标用户价值仍是 `not_evaluable`，产品保持 `internal_preview`。

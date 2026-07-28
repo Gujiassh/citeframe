@@ -17,6 +17,7 @@ from ai_pdf_api.core.metrics import (
     INGESTION_METRICS_REFRESH_FAILURES,
     refresh_ingestion_job_metrics,
 )
+from ai_pdf_api.core.research_observability import configure_research_observability
 from ai_pdf_api.core.settings import settings
 from ai_pdf_api.db.session import SessionLocal
 from ai_pdf_api.modalities.catalog import validate_database_catalog
@@ -24,14 +25,27 @@ from ai_pdf_api.modalities.registry import build_production_registry
 from ai_pdf_api.routers.assets import router as assets_router
 from ai_pdf_api.routers.auth import router as auth_router
 from ai_pdf_api.routers.chat import router as chat_router
+from ai_pdf_api.routers.evaluation import router as evaluation_router
 from ai_pdf_api.routers.jobs import router as jobs_router
 from ai_pdf_api.routers.notes import router as notes_router
+from ai_pdf_api.routers.research import router as research_router
 from ai_pdf_api.routers.workspaces import router as workspaces_router
 from ai_pdf_api.services.storage import build_storage_client
 
 configure_application_logging()
 logger = logging.getLogger(__name__)
 modality_registry = build_production_registry()
+
+
+def _configure_research_telemetry() -> bool:
+    return configure_research_observability(
+        service_name=settings.research_otel_service_name,
+        endpoint=settings.research_otel_endpoint,
+        export_timeout_seconds=settings.research_otel_export_timeout_seconds,
+    )
+
+
+RESEARCH_OBSERVABILITY_CONFIGURED = _configure_research_telemetry()
 
 HTTP_METHODS = {"DELETE", "GET", "HEAD", "OPTIONS", "PATCH", "POST", "PUT"}
 
@@ -82,6 +96,8 @@ app.include_router(assets_router)
 app.include_router(chat_router)
 app.include_router(jobs_router)
 app.include_router(notes_router)
+app.include_router(research_router)
+app.include_router(evaluation_router)
 
 
 app.add_middleware(HttpMetricsMiddleware)

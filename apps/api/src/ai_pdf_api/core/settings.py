@@ -17,6 +17,9 @@ class Settings(BaseSettings):
     max_upload_bytes: int = Field(default=1024 * 1024 * 100)
     worker_metrics_host: str = "127.0.0.1"
     worker_metrics_port: int = Field(default=9101, ge=1, le=65535)
+    research_otel_service_name: str = Field(default="citeframe", min_length=1, max_length=128)
+    research_otel_endpoint: str | None = None
+    research_otel_export_timeout_seconds: float = Field(default=5.0, gt=0, le=30)
     api_internal_token: str = Field(
         default="local-development-internal-token",
         validation_alias=AliasChoices("AI_PDF_API_INTERNAL_TOKEN"),

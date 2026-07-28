@@ -17,7 +17,7 @@
 
 ## 2. 当前总状态
 
-当前项目状态：`V1、Chat-first 工作台、V2-A Hybrid/RRF、阶段 9 可复现单机生产基线、V3 Phase 1-3 以及 Phase 4 M401-M403B 已完成；PDF 与 PNG/JPEG/WebP Image 生产工程门禁通过，M404 用户价值仍为 not_evaluable。`
+当前项目状态：`V1、Chat-first 工作台、V2-A Hybrid/RRF、阶段 9、V3 M401-M403B 与 V4 R000-R800 确定性工程基线已完成；R803 真实模型质量和 M404 用户价值仍为 not_evaluable，产品保持 internal_preview。`
 
 M403A 的逐次优化假设、实验手段、通过/否决结果、指标和 artifact 统一记录在 `docs/evals/m403a-optimization-log.md`；后续不得只更新最终结论而遗漏失败实验与运行环境证据。
 
@@ -29,7 +29,7 @@ M403A 的逐次优化假设、实验手段、通过/否决结果、指标和 art
 - 真实后端认证接口与 BFF session cookie 已接通
 - `users / workspaces / workspace_memberships` 最小真表链路已接通
 - 首页与工作区详情页的 workspace 可见范围、创建、归档已切到真实 BFF/API
-- API 侧已接入数据库结构版本步骤工具，当前数据库 head 为 `a3c5e7f9b1d4`；embedding current-chain、双 HNSW、scope trigger 与生产 Image catalog 已落地
+- API 侧已接入数据库结构版本步骤工具，当前数据库 head 为 `e8f1a2b3c4d5`；embedding current-chain、双 HNSW、生产 Image、Research/Evaluation ledger 与 Workflow/Prompt v2 已落地
 - Asset、向量检索、Chat thread/message/citation、notes/tags 已进入真实链路
 - 生产运行时已移除 `/documents` 和 Document 业务模型，历史 PDF 数据已机械迁移到 Asset/Evidence 内核
 
@@ -50,6 +50,7 @@ M403A 的逐次优化假设、实验手段、通过/否决结果、指标和 art
 | V3-2 | 多模态 PDF Evidence | 已完成 | 已完成 | 页面几何、layout/OCR、表格/图表/页内图片、`pdf_page/pdf_region` Citation/NoteSource、Viewer 区域交互与失败 Chat 回放已通过两轮 Critical 复验 |
 | V3-3 | 独立图片闭环 | 已完成 | M301-M305 已通过最终 Critical | 图片归一化、OCR/caption、Evidence 历史快照、Viewer、区域 Chat/Note 与混合检索已完成；M403B 已将生产 Image 正式启用 |
 | V3-4 | 质量与发布验收 | M401-M403B 已完成 | M403B 已完成 | M403 恢复、M403A binary64/3N canonical 与 M403B 三格式生产上传/恢复/浏览器门均通过；工程 `releaseGatePassed=true` |
+| V4 | Evidence Research Workflow | R000-R800 已完成 | 确定性工程门通过 | Research ledger、固定 executor、HITL/SSE/retry/recovery、Web、observability、Evaluation 与 R800 PostgreSQL/MinIO 恢复全部通过；R803/M404 仍 not_evaluable |
 
 ## 4. 已完成的设计文档
 
@@ -63,17 +64,17 @@ M403A 的逐次优化假设、实验手段、通过/否决结果、指标和 art
 
 ## 5. 当前建议实施顺序
 
-V1、V2-A、阶段 9、V3 Phase 1-3 与 Phase 4 M401-M403B 已完成。后续按以下顺序推进：
+V1、V2-A、阶段 9、V3 M401-M403B 与 V4 R000-R800 工程基线已完成。后续按以下顺序推进：
 
-1. 形成 M403B 稳定 Git 边界，进入 V4 Evidence Research Workflow 的持久化/API 状态机与多 Agent 执行实现
-2. 真实用户验证作为 M404 Beta 门并行推进；数据不足时保持 `not_evaluable` 和内部预览
-3. V4 每个切片继续沿用确定性 fixture、真实 BFF、恢复与独立复审门，不以“多 Agent”替代证据质量
+1. 仅在真实 provider、fixture、Asset scope 与 comparison keys 明确批准后执行 R803 Quick/Research 成对质量
+2. 真实用户验证作为 M404 Beta 门推进；数据不足时保持 `not_evaluable` 和内部预览
+3. 后续切片继续沿用确定性 fixture、真实 BFF、恢复与独立复审门，不以“多 Agent”或工程绿灯替代证据质量
 
 ## 6. 当前正在做什么
 
-当前：`M403B 已完成并启用生产 Image。PNG/JPEG/WebP 真实上传、immutable-source failure/retry、检索/Evidence、长期 Worker 桌面/390px 浏览器链、Image-enabled 销卷恢复和最终清理均通过；下一阶段是 V4 Evidence Research Workflow 多 Agent 实现，M404 继续 not_evaluable。`
+当前：`V4 R800 v4 确定性工程门已通过。Research main Run、bounded parallel fan-out、unsupported withholding、冲突审批恢复、分支重试、lease reclaim、SSE replay、取消/成员移除、唯一 final Artifact、PostgreSQL/MinIO 空部署恢复和最终清理均通过；R803/M404 继续 not_evaluable。`
 
-## 7. M403A 当前切片
+## 2026-07-20：M403A 完成记录
 
 - current-chain 修复前的失败 canonical 保留为历史证据：S0/S1 通过，S2 `image-ocr:D1=0.8`；不能将失败报告改写为通过。
 - 根因已由保留库矩阵确认：旧 generation/index 与 current target 的向量重复，ANN CTE 只按 embedding metadata 取前缀，外层 current-chain 过滤后丢失 current target；提高 `ef_search`、`m` 或窗口不能稳定修复，完整 current-chain `EXISTS` 会导致 exact sort。
@@ -95,7 +96,7 @@ V1、V2-A、阶段 9、V3 Phase 1-3 与 Phase 4 M401-M403B 已完成。后续按
 - `apps/web`、`apps/api`、`apps/worker` 基础工程已初始化
 - Workspace 列表与详情的最小 API/BFF/页面链路已建立
 - `users / workspaces / workspace_memberships` 最小真表、查询、创建、归档链路已落地
-- API 侧已从启动时自动建表切换到显式数据库版本步骤；当前 head 版本为 `a3c5e7f9b1d4`
+- API 侧已从启动时自动建表切换到显式数据库版本步骤；当前 head 版本为 `e8f1a2b3c4d5`
 - `assets / ingestion_jobs` 真表、迁移、列表、upload-session、二进制上传、finalize-upload、job 查询与删除链路已落地；Worker 通过 `IngestionAdapterRegistry` 按 `asset_kind` dispatch，API 共享 orchestrator 不再理解 PDF/OCR/page/bbox
 - `pdf_pages / content_units / content_unit_embeddings` 真表和迁移已落地；Worker 会领取 queued ingest job、回收超时任务，先提取文本层，必要时用 RapidOCR + ONNX Runtime 渲染页面并识别，再按页生成 ContentUnit、批量调用 embedding provider、写入向量并推进 `chunking -> embedding -> ready`，同时支持 `embed_chunks` 回填已有 ContentUnit。
 - 原始 PDF 文件流已接通 API/BFF；`PdfViewer` 使用 PDF.js canvas 作为主页面、text layer 支持原生 PDF 文本选取、扫描 PDF 使用透明 OCR block 层支持划词、annotation layer 支持 PDF 内置链接/批注，OCR 文本不覆盖源页面视觉内容
@@ -146,14 +147,24 @@ V1、V2-A、阶段 9、V3 Phase 1-3 与 Phase 4 M401-M403B 已完成。后续按
 - 2026-07-19 V3 Phase 4 M401：新增严格 `multimodal-golden-v1`、`multimodal-failures-v1` 与确定性 coverage report。黄金集将已有 40 条真实 PDF retrieval 数据作为 hash/case-count 冻结的 reference baseline，并以 3 个非机密确定性 source fixture 建立 21 个 PDF/Image/mixed 工程 case，retrieval/evidence/answer 各 7 个，覆盖 7 类任务与 2 个 no-answer。失败 taxonomy 固定 10 类，首批只收录 6 个有持久化回归测试的真实历史 failure。校验器对未知字段、规范路径/文件/source+manifest hash、坐标合同/几何、scope、typed locator、层级语义和覆盖门槛 fail closed；40-case baseline 复用现有严格 label loader，失败复现只接受 API/Worker pytest 中模块顶层、AST 可见的 `testFile + testName` 并生成结构化 argv，不接受自由命令或路径穿越。定向测试 `18/18`、API `208/208`、Worker `79/79`、Web `82/82`、compileall、lint/tsc/build、确定性报告与 diff check 通过；最终独立 Standard 复审 `PASS`。`coveragePassed` 只表示评测合同完整，不宣称模型回答质量或用户价值通过；生产 Image 继续 disabled。
 - 2026-07-19 V3 Phase 4 M402 最终验收：单一 Worker node 直接消费 21-case golden set，真实执行 19 个 PDF/Image Evidence target adapter/locator、7 个生产 Dense/lexical/RRF/scope retrieval case 和 7 个 scripted Chat 编排；无 `page.route` 真实 BFF Playwright 在 1440x1000 与 390x844 下分别完成 7 Evidence case/8 target，生成 16 张截图，最小 approved-area coverage `0.294333`。预调用工具经独立 Standard 对抗复审 `PASS` 后，按明确批准向当前 `openai / gpt-5.5` 配置且仅发送 7 条非机密合成 prompt；全部请求无 provider 错误且 citation target 全覆盖。严格完整输出 allowlist 初次接受 1 条，其余 6 条正确改写经人工逐条对照 Evidence 后加入冻结 oracle；raw output/messages 和 capture-time false diagnostics 保持原样，正式报告忽略自报判分并独立复算。最终报告登记 16 张截图、4 个 raw 和 answer oracle 共 21 个 SHA-256 artifact，21 case 全部 `passed`，`engineeringExecutionPassed=true`、`fullStackEvidencePassed=true`、`realModelQualityPassed=true`、`releaseGatePassed=true`、`pending=[]`。最终 API `226/226`、Worker `84/84`、Web `82/82` 与 lint、tsc、Next build、compileall、Alembic、报告确定性重放和 diff check 通过；生产 Image 继续 disabled。
 
+## 2026-07-28：V4 R800 确定性工程基线（已完成）
+
+- R200-R700 已完成 PostgreSQL/Alembic Research 与 Evaluation 账本、固定 typed executor、Evidence-only tools、HITL/Research SSE/retry/recovery、Web Research 体验、OTel/Prometheus 与 owner-only Evaluation Dashboard。
+- R800 v1/v2/v3 失败记录完整保留。v2 暴露 provider/tool completion 与 reservation 的反向锁序，v3 证明死锁消失后又暴露 scripted stub 的 Claim 状态误判；修复均有定向回归。
+- provider/tool 共享锁序统一为 `Attempt -> Step -> Run -> call -> BudgetLedger`，锁查询显式刷新 identity map；已发送调用在 Run 取消后继续结算，未发送 reservation 仍禁止发送。
+- canonical v4 结果：`engineeringGate=pass`、`releaseGatePassed=true`，provider `maxActive=2`，一次 transient failure/一次 retry，三个 unsupported Claims/零 final links，一个 conflict Decision，最终 Artifact API/DB 均唯一。
+- PostgreSQL/MinIO 空部署恢复前后语义 SHA 均为 `a60fa5eaf70a86e47d3de1b17a7c49561a2c6cfbc369554fc1d94a9567bab6a8`；容器、卷、网络和 secret env 零残留。
+- canonical 文档入口为 `docs/evals/r800-critical-review.md`、`docs/architecture/research-workflow-runtime.md` 与 `docs/evals/r800-demo-script.md`。
+- scripted provider 不能评价真实模型；R803 与 M404 均保持 `not_evaluable`，不改变 `internal_preview`。
+
 ## 7. 下一步
 
-下一步：`形成 M403B 稳定 Git 边界后，先完成并批准 V4 R000 字段级合同，再进入多 Agent Evidence Research Workflow 第一实施切片；M404 真实用户价值门并行保持 not_evaluable。`
+下一步：`在明确批准真实 provider 与成对 comparison keys 后执行 R803；M404 继续收集目标用户证据。两者未完成前不扩大产品发布声明。`
 
 具体建议从这些内容开始：
 
-1. 以 `specs/v4/evidence-research-workflow/` 为下一开发入口，先冻结任务状态机、权限、可恢复执行和 Evidence 输出合同。
-2. M404 真实用户任务验证并行收集；结果未完成前产品继续作为内部预览。
+1. R803 使用同一 fixture、Asset scope、provider/model、Workflow/Prompt comparison keys 运行 Quick/Research 成对质量，不复用 scripted R800 结论。
+2. M404 真实用户任务验证继续收集；结果未完成前产品继续作为内部预览。
 3. Audio/Video 仍按独立模态 adapter/locator/Viewer 立项，不和 V4 workflow 状态机混成一次迁移。
 
 ## 8. 当前不进入主线
@@ -225,6 +236,6 @@ V1、V2-A、阶段 9、V3 Phase 1-3 与 Phase 4 M401-M403B 已完成。后续按
 
 ## 2026-07-24：文档一致性审计与 V4 计划补强
 
-- 当前主入口已同步 M403B/V4 状态，但整个文档集尚未宣称无漂移；当前数据库 head 为 `a3c5e7f9b1d4`，Image 已由 M403B 正式启用。旧 Document/PDF-only 章节的逐段清单记录在 V4 `requirements-discovery.md` 第 11 节，作为 R000 `RD003` 前置关闭，open 项不能作为 Research 合同输入。
+- 当前主入口已同步 M403B/V4 状态；当前数据库 head 为 `e8f1a2b3c4d5`，Image 已由 M403B 正式启用，R000-R800 确定性工程基线已完成。旧 Document/PDF-only 章节的逐段清单记录在 V4 `requirements-discovery.md` 第 11 节，R000 `RD003` 已关闭；历史 ER 与旧规划不得作为当前 Research 合同输入。
 - 历史 V1/V2 规划、旧 Document 状态机、认证执行清单和 V3 Contract Draft 已加 legacy/历史状态说明，保留原始阶段证据但不再作为当前实现入口；Evidence RFC 与 migration impact 的 Image/restore 未完成项已同步关闭。
 - V4 方向、阶段和非目标已经明确，但 R000 仍未完成：新增字段级 schema、唯一/幂等键、状态迁移、事件 payload allowlist、API error matrix、provenance、删除/恢复和审批记录要求；在这些合同获批前不实现 Research 持久化或 API。

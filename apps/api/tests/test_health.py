@@ -29,6 +29,26 @@ def test_application_logs_use_flat_info_formatter() -> None:
     assert handler.format(record) == "retrieval_complete strategy=hybrid workspace_id=workspace-1 total_ms=1.250"
 
 
+def test_research_observability_uses_startup_settings(monkeypatch) -> None:
+    captured = {}
+
+    def configure(**kwargs):
+        captured.update(kwargs)
+        return True
+
+    monkeypatch.setattr(main_module, "configure_research_observability", configure)
+    monkeypatch.setattr(main_module.settings, "research_otel_service_name", "citeframe-api-test")
+    monkeypatch.setattr(main_module.settings, "research_otel_endpoint", "http://collector.test/v1/traces")
+    monkeypatch.setattr(main_module.settings, "research_otel_export_timeout_seconds", 2.5)
+
+    assert main_module._configure_research_telemetry() is True
+    assert captured == {
+        "service_name": "citeframe-api-test",
+        "endpoint": "http://collector.test/v1/traces",
+        "export_timeout_seconds": 2.5,
+    }
+
+
 def test_liveness_does_not_require_dependencies() -> None:
     client = TestClient(main_module.app)
 

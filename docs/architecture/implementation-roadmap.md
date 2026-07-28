@@ -51,8 +51,9 @@ V3 范围已确认为多模态 PDF + 独立图片，以下设计与破坏性合�
 ## 5. Beta 与 Later
 
 - Beta 前完成至少 5 名目标用户、20 个真实任务和 5 份复杂资产的验证；未完成时只发布内部预览。
-- V4 Evidence Research Workflow 作为下一实施阶段进入 `specs/v4/evidence-research-workflow/`：在 M403B 稳定 Git 边界上实现固定、版本化、可并行、可恢复、可审批、可观测和可评测的多 Agent 深度研究工作流。M404 与 V4 工程可并行推进，但 M404 未完成时产品仍为内部预览。
-- V4 提案包含 Evaluation Dashboard、Prompt/Workflow Version、ResearchArtifact、Streaming、Observability、Human in the Loop、真并行和失败恢复；不包含拖拽 Workflow、自由插件和自动长期记忆。
+- V4 Evidence Research Workflow 的 R000-R800 确定性工程基线已完成：固定、版本化、可并行、可恢复、可审批、可观测和可评测的 Research workflow 通过真实 PostgreSQL/MinIO 发布验收。
+- V4 已包含 Evaluation Dashboard、Prompt/Workflow Version、ResearchArtifact、独立 Streaming、Observability、Human in the Loop、真并行和失败恢复；不包含拖拽 Workflow、自由插件和自动长期记忆。
+- 下一门是 R803 经明确批准的真实 provider Quick/Research 成对质量，以及独立 M404 目标用户价值；两者未完成前保持 `internal_preview`。
 - Audio：ASR、说话人和时间段 locator 独立立项。
 - Video：镜头、关键帧、字幕和时间段 locator 独立立项。
 - Omnilabel：作为独立 discovery/edition/integration；先验证标注团队、权限、数据集 schema、预测对比和 SQL/分析查询语义。

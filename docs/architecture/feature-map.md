@@ -23,6 +23,13 @@ Citeframe
 │  ├─ 流式回答 / 消息分支
 │  ├─ pdf_page / pdf_region / image_region citation
 │  └─ citation -> note / 标签 / 历史 Evidence
+├─ Evidence Research
+│  ├─ 显式 Quick / Research 模式
+│  ├─ 冻结 Plan / Workflow / Prompt / Asset scope / provider profile
+│  ├─ bounded Researcher fan-out / Verifier / Critic / Synthesizer
+│  ├─ 计划审批 / 冲突裁决 / SSE replay / retry / cancel / lease reclaim
+│  ├─ immutable Artifact / Claim / Evidence provenance
+│  └─ owner-only Evaluation Dashboard
 ├─ Evidence Viewer
 │  ├─ PDF.js 原文 / 目录 / 文本选择 / 区域高亮
 │  ├─ Image Representation / 区域高亮
@@ -36,9 +43,9 @@ Citeframe
 
 以上是当前已实现事实。正式数据模型已经切换为 `Asset -> Representation -> ContentUnit -> EvidenceLocator -> Citation/NoteSource`；PDF 与 PNG/JPEG/WebP Image 都已进入生产摄取注册表，并共用稳定的 Asset/Evidence 主链。
 
-## 2. 当前阶段：M403B 工程启用完成，进入 V4 R000 草案审批
+## 2. 当前阶段：V4 确定性工程基线完成
 
-Asset 和 Evidence 主链已经迁移完成；PDF 与 PNG/JPEG/WebP Image 已正式进入生产 registry。M404 真实用户价值仍为 `not_evaluable`，V4 当前只进入 R000 合同草案与审批，尚未冻结或授权实现：
+Asset 和 Evidence 主链、PDF/Image 生产 registry 与 V4 Research 工程闭环均已实现。R800 v4 在真实 PostgreSQL/MinIO 和生产镜像上通过并行、HITL、失败恢复、SSE replay、Artifact provenance、备份恢复与零残留清理。当前能力包括：
 
 - PDF/Image 统一资产列表、上传、处理状态、重试和删除
 - Chat 全部资产/显式资产范围
@@ -51,8 +58,12 @@ Asset 和 Evidence 主链已经迁移完成；PDF 与 PNG/JPEG/WebP Image 已正
 - citation 点击后的精确区域高亮
 - 通用 Evidence Viewer，内部使用 PDF/Image 专用 renderer
 - 文本、扫描页、表格、图表、独立图片和无答案问题的分层评测
+- 独立 Research Run/Event SSE、版本化 Workflow/Prompt 与预算/调用账本
+- 可信离线 Evaluation importer、owner-only API 与质量/成本/恢复下钻
 
 Evidence 数据合同与迁移设计已经批准并实施。已有 locator 意义、Citation/NoteSource envelope 和保存语义继续冻结；后续仍不能引入任意 JSON locator 或绕过类型目录与 codec。
+
+R800 使用 scripted provider，只证明工程行为；R803 真实模型成对质量与 M404 目标用户价值均保持 `not_evaluable`，产品仍是 `internal_preview`。
 
 ## 3. 目标领域边界
 

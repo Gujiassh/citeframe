@@ -50,6 +50,7 @@ from ai_pdf_api.services.retrieval import (
 from ai_pdf_api.services.retrieval_experiments import LexicalCorpus
 from alembic import command
 from alembic.config import Config
+from alembic.script import ScriptDirectory
 from sqlalchemy import create_engine, delete, event, select, text
 from sqlalchemy.engine import make_url
 from sqlalchemy.exc import OperationalError
@@ -1303,7 +1304,10 @@ def test_postgresql_mixed_retrieval_matches_sqlite_oracle(
                 "00000000-0000-0000-0000-000000001002",
                 "00000000-0000-0000-0000-000000001003",
             ]
-            assert db.execute(text("select version_num from alembic_version")).scalar_one() == "a3c5e7f9b1d4"
+            migration_heads = set(ScriptDirectory.from_config(alembic_config).get_heads())
+            assert migration_heads == {
+                db.execute(text("select version_num from alembic_version")).scalar_one()
+            }
             generated_column = db.execute(
                 text(
                     """

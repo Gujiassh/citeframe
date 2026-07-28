@@ -333,6 +333,6 @@ V1 成功的最低标准是：
 
 ## 12. 当前建议
 
-当前功能闭环、可复现部署和 V3 PDF/Image 纵向链路已经建立。下一阶段是 V4 Evidence Research Workflow：Quick Answer 保持默认与既有保存语义，Deep Research 仅在用户显式选择且 R000 合同获批后进入实现。
+当前功能闭环、可复现部署、V3 PDF/Image 纵向链路和 V4 Evidence Research 确定性工程基线已经建立。Quick Answer 保持默认与既有保存语义；Deep Research 仅在用户显式选择后创建独立 Run，并使用冻结 Workflow/Prompt/Asset scope/provider profile。
 
-真实用户任务验证仍是 Beta 门禁，未完成时不能宣称用户价值已验证。Audio、Video 与文档类新模态均需单独立项和价值门；Omnilabel 的业务模型继续独立设计。V4 R000 的产品裁决见 `specs/v4/evidence-research-workflow/requirements-discovery.md`。
+R800 scripted provider 工程门通过不等于真实模型质量或用户价值通过。R803 真实模型成对质量与 M404 目标用户任务仍是独立门禁；未完成时保持 `internal_preview`。Audio、Video 与文档类新模态均需单独立项和价值门；Omnilabel 的业务模型继续独立设计。V4 裁决与当前状态见 `specs/v4/evidence-research-workflow/`。

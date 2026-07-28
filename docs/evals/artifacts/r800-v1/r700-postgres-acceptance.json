@@ -1,0 +1,490 @@
+{
+  "acceptanceHistory": [
+    {
+      "attempt": 1,
+      "finding": "single ORM flush could emit case rows before their parent run on PostgreSQL",
+      "regressionEvidence": "test_import_flushes_the_graph_in_foreign_key_order uses SQLite PRAGMA foreign_keys=ON",
+      "repair": "flush suite, run, case, and claim stages explicitly inside the same savepoint and outer transaction",
+      "result": "failed_then_fixed",
+      "temporaryDatabasesDropped": true
+    },
+    {
+      "attempt": 2,
+      "finding": "different report bytes can lose the first immutable-suite unique race",
+      "regressionEvidence": "bounded retry/fail-closed unit tests plus forced real PostgreSQL suite race",
+      "repair": "after rollback, replay an identical report or retry one complete graph insertion for a committed identical suite",
+      "result": "passed"
+    }
+  ],
+  "alembic": {
+    "emptyCurrent": "b4d6f8a0c2e4\nINFO  [alembic.runtime.migration] Context impl PostgresqlImpl.\nINFO  [alembic.runtime.migration] Will assume transactional DDL.",
+    "emptyDowngradeOutput": "INFO  [alembic.runtime.migration] Context impl PostgresqlImpl.\nINFO  [alembic.runtime.migration] Will assume transactional DDL.\nINFO  [alembic.runtime.migration] Running downgrade c5e7a9b1d3f6 -> b4d6f8a0c2e4, add the research evaluation ledger",
+    "emptyDowngradeTarget": "b4d6f8a0c2e4",
+    "emptyUpgradeOutput": "INFO  [alembic.runtime.migration] Context impl PostgresqlImpl.\nINFO  [alembic.runtime.migration] Will assume transactional DDL.\nINFO  [alembic.runtime.migration] Running upgrade  -> b139cbaa9e15, baseline users workspaces memberships\nINFO  [alembic.runtime.migration] Running upgrade b139cbaa9e15 -> fc962aca95c0, add documents and ingestion jobs\nINFO  [alembic.runtime.migration] Running upgrade fc962aca95c0 -> d7f3aab48fe1, add document pages and chunks\nINFO  [alembic.runtime.migration] Running upgrade d7f3aab48fe1 -> f4d9c0e7a2b1, add pgvector embeddings and chat persistence\nINFO  [alembic.runtime.migration] Running upgrade f4d9c0e7a2b1 -> b7a1d2e4c6f8, add notes, tags, and binding tables\nINFO  [alembic.runtime.migration] Running upgrade b7a1d2e4c6f8 -> c2e4f8a1b7d9, add chat message branches\nINFO  [alembic.runtime.migration] Running upgrade c2e4f8a1b7d9 -> d5f6a7b8c9e0, persist OCR text layer blocks\nINFO  [alembic.runtime.migration] Running upgrade d5f6a7b8c9e0 -> e6a7b8c9d0f1, repair legacy chat message order\nINFO  [alembic.runtime.migration] Running upgrade e6a7b8c9d0f1 -> f7b8c9d0e1f2, add persisted workspace AI settings\nINFO  [alembic.runtime.migration] Running upgrade f7b8c9d0e1f2 -> a8c9d0e1f2a3, add lexical retrieval indexes\nINFO  [alembic.runtime.migration] Running upgrade a8c9d0e1f2a3 -> c9d1e2f3a4b5, migrate documents to the multimodal asset and evidence kernel\nINFO  [alembic.runtime.migration] Running upgrade c9d1e2f3a4b5 -> d0e2f4a6b8c1, add message input evidence\nINFO  [alembic.runtime.migration] Running upgrade d0e2f4a6b8c1 -> e1f3a5c7d9b2, materialize the ContentUnit lexical search vector\nINFO  [alembic.runtime.migration] Running upgrade e1f3a5c7d9b2 -> f2a4c6e8b0d1, add current-chain scope metadata to content unit embeddings\nINFO  [alembic.runtime.migration] Running upgrade f2a4c6e8b0d1 -> a3c5e7f9b1d4, enable the production image modality\nINFO  [alembic.runtime.migration] Running upgrade a3c5e7f9b1d4 -> b4d6f8a0c2e4, add the evidence research ledger\nINFO  [alembic.runtime.migration] Running upgrade b4d6f8a0c2e4 -> c5e7a9b1d3f6, add the research evaluation ledger",
+    "from": "base",
+    "head": "c5e7a9b1d3f6",
+    "sourceCurrent": "c5e7a9b1d3f6 (head)\nINFO  [alembic.runtime.migration] Context impl PostgresqlImpl.\nINFO  [alembic.runtime.migration] Will assume transactional DDL.",
+    "sourceUpgradeOutput": "INFO  [alembic.runtime.migration] Context impl PostgresqlImpl.\nINFO  [alembic.runtime.migration] Will assume transactional DDL.\nINFO  [alembic.runtime.migration] Running upgrade  -> b139cbaa9e15, baseline users workspaces memberships\nINFO  [alembic.runtime.migration] Running upgrade b139cbaa9e15 -> fc962aca95c0, add documents and ingestion jobs\nINFO  [alembic.runtime.migration] Running upgrade fc962aca95c0 -> d7f3aab48fe1, add document pages and chunks\nINFO  [alembic.runtime.migration] Running upgrade d7f3aab48fe1 -> f4d9c0e7a2b1, add pgvector embeddings and chat persistence\nINFO  [alembic.runtime.migration] Running upgrade f4d9c0e7a2b1 -> b7a1d2e4c6f8, add notes, tags, and binding tables\nINFO  [alembic.runtime.migration] Running upgrade b7a1d2e4c6f8 -> c2e4f8a1b7d9, add chat message branches\nINFO  [alembic.runtime.migration] Running upgrade c2e4f8a1b7d9 -> d5f6a7b8c9e0, persist OCR text layer blocks\nINFO  [alembic.runtime.migration] Running upgrade d5f6a7b8c9e0 -> e6a7b8c9d0f1, repair legacy chat message order\nINFO  [alembic.runtime.migration] Running upgrade e6a7b8c9d0f1 -> f7b8c9d0e1f2, add persisted workspace AI settings\nINFO  [alembic.runtime.migration] Running upgrade f7b8c9d0e1f2 -> a8c9d0e1f2a3, add lexical retrieval indexes\nINFO  [alembic.runtime.migration] Running upgrade a8c9d0e1f2a3 -> c9d1e2f3a4b5, migrate documents to the multimodal asset and evidence kernel\nINFO  [alembic.runtime.migration] Running upgrade c9d1e2f3a4b5 -> d0e2f4a6b8c1, add message input evidence\nINFO  [alembic.runtime.migration] Running upgrade d0e2f4a6b8c1 -> e1f3a5c7d9b2, materialize the ContentUnit lexical search vector\nINFO  [alembic.runtime.migration] Running upgrade e1f3a5c7d9b2 -> f2a4c6e8b0d1, add current-chain scope metadata to content unit embeddings\nINFO  [alembic.runtime.migration] Running upgrade f2a4c6e8b0d1 -> a3c5e7f9b1d4, enable the production image modality\nINFO  [alembic.runtime.migration] Running upgrade a3c5e7f9b1d4 -> b4d6f8a0c2e4, add the evidence research ledger\nINFO  [alembic.runtime.migration] Running upgrade b4d6f8a0c2e4 -> c5e7a9b1d3f6, add the research evaluation ledger"
+  },
+  "appendOnly": {
+    "attempts": [
+      {
+        "operation": "update",
+        "sqlstate": "55000",
+        "table": "research_evaluation_suites"
+      },
+      {
+        "operation": "delete",
+        "sqlstate": "55000",
+        "table": "research_evaluation_suites"
+      },
+      {
+        "operation": "update",
+        "sqlstate": "55000",
+        "table": "research_evaluation_runs"
+      },
+      {
+        "operation": "delete",
+        "sqlstate": "55000",
+        "table": "research_evaluation_runs"
+      },
+      {
+        "operation": "update",
+        "sqlstate": "55000",
+        "table": "research_evaluation_case_results"
+      },
+      {
+        "operation": "delete",
+        "sqlstate": "55000",
+        "table": "research_evaluation_case_results"
+      },
+      {
+        "operation": "update",
+        "sqlstate": "55000",
+        "table": "research_evaluation_claim_results"
+      },
+      {
+        "operation": "delete",
+        "sqlstate": "55000",
+        "table": "research_evaluation_claim_results"
+      }
+    ],
+    "expectedSqlstate": "55000"
+  },
+  "canonicalImports": {
+    "differentReportFirstSuiteRace": {
+      "barrierAfterSuiteLookup": true,
+      "results": [
+        {
+          "created": true,
+          "evaluationRunId": "d44a6251-eb80-4b07-a00f-1977512393ef",
+          "sourceReportSha256": "a31e49334fa4122868887266772014e058a1959a96087bf5bf2a8187b79be002"
+        },
+        {
+          "created": true,
+          "evaluationRunId": "e2d9d19e-fdd7-4413-b5ff-4e162d736fa2",
+          "sourceReportSha256": "3166c882f243220f46443db49fbbf1f9675f07e20ca569e5a66eb53385d5670a"
+        }
+      ]
+    },
+    "initial": {
+      "created": true,
+      "evaluationRunId": "c4f1a015-942f-4f9c-baf4-2e6dcc2024af",
+      "sourceReportSha256": "aa3138863a8071f35f2f9d876bc2b06b2c1bc00746e778bba8ae1c307bb900ab"
+    },
+    "sameReportRace": {
+      "barrierAfterIdempotencyLookup": true,
+      "results": [
+        {
+          "created": true,
+          "evaluationRunId": "8a757d8c-b85b-4c01-9df0-e8d026e72047",
+          "sourceReportSha256": "d2ed71286dd9561baa43c1d149dda599f62e632744027fd4f2e125cbe3df5c3f"
+        },
+        {
+          "created": false,
+          "evaluationRunId": "8a757d8c-b85b-4c01-9df0-e8d026e72047",
+          "sourceReportSha256": "d2ed71286dd9561baa43c1d149dda599f62e632744027fd4f2e125cbe3df5c3f"
+        }
+      ]
+    },
+    "workspaceId": "59cb0c15-985d-459b-93e1-4124c913b91a"
+  },
+  "cleanup": {
+    "droppedDatabases": [
+      "citeframe_r800_r700_20260727093816_49746d_empty",
+      "citeframe_r800_r700_20260727093816_49746d_restore",
+      "citeframe_r800_r700_20260727093816_49746d_source"
+    ],
+    "dumpRemoved": true
+  },
+  "commands": [
+    {
+      "command": "cd /home/cc/code/citeframe/apps/api && uv run python /tmp/r700_postgres_acceptance.py",
+      "step": "acceptance orchestrator"
+    },
+    {
+      "command": "PGPASSWORD=<redacted> psql -h 127.0.0.1 -p 5432 -U ai_pdf -d postgres -v ON_ERROR_STOP=1 -c 'CREATE DATABASE \"citeframe_r800_r700_20260727093816_49746d_source\" TEMPLATE template0'",
+      "step": "create temporary database citeframe_r800_r700_20260727093816_49746d_source"
+    },
+    {
+      "command": "PGPASSWORD=<redacted> psql -h 127.0.0.1 -p 5432 -U ai_pdf -d postgres -v ON_ERROR_STOP=1 -c 'CREATE DATABASE \"citeframe_r800_r700_20260727093816_49746d_restore\" TEMPLATE template0'",
+      "step": "create temporary database citeframe_r800_r700_20260727093816_49746d_restore"
+    },
+    {
+      "command": "PGPASSWORD=<redacted> psql -h 127.0.0.1 -p 5432 -U ai_pdf -d postgres -v ON_ERROR_STOP=1 -c 'CREATE DATABASE \"citeframe_r800_r700_20260727093816_49746d_empty\" TEMPLATE template0'",
+      "step": "create temporary database citeframe_r800_r700_20260727093816_49746d_empty"
+    },
+    {
+      "command": "AI_PDF_DATABASE_URL=postgresql+psycopg://ai_pdf:***@127.0.0.1:5432/citeframe_r800_r700_20260727093816_49746d_source uv run alembic upgrade head",
+      "step": "alembic upgrade head on citeframe_r800_r700_20260727093816_49746d_source"
+    },
+    {
+      "command": "AI_PDF_DATABASE_URL=postgresql+psycopg://ai_pdf:***@127.0.0.1:5432/citeframe_r800_r700_20260727093816_49746d_source uv run alembic current",
+      "step": "alembic current on citeframe_r800_r700_20260727093816_49746d_source"
+    },
+    {
+      "command": "PGHOST=127.0.0.1 PGPORT=5432 PGUSER=ai_pdf PGPASSWORD=<redacted> PGDATABASE=citeframe_r800_r700_20260727093816_49746d_source pg_dump --format=custom --no-owner --no-privileges --file=/tmp/citeframe_r800_r700_20260727093816_49746d.dump",
+      "step": "dump source database"
+    },
+    {
+      "command": "PGHOST=127.0.0.1 PGPORT=5432 PGUSER=ai_pdf PGPASSWORD=<redacted> PGDATABASE=citeframe_r800_r700_20260727093816_49746d_restore pg_restore --exit-on-error --no-owner --no-privileges --dbname=citeframe_r800_r700_20260727093816_49746d_restore /tmp/citeframe_r800_r700_20260727093816_49746d.dump",
+      "step": "restore dump into new temporary database"
+    },
+    {
+      "command": "AI_PDF_DATABASE_URL=postgresql+psycopg://ai_pdf:***@127.0.0.1:5432/citeframe_r800_r700_20260727093816_49746d_empty uv run alembic upgrade head",
+      "step": "alembic upgrade head on citeframe_r800_r700_20260727093816_49746d_empty"
+    },
+    {
+      "command": "AI_PDF_DATABASE_URL=postgresql+psycopg://ai_pdf:***@127.0.0.1:5432/citeframe_r800_r700_20260727093816_49746d_empty uv run alembic downgrade b4d6f8a0c2e4",
+      "step": "alembic downgrade b4d6f8a0c2e4 on citeframe_r800_r700_20260727093816_49746d_empty"
+    },
+    {
+      "command": "AI_PDF_DATABASE_URL=postgresql+psycopg://ai_pdf:***@127.0.0.1:5432/citeframe_r800_r700_20260727093816_49746d_empty uv run alembic current",
+      "step": "alembic current on citeframe_r800_r700_20260727093816_49746d_empty"
+    },
+    {
+      "command": "PGPASSWORD=<redacted> psql -h 127.0.0.1 -p 5432 -U ai_pdf -d postgres -v ON_ERROR_STOP=1 -c 'DROP DATABASE IF EXISTS \"citeframe_r800_r700_20260727093816_49746d_empty\" WITH (FORCE)'",
+      "step": "drop temporary database citeframe_r800_r700_20260727093816_49746d_empty"
+    },
+    {
+      "command": "PGPASSWORD=<redacted> psql -h 127.0.0.1 -p 5432 -U ai_pdf -d postgres -v ON_ERROR_STOP=1 -c 'DROP DATABASE IF EXISTS \"citeframe_r800_r700_20260727093816_49746d_restore\" WITH (FORCE)'",
+      "step": "drop temporary database citeframe_r800_r700_20260727093816_49746d_restore"
+    },
+    {
+      "command": "PGPASSWORD=<redacted> psql -h 127.0.0.1 -p 5432 -U ai_pdf -d postgres -v ON_ERROR_STOP=1 -c 'DROP DATABASE IF EXISTS \"citeframe_r800_r700_20260727093816_49746d_source\" WITH (FORCE)'",
+      "step": "drop temporary database citeframe_r800_r700_20260727093816_49746d_source"
+    },
+    {
+      "command": "gio trash /tmp/citeframe_r800_r700_20260727093816_49746d.dump",
+      "step": "remove temporary custom dump"
+    }
+  ],
+  "completedAt": "2026-07-27T09:38:55.765422+00:00",
+  "dumpRestore": {
+    "dumpFile": "/tmp/citeframe_r800_r700_20260727093816_49746d.dump",
+    "dumpOutput": "",
+    "restoreOutput": "",
+    "snapshotsEqual": true
+  },
+  "emptyDowngrade": {
+    "appendOnlyFunction": null,
+    "evaluationRelations": {
+      "research_evaluation_case_results": null,
+      "research_evaluation_claim_results": null,
+      "research_evaluation_runs": null,
+      "research_evaluation_suites": null
+    },
+    "researchRunsRelation": "research_runs"
+  },
+  "restoreSnapshot": {
+    "appendOnlyTriggerCount": 4,
+    "cases": [
+      {
+        "case_key": "r800-refuse",
+        "evaluation_run_id": "8a757d8c-b85b-4c01-9df0-e8d026e72047",
+        "id": "2f0cb787-f52c-4b6c-92ee-023de54b0991"
+      },
+      {
+        "case_key": "r800-refuse",
+        "evaluation_run_id": "c4f1a015-942f-4f9c-baf4-2e6dcc2024af",
+        "id": "33018888-78bc-4d14-a1e4-f01ab0b4aa52"
+      },
+      {
+        "case_key": "r800-compare",
+        "evaluation_run_id": "d44a6251-eb80-4b07-a00f-1977512393ef",
+        "id": "3fae9caa-80b8-415b-8978-6984fb201861"
+      },
+      {
+        "case_key": "r800-compare",
+        "evaluation_run_id": "e2d9d19e-fdd7-4413-b5ff-4e162d736fa2",
+        "id": "800beb59-6924-40e0-a778-81e338b58e2b"
+      },
+      {
+        "case_key": "r800-compare",
+        "evaluation_run_id": "c4f1a015-942f-4f9c-baf4-2e6dcc2024af",
+        "id": "a76b6693-ef58-4462-9292-67c08d21384a"
+      },
+      {
+        "case_key": "r800-refuse",
+        "evaluation_run_id": "e2d9d19e-fdd7-4413-b5ff-4e162d736fa2",
+        "id": "aa43738f-74cf-4024-a83d-0de2be68ef98"
+      },
+      {
+        "case_key": "r800-compare",
+        "evaluation_run_id": "8a757d8c-b85b-4c01-9df0-e8d026e72047",
+        "id": "aae5f4da-db92-44ce-a76f-ae87a0f1faa9"
+      },
+      {
+        "case_key": "r800-refuse",
+        "evaluation_run_id": "d44a6251-eb80-4b07-a00f-1977512393ef",
+        "id": "e76d875f-28f0-45e0-a976-3106d82bc33e"
+      }
+    ],
+    "claims": [
+      {
+        "case_result_id": "aae5f4da-db92-44ce-a76f-ae87a0f1faa9",
+        "claim_key": "r800-compare:claim",
+        "id": "1b438105-f219-49d7-a414-f03b2fee6852"
+      },
+      {
+        "case_result_id": "3fae9caa-80b8-415b-8978-6984fb201861",
+        "claim_key": "r800-compare:claim",
+        "id": "660f2755-5661-485f-a385-6a093fc211cf"
+      },
+      {
+        "case_result_id": "800beb59-6924-40e0-a778-81e338b58e2b",
+        "claim_key": "r800-compare:claim",
+        "id": "a15a3035-9cd1-49c9-b11c-5a7805c3eb6c"
+      },
+      {
+        "case_result_id": "a76b6693-ef58-4462-9292-67c08d21384a",
+        "claim_key": "r800-compare:claim",
+        "id": "a65cdec5-1d96-4277-94b7-c5aa351a71df"
+      }
+    ],
+    "counts": {
+      "research_evaluation_case_results": 8,
+      "research_evaluation_claim_results": 4,
+      "research_evaluation_runs": 4,
+      "research_evaluation_suites": 2
+    },
+    "runs": [
+      {
+        "asset_scope_sha256": "50bf39ae7486f1ca475ef4f87fd366d34abad146058f25a5516463b55c0a167e",
+        "fixture_manifest_sha256": "a48e3002cc3e75fd8bac493e00f2c29fcd2330d8eac4e5372b6d8fbf7a0d3520",
+        "id": "8a757d8c-b85b-4c01-9df0-e8d026e72047",
+        "mode": "quick",
+        "provider_profile_sha256": "6ac621cc37d2cddf5ae0ffd3c2c148d34c77e9241a69fd0591ab7e95660c490f",
+        "source_report_sha256": "d2ed71286dd9561baa43c1d149dda599f62e632744027fd4f2e125cbe3df5c3f",
+        "suite_id": "bd4354a3-2bd9-47fe-95aa-c78a43d16281",
+        "workspace_id": "59cb0c15-985d-459b-93e1-4124c913b91a"
+      },
+      {
+        "asset_scope_sha256": "50bf39ae7486f1ca475ef4f87fd366d34abad146058f25a5516463b55c0a167e",
+        "fixture_manifest_sha256": "a48e3002cc3e75fd8bac493e00f2c29fcd2330d8eac4e5372b6d8fbf7a0d3520",
+        "id": "c4f1a015-942f-4f9c-baf4-2e6dcc2024af",
+        "mode": "quick",
+        "provider_profile_sha256": "6ac621cc37d2cddf5ae0ffd3c2c148d34c77e9241a69fd0591ab7e95660c490f",
+        "source_report_sha256": "aa3138863a8071f35f2f9d876bc2b06b2c1bc00746e778bba8ae1c307bb900ab",
+        "suite_id": "bd4354a3-2bd9-47fe-95aa-c78a43d16281",
+        "workspace_id": "59cb0c15-985d-459b-93e1-4124c913b91a"
+      },
+      {
+        "asset_scope_sha256": "50bf39ae7486f1ca475ef4f87fd366d34abad146058f25a5516463b55c0a167e",
+        "fixture_manifest_sha256": "41fb258ed9cfc377f05cbd81c01256209a3f9ae406127142ce9d6144c84d70d7",
+        "id": "d44a6251-eb80-4b07-a00f-1977512393ef",
+        "mode": "quick",
+        "provider_profile_sha256": "6ac621cc37d2cddf5ae0ffd3c2c148d34c77e9241a69fd0591ab7e95660c490f",
+        "source_report_sha256": "a31e49334fa4122868887266772014e058a1959a96087bf5bf2a8187b79be002",
+        "suite_id": "28806e42-c658-4506-adc7-db9141846457",
+        "workspace_id": "59cb0c15-985d-459b-93e1-4124c913b91a"
+      },
+      {
+        "asset_scope_sha256": "50bf39ae7486f1ca475ef4f87fd366d34abad146058f25a5516463b55c0a167e",
+        "fixture_manifest_sha256": "41fb258ed9cfc377f05cbd81c01256209a3f9ae406127142ce9d6144c84d70d7",
+        "id": "e2d9d19e-fdd7-4413-b5ff-4e162d736fa2",
+        "mode": "quick",
+        "provider_profile_sha256": "6ac621cc37d2cddf5ae0ffd3c2c148d34c77e9241a69fd0591ab7e95660c490f",
+        "source_report_sha256": "3166c882f243220f46443db49fbbf1f9675f07e20ca569e5a66eb53385d5670a",
+        "suite_id": "28806e42-c658-4506-adc7-db9141846457",
+        "workspace_id": "59cb0c15-985d-459b-93e1-4124c913b91a"
+      }
+    ],
+    "suites": [
+      {
+        "case_count": 2,
+        "fixture_manifest_sha256": "41fb258ed9cfc377f05cbd81c01256209a3f9ae406127142ce9d6144c84d70d7",
+        "id": "28806e42-c658-4506-adc7-db9141846457",
+        "scorer_version": "r800-scorer-v1",
+        "suite_key": "r800-r700-first-suite-race",
+        "version": 1
+      },
+      {
+        "case_count": 2,
+        "fixture_manifest_sha256": "a48e3002cc3e75fd8bac493e00f2c29fcd2330d8eac4e5372b6d8fbf7a0d3520",
+        "id": "bd4354a3-2bd9-47fe-95aa-c78a43d16281",
+        "scorer_version": "r800-scorer-v1",
+        "suite_key": "r800-r700-postgres",
+        "version": 1
+      }
+    ]
+  },
+  "runtime": {
+    "defaultDatabaseUntouched": "ai_pdf_workspace",
+    "host": "127.0.0.1",
+    "orchestratorSha256": "33a2ed10c2ac1225a616f59cf9dc5015f6ed5308cfabf34dbf44f47172829ba2",
+    "port": 5432,
+    "postgresServer": "17.10 (Debian 17.10-1.pgdg12+1)"
+  },
+  "schemaVersion": "citeframe-r800-r700-postgres-acceptance-v1",
+  "sourceSnapshot": {
+    "appendOnlyTriggerCount": 4,
+    "cases": [
+      {
+        "case_key": "r800-refuse",
+        "evaluation_run_id": "8a757d8c-b85b-4c01-9df0-e8d026e72047",
+        "id": "2f0cb787-f52c-4b6c-92ee-023de54b0991"
+      },
+      {
+        "case_key": "r800-refuse",
+        "evaluation_run_id": "c4f1a015-942f-4f9c-baf4-2e6dcc2024af",
+        "id": "33018888-78bc-4d14-a1e4-f01ab0b4aa52"
+      },
+      {
+        "case_key": "r800-compare",
+        "evaluation_run_id": "d44a6251-eb80-4b07-a00f-1977512393ef",
+        "id": "3fae9caa-80b8-415b-8978-6984fb201861"
+      },
+      {
+        "case_key": "r800-compare",
+        "evaluation_run_id": "e2d9d19e-fdd7-4413-b5ff-4e162d736fa2",
+        "id": "800beb59-6924-40e0-a778-81e338b58e2b"
+      },
+      {
+        "case_key": "r800-compare",
+        "evaluation_run_id": "c4f1a015-942f-4f9c-baf4-2e6dcc2024af",
+        "id": "a76b6693-ef58-4462-9292-67c08d21384a"
+      },
+      {
+        "case_key": "r800-refuse",
+        "evaluation_run_id": "e2d9d19e-fdd7-4413-b5ff-4e162d736fa2",
+        "id": "aa43738f-74cf-4024-a83d-0de2be68ef98"
+      },
+      {
+        "case_key": "r800-compare",
+        "evaluation_run_id": "8a757d8c-b85b-4c01-9df0-e8d026e72047",
+        "id": "aae5f4da-db92-44ce-a76f-ae87a0f1faa9"
+      },
+      {
+        "case_key": "r800-refuse",
+        "evaluation_run_id": "d44a6251-eb80-4b07-a00f-1977512393ef",
+        "id": "e76d875f-28f0-45e0-a976-3106d82bc33e"
+      }
+    ],
+    "claims": [
+      {
+        "case_result_id": "aae5f4da-db92-44ce-a76f-ae87a0f1faa9",
+        "claim_key": "r800-compare:claim",
+        "id": "1b438105-f219-49d7-a414-f03b2fee6852"
+      },
+      {
+        "case_result_id": "3fae9caa-80b8-415b-8978-6984fb201861",
+        "claim_key": "r800-compare:claim",
+        "id": "660f2755-5661-485f-a385-6a093fc211cf"
+      },
+      {
+        "case_result_id": "800beb59-6924-40e0-a778-81e338b58e2b",
+        "claim_key": "r800-compare:claim",
+        "id": "a15a3035-9cd1-49c9-b11c-5a7805c3eb6c"
+      },
+      {
+        "case_result_id": "a76b6693-ef58-4462-9292-67c08d21384a",
+        "claim_key": "r800-compare:claim",
+        "id": "a65cdec5-1d96-4277-94b7-c5aa351a71df"
+      }
+    ],
+    "counts": {
+      "research_evaluation_case_results": 8,
+      "research_evaluation_claim_results": 4,
+      "research_evaluation_runs": 4,
+      "research_evaluation_suites": 2
+    },
+    "runs": [
+      {
+        "asset_scope_sha256": "50bf39ae7486f1ca475ef4f87fd366d34abad146058f25a5516463b55c0a167e",
+        "fixture_manifest_sha256": "a48e3002cc3e75fd8bac493e00f2c29fcd2330d8eac4e5372b6d8fbf7a0d3520",
+        "id": "8a757d8c-b85b-4c01-9df0-e8d026e72047",
+        "mode": "quick",
+        "provider_profile_sha256": "6ac621cc37d2cddf5ae0ffd3c2c148d34c77e9241a69fd0591ab7e95660c490f",
+        "source_report_sha256": "d2ed71286dd9561baa43c1d149dda599f62e632744027fd4f2e125cbe3df5c3f",
+        "suite_id": "bd4354a3-2bd9-47fe-95aa-c78a43d16281",
+        "workspace_id": "59cb0c15-985d-459b-93e1-4124c913b91a"
+      },
+      {
+        "asset_scope_sha256": "50bf39ae7486f1ca475ef4f87fd366d34abad146058f25a5516463b55c0a167e",
+        "fixture_manifest_sha256": "a48e3002cc3e75fd8bac493e00f2c29fcd2330d8eac4e5372b6d8fbf7a0d3520",
+        "id": "c4f1a015-942f-4f9c-baf4-2e6dcc2024af",
+        "mode": "quick",
+        "provider_profile_sha256": "6ac621cc37d2cddf5ae0ffd3c2c148d34c77e9241a69fd0591ab7e95660c490f",
+        "source_report_sha256": "aa3138863a8071f35f2f9d876bc2b06b2c1bc00746e778bba8ae1c307bb900ab",
+        "suite_id": "bd4354a3-2bd9-47fe-95aa-c78a43d16281",
+        "workspace_id": "59cb0c15-985d-459b-93e1-4124c913b91a"
+      },
+      {
+        "asset_scope_sha256": "50bf39ae7486f1ca475ef4f87fd366d34abad146058f25a5516463b55c0a167e",
+        "fixture_manifest_sha256": "41fb258ed9cfc377f05cbd81c01256209a3f9ae406127142ce9d6144c84d70d7",
+        "id": "d44a6251-eb80-4b07-a00f-1977512393ef",
+        "mode": "quick",
+        "provider_profile_sha256": "6ac621cc37d2cddf5ae0ffd3c2c148d34c77e9241a69fd0591ab7e95660c490f",
+        "source_report_sha256": "a31e49334fa4122868887266772014e058a1959a96087bf5bf2a8187b79be002",
+        "suite_id": "28806e42-c658-4506-adc7-db9141846457",
+        "workspace_id": "59cb0c15-985d-459b-93e1-4124c913b91a"
+      },
+      {
+        "asset_scope_sha256": "50bf39ae7486f1ca475ef4f87fd366d34abad146058f25a5516463b55c0a167e",
+        "fixture_manifest_sha256": "41fb258ed9cfc377f05cbd81c01256209a3f9ae406127142ce9d6144c84d70d7",
+        "id": "e2d9d19e-fdd7-4413-b5ff-4e162d736fa2",
+        "mode": "quick",
+        "provider_profile_sha256": "6ac621cc37d2cddf5ae0ffd3c2c148d34c77e9241a69fd0591ab7e95660c490f",
+        "source_report_sha256": "3166c882f243220f46443db49fbbf1f9675f07e20ca569e5a66eb53385d5670a",
+        "suite_id": "28806e42-c658-4506-adc7-db9141846457",
+        "workspace_id": "59cb0c15-985d-459b-93e1-4124c913b91a"
+      }
+    ],
+    "suites": [
+      {
+        "case_count": 2,
+        "fixture_manifest_sha256": "41fb258ed9cfc377f05cbd81c01256209a3f9ae406127142ce9d6144c84d70d7",
+        "id": "28806e42-c658-4506-adc7-db9141846457",
+        "scorer_version": "r800-scorer-v1",
+        "suite_key": "r800-r700-first-suite-race",
+        "version": 1
+      },
+      {
+        "case_count": 2,
+        "fixture_manifest_sha256": "a48e3002cc3e75fd8bac493e00f2c29fcd2330d8eac4e5372b6d8fbf7a0d3520",
+        "id": "bd4354a3-2bd9-47fe-95aa-c78a43d16281",
+        "scorer_version": "r800-scorer-v1",
+        "suite_key": "r800-r700-postgres",
+        "version": 1
+      }
+    ]
+  },
+  "startedAt": "2026-07-27T09:38:16Z",
+  "status": "passed",
+  "temporaryDatabases": {
+    "emptyDowngrade": "citeframe_r800_r700_20260727093816_49746d_empty",
+    "restore": "citeframe_r800_r700_20260727093816_49746d_restore",
+    "source": "citeframe_r800_r700_20260727093816_49746d_source"
+  },
+  "postAcceptanceRegression": {
+    "evaluationTargeted": {
+      "command": "cd /home/cc/code/citeframe/apps/api && uv run pytest -q tests/test_evaluation_api.py tests/test_evaluation_migration.py",
+      "result": "23 passed, 1 warning in 1.53s"
+    },
+    "apiFull": {
+      "command": "cd /home/cc/code/citeframe/apps/api && uv run pytest -q",
+      "result": "360 passed, 1 warning in 94.12s"
+    }
+  }
+}

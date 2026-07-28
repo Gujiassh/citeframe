@@ -4,10 +4,12 @@
 
 1. M403A binary ANN S2 diagnostic 与新的完整 S0/S1/S2 canonical 已完成并关闭。
 2. M403B 已经单独批准并完成，Image 数据库目录、API registry、Worker adapter、caption 配置和 Web 上传入口已同步启用。
-3. V3 SSoT、测试与运行证据已同步；contract snapshot commit A=`466e5a3` 与 approval record commit B 已形成；push 另行授权。
-4. V4 R000 合同与两阶段 Git recovery point 已完成；R100 exit gate 通过前，不得修改 Research 持久化、API、Citation、Chat 或保存语义。
+3. V3 SSoT、测试与运行证据已同步；contract snapshot commit A=`466e5a3` 与 approval record commit B 已形成。
+4. V4 R000-R800 确定性工程基线已完成，且未修改 Quick、Citation、Chat、NoteSource 或保存语义。
 
 M404 真实用户验证继续推进。它不阻塞内部技术演示开发，但未完成时 V4 仍是 `internal_preview`，不得宣称用户价值已验证。
+
+当前 canonical 为 `docs/evals/artifacts/r800-v1/deployment-20260728-v4/`：全部场景、真实 PostgreSQL/MinIO 备份恢复、对象字节/hash 与最终清理通过。scripted provider 只形成工程证据，R803 真实模型成对质量仍保持 `not_evaluable`。
 
 ## 1. R000 合同与语义 Oracle
 
@@ -16,7 +18,7 @@ M404 真实用户验证继续推进。它不阻塞内部技术演示开发，但
 - 已冻结固定 DAG、节点输入输出、状态机、事件协议和预算语义。
 - 已冻结 Workflow/Prompt version、Run/Step/Event/Artifact/HumanDecision 数据合同。
 - 已冻结现有 Asset scope、EvidenceLocator、Citation、NoteSource 和 Chat 语义不变条件。
-- 明确 LangGraph 只负责图执行/checkpoint，PostgreSQL 业务账本仍是运行事实来源。
+- 明确 LangGraph 只负责无状态固定图执行且不配置 checkpointer；PostgreSQL 业务账本与 immutable Artifact 是恢复和审计的唯一事实来源。
 - 已完成持久化、权限、删除、取消、备份恢复和版本重放影响评审并取得明确批准。
 
 R001-R007 已由以下获批交付物与 commit A/B 关闭；下一阶段为 R100 Evaluation-first：
@@ -48,6 +50,8 @@ R100 已于 2026-07-27 通过。Canonical 输入、scorer、测试和报告见 `
 - Artifact bytes 进入 MinIO，PostgreSQL 保存 metadata、hash、provenance 和状态。
 - 事件先持久化后推送，保证重连和审计使用同一事实源。
 
+实现结果：R200 已完成，数据库 head 为 `e8f1a2b3c4d5`。API service 持有全部 ORM/事务/原子状态迁移，Artifact bytes 进入 MinIO；R800 v4 的空部署恢复验证了账本与对象身份。
+
 R200 与 R300 只有在 R000 获批、两阶段 Git recovery point 已形成、R100 exit gate 通过、字段/API/事件接口已冻结且存在可执行 schema/contract tests 后才可另行授权。API/迁移 lane 拥有全部业务账本、ORM、migration 和原子 service；R300 Worker 只消费获批 service/ports，不得拥有或编辑表、ORM、migration，也不得自行推断账本行为。
 
 ## 4. R300 固定多 Agent 执行器
@@ -56,6 +60,8 @@ R200 与 R300 只有在 R000 获批、两阶段 Git recovery point 已形成、R
 - Agent 只能调用注册的 Evidence search/load 工具，不直接访问 ORM、对象存储或任意网络。
 - 使用受限并发、provider semaphore、run/step 预算和 join barrier。
 - 保存 step attempt、工具输入输出摘要、Evidence locator IDs 和 provider usage；不保存模型思维链。
+
+实现结果：使用固定拓扑、类型化 port 的 `BoundedResearchExecutor`，不引入 LangGraph 或通用 Agent runtime。PostgreSQL 继续是唯一业务事实源，锁顺序统一为 `Attempt -> Step -> Run -> call -> BudgetLedger`。
 
 ## 5. R400 Streaming、HITL 与失败恢复
 
@@ -76,11 +82,12 @@ R200 与 R300 只有在 R000 获批、两阶段 Git recovery point 已形成、R
 - 使用 OpenTelemetry 关联 run/node/tool/provider/DB spans。
 - 复用 Prometheus 输出运行数、成功率、step latency、retry、token/cost 和并发指标。
 - 日志使用扁平字段：`tag run_id= step_id= attempt= status= duration_ms=`。
-- 可接 Langfuse 做开发侧 trace/prompt/eval 深挖，但产品 Dashboard 不依赖外部服务作为事实源。
+- 观测字段、低基数指标、失败隔离和 Langfuse 边界冻结在 `r600-observability-contract.md`；Langfuse 只可作为未来 OTLP/开发消费端，不加入当前运行依赖或事实源。
 
 ## 8. R700 Evaluation Dashboard
 
-- R700 不消费 R000 的候选 Evaluation DTO 作为已批准合同；进入本阶段前必须单独冻结 Evaluation persistence、创建方式和 API。
+- R700 不消费 R000 的候选 Evaluation DTO；独立 persistence/import/API/dashboard 合同已冻结在 `r700-evaluation-contract.md`。
+- 可信离线 importer 原子写入 immutable suite/run/case/claim rows；浏览器只读且仅 Workspace owner 可见。
 - 展示 suite -> run -> case -> claim/evidence failure 的逐层下钻。
 - 支持 Workflow/Prompt version 和 Quick/Research 成对比较。
 - 保存报告输入 hash、运行环境、provider/model 和原始 Artifact hash。
@@ -88,14 +95,17 @@ R200 与 R300 只有在 R000 获批、两阶段 Git recovery point 已形成、R
 
 ## 9. R800 Critical Hardening 与面试演示
 
+- 验收分层、威胁 oracle、重启/恢复场景和成对报告规则冻结在 `r800-acceptance-plan.md`。
 - 完成权限、跨 Workspace、prompt injection/tool boundary、Evidence provenance 和成本失控审查。
 - 完成并行时间重叠、unsupported claim 拒绝、HITL、断线恢复、进程重启恢复和 Artifact 去重演示。
 - 完成桌面/移动端运行轨迹、Evidence 跳转和 Evaluation Dashboard Playwright 证据。
 - 形成 5 分钟可重复演示脚本和架构决策记录。
 
+实现结果：确定性工程门禁已通过，Critical review、运行手册与演示脚本分别位于 `docs/evals/r800-critical-review.md`、`docs/architecture/research-workflow-runtime.md` 和 `docs/evals/r800-demo-script.md`。R803 真实模型质量不在 scripted R800 中冒充完成。
+
 ## 依赖选择
 
-- 编排：优先评估 LangGraph；不从零实现通用 Agent runtime。
+- 编排：固定、类型化 `BoundedResearchExecutor`；不引入 LangGraph checkpoint 或通用 Agent runtime，PostgreSQL 账本负责恢复与审计。
 - 业务账本：PostgreSQL/Alembic。
 - Artifact：现有 MinIO/object storage。
 - 事件：持久化 ResearchEvent + SSE。

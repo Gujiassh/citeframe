@@ -1,0 +1,48 @@
+{
+  "cleanup": {
+    "composeDownExitCode": 0,
+    "containersRemaining": [],
+    "envRemoveExitCode": 0,
+    "envRemoved": true,
+    "inspectionExitCodes": {
+      "containers": 0,
+      "networks": 0,
+      "volumes": 0
+    },
+    "networksRemaining": [],
+    "passed": true,
+    "volumesRemaining": []
+  },
+  "durationsMs": {
+    "backup": 24229.721,
+    "restore": 56196.866,
+    "scenarios": 9552.948
+  },
+  "engineeringChecks": {
+    "providerTimeline": true,
+    "restoreVerification": true,
+    "scenarios": false,
+    "snapshotIdentity": true
+  },
+  "engineeringGate": "fail",
+  "evidence": {
+    "afterSha256": "ce31eb984f65369a0970b1961d7ba0f64459da5a25c9631c4d61cd00662f37f2",
+    "backupHashes": {
+      "SHA256SUMS": "ab4b05d4ea3f9b7fba4d0e6cae5c92603781201c659b3a911a12c01dc9f48073",
+      "manifest.env": "9882bcbfd3713525f972493e1df6543df7b9845b5dd57c3a71db0fa9a78e9902",
+      "postgres.dump": "ff2d685e860281603c9d60c398463dd8aa035a3d43783d15d544c11a3f98c3ee"
+    },
+    "beforeSha256": "ce31eb984f65369a0970b1961d7ba0f64459da5a25c9631c4d61cd00662f37f2",
+    "composeConfigSha256": "69433ec36c2e394f9cead91c047f6ed3f6ee90da50dca3378ce249d8a9ef73f3",
+    "providerTimelineSha256": "0a188d1d261483bd0c5a59aa5af1a0ad9e7940e79a0b3cd3c6fd545411f4417a",
+    "scenariosSha256": "2fb8a70a7d6d66bb77e56e6041cd2cf7891ba3597846c7b5a276aaf494ffec5a",
+    "verificationSha256": "ac1b8e60b8233d2004cf16d240f811e5c9fdc54fa7faee1565f7e0aec696458d"
+  },
+  "modelQualityGate": "not_evaluable",
+  "modelQualityReason": "scripted_provider_is_engineering_evidence_only",
+  "project": "citeframe-r800-deployment-v3",
+  "releaseGatePassed": false,
+  "schemaVersion": "citeframe-r800-deployment-acceptance-v1",
+  "userValueGate": "not_evaluable",
+  "userValueReason": "no_real_target_user_evidence"
+}

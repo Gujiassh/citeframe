@@ -7,8 +7,8 @@ Citeframe 采用 `Web App + API Service + Worker + Data Plane` 的分层架构�
 它不是前后端都各管一半业务逻辑的松散组合，而是：
 
 - `Next.js` 负责用户界面、会话鉴权、BFF 网关、流式体验
-- `FastAPI` 负责业务 API、文档处理编排、检索编排、模型调用编排
-- `Worker` 负责长任务：解析、切块、embedding、索引、重建索引
+- `FastAPI` 负责业务 API、Asset/Chat/Research 账本、检索编排与模型调用边界
+- `Worker` 负责长任务：解析、切块、embedding、索引、重建索引与固定 Research workflow 执行
 - `Postgres + pgvector` 负责业务数据和检索向量
 - `MinIO` 负责原始 PDF/图片与处理产物
 - `Redis` 当前作为已部署的缓存/队列基础设施预留；业务任务真相源仍是 Postgres `ingestion_jobs`
@@ -28,6 +28,7 @@ V1 默认以 `模块化双服务系统` 落地，而不是微服务集群。
 - 支撑 PDF/图片 Asset 的异步入库与索引
 - 支撑带引用的 RAG 问答
 - 支撑笔记、标签、聊天历史沉淀
+- 支撑显式、版本化、可恢复且 Evidence-bound 的深度研究运行
 - 支撑本地学习部署和后续云上部署
 - 支撑 OpenAI 与本地开源 embedding provider 并存
 
@@ -60,7 +61,7 @@ V1 架构不追求：
 
 3. `Domain Service Layer`
    - FastAPI Business API
-   - Retrieval / Chat / Asset / Notes / Tags / Prompt API
+   - Retrieval / Chat / Asset / Notes / Tags / Prompt / Research / Evaluation API
 
 4. `Async Processing Layer`
    - Worker
@@ -96,6 +97,8 @@ FastAPI 主业务服务。
 - Chat 编排
 - 引用结构生成
 - 对 Worker 投递任务
+- Research Run/Step/Event/Decision/Artifact 与 provider/tool/budget 账本
+- owner-only Evaluation API 与可信离线导入边界
 
 #### `worker`
 
@@ -107,6 +110,7 @@ FastAPI 主业务服务。
 - embedding 写入
 - 索引重建
 - 文档删除后的异步清理
+- 固定 Planner/Researcher/Verifier/Critic/Synthesizer/Publisher 执行
 
 #### `postgres`
 
@@ -116,6 +120,7 @@ FastAPI 主业务服务。
 - 业务真相源
 - pgvector 检索
 - 任务状态持久化
+- Research/Evaluation 业务账本、事件序号与版本化执行快照
 
 #### `minio`
 
@@ -125,6 +130,7 @@ FastAPI 主业务服务。
 - 原始 PDF 文件
 - 页面预览图
 - 解析中间产物
+- immutable Research plan/checkpoint/conflict/final Artifact bytes
 
 #### `redis`
 
@@ -150,27 +156,27 @@ FastAPI 主业务服务。
 前端采用 `Next.js App Router + React Context Provider + feature hooks + Tailwind CSS + Lucide Icons`。Provider 只暴露稳定的 WorkspaceContext API；Workspace、Assets、Chat、Notes/Tags 和视图状态分别由 feature hooks/纯工具模块承载。
 
 1. `Shell & Navigation`
-   - [WorkspaceSidebar](file:///home/cc/code/citeframe/apps/web/src/components/workspace-sidebar.tsx)：折叠/抽屉式导航栏。
-   - [CreateWorkspaceDialog](file:///home/cc/code/citeframe/apps/web/src/components/create-workspace-dialog.tsx)：工作区创建 Modal 对话框。
-   - [WorkspaceList](file:///home/cc/code/citeframe/apps/web/src/components/workspace-list.tsx)：主门户 100% 宽度 cardless 行列表。
+   - [WorkspaceSidebar](../../apps/web/src/components/workspace-sidebar.tsx)：折叠/抽屉式导航栏。
+   - [CreateWorkspaceDialog](../../apps/web/src/components/create-workspace-dialog.tsx)：工作区创建 Modal 对话框。
+   - [WorkspaceList](../../apps/web/src/components/workspace-list.tsx)：主门户 100% 宽度 cardless 行列表。
 
 2. `Evidence Workspace UI`
-   - [EvidenceViewer](file:///home/cc/code/citeframe/apps/web/src/components/evidence-viewer.tsx)：通过 production Evidence registry 按 Asset 类型调度 `PdfEvidenceRenderer` 或 `ImageEvidenceRenderer`，共享 citation/note Evidence shell。
-   - [PdfEvidenceRenderer](file:///home/cc/code/citeframe/apps/web/src/components/pdf-viewer.tsx)：组合 PDF.js 页面 canvas、原生文本层、annotation layer 和类型化区域高亮，保留图片、排版与 PDF 内置链接。
-   - [ImageEvidenceRenderer](file:///home/cc/code/citeframe/apps/web/src/components/image-viewer.tsx)：显示图片 Representation，并按 `image_region` locator 渲染区域证据。
-   - [OutlineTree](file:///home/cc/code/citeframe/apps/web/src/components/outline-tree.tsx)：PDF 章节目录大纲树，使用 `activeAssetId` 参与节点 Key，避免切换 Asset 后复用旧折叠节点。
-   - [SelectionPopover](file:///home/cc/code/citeframe/apps/web/src/components/selection-popover.tsx)：划词即时问答/记录笔记浮空菜单。
+   - [EvidenceViewer](../../apps/web/src/components/evidence-viewer.tsx)：通过 production Evidence registry 按 Asset 类型调度 `PdfEvidenceRenderer` 或 `ImageEvidenceRenderer`，共享 citation/note Evidence shell。
+   - [PdfEvidenceRenderer](../../apps/web/src/components/pdf-viewer.tsx)：组合 PDF.js 页面 canvas、原生文本层、annotation layer 和类型化区域高亮，保留图片、排版与 PDF 内置链接。
+   - [ImageEvidenceRenderer](../../apps/web/src/components/image-viewer.tsx)：显示图片 Representation，并按 `image_region` locator 渲染区域证据。
+   - [OutlineTree](../../apps/web/src/components/outline-tree.tsx)：PDF 章节目录大纲树，使用 `activeAssetId` 参与节点 Key，避免切换 Asset 后复用旧折叠节点。
+   - [SelectionPopover](../../apps/web/src/components/selection-popover.tsx)：划词即时问答/记录笔记浮空菜单。
 
 3. `Knowledge UI`
-   - [ChatPanel](file:///home/cc/code/citeframe/apps/web/src/components/chat-panel.tsx)：流式问答管理器。
-   - [ChatBubble](file:///home/cc/code/citeframe/apps/web/src/components/chat-bubble.tsx)：对话气泡与行内快速笔记沉淀面板。
-   - [ChatMarkdown](file:///home/cc/code/citeframe/apps/web/src/components/chat-markdown.tsx)：助手 Markdown/GFM 渲染和 citation `[n]` 内联引用映射；只允许 `http/https` 外链。
-   - [NotesPanel](file:///home/cc/code/citeframe/apps/web/src/components/notes-panel.tsx)：沉淀笔记仓库。
-   - [SettingsPanel](file:///home/cc/code/citeframe/apps/web/src/components/settings-panel.tsx)：Prompt 参数调优。
+   - [ChatPanel](../../apps/web/src/components/chat-panel.tsx)：流式问答管理器。
+   - [ChatBubble](../../apps/web/src/components/chat-bubble.tsx)：对话气泡与行内快速笔记沉淀面板。
+   - [ChatMarkdown](../../apps/web/src/components/chat-markdown.tsx)：助手 Markdown/GFM 渲染和 citation `[n]` 内联引用映射；只允许 `http/https` 外链。
+   - [NotesPanel](../../apps/web/src/components/notes-panel.tsx)：沉淀笔记仓库。
+   - [SettingsPanel](../../apps/web/src/components/settings-panel.tsx)：Prompt 参数调优。
 
 4. `BFF & Data Layer`
    - Next.js BFF 路由转发。
-   - [workspace-context.tsx](file:///home/cc/code/citeframe/apps/web/src/lib/workspace-context.tsx) 只做 Provider 组合；数据域分别位于 `use-workspaces.ts`、`use-assets.ts`、`use-chat.ts`、`use-notes-tags.ts`，视图状态位于 `workspace-view-state.ts`。
+   - [workspace-context.tsx](../../apps/web/src/lib/workspace-context.tsx) 只做 Provider 组合；数据域分别位于 `use-workspaces.ts`、`use-assets.ts`、`use-chat.ts`、`use-notes-tags.ts`，视图状态位于 `workspace-view-state.ts`。
 
 ### 4.2 前端自适应布局引擎 (Responsive Drawer Engine)
 
@@ -664,6 +670,18 @@ V1 支持两类：
 3. API 保存 note 与来源关联
 4. Browser 刷新 notes 列表
 
+### 13.4 Evidence Research
+
+1. Browser 显式选择 Research；Quick Chat 不自动升级。
+2. API 冻结 PlanRevision 的 Asset scope、Workflow/Prompt、provider/retrieval、policy 与预算。
+3. creator 批准计划后，API 创建唯一 ExecutionSnapshot 和固定 DAG。
+4. Worker 通过 typed service ports 领取 Step；Researcher 只调用 Evidence search/load 工具。
+5. Verifier fail closed 标记 unsupported Claim；Critic 需要时发布 conflict Artifact 并等待 creator Decision。
+6. Synthesizer 只选择 supported/resolved Claims；API 原子生成 canonical final Artifact、Claim markers、hash、Events 和终态。
+7. 独立 Research SSE 通过持久化 seq 与 `Last-Event-ID` 重放；Evaluation 在 Run 完成后独立导入，不是核心 DAG Step。
+
+详细职责、锁序和操作 runbook 见 [`../architecture/research-workflow-runtime.md`](../architecture/research-workflow-runtime.md)。
+
 ## 14. 安全边界
 
 - 浏览器不可直连 Postgres
@@ -698,6 +716,13 @@ V1 支持两类：
 
 M402 的 21-case 工程执行、7-case 真实 BFF 全栈/像素 Evidence 与 7-case `openai / gpt-5.5` answer/refusal 均已通过。冻结 answer oracle、显式 opt-in runner 与独立复算门禁绑定 production prompt、Asset scope、Evidence 和 provider/model；回答质量使用移除数字 citation token 后的完整规范化输出 allowlist，未登记改写 fail closed。唯一一次获批外部执行无 provider 错误且 citation target 全覆盖；6 条正确改写经人工对照 Evidence 后加入冻结 allowlist，raw output/messages 与 capture-time diagnostics 保持不变，正式报告独立复算得到 `releaseGatePassed=true`。该本地证据链不宣称提供远程 provider 的密码学回执；若威胁模型包含整套 artifact 一致篡改，必须另接 provider 可验证回执或独立签名服务。M403 加强后的隔离 Compose 销卷恢复已通过恢复前后数据库/对象语义 SHA-256、桌面/移动端完整 raster/overlay 和最终容器/卷/网络零残留门。M403A 的 production Dense 使用 current-only cosine512/N + binary64/3N 两路 `MATERIALIZED` ANN candidate，identity 去重后只按原始 1024D cosine 精排；`f2a4c6e8b0d1` current-chain migration、scope trigger、两阶段 embedding 激活和 ANN/SQLite parity 已通过。fresh S0/S1/S2 canonical 三档全部通过，S2 9/9 Recall=`1.00`、load/index `2062.742s`、并发 p95 `246.531ms`。M403B 的 `a3c5e7f9b1d4` 已启用 Image 目录；PNG/JPEG/WebP 上传、源完整性、失败重试、检索/Evidence、长期 Worker 浏览器路径和 Image-enabled 销卷恢复均已通过，工程 `releaseGatePassed=true`。
 
+### 已完成的 V4 确定性工程基线
+
+- `b4d6f8a0c2e4` 增加获批的 Research ledger，`c5e7a9b1d3f6` 增加独立 Evaluation ledger，`e8f1a2b3c4d5` 发布 append-only Workflow/Prompt v2。
+- Worker 使用固定 typed `BoundedResearchExecutor`，不引入动态 LangGraph checkpoint；PostgreSQL 是唯一业务事实源。
+- provider/tool 共享锁序为 `Attempt -> Step -> Run -> call -> BudgetLedger`，锁后刷新 identity map；不使用 deadlock retry 掩盖锁序错误。
+- R800 v4 在真实 PostgreSQL/MinIO、生产镜像和 scripted provider 上通过全部场景、空部署恢复和零残留清理。该证据只关闭工程门；R803 模型质量与 M404 用户价值仍为 `not_evaluable`。
+
 ## 16. 当前架构裁决
 
 当前最重要的几条裁决是：
@@ -709,6 +734,9 @@ M402 的 21-case 工程执行、7-case 真实 BFF 全栈/像素 Evidence 与 7-c
 - `Postgres` 是真相源，`Redis` 是加速层
 - `MinIO` 存文件，`pgvector` 存检索向量
 - `EmbeddingProvider` 必须可切换，不能把模型写死进业务层
+- Research Workflow/Prompt/provider profile/Asset scope/预算在批准时冻结，Worker 不读取 latest 解释历史 Run
+- API service 是 Research 持久化和事务唯一所有者；Worker 不拥有 ORM 或 migration
+- Quick Chat SSE 与 Research Event SSE 是独立合同
 - Workspace 视图状态只应在 workspace 实际切换时同步；重复选择当前 workspace 不能清空 active thread、文档或其他局部视图状态。
 
 ## 17. 当前 Evidence 域与演进门禁

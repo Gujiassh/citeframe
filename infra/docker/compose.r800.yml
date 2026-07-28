@@ -1,0 +1,42 @@
+version: "2.4"
+
+services:
+  provider-stub:
+    image: ${AI_PDF_API_IMAGE:-ai-pdf-workspace-api:local}
+    command: ["python", "scripts/provider_r800_stub.py"]
+    restart: unless-stopped
+    environment:
+      R800_PROVIDER_HOST: 0.0.0.0
+      R800_PROVIDER_PORT: 18082
+    expose:
+      - "18082"
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "python",
+          "-c",
+          "import urllib.request; urllib.request.urlopen('http://127.0.0.1:18082/__r800__/health', timeout=5)",
+        ]
+      interval: 2s
+      timeout: 5s
+      retries: 20
+      start_period: 2s
+
+  api:
+    environment:
+      AI_PDF_OLLAMA_BASE_URL: http://provider-stub:18082
+      AI_PDF_OPENAI_API_BASE: http://provider-stub:18082/v1
+      AI_PDF_OPENAI_API_KEY: r800-private-deterministic-key
+    depends_on:
+      provider-stub:
+        condition: service_healthy
+
+  worker:
+    environment:
+      AI_PDF_OLLAMA_BASE_URL: http://provider-stub:18082
+      AI_PDF_OPENAI_API_BASE: http://provider-stub:18082/v1
+      AI_PDF_OPENAI_API_KEY: r800-private-deterministic-key
+    depends_on:
+      provider-stub:
+        condition: service_healthy

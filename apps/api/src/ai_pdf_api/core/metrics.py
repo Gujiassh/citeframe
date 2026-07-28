@@ -73,6 +73,82 @@ INGESTION_METRICS_REFRESH_FAILURES = Counter(
     "Failed ingestion queue metric refreshes.",
 )
 
+RESEARCH_RUNS = Counter(
+    "ai_pdf_research_runs_total",
+    "Research processing sessions observed by outcome.",
+    ("outcome",),
+)
+RESEARCH_ACTIVE_RUNS = Gauge(
+    "ai_pdf_research_active_runs",
+    "Research processing sessions active in this process.",
+)
+RESEARCH_STEPS = Counter(
+    "ai_pdf_research_steps_total",
+    "Research Steps observed by kind and outcome.",
+    ("step_kind", "outcome"),
+)
+RESEARCH_STEP_DURATION = Histogram(
+    "ai_pdf_research_step_duration_seconds",
+    "Research Step duration by kind and outcome.",
+    ("step_kind", "outcome"),
+    buckets=(0.005, 0.01, 0.025, 0.05, 0.1, 0.25, 0.5, 1, 2.5, 5, 10, 30, 60, 120, 300, 600),
+)
+RESEARCH_TOOL_CALLS = Counter(
+    "ai_pdf_research_tool_calls_total",
+    "Research Evidence tool calls by canonical name and outcome.",
+    ("tool_name", "outcome"),
+)
+RESEARCH_TOOL_DURATION = Histogram(
+    "ai_pdf_research_tool_duration_seconds",
+    "Research Evidence tool duration by canonical name and outcome.",
+    ("tool_name", "outcome"),
+    buckets=(0.005, 0.01, 0.025, 0.05, 0.1, 0.25, 0.5, 1, 2.5, 5, 10, 30, 60, 120),
+)
+RESEARCH_PROVIDER_CALLS = Counter(
+    "ai_pdf_research_provider_calls_total",
+    "Research provider calls by node and outcome.",
+    ("node", "outcome"),
+)
+RESEARCH_PROVIDER_DURATION = Histogram(
+    "ai_pdf_research_provider_duration_seconds",
+    "Research provider call duration by node and outcome.",
+    ("node", "outcome"),
+    buckets=(0.01, 0.025, 0.05, 0.1, 0.25, 0.5, 1, 2.5, 5, 10, 30, 60, 120, 300),
+)
+RESEARCH_RECOVERY = Counter(
+    "ai_pdf_research_recovery_total",
+    "Research retry, timeout, abandon, and recovery observations.",
+    ("kind",),
+)
+RESEARCH_EVIDENCE_COUNT = Histogram(
+    "ai_pdf_research_evidence_count",
+    "Evidence handles observed at Research Step boundaries.",
+    ("step_kind",),
+    buckets=(0, 1, 2, 4, 8, 12, 20, 40, 64, 100),
+)
+RESEARCH_TOKENS = Histogram(
+    "ai_pdf_research_tokens",
+    "Estimated or actual Research tokens by node and direction.",
+    ("node", "direction"),
+    buckets=(0, 64, 128, 256, 512, 1024, 2048, 4096, 8192, 16384, 32768),
+)
+RESEARCH_COST_MICROUNITS = Histogram(
+    "ai_pdf_research_cost_microunits",
+    "Research provider cost observations in currency microunits.",
+    ("node",),
+    buckets=(0, 100, 500, 1_000, 5_000, 10_000, 50_000, 100_000, 500_000, 1_000_000, 5_000_000),
+)
+RESEARCH_PARALLEL_SPEEDUP = Histogram(
+    "ai_pdf_research_parallel_speedup_ratio",
+    "Researcher serial-duration sum divided by parallel wall duration.",
+    buckets=(1, 1.1, 1.25, 1.5, 2, 2.5, 3, 4, 8, 16),
+)
+RESEARCH_SSE_CONTRACT = Counter(
+    "ai_pdf_research_sse_contract_total",
+    "Research SSE reconnect and history availability observations.",
+    ("outcome",),
+)
+
 INGESTION_JOB_STATUSES = ("queued", "running", "succeeded", "failed", "cancelled")
 
 

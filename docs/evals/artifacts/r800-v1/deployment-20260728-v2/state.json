@@ -1,0 +1,27 @@
+{
+  "assetId": "2f00e613-c792-589d-af16-be30cba6b847",
+  "contentUnitId": "3075d09c-c51b-5a6d-b048-2d11cf9f8bd0",
+  "creatorUserId": "2c1ce847-ca1e-5d44-b30e-03d218dd3fbf",
+  "embeddingId": "34b64ae6-8022-5363-89c8-bc6f93d36f4f",
+  "evidenceLocatorId": "3abaa9f3-7b58-5d71-b5a4-8eb38445caac",
+  "httpAuth": {
+    "actors": {
+      "creator": "2c1ce847-ca1e-5d44-b30e-03d218dd3fbf",
+      "member": "96d9f7f9-f8ac-57d2-ada3-5daf505531f6",
+      "owner": "f583e467-1e88-50a9-8ca9-34409a08c4d0"
+    },
+    "baseUrl": "http://api:8000",
+    "internalTokenHeader": "x-ai-pdf-internal-token",
+    "userHeader": "x-user-id"
+  },
+  "memberUserId": "96d9f7f9-f8ac-57d2-ada3-5daf505531f6",
+  "ownerUserId": "f583e467-1e88-50a9-8ca9-34409a08c4d0",
+  "representationId": "1fff50d6-39c6-51cf-aa73-c289946d07f1",
+  "schemaVersion": "citeframe-r800-research-acceptance-v1",
+  "source": {
+    "byteSize": 1279,
+    "objectKey": "workspaces/f54c7366-4a49-5eda-8373-dcd80bd5df6d/assets/2f00e613-c792-589d-af16-be30cba6b847/source/r800-research.pdf",
+    "sha256": "312b1f4025ff0e4214a427be19310a6be0d6648b32c4740c3c0cfb26d6f4aa11"
+  },
+  "workspaceId": "f54c7366-4a49-5eda-8373-dcd80bd5df6d"
+}

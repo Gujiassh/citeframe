@@ -1,8 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import { AlertCircle, Check, Cpu, Save, Settings2, Sliders } from "lucide-react";
+import { AlertCircle, BarChart3, Check, Cpu, Save, Settings2, Sliders } from "lucide-react";
 
+import { EvaluationDashboard } from "@/components/evaluation-dashboard";
 import { translations, useTranslation } from "@/lib/i18n-context";
 import { Workspace, WorkspaceSettingsInput, useWorkspace } from "@/lib/workspace-context";
 
@@ -43,15 +44,6 @@ function SettingsForm({ currentWorkspace, onSaveSettings, t }: SettingsFormProps
 
   return (
     <div className="flex h-full flex-col bg-white transition-colors duration-200 dark:bg-zinc-950">
-      <div className="border-b border-zinc-200 px-4 py-3 transition dark:border-zinc-800 sm:px-8">
-        <div className="mx-auto w-full max-w-3xl">
-          <h3 className="text-sm font-bold text-zinc-900 dark:text-white">{t("settings.header")}</h3>
-          <span className="mt-0.5 block text-[10px] font-semibold text-zinc-400 dark:text-zinc-500">
-            {t("settings.subtitle")}
-          </span>
-        </div>
-      </div>
-
       <div className="flex-1 overflow-y-auto p-4 sm:p-8">
         <div className="mx-auto w-full max-w-3xl space-y-6">
         <form onSubmit={handleSave} className="space-y-3">
@@ -175,17 +167,35 @@ function SettingsForm({ currentWorkspace, onSaveSettings, t }: SettingsFormProps
 export function SettingsPanel() {
   const { currentWorkspace, updateWorkspaceSettings } = useWorkspace();
   const { t } = useTranslation();
+  const [view, setView] = useState<"workspace" | "evaluation">("workspace");
 
   if (!currentWorkspace) {
     return null;
   }
+  const isOwner = currentWorkspace.role === "owner";
+  const activeView = isOwner ? view : "workspace";
 
   return (
-    <SettingsForm
-      key={currentWorkspace.id}
-      currentWorkspace={currentWorkspace}
-      onSaveSettings={updateWorkspaceSettings}
-      t={t}
-    />
+    <div className="flex h-full flex-col bg-white dark:bg-zinc-950">
+      <header className="flex shrink-0 flex-col gap-3 border-b border-border px-4 py-3 sm:flex-row sm:items-center sm:justify-between sm:px-8">
+        <div>
+          <h3 className="text-sm font-bold text-zinc-900 dark:text-white">{t("settings.header")}</h3>
+          <span className="mt-0.5 block text-[10px] font-semibold text-zinc-400 dark:text-zinc-500">{t("settings.subtitle")}</span>
+        </div>
+        {isOwner ? (
+          <div role="tablist" aria-label={t("settings.viewTabs")} className="flex w-fit items-center border border-border bg-background p-1">
+            <button type="button" role="tab" aria-selected={activeView === "workspace"} onClick={() => setView("workspace")} className={`flex h-8 items-center gap-1.5 px-3 text-xs font-semibold ${activeView === "workspace" ? "bg-zinc-950 text-white dark:bg-white dark:text-zinc-950" : "text-zinc-500 hover:text-zinc-950 dark:hover:text-white"}`}><Settings2 className="h-3.5 w-3.5" />{t("settings.workspaceTab")}</button>
+            <button type="button" role="tab" aria-selected={activeView === "evaluation"} onClick={() => setView("evaluation")} className={`flex h-8 items-center gap-1.5 px-3 text-xs font-semibold ${activeView === "evaluation" ? "bg-zinc-950 text-white dark:bg-white dark:text-zinc-950" : "text-zinc-500 hover:text-zinc-950 dark:hover:text-white"}`}><BarChart3 className="h-3.5 w-3.5" />{t("evaluation.title")}</button>
+          </div>
+        ) : null}
+      </header>
+      <div className="min-h-0 flex-1 overflow-hidden">
+        {activeView === "workspace" ? (
+          <SettingsForm key={currentWorkspace.id} currentWorkspace={currentWorkspace} onSaveSettings={updateWorkspaceSettings} t={t} />
+        ) : (
+          <div className="h-full overflow-y-auto"><EvaluationDashboard key={currentWorkspace.id} workspaceId={currentWorkspace.id} /></div>
+        )}
+      </div>
+    </div>
   );
 }

@@ -85,7 +85,7 @@ function isPageGeometry(value: unknown): boolean {
     && Math.abs(value.displayHeightPoints - expectedHeight) <= 0.01;
 }
 
-function isLocator(value: unknown): boolean {
+export function isEvidenceLocator(value: unknown): boolean {
   if (!isRecord(value) || !isString(value.kind) || value.version !== 1) {
     return false;
   }
@@ -115,7 +115,7 @@ function isLocator(value: unknown): boolean {
   return false;
 }
 
-function isSourceVersions(value: unknown): boolean {
+export function isEvidenceSourceVersions(value: unknown): boolean {
   return isRecord(value)
     && isString(value.parserVersion)
     && isInteger(value.processingGeneration)
@@ -134,8 +134,8 @@ function isCitation(value: unknown): value is CitationDto {
     isString(value.assetTitle) &&
     typeof value.sourceAvailable === "boolean" &&
     isString(value.excerpt) &&
-    isLocator(value.locator) &&
-    isSourceVersions(value.sourceVersions)
+    isEvidenceLocator(value.locator) &&
+    isEvidenceSourceVersions(value.sourceVersions)
   );
 }
 

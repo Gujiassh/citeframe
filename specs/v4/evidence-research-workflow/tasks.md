@@ -24,7 +24,7 @@
 - [x] R004 完成权限、删除、取消、备份恢复和成本边界评审
 - [x] R005 定义现有 Chat/Citation/NoteSource 不变 oracle
 - [x] R006 输出字段级 schema、唯一键/幂等键、事件 payload allowlist 和 API error matrix
-- [ ] R007 完成 R000 审批闭环
+- [x] R007 完成 R000 审批闭环
   - [x] R007-A Owner 批准 `AP001-AP012` 推荐默认，无例外
   - [x] R007-B 在工作树完成 `r000-approval-record.md`，记录逐项决定、输入 hash、合同/测试映射和未授权边界
   - [x] R007-C 取得授权并形成不含自引用的 contract snapshot commit A（`466e5a3`）
@@ -40,64 +40,69 @@
 
 ## R200 运行账本
 
-- [ ] R201 实现 WorkflowVersion、PromptVersion、PlanRevision 与 ExecutionSnapshot
-- [ ] R202 实现 ResearchRun、ResearchStep、StepAttempt、ResearchEvent 与 IdempotencyRecord
-- [ ] R203 实现 ResearchArtifact、Claim/Evidence/ArtifactClaim provenance、typed locator clone 与 MinIO 存储
-- [ ] R204 实现 HumanDecision、RetryRequest、ToolCall/EvidenceHandle、BudgetLedger/ProviderCall 与等待/恢复状态
-- [ ] R205 完成 Alembic、downgrade 限制、dump/restore 和跨 Workspace 测试
+- [x] R201 实现 WorkflowVersion、PromptVersion、PlanRevision 与 ExecutionSnapshot
+- [x] R202 实现 ResearchRun、ResearchStep、StepAttempt、ResearchEvent 与 IdempotencyRecord
+- [x] R203 实现 ResearchArtifact、Claim/Evidence/ArtifactClaim provenance、typed locator clone 与 MinIO 存储
+- [x] R204 实现 HumanDecision、RetryRequest、ToolCall/EvidenceHandle、BudgetLedger/ProviderCall 与等待/恢复状态
+- [x] R205 完成 Alembic、downgrade 限制、dump/restore 和跨 Workspace 测试
 
 R200/R300 必须等待 R000 approval、两阶段 Git recovery point 和 R100 exit gate，并取得单独实现授权。R000/R100/R200/R300/R400/R500/R600/R700/R800 的完成判定必须分别绑定 spec、plan、tasks、测试、运行 artifact 和 review 记录；不能只勾选代码任务。
 
 ## R300 执行器
 
-- [ ] R301 接入 LangGraph 或经评审的成熟图执行库
-- [ ] R302 实现 Planner 和结构化计划校验
-- [ ] R303 实现 bounded parallel Researcher fan-out/join
-- [ ] R304 实现 Evidence-only Tool registry
-- [ ] R305 实现 Verifier、Critic 和 fail-closed claim gate
-- [ ] R306 实现 Synthesizer 和 ArtifactPublisher
-- [ ] R307 通过 R200 账本 service/ports 编排预算、provider usage、attempt 和取消；不拥有 ORM/migration
+- [x] R301 完成编排评审并采用固定、类型化 `BoundedResearchExecutor`；不引入第二 checkpoint 真相源或通用 Agent runtime
+- [x] R302 实现 Planner 和结构化计划校验
+- [x] R303 实现 bounded parallel Researcher fan-out/join
+- [x] R304 实现 Evidence-only Tool registry
+- [x] R305 实现 Verifier、Critic 和 fail-closed claim gate
+- [x] R306 实现 Synthesizer 和 ArtifactPublisher
+- [x] R307 通过 R200 账本 service/ports 编排预算、provider usage、attempt 和取消；不拥有 ORM/migration
 
 ## R400 可靠性
 
-- [ ] R401 实现持久化 SSE 事件协议和 Last-Event-ID 重放
-- [ ] R402 实现计划审批和冲突裁决
-- [ ] R403 实现 lease/heartbeat、timeout、retry 和失败分支恢复
-- [ ] R404 验证 API/Worker 重启和客户端断线恢复
-- [ ] R405 验证重复请求不产生重复业务记录或 Artifact
+- [x] R401 实现持久化 SSE 事件协议和 Last-Event-ID 重放
+- [x] R402 实现计划审批和冲突裁决
+- [x] R403 实现 lease/heartbeat、timeout、retry 和失败分支恢复
+- [x] R404 验证 API/Worker 重启和客户端断线恢复
+- [x] R405 验证重复请求不产生重复业务记录或 Artifact
 
 ## R500 Web
 
-- [ ] R501 增加 Quick/Research 模式选择
-- [ ] R502 实现只读 DAG/步骤时间线和并行状态
-- [ ] R503 实现 HITL 审批界面
-- [ ] R504 实现 ResearchArtifact 阅读和 Evidence Viewer 跳转
-- [ ] R505 完成桌面/移动端 Playwright
+- [x] R501 增加 Quick/Research 模式选择
+- [x] R502 实现只读 DAG/步骤时间线和并行状态
+- [x] R503 实现 HITL 审批界面
+- [x] R504 实现 ResearchArtifact 阅读和 Evidence Viewer 跳转
+- [x] R505 完成桌面/移动端 Playwright
 
 ## R600 Observability
 
-- [ ] R601 增加 run/step/tool/provider OpenTelemetry spans
-- [ ] R602 增加 Prometheus 质量、性能、成本和恢复指标
-- [ ] R603 增加扁平结构化日志和 trace correlation
-- [ ] R604 评估 Langfuse 可替换适配器
+- [x] R600-D01 冻结 trace/metrics/log/OTLP/Langfuse 边界（`r600-observability-contract.md`）
+- [x] R601 增加 run/step/tool/provider OpenTelemetry spans
+- [x] R602 增加 Prometheus 质量、性能、成本和恢复指标
+- [x] R603 增加扁平结构化日志和 trace correlation
+- [x] R604 评估 Langfuse 可替换适配器并保持为非运行依赖
 
 ## R700 Evaluation Dashboard
 
-- [ ] R701 实现 suite/run/case/claim 数据接口
-- [ ] R702 实现 Quick/Research 和 Workflow/Prompt version 对比
-- [ ] R703 实现质量、延迟、成本、并行和恢复图表
-- [ ] R704 保持工程质量、真实模型和 M404 用户价值证据分层
+- [x] R700-D01 冻结独立 Evaluation persistence/import/API/dashboard 合同（`r700-evaluation-contract.md`）
+- [x] R701 实现 suite/run/case/claim 数据接口
+- [x] R702 实现 Quick/Research 和 Workflow/Prompt version 对比
+- [x] R703 实现质量、延迟、成本、并行和恢复图表
+- [x] R704 保持工程质量、真实模型和 M404 用户价值证据分层
 
 ## R800 验收
 
-- [ ] R801 完成 Agent/tool/prompt-injection/权限 Critical review
-- [ ] R802 完成并行、HITL、失败恢复和 Artifact provenance 运行证据
+- [x] R800-D01 冻结 Critical review、运行证据和成对报告计划（`r800-acceptance-plan.md`）
+- [x] R801 完成 Agent/tool/prompt-injection/权限 Critical review
+- [x] R802 完成并行、HITL、失败恢复和 Artifact provenance 运行证据
 - [ ] R803 完成单 Agent/多 Agent 成对质量报告
-- [ ] R804 完成架构文档、运行手册和 5 分钟演示脚本
+- [x] R804 完成架构文档、运行手册和 5 分钟演示脚本
+
+R803 保持 open：R800 v4 使用 scripted provider，只能通过工程门；真实模型的 Quick/Research 成对质量仍为 `not_evaluable`。M404 用户价值继续独立 `not_evaluable`。
 
 ## 明确不做
 
-- [ ] 不做拖拽 Workflow 编辑器
-- [ ] 不做自由插件或插件市场
-- [ ] 不做自动长期记忆
-- [ ] 不做通用 Agent 平台
+- [x] 不做拖拽 Workflow 编辑器
+- [x] 不做自由插件或插件市场
+- [x] 不做自动长期记忆
+- [x] 不做通用 Agent 平台

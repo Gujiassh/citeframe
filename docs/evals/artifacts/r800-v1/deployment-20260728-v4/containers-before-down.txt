@@ -1,0 +1,9 @@
+2d1c2d2981b1 citeframe-r800-deployment-v4_redis_1
+4198bb9ca859 citeframe-r800-deployment-v4_provider-stub_1
+5657eb23767b citeframe-r800-deployment-v4_web_1
+5b0324ef08a0 citeframe-r800-deployment-v4_caddy_1
+79e0b95ef601 citeframe-r800-deployment-v4_postgres_1
+ae6d69b412a7 citeframe-r800-deployment-v4_api_1
+aecf77958d5a citeframe-r800-deployment-v4_minio_1
+be2155b6aafc citeframe-r800-deployment-v4_migration_1
+c7731da928b6 citeframe-r800-deployment-v4_worker_1

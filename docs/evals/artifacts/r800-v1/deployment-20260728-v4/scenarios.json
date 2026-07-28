@@ -1,0 +1,202 @@
+{
+  "checks": {
+    "cancelNoFinal": {
+      "evidence": {
+        "cancelEvents": 1,
+        "finalCount": 0,
+        "status": "cancelled"
+      },
+      "passed": true,
+      "status": "pass"
+    },
+    "conflictResume": {
+      "evidence": {
+        "submittedConflictDecisions": 1
+      },
+      "passed": true,
+      "status": "pass"
+    },
+    "leaseReclaim": {
+      "evidence": {
+        "attemptNumbers": [
+          1,
+          2
+        ],
+        "originalAttemptStatus": "abandoned"
+      },
+      "passed": true,
+      "status": "pass"
+    },
+    "mainCompleted": {
+      "evidence": {
+        "runId": "fea9b157-8db6-491e-abe8-5ebcdf7e660f",
+        "status": "completed",
+        "workerErrors": [
+          "ResearchStepAutoRequeued:provider_temporarily_unavailable"
+        ]
+      },
+      "passed": true,
+      "status": "pass"
+    },
+    "membershipRemoval": {
+      "evidence": {
+        "eventTypes": [
+          "run_created",
+          "step_queued",
+          "cancel_requested",
+          "run_cancelled"
+        ],
+        "status": "cancelled",
+        "workerResult": "ResearchError:Research creator is no longer a Workspace member."
+      },
+      "passed": true,
+      "status": "pass"
+    },
+    "parallelFanout": {
+      "evidence": {
+        "maxActive": 2,
+        "providerEntries": 11
+      },
+      "passed": true,
+      "status": "pass"
+    },
+    "sseReplay": {
+      "evidence": {
+        "allEventIds": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10,
+          11,
+          12,
+          13,
+          14,
+          15,
+          16,
+          17,
+          18,
+          19,
+          20,
+          21,
+          22,
+          23,
+          24,
+          25,
+          26,
+          27,
+          28,
+          29,
+          30,
+          31,
+          32,
+          33,
+          34,
+          35,
+          36,
+          37,
+          38,
+          39,
+          40,
+          41,
+          42,
+          43,
+          44,
+          45,
+          46,
+          47
+        ],
+        "cursor": 24,
+        "replayEventIds": [
+          25,
+          26,
+          27,
+          28,
+          29,
+          30,
+          31,
+          32,
+          33,
+          34,
+          35,
+          36,
+          37,
+          38,
+          39,
+          40,
+          41,
+          42,
+          43,
+          44,
+          45,
+          46,
+          47
+        ]
+      },
+      "passed": true,
+      "status": "pass"
+    },
+    "transientRetry": {
+      "evidence": {
+        "failedAttempts": 1,
+        "retryAttempts": 1,
+        "transientProviderResponses": 1
+      },
+      "passed": true,
+      "status": "pass"
+    },
+    "uniqueFinal": {
+      "evidence": {
+        "apiFinalCount": 1,
+        "databaseFinalCount": 1
+      },
+      "passed": true,
+      "status": "pass"
+    },
+    "unsupportedWithheld": {
+      "evidence": {
+        "unsupportedClaims": 3,
+        "unsupportedFinalLinks": 0
+      },
+      "passed": true,
+      "status": "pass"
+    }
+  },
+  "engineeringGate": "pass",
+  "errors": [],
+  "runs": {
+    "cancel": {
+      "id": "574370ab-5f03-4e03-955c-26a4d78294d2",
+      "status": "cancelled"
+    },
+    "main": {
+      "artifactIds": [
+        "2dc611e3-4dce-4cb0-911e-220511d7504f",
+        "38afec66-c9d2-48a0-95b7-b1524f61ee84",
+        "3e811d5c-709c-4942-bc73-6dd09a8b89e5"
+      ],
+      "eventCount": 47,
+      "id": "fea9b157-8db6-491e-abe8-5ebcdf7e660f",
+      "providerTimeline": {
+        "entryCount": 11,
+        "maxActive": 2,
+        "transientCount": 1
+      },
+      "status": "completed"
+    },
+    "membershipRemoval": {
+      "id": "5ec4f26e-1dad-4165-a125-c0a80404906f",
+      "status": "cancelled"
+    },
+    "reclaim": {
+      "id": "a9485947-72f4-4fa8-80a5-80053f64009b",
+      "status": "completed"
+    }
+  },
+  "schemaVersion": "citeframe-r800-research-acceptance-v1"
+}
