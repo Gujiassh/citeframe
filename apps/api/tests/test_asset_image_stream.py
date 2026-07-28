@@ -8,6 +8,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import Session, sessionmaker
 from sqlalchemy.pool import StaticPool
 
+from ai_pdf_api.core.settings import settings
 from ai_pdf_api.db.base import Base
 from ai_pdf_api.db.session import get_db
 from ai_pdf_api.models import (
@@ -154,7 +155,7 @@ def add_image_representations(
 
 def auth_headers(user: User) -> dict[str, str]:
     return {
-        "x-ai-pdf-internal-token": "local-development-internal-token",
+        "x-ai-pdf-internal-token": settings.api_internal_token,
         "x-user-id": user.id,
     }
 

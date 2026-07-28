@@ -8,6 +8,7 @@ from uuid import uuid4
 
 import ai_pdf_api.routers.research as research_router_module
 import pytest
+from ai_pdf_api.core.settings import settings
 from ai_pdf_api.db.base import Base
 from ai_pdf_api.db.session import get_db
 from ai_pdf_api.models import (
@@ -157,7 +158,7 @@ def research_app(monkeypatch: pytest.MonkeyPatch) -> Generator[tuple[TestClient,
 
 def auth(user: User, *, key: str | None = None) -> dict[str, str]:
     headers = {
-        "x-ai-pdf-internal-token": "local-development-internal-token",
+        "x-ai-pdf-internal-token": settings.api_internal_token,
         "x-user-id": user.id,
     }
     if key:

@@ -8,6 +8,7 @@ from sqlalchemy import create_engine, select
 from sqlalchemy.orm import Session, sessionmaker
 from sqlalchemy.pool import StaticPool
 
+from ai_pdf_api.core.settings import settings
 from ai_pdf_api.db.base import Base
 from ai_pdf_api.db.session import get_db
 from ai_pdf_api.models import Asset, User, Workspace, WorkspaceMembership
@@ -118,7 +119,7 @@ def test_list_workspaces_returns_only_current_user_memberships(client: TestClien
     visible = create_workspace_with_membership(db_session, user=owner, name="Visible Workspace")
     create_workspace_with_membership(db_session, user=stranger, name="Hidden Workspace")
 
-    response = client.get("/v1/workspaces", headers={"x-ai-pdf-internal-token": "local-development-internal-token", "x-user-id": owner.id})
+    response = client.get("/v1/workspaces", headers={"x-ai-pdf-internal-token": settings.api_internal_token, "x-user-id": owner.id})
 
     assert response.status_code == 200
     payload = response.json()
@@ -154,8 +155,8 @@ def test_workspace_summary_includes_real_asset_count(client: TestClient, db_sess
     workspace = create_workspace_with_membership(db_session, user=owner, name="Visible Workspace")
     create_asset(db_session, workspace=workspace, user=owner)
 
-    list_response = client.get("/v1/workspaces", headers={"x-ai-pdf-internal-token": "local-development-internal-token", "x-user-id": owner.id})
-    detail_response = client.get(f"/v1/workspaces/{workspace.id}", headers={"x-ai-pdf-internal-token": "local-development-internal-token", "x-user-id": owner.id})
+    list_response = client.get("/v1/workspaces", headers={"x-ai-pdf-internal-token": settings.api_internal_token, "x-user-id": owner.id})
+    detail_response = client.get(f"/v1/workspaces/{workspace.id}", headers={"x-ai-pdf-internal-token": settings.api_internal_token, "x-user-id": owner.id})
 
     assert list_response.status_code == 200
     assert detail_response.status_code == 200
@@ -166,7 +167,7 @@ def test_create_workspace_creates_owner_membership(client: TestClient, db_sessio
 
     response = client.post(
         "/v1/workspaces",
-        headers={"x-ai-pdf-internal-token": "local-development-internal-token", "x-user-id": user.id},
+        headers={"x-ai-pdf-internal-token": settings.api_internal_token, "x-user-id": user.id},
         json={"name": " Papers ", "description": " Research notes "},
     )
 
@@ -196,7 +197,7 @@ def test_update_workspace_settings_persists_and_returns_runtime_metadata(
 
     response = client.patch(
         f"/v1/workspaces/{workspace.id}/settings",
-        headers={"x-ai-pdf-internal-token": "local-development-internal-token", "x-user-id": owner.id},
+        headers={"x-ai-pdf-internal-token": settings.api_internal_token, "x-user-id": owner.id},
         json={
             "systemPrompt": "Answer with a contract-review checklist.",
             "retrievalTopK": 9,
@@ -226,7 +227,7 @@ def test_update_workspace_settings_requires_owner(client: TestClient, db_session
 
     response = client.patch(
         f"/v1/workspaces/{workspace.id}/settings",
-        headers={"x-ai-pdf-internal-token": "local-development-internal-token", "x-user-id": member.id},
+        headers={"x-ai-pdf-internal-token": settings.api_internal_token, "x-user-id": member.id},
         json={"systemPrompt": "no", "retrievalTopK": 2, "chunkSize": 400},
     )
 
@@ -239,7 +240,7 @@ def test_get_workspace_requires_membership(client: TestClient, db_session: Sessi
     stranger = create_user(db_session, email="stranger@example.com", name="Stranger")
     workspace = create_workspace_with_membership(db_session, user=owner, name="Owner Workspace")
 
-    response = client.get(f"/v1/workspaces/{workspace.id}", headers={"x-ai-pdf-internal-token": "local-development-internal-token", "x-user-id": stranger.id})
+    response = client.get(f"/v1/workspaces/{workspace.id}", headers={"x-ai-pdf-internal-token": settings.api_internal_token, "x-user-id": stranger.id})
 
     assert response.status_code == 404
     assert response.json()["detail"] == "Workspace not found."
@@ -249,14 +250,14 @@ def test_archive_workspace_marks_archived_and_hides_from_future_lists(client: Te
     owner = create_user(db_session, email="owner@example.com", name="Owner")
     workspace = create_workspace_with_membership(db_session, user=owner, name="Archive Me")
 
-    response = client.delete(f"/v1/workspaces/{workspace.id}", headers={"x-ai-pdf-internal-token": "local-development-internal-token", "x-user-id": owner.id})
+    response = client.delete(f"/v1/workspaces/{workspace.id}", headers={"x-ai-pdf-internal-token": settings.api_internal_token, "x-user-id": owner.id})
 
     assert response.status_code == 204
     archived_workspace = db_session.get(Workspace, workspace.id)
     assert archived_workspace is not None
     assert archived_workspace.archived_at is not None
 
-    list_response = client.get("/v1/workspaces", headers={"x-ai-pdf-internal-token": "local-development-internal-token", "x-user-id": owner.id})
+    list_response = client.get("/v1/workspaces", headers={"x-ai-pdf-internal-token": settings.api_internal_token, "x-user-id": owner.id})
     assert list_response.status_code == 200
     assert list_response.json()["items"] == []
 
@@ -274,7 +275,7 @@ def test_archive_workspace_requires_owner_role(client: TestClient, db_session: S
     )
     db_session.commit()
 
-    response = client.delete(f"/v1/workspaces/{workspace.id}", headers={"x-ai-pdf-internal-token": "local-development-internal-token", "x-user-id": member.id})
+    response = client.delete(f"/v1/workspaces/{workspace.id}", headers={"x-ai-pdf-internal-token": settings.api_internal_token, "x-user-id": member.id})
 
     assert response.status_code == 403
     assert response.json()["detail"] == "Only workspace owners can archive this workspace."

@@ -8,6 +8,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import Session, sessionmaker
 from sqlalchemy.pool import StaticPool
 
+from ai_pdf_api.core.settings import settings
 from ai_pdf_api.db.base import Base
 from ai_pdf_api.db.session import get_db
 from ai_pdf_api.models import (
@@ -93,7 +94,7 @@ def setup_client() -> tuple[TestClient, Session, User, Workspace]:
 
 def test_thread_routes_persist_and_archive_threads() -> None:
     client, session, user, workspace = setup_client()
-    headers = {"x-ai-pdf-internal-token": "local-development-internal-token", "x-user-id": user.id}
+    headers = {"x-ai-pdf-internal-token": settings.api_internal_token, "x-user-id": user.id}
     try:
         created = client.post(
             f"/v1/workspaces/{workspace.id}/threads",
@@ -123,7 +124,7 @@ def test_thread_routes_persist_and_archive_threads() -> None:
 
 def test_thread_messages_returns_active_branch_in_parent_order() -> None:
     client, session, user, workspace = setup_client()
-    headers = {"x-ai-pdf-internal-token": "local-development-internal-token", "x-user-id": user.id}
+    headers = {"x-ai-pdf-internal-token": settings.api_internal_token, "x-user-id": user.id}
     now = datetime.now(UTC)
     thread = ChatThread(
         id=str(uuid4()),
@@ -222,7 +223,7 @@ def test_chat_stream_continues_from_failed_assistant_parent_over_http(
     monkeypatch,
 ) -> None:
     client, session, user, workspace = setup_client()
-    headers = {"x-ai-pdf-internal-token": "local-development-internal-token", "x-user-id": user.id}
+    headers = {"x-ai-pdf-internal-token": settings.api_internal_token, "x-user-id": user.id}
     now = datetime.now(UTC)
     asset = Asset(
         id=str(uuid4()),

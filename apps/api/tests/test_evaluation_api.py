@@ -13,6 +13,7 @@ from sqlalchemy import create_engine, event, func, select
 from sqlalchemy.orm import Session, sessionmaker
 from sqlalchemy.pool import StaticPool
 
+from ai_pdf_api.core.settings import settings
 from ai_pdf_api.db.base import Base
 from ai_pdf_api.db.session import get_db
 from ai_pdf_api.models.evaluation import (
@@ -208,7 +209,7 @@ def evaluation_app() -> Generator[tuple[TestClient, Session, dict[str, object]],
 
 def _auth(user: User) -> dict[str, str]:
     return {
-        "x-ai-pdf-internal-token": "local-development-internal-token",
+        "x-ai-pdf-internal-token": settings.api_internal_token,
         "x-user-id": user.id,
     }
 

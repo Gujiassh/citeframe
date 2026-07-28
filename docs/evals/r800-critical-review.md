@@ -101,6 +101,49 @@ Canonical v4 results:
 - Restore drift is caught by semantic snapshots plus object byte/hash comparison.
 - Resource leakage is caught after both failed and passing deployments.
 
+## Hosted CI Repair
+
+The first hosted run for the delivered R800 baseline, GitHub Actions run
+`30351908864` at `main@9e4064e7fa39809c06a6d1d87dca3fa4e885e481`, exposed three CI-environment
+defects after the local release gates had passed:
+
+- router tests sent the development default internal token instead of the token
+  configured by the CI environment, causing 75 authentication failures;
+- the Worker deploy export omitted CI's `--no-emit-package ai-pdf-api` option,
+  so the retained requirements file did not match the deterministic CI export;
+- the hosted Ubuntu image supplied PostgreSQL 16 client tools while the service
+  and deployment baseline use PostgreSQL 17, so the Asset `pg_dump`/`pg_restore`
+  migration oracle rejected the client/server major-version mismatch.
+
+The repair reads the configured API internal token in router tests, regenerates
+the Worker deploy requirements with the exact CI command, and installs/selects
+the official PostgreSQL 17 client before the API test step. It does not change
+an API contract, persisted payload, save semantic, migration, or product runtime
+behavior.
+
+Local repair evidence:
+
+- API full suite with the CI token and PostgreSQL 17: `407 passed, 1 warning`;
+- PostgreSQL Asset dump/restore migration oracle: `1 passed, 1 warning`;
+- Worker full suite: `143 passed`;
+- API deploy export gate: clean;
+- Worker deploy export regenerated twice with identical SHA-256
+  `f149735bac2a7057200e403435d820db7950cd40ad730df8b6ed58362667ec5f`;
+- changed API tests passed Ruff `F821/F822/F823` and `compileall`;
+- workflow passed `actionlint` v1.7.7 and YAML parsing;
+- repository diff passed `git diff --check`.
+
+Repair delivery ledger:
+
+- Source branch/ref: `main@9e4064e7fa39809c06a6d1d87dca3fa4e885e481`.
+- Repair branch/target: `main` -> `origin/main`; no downstream merge or
+  cherry-pick is required.
+- Changed scope: hosted workflow setup, test authentication fixtures, generated
+  Worker deploy requirements, and this review record.
+- Commit/push state: the linked dev-workbench checkpoint records the exact
+  repair commit and final hosted run because this commit cannot self-reference
+  its own SHA.
+
 ## Delivery Ledger
 
 - Source branch/ref: `main` at `cf70ffd77a6bb421be2348fe1f3da1e28afa00af`.

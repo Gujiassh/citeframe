@@ -9,6 +9,7 @@ from sqlalchemy import create_engine, func, select
 from sqlalchemy.orm import Session, sessionmaker
 from sqlalchemy.pool import StaticPool
 
+from ai_pdf_api.core.settings import settings
 from ai_pdf_api.db.base import Base
 from ai_pdf_api.db.session import get_db
 from ai_pdf_api.modalities.evidence import EvidenceContractError, serialize_evidence_locator
@@ -179,7 +180,7 @@ def create_citation(session: Session, *, workspace: Workspace, user: User, asset
 
 
 def headers(user: User) -> dict[str, str]:
-    return {"x-ai-pdf-internal-token": "local-development-internal-token", "x-user-id": user.id}
+    return {"x-ai-pdf-internal-token": settings.api_internal_token, "x-user-id": user.id}
 
 
 def test_create_note_persists_citation_snapshot(notes_app) -> None:

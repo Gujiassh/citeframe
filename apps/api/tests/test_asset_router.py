@@ -3,6 +3,7 @@ from datetime import UTC, datetime, timedelta
 from typing import Literal
 
 import pytest
+from ai_pdf_api.core.settings import settings
 from ai_pdf_api.db.base import Base
 from ai_pdf_api.db.session import get_db
 from ai_pdf_api.modalities.evidence import (
@@ -331,7 +332,7 @@ def test_list_assets_requires_membership(client: TestClient, db_session: Session
     workspace = create_workspace_with_membership(db_session, user=owner, name="Private")
     create_asset(db_session, workspace=workspace, user=owner)
 
-    response = client.get(f"/v1/workspaces/{workspace.id}/assets", headers={"x-ai-pdf-internal-token": "local-development-internal-token", "x-user-id": stranger.id})
+    response = client.get(f"/v1/workspaces/{workspace.id}/assets", headers={"x-ai-pdf-internal-token": settings.api_internal_token, "x-user-id": stranger.id})
 
     assert response.status_code == 404
     assert response.json()["detail"] == "Workspace not found."
@@ -353,7 +354,7 @@ def test_get_asset_file_streams_original_pdf_for_members(client: TestClient, db_
     for user_id in (owner.id, member.id):
         response = client.get(
             f"/v1/workspaces/{workspace.id}/assets/{asset.id}/file",
-            headers={"x-ai-pdf-internal-token": "local-development-internal-token", "x-user-id": user_id},
+            headers={"x-ai-pdf-internal-token": settings.api_internal_token, "x-user-id": user_id},
         )
         assert response.status_code == 200
         assert response.headers["content-type"] == "application/pdf"
@@ -362,7 +363,7 @@ def test_get_asset_file_streams_original_pdf_for_members(client: TestClient, db_
 
     forbidden_response = client.get(
         f"/v1/workspaces/{workspace.id}/assets/{asset.id}/file",
-        headers={"x-ai-pdf-internal-token": "local-development-internal-token", "x-user-id": stranger.id},
+        headers={"x-ai-pdf-internal-token": settings.api_internal_token, "x-user-id": stranger.id},
     )
     assert forbidden_response.status_code == 404
     assert forbidden_response.json()["detail"] == "Workspace not found."
@@ -374,7 +375,7 @@ def test_create_upload_session_persists_pending_asset(client: TestClient, db_ses
 
     response = client.post(
         f"/v1/workspaces/{workspace.id}/assets/upload-session",
-        headers={"x-ai-pdf-internal-token": "local-development-internal-token", "x-user-id": owner.id},
+        headers={"x-ai-pdf-internal-token": settings.api_internal_token, "x-user-id": owner.id},
         json={
             "sourceFilename": "attention.pdf",
             "mimeType": "application/pdf",
@@ -406,7 +407,7 @@ def test_create_upload_session_canonicalizes_mime_type(
 
     response = client.post(
         f"/v1/workspaces/{workspace.id}/assets/upload-session",
-        headers={"x-ai-pdf-internal-token": "local-development-internal-token", "x-user-id": owner.id},
+        headers={"x-ai-pdf-internal-token": settings.api_internal_token, "x-user-id": owner.id},
         json={
             "sourceFilename": "attention.pdf",
             "mimeType": "APPLICATION/PDF",
@@ -425,7 +426,7 @@ def test_create_upload_session_rejects_unregistered_mime_type(client: TestClient
 
     response = client.post(
         f"/v1/workspaces/{workspace.id}/assets/upload-session",
-        headers={"x-ai-pdf-internal-token": "local-development-internal-token", "x-user-id": owner.id},
+        headers={"x-ai-pdf-internal-token": settings.api_internal_token, "x-user-id": owner.id},
         json={
             "sourceFilename": "notes.txt",
             "mimeType": "text/plain",
@@ -457,7 +458,7 @@ def test_create_upload_session_accepts_enabled_image_formats(
     response = client.post(
         f"/v1/workspaces/{workspace.id}/assets/upload-session",
         headers={
-            "x-ai-pdf-internal-token": "local-development-internal-token",
+            "x-ai-pdf-internal-token": settings.api_internal_token,
             "x-user-id": owner.id,
         },
         json={
@@ -479,7 +480,7 @@ def test_binary_upload_and_finalize_creates_queued_ingestion_job(client: TestCli
     workspace = create_workspace_with_membership(db_session, user=owner, name="Docs")
     upload_session = client.post(
         f"/v1/workspaces/{workspace.id}/assets/upload-session",
-        headers={"x-ai-pdf-internal-token": "local-development-internal-token", "x-user-id": owner.id},
+        headers={"x-ai-pdf-internal-token": settings.api_internal_token, "x-user-id": owner.id},
         json={
             "sourceFilename": "attention.pdf",
             "mimeType": "application/pdf",
@@ -493,7 +494,7 @@ def test_binary_upload_and_finalize_creates_queued_ingestion_job(client: TestCli
 
     upload_response = client.put(
         f"/v1/workspaces/{workspace.id}/assets/{asset_id}/upload",
-        headers={"x-ai-pdf-internal-token": "local-development-internal-token", "x-user-id": owner.id, "content-type": "application/pdf"},
+        headers={"x-ai-pdf-internal-token": settings.api_internal_token, "x-user-id": owner.id, "content-type": "application/pdf"},
         params={"objectKey": object_key},
         content=b"%PDF-1.7 fake pdf bytes",
     )
@@ -501,7 +502,7 @@ def test_binary_upload_and_finalize_creates_queued_ingestion_job(client: TestCli
 
     finalize_response = client.post(
         f"/v1/workspaces/{workspace.id}/assets/{asset_id}/finalize-upload",
-        headers={"x-ai-pdf-internal-token": "local-development-internal-token", "x-user-id": owner.id},
+        headers={"x-ai-pdf-internal-token": settings.api_internal_token, "x-user-id": owner.id},
         json={"objectKey": object_key},
     )
 
@@ -527,13 +528,13 @@ def test_binary_upload_rejects_size_mismatch(client: TestClient, db_session: Ses
     workspace = create_workspace_with_membership(db_session, user=owner, name="Docs")
     upload_session = client.post(
         f"/v1/workspaces/{workspace.id}/assets/upload-session",
-        headers={"x-ai-pdf-internal-token": "local-development-internal-token", "x-user-id": owner.id},
+        headers={"x-ai-pdf-internal-token": settings.api_internal_token, "x-user-id": owner.id},
         json={"sourceFilename": "attention.pdf", "mimeType": "application/pdf", "byteSize": 99},
     ).json()
 
     response = client.put(
         f"/v1/workspaces/{workspace.id}/assets/{upload_session['asset']['id']}/upload",
-        headers={"x-ai-pdf-internal-token": "local-development-internal-token", "x-user-id": owner.id, "content-type": "application/pdf"},
+        headers={"x-ai-pdf-internal-token": settings.api_internal_token, "x-user-id": owner.id, "content-type": "application/pdf"},
         params={"objectKey": upload_session["upload"]["objectKey"]},
         content=b"short",
     )
@@ -551,7 +552,7 @@ def test_binary_upload_rejects_content_type_mismatch(
     source = b"%PDF-1.7 fake pdf bytes"
     upload_session = client.post(
         f"/v1/workspaces/{workspace.id}/assets/upload-session",
-        headers={"x-ai-pdf-internal-token": "local-development-internal-token", "x-user-id": owner.id},
+        headers={"x-ai-pdf-internal-token": settings.api_internal_token, "x-user-id": owner.id},
         json={
             "sourceFilename": "attention.pdf",
             "mimeType": "application/pdf",
@@ -562,7 +563,7 @@ def test_binary_upload_rejects_content_type_mismatch(
     response = client.put(
         f"/v1/workspaces/{workspace.id}/assets/{upload_session['asset']['id']}/upload",
         headers={
-            "x-ai-pdf-internal-token": "local-development-internal-token",
+            "x-ai-pdf-internal-token": settings.api_internal_token,
             "x-user-id": owner.id,
             "content-type": "image/png",
         },
@@ -593,7 +594,7 @@ def test_get_job_returns_persisted_job(client: TestClient, db_session: Session) 
     db_session.commit()
     db_session.refresh(job)
 
-    response = client.get(f"/v1/workspaces/{workspace.id}/jobs/{job.id}", headers={"x-ai-pdf-internal-token": "local-development-internal-token", "x-user-id": owner.id})
+    response = client.get(f"/v1/workspaces/{workspace.id}/jobs/{job.id}", headers={"x-ai-pdf-internal-token": settings.api_internal_token, "x-user-id": owner.id})
 
     assert response.status_code == 200
     payload = response.json()
@@ -1323,7 +1324,7 @@ def test_reindex_queues_embed_job_with_embedding_config_snapshot(
 
     response = client.post(
         f"/v1/workspaces/{workspace.id}/assets/{asset.id}/reindex",
-        headers={"x-ai-pdf-internal-token": "local-development-internal-token", "x-user-id": owner.id},
+        headers={"x-ai-pdf-internal-token": settings.api_internal_token, "x-user-id": owner.id},
     )
 
     assert response.status_code == 200
@@ -1598,7 +1599,7 @@ def test_asset_detail_returns_persisted_page_text(client: TestClient, db_session
     response = client.get(
         f"/v1/workspaces/{workspace.id}/assets/{asset.id}",
         params={"pageNumber": 1},
-        headers={"x-ai-pdf-internal-token": "local-development-internal-token", "x-user-id": owner.id},
+        headers={"x-ai-pdf-internal-token": settings.api_internal_token, "x-user-id": owner.id},
     )
 
     assert response.status_code == 200
@@ -1611,7 +1612,7 @@ def test_asset_detail_returns_persisted_page_text(client: TestClient, db_session
     missing_page = client.get(
         f"/v1/workspaces/{workspace.id}/assets/{asset.id}",
         params={"pageNumber": 2},
-        headers={"x-ai-pdf-internal-token": "local-development-internal-token", "x-user-id": owner.id},
+        headers={"x-ai-pdf-internal-token": settings.api_internal_token, "x-user-id": owner.id},
     )
     assert missing_page.status_code == 404
     assert missing_page.json()["detail"] == "Asset page not found."
@@ -1689,7 +1690,7 @@ def test_asset_detail_reads_only_current_canonical_page_representation(
         f"/v1/workspaces/{workspace.id}/assets/{asset.id}",
         params={"pageNumber": 1},
         headers={
-            "x-ai-pdf-internal-token": "local-development-internal-token",
+            "x-ai-pdf-internal-token": settings.api_internal_token,
             "x-user-id": owner.id,
         },
     )
@@ -1727,7 +1728,7 @@ def test_asset_detail_returns_persisted_ocr_blocks(client: TestClient, db_sessio
     response = client.get(
         f"/v1/workspaces/{workspace.id}/assets/{asset.id}",
         params={"pageNumber": 1},
-        headers={"x-ai-pdf-internal-token": "local-development-internal-token", "x-user-id": owner.id},
+        headers={"x-ai-pdf-internal-token": settings.api_internal_token, "x-user-id": owner.id},
     )
 
     assert response.status_code == 200
@@ -1746,10 +1747,10 @@ def test_delete_asset_requires_owner_and_queues_cleanup(client: TestClient, db_s
     create_pdf_content_unit(db_session, asset=asset, page_number=1, text="Delete me.")
     db_session.commit()
 
-    forbidden = client.delete(f"/v1/workspaces/{workspace.id}/assets/{asset.id}", headers={"x-ai-pdf-internal-token": "local-development-internal-token", "x-user-id": member.id})
+    forbidden = client.delete(f"/v1/workspaces/{workspace.id}/assets/{asset.id}", headers={"x-ai-pdf-internal-token": settings.api_internal_token, "x-user-id": member.id})
     assert forbidden.status_code == 403
 
-    deleted = client.delete(f"/v1/workspaces/{workspace.id}/assets/{asset.id}", headers={"x-ai-pdf-internal-token": "local-development-internal-token", "x-user-id": owner.id})
+    deleted = client.delete(f"/v1/workspaces/{workspace.id}/assets/{asset.id}", headers={"x-ai-pdf-internal-token": settings.api_internal_token, "x-user-id": owner.id})
     assert deleted.status_code == 202
     payload = deleted.json()
     assert payload["asset"]["status"] == "deleting"
@@ -1763,7 +1764,7 @@ def test_delete_asset_requires_owner_and_queues_cleanup(client: TestClient, db_s
     assert db_session.scalars(select(PdfPage).where(PdfPage.asset_id == asset.id)).all()
     assert db_session.scalars(select(ContentUnit).where(ContentUnit.asset_id == asset.id)).all()
 
-    list_response = client.get(f"/v1/workspaces/{workspace.id}/assets", headers={"x-ai-pdf-internal-token": "local-development-internal-token", "x-user-id": owner.id})
+    list_response = client.get(f"/v1/workspaces/{workspace.id}/assets", headers={"x-ai-pdf-internal-token": settings.api_internal_token, "x-user-id": owner.id})
     assert list_response.status_code == 200
     assert list_response.json()["items"][0]["status"] == "deleting"
 
@@ -1895,13 +1896,13 @@ def test_failed_delete_cleanup_can_be_retried(client: TestClient, db_session: Se
 
     forbidden = client.post(
         f"/v1/workspaces/{workspace.id}/assets/{asset.id}/delete-retry",
-        headers={"x-ai-pdf-internal-token": "local-development-internal-token", "x-user-id": member.id},
+        headers={"x-ai-pdf-internal-token": settings.api_internal_token, "x-user-id": member.id},
     )
     assert forbidden.status_code == 403
 
     response = client.post(
         f"/v1/workspaces/{workspace.id}/assets/{asset.id}/delete-retry",
-        headers={"x-ai-pdf-internal-token": "local-development-internal-token", "x-user-id": owner.id},
+        headers={"x-ai-pdf-internal-token": settings.api_internal_token, "x-user-id": owner.id},
     )
 
     assert response.status_code == 200
@@ -1939,7 +1940,7 @@ def test_retry_failed_asset_creates_new_ingestion_job(client: TestClient, db_ses
 
     response = client.post(
         f"/v1/workspaces/{workspace.id}/assets/{asset.id}/retry",
-        headers={"x-ai-pdf-internal-token": "local-development-internal-token", "x-user-id": owner.id},
+        headers={"x-ai-pdf-internal-token": settings.api_internal_token, "x-user-id": owner.id},
     )
 
     assert response.status_code == 200
@@ -1972,7 +1973,7 @@ def test_retry_asset_rejects_a_asset_that_is_not_failed(client: TestClient, db_s
 
     response = client.post(
         f"/v1/workspaces/{workspace.id}/assets/{asset.id}/retry",
-        headers={"x-ai-pdf-internal-token": "local-development-internal-token", "x-user-id": owner.id},
+        headers={"x-ai-pdf-internal-token": settings.api_internal_token, "x-user-id": owner.id},
     )
 
     assert response.status_code == 409
