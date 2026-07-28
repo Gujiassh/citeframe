@@ -121,6 +121,13 @@ and model instead of the effective application settings. Worker, Web, and Web
 E2E passed in that run; API completed `405` tests and failed only those two
 configuration-dependent assertions.
 
+The configuration-aware assertion repair then passed all `407` API tests in
+hosted run `30354094055`. That run exposed a final workflow error after the test
+suite: Alembic was launched from the repository root without an explicit
+`apps/api/alembic.ini`, so it stopped before migration with
+`No 'script_location' key found in configuration`. The workflow now supplies the
+configuration path for both `upgrade head` and `check`.
+
 The repair reads the configured API internal token in router tests, regenerates
 the Worker deploy requirements with the exact CI command, and installs/selects
 the official PostgreSQL 17 client before the API test step. Configuration
