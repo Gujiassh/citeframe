@@ -101,6 +101,24 @@ Canonical v4 results:
 - Restore drift is caught by semantic snapshots plus object byte/hash comparison.
 - Resource leakage is caught after both failed and passing deployments.
 
+## Delivery Ledger
+
+- Source branch/ref: `main` at `cf70ffd77a6bb421be2348fe1f3da1e28afa00af`.
+- Repair and delivery branch: `main`; no secondary worktree or integration branch was used.
+- Symptoms and root causes: the R800 Critical findings in this review, including
+  the v2 PostgreSQL reverse lock order and stale identity-map state, followed by
+  the v3 scripted Claim-status parsing defect.
+- Changed scope: Research/Evaluation migrations and API ledger, fixed typed Worker
+  executor and runtime ports, Research/Evaluation Web surfaces, observability,
+  deterministic R800 acceptance, tests, artifacts, and SSoT/spec updates.
+- Implementation commit: `6de0927b8416dd4e237852881e678993cd62bbea`.
+- Verification: API `407 passed`; Worker `143 passed`; Web `108 passed`; ESLint,
+  TypeScript and Next production build passed; Playwright `9 passed, 9 skipped`;
+  canonical R800 v4, restore SHA, backup hashes and cleanup checks passed.
+- Delivery target: `origin/main`; no downstream merge or cherry-pick is required.
+  The linked dev-workbench checkpoint records final pushed SHA parity because this
+  repository document cannot contain the SHA of its own follow-up commit.
+
 ## Remaining Gates
 
 R803 must run paired Quick/Research cases with an explicitly approved real provider
