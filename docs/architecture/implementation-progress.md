@@ -234,6 +234,13 @@ V1、V2-A、阶段 9、V3 M401-M403B 与 V4 R000-R800 工程基线已完成。�
 - 恢复报告 `docs/evals/artifacts/m403b-restore-v2/`：在最新代码上显式 `M403_EXPECT_IMAGE_ENABLED=true` 重跑，恢复前后语义 SHA 均为 `c4c8ab66e050bdbbaa33f3b3d0af3fd3f5fe21df3e6cca5988a3af113a86bd4d`；桌面/移动 PDF/Image raster/overlay 回放、9 个对象、27 类表/目录计数和最终容器/卷/网络零残留全部通过。目录 15 个正式文件均进入 `SHA256SUMS`。
 - 最终验证：API `285 passed, 1 warning`，Worker `96 passed`（其中 restore focused `12 passed`），Web `85 passed`，readiness focused `8 passed`，生产 browser `2 passed`；API/Worker Ruff、compileall、Web ESLint、TypeScript、Next production build、Alembic current/check、Compose config、artifact SHA 和 diff check 通过。Critical finding 已关闭，工程门禁 `releaseGatePassed=true`；deterministic provider 报告固定 `modelQualityClaim=false`，M404 用户价值仍为 `not_evaluable`。
 
+## 2026-07-28：R800 hosted CI 修复与 Asset 测试边界整理
+
+- R800 首轮 hosted CI 暴露环境差异而非产品回归：测试固定使用本地 internal token、Worker 部署 requirements 与 CI 导出参数不一致、PostgreSQL 16 客户端不能验证 PostgreSQL 17 dump/restore。修复后测试读取有效 `Settings`，Worker 使用 CI 原命令生成 requirements，API job 显式安装 PostgreSQL 17 client。
+- 后续 hosted 运行继续关闭两项隐藏前提：Workspace/Asset 测试不再写死本机 Ollama provider/model；从仓库根目录运行 Alembic 时显式传入 `apps/api/alembic.ini`。最终 `origin/main@21c004cdcceec7a222b94b69f45149016560c088` 的 GitHub Actions run `30354317641` 四个 job 全部通过，包含 API 407 tests、Alembic upgrade/check、Worker 143 tests、Web 静态门和 Web E2E 9 passed/9 skipped。
+- 原 `test_asset_router.py` 已增长到 1,987 行并混合 HTTP、摄取、恢复、详情和删除职责；现拆为 Asset 专用 fixture/factory support 与 `HTTP`、`ingestion pipeline`、`ingestion recovery`、`lifecycle` 四个测试模块，最长文件 740 行。fixture 使用唯一的 `asset_db_session`/`asset_client` 名称，避免污染其他测试模块。
+- 拆分前后 pytest 节点集合均为 36 且函数名/参数化 case 全等；拆分后定向 `36 passed`、CI 风格 API 全量 `407 passed`，Ruff unresolved-identifier、compileall 和 diff check 通过。此整理未修改生产代码、API、持久化结构、payload 或保存语义。
+
 ## 2026-07-24：文档一致性审计与 V4 计划补强
 
 - 当前主入口已同步 M403B/V4 状态；当前数据库 head 为 `e8f1a2b3c4d5`，Image 已由 M403B 正式启用，R000-R800 确定性工程基线已完成。旧 Document/PDF-only 章节的逐段清单记录在 V4 `requirements-discovery.md` 第 11 节，R000 `RD003` 已关闭；历史 ER 与旧规划不得作为当前 Research 合同输入。
