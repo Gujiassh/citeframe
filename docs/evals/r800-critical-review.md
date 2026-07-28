@@ -115,15 +115,25 @@ defects after the local release gates had passed:
   and deployment baseline use PostgreSQL 17, so the Asset `pg_dump`/`pg_restore`
   migration oracle rejected the client/server major-version mismatch.
 
+The first repair commit fixed those failures, but hosted run `30353632850`
+exposed two remaining assertions that encoded the local `.env` Ollama provider
+and model instead of the effective application settings. Worker, Web, and Web
+E2E passed in that run; API completed `405` tests and failed only those two
+configuration-dependent assertions.
+
 The repair reads the configured API internal token in router tests, regenerates
 the Worker deploy requirements with the exact CI command, and installs/selects
-the official PostgreSQL 17 client before the API test step. It does not change
-an API contract, persisted payload, save semantic, migration, or product runtime
-behavior.
+the official PostgreSQL 17 client before the API test step. Configuration
+metadata assertions now compare against the effective `Settings` values and
+pass under both the local Ollama configuration and clean-CI OpenAI defaults. The
+repair does not change an API contract, persisted payload, save semantic,
+migration, or product runtime behavior.
 
 Local repair evidence:
 
 - API full suite with the CI token and PostgreSQL 17: `407 passed, 1 warning`;
+- the two configuration-sensitive route tests passed under both local and
+  clean-CI provider/model settings: `2 passed` in each environment;
 - PostgreSQL Asset dump/restore migration oracle: `1 passed, 1 warning`;
 - Worker full suite: `143 passed`;
 - API deploy export gate: clean;

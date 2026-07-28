@@ -1954,11 +1954,11 @@ def test_retry_failed_asset_creates_new_ingestion_job(client: TestClient, db_ses
     assert retried_job is not None
     assert retried_job.config_snapshot == {
         "source": "retry",
-        "embeddingProvider": "ollama",
-        "embeddingModel": "qwen3-embedding:0.6b",
-        "embeddingDimensions": 1024,
-        "embeddingVersion": "embedding-v1",
-        "chunkSize": 1200,
+        "embeddingProvider": settings.embedding_provider,
+        "embeddingModel": settings.embedding_model,
+        "embeddingDimensions": settings.embedding_dimensions,
+        "embeddingVersion": settings.embedding_version,
+        "chunkSize": workspace.chunk_size,
     }
     assert refreshed_asset is not None
     assert refreshed_asset.latest_ingestion_job_id == retried_job.id
