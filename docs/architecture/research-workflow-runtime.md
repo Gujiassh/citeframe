@@ -5,8 +5,9 @@
 - Implemented baseline: V4 R200-R800 engineering scope
 - Canonical engineering evidence: [`../evals/artifacts/r800-v1/deployment-20260728-v4/`](../evals/artifacts/r800-v1/deployment-20260728-v4/)
 - First provider-backed evidence: [`../evals/artifacts/r803-v1/`](../evals/artifacts/r803-v1/)
+- Latest strict provider-backed evidence: [`../evals/artifacts/r803-v4/`](../evals/artifacts/r803-v4/)
 - Engineering gate: `pass`
-- R803 paired engineering gates: Quick `pass`; Research `fail` with 4/6 completed cases
+- R803 paired engineering gates: Quick `pass`; Research `fail` with 5/6 completed cases
 - Model-quality gate: `not_evaluable` because one sample has no approved release threshold
 - User-value gate: `not_evaluable` until M404 contains qualified target-user evidence
 - Product stage: `internal_preview`
@@ -130,7 +131,7 @@ output directory for every execution:
 
 ```bash
 uv run --project apps/worker python apps/worker/scripts/evaluate_r803.py \
-  --package docs/evals/r803-evaluation-package-v1.json \
+  --package docs/evals/r803-evaluation-package-v4.json \
   --output-dir docs/evals/artifacts/r803-YYYYMMDD-vN
 
 (cd docs/evals/artifacts/r803-YYYYMMDD-vN && sha256sum -c SHA256SUMS)
@@ -144,6 +145,14 @@ Interpret the result in this order:
 4. One execution per case/mode remains observational evidence until an approved release threshold and sample plan exist.
 5. R803 cannot set M404 user value or move the product beyond `internal_preview`.
 6. Never overwrite a failed run directory; defects and retries require a new immutable directory.
+
+Package v4 uses evaluator-only Responses strict JSON Schema. It does not change the
+production provider or Research V2 prompt contract. The provider schema and complete
+local semantic schema are hashed separately; local validation remains authoritative.
+Transport retries are limited to connection failures, 429/5xx, incomplete responses,
+and responses without final text. The frozen policy makes three attempts with 5/15
+second backoff and records every attempt plus any final usage returned by the provider.
+Local JSON/schema/Evidence failures are never retried.
 
 ### Cleanup oracle
 
@@ -183,3 +192,11 @@ Quick completed 6/6, while Research completed 4/6 and failed both refusal cases 
 strict Researcher JSON parsing. This is a valid failed baseline, not a model-quality
 release result. See
 [`../evals/r803-real-model-first-run.md`](../evals/r803-real-model-first-run.md).
+
+R803 v4 retains the same comparison keys and adds the versioned strict transport.
+Quick completed 6/6 and Research completed 5/6; the remaining
+`r100-refuse-customer` Researcher output failed the complete local schema. Diagnostic
+v2 and provider-outage v3 runs remain immutable and are not substituted for v4.
+R803 is still open and no repeated same-package run may be selected merely to obtain
+a green sample. See
+[`../evals/r803-strict-structured-output-follow-up.md`](../evals/r803-strict-structured-output-follow-up.md).

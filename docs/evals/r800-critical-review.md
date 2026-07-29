@@ -27,7 +27,7 @@ validated value.
 | Permissions/isolation | pass | owner/creator/member and cross-Workspace API/Worker tests plus membership-removal runtime |
 | Failure/recovery | pass | retry, lease reclaim, SSE replay, restart, cancellation race, unique final Artifact |
 | Persistence/restore | pass | PostgreSQL/MinIO empty-deployment restore with equal semantic SHA and object hashes |
-| Real-model quality | blocked | The first R803 provider-backed baseline completed Quick but Research completed only 4/6 cases; one sample has no release threshold |
+| Real-model quality | blocked | R803 strict v4 completed Quick 6/6 and Research 5/6; one sample has no release threshold and one Researcher schema failure remains |
 | Target-user value | blocked | M404 does not yet contain qualified user evidence |
 
 ## Findings And Resolution
@@ -105,6 +105,29 @@ as `research-agent-results-v1` and included in the Research prompt-binding hash.
 They are injected only by the R803 evaluator. Production Research continues to
 send the existing V2 runtime schema values, so this evidence does not silently
 change an append-only PromptVersion or historical replay contract.
+
+## R803 Strict Structured-Output Follow-Up
+
+The evaluator-only follow-up freezes Responses strict JSON Schema without changing
+the production provider or Research V2 prompt/persistence contracts. Complete local
+schemas remain authoritative; provider schema limitations do not enable coercion or
+fragment extraction. The raw evaluator adapter now retains failed-response usage and
+retries only frozen transport-level failures.
+
+The immutable history is:
+
+| Run | Result | Review judgment |
+| --- | --- | --- |
+| [`artifacts/r803-v2/`](artifacts/r803-v2/) | Quick 5/6; Research 0/6 | Diagnostic only; first wrapper undercounted failed no-text response usage, so cost is not canonical |
+| [`artifacts/r803-v3/`](artifacts/r803-v3/) | Quick 1/6; Research 1/6 | Valid SourcesData outage evidence dominated by connection/no-text failures |
+| [`artifacts/r803-v4/`](artifacts/r803-v4/) | Quick 6/6; Research 5/6 | Current canonical strict run; one transport retry recovered and `r100-refuse-customer` failed the complete local Researcher schema |
+
+V4 keeps all six v1 comparison keys. Quick used 6 calls and USD 0.086065;
+Research used 36 calls and USD 0.568163. The v1 concatenated-object failure no longer
+occurred and `r100-refuse-energy` completed. The remaining failure was not normalized
+or rerun until green. Model quality, M404, and product stage remain respectively
+`not_evaluable`, `not_evaluable`, and `internal_preview`. Full evidence and hashes are
+in [`r803-strict-structured-output-follow-up.md`](r803-strict-structured-output-follow-up.md).
 
 ## Verification Evidence
 
@@ -211,8 +234,9 @@ Repair delivery ledger:
 
 ## Remaining Gates
 
-R803 has an approved first paired baseline, but remains open because Research failed
-two of six cases and no release threshold exists. The next R803 slice must version
-and fix strict structured-output behavior, then create a new immutable run directory
-for all six Quick/Research pairs. M404 must separately collect qualified target-user
-task evidence. Neither gate can be inferred from R800 or this single R803 sample.
+R803 has an approved strict paired follow-up, but remains open because Research
+completed only five of six cases and no sample/release threshold exists. The next
+R803 slice must first freeze that threshold and decide whether the remaining complete
+schema failure is a measured model failure or requires a new explicit contract; it
+must not rerun the same package until green. M404 must separately collect qualified
+target-user task evidence. Neither gate can be inferred from R800 or these R803 samples.

@@ -7,6 +7,9 @@ Quick completed all six cases; Research completed four and failed both refusal
 cases. R803 remains open, model quality is `not_evaluable`, M404 remains independently
 `not_evaluable`, and the product stays `internal_preview`.
 
+The later evaluator-only strict transport and immutable v2-v4 history are documented
+in [`r803-strict-structured-output-follow-up.md`](r803-strict-structured-output-follow-up.md).
+
 ## Frozen Package
 
 - Provider/model: `openai / gpt-5.5`

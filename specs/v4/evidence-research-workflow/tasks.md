@@ -98,7 +98,7 @@ R200/R300 必须等待 R000 approval、两阶段 Git recovery point 和 R100 exi
 - [ ] R803 完成单 Agent/多 Agent 成对质量报告
 - [x] R804 完成架构文档、运行手册和 5 分钟演示脚本
 
-R803 保持 open：2026-07-29 已执行首个 approved provider-backed baseline。Quick 6/6 完成且工程门通过；Research 仅 4/6 完成，`r100-refuse-energy` 与 `r100-refuse-customer` 因模型输出两个串联 JSON object 而严格失败为 `researcher_invalid_output`。单 case/mode 仅一次执行且未定义发布阈值，模型质量继续 `not_evaluable`；canonical 证据见 `docs/evals/artifacts/r803-v1/`。M404 用户价值继续独立 `not_evaluable`。
+R803 保持 open：2026-07-29 的 evaluator-only strict structured-output v4 保持全部 v1 comparison keys，Quick 6/6 完成且工程门通过，Research 5/6；`r100-refuse-energy` 已不再出现串联 JSON，`r100-refuse-customer` 的一个 Researcher 输出仍未通过完整本地 schema。v2 记录旧 wrapper usage 缺陷，v3 记录 provider outage，均未覆盖；当前 canonical 为 `docs/evals/artifacts/r803-v4/`。单 case/mode 仅一次执行且未定义 approved release threshold，模型质量继续 `not_evaluable`。下一步必须先冻结样本/发布阈值并裁决剩余 schema 失败口径，不能对同一 package 刷绿；M404 用户价值继续独立 `not_evaluable`。
 
 ## 明确不做
 

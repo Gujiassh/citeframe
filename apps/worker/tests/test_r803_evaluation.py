@@ -4,6 +4,8 @@ import json
 from pathlib import Path
 
 import ai_pdf_worker.r803_evaluation_contract as evaluation_contract
+import ai_pdf_worker.r803_evaluation_provider as evaluation_provider
+import httpx
 import pytest
 from ai_pdf_api.services.evaluation import parse_evaluation_report
 from ai_pdf_api.services.providers import ModelProviderError
@@ -13,7 +15,13 @@ from ai_pdf_worker.r803_evaluation_contract import (
     R803EvaluationError,
     load_evaluation_package,
 )
-from ai_pdf_worker.r803_evaluation_provider import ProviderResult
+from ai_pdf_worker.r803_evaluation_provider import ProviderResult, RecordedProviderError
+from ai_pdf_worker.r803_structured_output import (
+    PROVIDER_RESULT_SCHEMAS,
+    QUICK_RESULT_SCHEMA,
+    STRUCTURED_OUTPUT_TRANSPORT_VERSION,
+    structured_output_format,
+)
 from ai_pdf_worker.research_agent_schemas import AGENT_RESULT_SCHEMAS
 
 
@@ -167,6 +175,127 @@ def test_package_freezes_expected_comparison_keys() -> None:
     assert set(package.assets) == {"pdf-coordinate", "pdf-artifact-matrix", "image-coordinate"}
 
 
+def test_package_v1_is_not_silently_reinterpreted() -> None:
+    for version in ("v1", "v2", "v3"):
+        with pytest.raises(R803EvaluationError, match="unsupported_package_schema"):
+            load_evaluation_package(Path(f"docs/evals/r803-evaluation-package-{version}.json"))
+
+
+def test_provider_schema_is_strict_and_drops_only_unsupported_keywords() -> None:
+    assert QUICK_RESULT_SCHEMA["properties"] != PROVIDER_RESULT_SCHEMAS["quick"]["properties"]
+    assert PROVIDER_RESULT_SCHEMAS["quick"]["additionalProperties"] is False
+    assert PROVIDER_RESULT_SCHEMAS["quick"]["required"] == QUICK_RESULT_SCHEMA["required"]
+    serialized = json.dumps(PROVIDER_RESULT_SCHEMAS)
+    for keyword in ("minLength", "maxLength", "maxItems", "minimum", "uniqueItems"):
+        assert keyword not in serialized
+    claims = PROVIDER_RESULT_SCHEMAS["researcher"]["properties"]["claims"]
+    assert claims["items"]["properties"]["evidenceHandleIds"]["minItems"] == 1
+    assert structured_output_format("quick") == {
+        "type": "json_schema",
+        "name": "r803_quick_v2",
+        "strict": True,
+        "schema": PROVIDER_RESULT_SCHEMAS["quick"],
+    }
+
+
+def test_real_provider_injects_versioned_strict_format(monkeypatch: pytest.MonkeyPatch) -> None:
+    captured: dict[str, object] = {}
+
+    def post(url: str, *, json: object, headers: dict[str, str], timeout: float) -> httpx.Response:
+        captured.update({"url": url, "json": json, "headers": headers, "timeout": timeout})
+        return httpx.Response(
+            200,
+            json={
+                "output": [
+                    {
+                        "content": [
+                            {
+                                "type": "output_text",
+                                "text": '{"answer":"ok","claims":[],"conflictDetected":false}',
+                            }
+                        ]
+                    }
+                ],
+                "usage": {"input_tokens": 7, "output_tokens": 3},
+            },
+        )
+
+    monkeypatch.setattr(evaluation_provider.httpx, "post", post)
+    provider = evaluation_provider.OpenAIRecordedProvider(
+        model="gpt-5.5",
+        api_key="test-key",
+        api_base="https://example.test/v1",
+        timeout_seconds=2,
+        max_output_tokens=100,
+        structured_output_transport=STRUCTURED_OUTPUT_TRANSPORT_VERSION,
+    )
+
+    result = provider.generate([{"role": "user", "content": "question"}], node_key="quick")
+
+    assert result.output == '{"answer":"ok","claims":[],"conflictDetected":false}'
+    assert captured["json"] == {
+        "model": "gpt-5.5",
+        "input": [{"role": "user", "content": "question"}],
+        "max_output_tokens": 100,
+        "text": {"format": structured_output_format("quick")},
+    }
+
+
+def test_real_provider_preserves_usage_on_incomplete_response(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    def post(*_args: object, **_kwargs: object) -> httpx.Response:
+        return httpx.Response(
+            200,
+            json={
+                "status": "incomplete",
+                "incomplete_details": {"reason": "max_output_tokens"},
+                "output": [{"type": "reasoning", "content": []}],
+                "usage": {"input_tokens": 17, "output_tokens": 100},
+            },
+        )
+
+    monkeypatch.setattr(evaluation_provider.httpx, "post", post)
+    provider = evaluation_provider.OpenAIRecordedProvider(
+        model="gpt-5.5",
+        api_key="test-key",
+        api_base="https://example.test",
+        timeout_seconds=2,
+        max_output_tokens=100,
+        structured_output_transport=STRUCTURED_OUTPUT_TRANSPORT_VERSION,
+    )
+
+    with pytest.raises(RecordedProviderError) as captured:
+        provider.generate([{"role": "user", "content": "question"}], node_key="planner")
+
+    assert captured.value.code == "generation_incomplete_response"
+    assert (captured.value.input_tokens, captured.value.output_tokens) == (17, 100)
+    assert captured.value.usage_final is True
+
+
+def test_real_provider_classifies_non_json_4xx_as_permanent(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setattr(
+        evaluation_provider.httpx,
+        "post",
+        lambda *_args, **_kwargs: httpx.Response(400, text="invalid schema"),
+    )
+    provider = evaluation_provider.OpenAIRecordedProvider(
+        model="gpt-5.5",
+        api_key="test-key",
+        api_base="https://example.test",
+        timeout_seconds=2,
+        max_output_tokens=100,
+        structured_output_transport=STRUCTURED_OUTPUT_TRANSPORT_VERSION,
+    )
+
+    with pytest.raises(RecordedProviderError) as captured:
+        provider.generate([{"role": "user", "content": "question"}], node_key="quick")
+
+    assert captured.value.code == "generation_provider_error"
+
+
 def test_paired_evaluation_is_importable_and_keeps_gates_separate(tmp_path: Path) -> None:
     result = run_paired_evaluation(provider=DeterministicProvider())
     quick = parse_evaluation_report(json.dumps(result.quick_report, sort_keys=True, separators=(",", ":")).encode())
@@ -302,7 +431,11 @@ class TransientOnceProvider(DeterministicProvider):
         return super().generate(messages, node_key=node_key)
 
 
-def test_transient_provider_failure_is_retried_and_reported_as_recovered() -> None:
+def test_transient_provider_failure_is_retried_and_reported_as_recovered(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    delays: list[int] = []
+    monkeypatch.setattr(evaluation_provider, "sleep", delays.append)
     result = run_paired_evaluation(provider=TransientOnceProvider())
     quick = result.quick_report["evaluation"]
     assert quick["status"] == "completed"
@@ -316,6 +449,45 @@ def test_transient_provider_failure_is_retried_and_reported_as_recovered() -> No
         "value": 1.0,
         "sampleCount": 1,
         "notEvaluableReason": None,
+    }
+    assert delays == [5]
+
+
+class UsageBearingTransientProvider(DeterministicProvider):
+    def __init__(self) -> None:
+        self.calls = 0
+
+    def generate(self, messages, *, node_key: str) -> ProviderResult:
+        self.calls += 1
+        if self.calls == 1:
+            raise RecordedProviderError(
+                "generation_incomplete_response",
+                "No final output.",
+                input_tokens=5,
+                output_tokens=2,
+                usage_final=True,
+            )
+        return super().generate(messages, node_key=node_key)
+
+
+def test_failed_attempt_usage_is_included_in_report_cost(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setattr(evaluation_provider, "sleep", lambda _seconds: None)
+    result = run_paired_evaluation(provider=UsageBearingTransientProvider())
+    quick = result.quick_report["evaluation"]
+    first_call = result.paired_report["cases"][0]["quick"]["providerCallRecords"][0]
+
+    assert (quick["inputTokens"], quick["outputTokens"]) == (65, 32)
+    assert first_call == {
+        "node_key": "quick",
+        "logical_call_key": "r100-compare-rise-drop:quick:0:quick",
+        "attempt_number": 1,
+        "duration_ms": first_call["duration_ms"],
+        "input_tokens": 5,
+        "output_tokens": 2,
+        "usage_final": True,
+        "status": "failed",
     }
 
 

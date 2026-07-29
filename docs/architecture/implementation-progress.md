@@ -17,7 +17,7 @@
 
 ## 2. 当前总状态
 
-当前项目状态：`V1、Chat-first 工作台、V2-A Hybrid/RRF、阶段 9、V3 M401-M403B 与 V4 R000-R800 确定性工程基线已完成；R803 首次真实模型 baseline 已执行但 Research 仅完成 4/6，R803 保持 open，模型质量与 M404 用户价值仍为 not_evaluable，产品保持 internal_preview。`
+当前项目状态：`V1、Chat-first 工作台、V2-A Hybrid/RRF、阶段 9、V3 M401-M403B 与 V4 R000-R800 确定性工程基线已完成；R803 strict structured-output follow-up 的 Quick 完成 6/6、Research 完成 5/6，R803 保持 open，模型质量与 M404 用户价值仍为 not_evaluable，产品保持 internal_preview。`
 
 M403A 的逐次优化假设、实验手段、通过/否决结果、指标和 artifact 统一记录在 `docs/evals/m403a-optimization-log.md`；后续不得只更新最终结论而遗漏失败实验与运行环境证据。
 
@@ -50,7 +50,7 @@ M403A 的逐次优化假设、实验手段、通过/否决结果、指标和 art
 | V3-2 | 多模态 PDF Evidence | 已完成 | 已完成 | 页面几何、layout/OCR、表格/图表/页内图片、`pdf_page/pdf_region` Citation/NoteSource、Viewer 区域交互与失败 Chat 回放已通过两轮 Critical 复验 |
 | V3-3 | 独立图片闭环 | 已完成 | M301-M305 已通过最终 Critical | 图片归一化、OCR/caption、Evidence 历史快照、Viewer、区域 Chat/Note 与混合检索已完成；M403B 已将生产 Image 正式启用 |
 | V3-4 | 质量与发布验收 | M401-M403B 已完成 | M403B 已完成 | M403 恢复、M403A binary64/3N canonical 与 M403B 三格式生产上传/恢复/浏览器门均通过；工程 `releaseGatePassed=true` |
-| V4 | Evidence Research Workflow | R000-R800 已完成；R803 open | 确定性工程门通过；首次真实模型 Research 失败 | Research ledger、固定 executor、HITL/SSE/retry/recovery、Web、observability、Evaluation 与 R800 PostgreSQL/MinIO 恢复全部通过；R803 Quick 6/6、Research 4/6，模型质量/M404 仍 not_evaluable |
+| V4 | Evidence Research Workflow | R000-R800 已完成；R803 open | 确定性工程门通过；strict Research 仍失败 | Research ledger、固定 executor、HITL/SSE/retry/recovery、Web、observability、Evaluation 与 R800 PostgreSQL/MinIO 恢复全部通过；R803 v4 Quick 6/6、Research 5/6，模型质量/M404 仍 not_evaluable |
 
 ## 4. 已完成的设计文档
 
@@ -66,13 +66,21 @@ M403A 的逐次优化假设、实验手段、通过/否决结果、指标和 art
 
 V1、V2-A、阶段 9、V3 M401-M403B 与 V4 R000-R800 工程基线已完成。后续按以下顺序推进：
 
-1. 对 R803 两个拒答 case 的严格 structured-output 缺陷建立新版本，随后用同一冻结 comparison keys 重跑全部 6 对 Quick/Research
+1. 为 R803 定义 approved sample/release threshold，并裁决剩余 `r100-refuse-customer` 完整 schema 失败应作为模型质量样本还是进入新的显式版本合同；不得对同一 package 刷绿
 2. 真实用户验证作为 M404 Beta 门推进；数据不足时保持 `not_evaluable` 和内部预览
 3. 后续切片继续沿用确定性 fixture、真实 BFF、恢复与独立复审门，不以“多 Agent”或工程绿灯替代证据质量
 
 ## 6. 当前正在做什么
 
-当前：`V4 R800 v4 确定性工程门已通过。R803 首次 provider-backed baseline 的 comparison keys 全部匹配，Quick 工程门通过，Research 因两个拒答 case 严格 JSON 失败而仅完成 4/6；R803 保持 open，模型质量与 M404 继续 not_evaluable。`
+当前：`V4 R800 v4 确定性工程门已通过。R803 evaluator-only strict transport 与可计费 retry 已版本化，最新 canonical v4 的 comparison keys 继续匹配，Quick 6/6，Research 5/6；r100-refuse-customer 在完整本地 Researcher schema 处 fail closed。R803 保持 open，模型质量与 M404 继续 not_evaluable。`
+
+## 2026-07-29：R803 strict structured-output follow-up
+
+- 新增 evaluator-only `text.format=json_schema` transport；完整语义 schema 与 provider 可接受 schema 分开冻结并共同进入 prompt binding hash。SourcesData 接受 `minItems`、拒绝 `uniqueItems`，因此 provider 负责闭合结构和非空数组，本地 validator 继续执行全部约束；没有增加 JSON 片段提取、前缀剥离或重复项 coercion。
+- R803 provider 改为直接解析 Responses payload，对可解析的失败响应保留 usage；429/5xx、连接失败、incomplete 与无最终文本按 `r803-provider-retry-v3` 最多三次并使用 5/15 秒退避。4xx、JSON/schema、Evidence handle 与 scorer 失败均不重试。生产 `OpenAIGenerationProvider`、Research V2 PromptVersion/WorkflowVersion 和持久化合同未改。
+- `r803-v2` 暴露旧 wrapper 失败 usage 丢失，不能把 cost 作为完整证据；`r803-v3` 保留 SourcesData 连续 ConnectTimeout/no-text outage；两者均未覆盖。当前 canonical 为 `docs/evals/artifacts/r803-v4/`：Quick 6/6、6 calls、47.330 秒、USD 0.086065；Research 5/6、36 calls、264.144 秒、USD 0.568163，1 次 transport retry 恢复，speedup 1.5897。
+- v1 的串联 JSON 模式已消失，`r100-refuse-energy` 在 v4 完成；`r100-refuse-customer` 的一个 Researcher 输出仍未通过完整本地 schema，Research 工程门保持 `fail`。单 case/mode 一次执行且无 approved threshold，模型质量、M404 和产品阶段继续分别为 `not_evaluable`、`not_evaluable`、`internal_preview`。
+- 详细版本、运行历史、hash 与证据解释见 `docs/evals/r803-strict-structured-output-follow-up.md`。下一步不能重复同一 package 直到抽到绿色结果；需先冻结样本计划/发布阈值并裁决剩余 schema 失败的测量口径。
 
 ## 2026-07-29：R803 首次真实模型成对 baseline
 

@@ -10,8 +10,20 @@ from typing import Any, Literal
 
 from ai_pdf_api.schemas.evaluation import EvaluationImportReport
 
+from ai_pdf_worker.r803_evaluation_policy import (
+    MAX_PROVIDER_ATTEMPTS,
+    RETRY_BACKOFF_SECONDS,
+    RETRY_POLICY_VERSION,
+    RETRYABLE_PROVIDER_CODES,
+)
+from ai_pdf_worker.r803_structured_output import (
+    QUICK_RESULT_SCHEMA_VERSION,
+    STRUCTURED_OUTPUT_SCHEMA_SET_VERSION,
+    STRUCTURED_OUTPUT_TRANSPORT_VERSION,
+)
+
 REPO_ROOT = Path(__file__).resolve().parents[4]
-DEFAULT_PACKAGE_PATH = REPO_ROOT / "docs/evals/r803-evaluation-package-v1.json"
+DEFAULT_PACKAGE_PATH = REPO_ROOT / "docs/evals/r803-evaluation-package-v4.json"
 
 
 class R803EvaluationError(ValueError):
@@ -149,7 +161,7 @@ def _validated_repo_file(relative: str, expected_sha256: str) -> Path:
 
 def load_evaluation_package(path: Path = DEFAULT_PACKAGE_PATH) -> EvaluationPackage:
     document = _load_object(path)
-    if document.get("schemaVersion") != "r803-evaluation-package-v1":
+    if document.get("schemaVersion") != "r803-evaluation-package-v4":
         raise R803EvaluationError("unsupported_package_schema")
     suite = document.get("suite")
     provider = document.get("providerProfile")
@@ -158,12 +170,27 @@ def load_evaluation_package(path: Path = DEFAULT_PACKAGE_PATH) -> EvaluationPack
     if not all(isinstance(item, dict) for item in (suite, provider, research)) or not isinstance(assets_document, list):
         raise R803EvaluationError("invalid_evaluation_package")
     quick = document.get("quick")
+    structured_output = document.get("structuredOutput")
+    execution_policy = document.get("executionPolicy")
     if (
         not isinstance(quick, dict)
+        or not isinstance(structured_output, dict)
+        or not isinstance(execution_policy, dict)
         or not isinstance(quick.get("systemPrompt"), str)
         or not quick["systemPrompt"].strip()
         or not isinstance(quick.get("evaluationContract"), str)
         or not quick["evaluationContract"].strip()
+        or quick.get("resultSchemaVersion") != QUICK_RESULT_SCHEMA_VERSION
+        or structured_output.get("transportVersion")
+        != STRUCTURED_OUTPUT_TRANSPORT_VERSION
+        or structured_output.get("schemaSetVersion")
+        != STRUCTURED_OUTPUT_SCHEMA_SET_VERSION
+        or execution_policy.get("retryPolicyVersion") != RETRY_POLICY_VERSION
+        or execution_policy.get("maxProviderAttempts") != MAX_PROVIDER_ATTEMPTS
+        or execution_policy.get("retryBackoffSeconds")
+        != list(RETRY_BACKOFF_SECONDS)
+        or execution_policy.get("retryableProviderCodes")
+        != sorted(RETRYABLE_PROVIDER_CODES)
         or suite.get("scorerVersion") != "r100-v1"
         or provider.get("provider") != "openai"
         or provider.get("model") != "gpt-5.5"

@@ -52,6 +52,7 @@ def configured_provider(package: EvaluationPackage) -> OpenAIRecordedProvider:
         api_base=api_base,
         timeout_seconds=settings.generation_timeout_seconds,
         max_output_tokens=profile["maxOutputTokens"],
+        structured_output_transport=package.document["structuredOutput"]["transportVersion"],
     )
 
 

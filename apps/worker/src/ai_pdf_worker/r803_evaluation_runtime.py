@@ -144,7 +144,7 @@ def build_execution(package: EvaluationPackage, case: dict[str, object]) -> Appr
         prompt_version_ids=tuple(item.prompt_version_id for item in prompts),
         provider_config_fingerprint=package.comparison_keys.provider_profile_sha256,
         budget_policy_version="budget-v1",
-        retry_policy_version="retry-v1",
+        retry_policy_version=package.document["executionPolicy"]["retryPolicyVersion"],
         max_parallel_researchers=3,
         max_provider_calls=32,
         max_tool_calls=32,
