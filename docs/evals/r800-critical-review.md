@@ -27,7 +27,7 @@ validated value.
 | Permissions/isolation | pass | owner/creator/member and cross-Workspace API/Worker tests plus membership-removal runtime |
 | Failure/recovery | pass | retry, lease reclaim, SSE replay, restart, cancellation race, unique final Artifact |
 | Persistence/restore | pass | PostgreSQL/MinIO empty-deployment restore with equal semantic SHA and object hashes |
-| Real-model quality | blocked | Scripted provider cannot evaluate model quality; R803 remains open |
+| Real-model quality | blocked | The first R803 provider-backed baseline completed Quick but Research completed only 4/6 cases; one sample has no release threshold |
 | Target-user value | blocked | M404 does not yet contain qualified user evidence |
 
 ## Findings And Resolution
@@ -75,6 +75,36 @@ Canonical v4 results:
 - restore semantic SHA before/after was
   `a60fa5eaf70a86e47d3de1b17a7c49561a2c6cfbc369554fc1d94a9567bab6a8`;
 - cleanup removed all project containers, volumes, networks, and the generated env file.
+
+## R803 First Provider-Backed Baseline
+
+The first approved real-model package ran on 2026-07-29 with `openai / gpt-5.5`,
+all six R100 cases, the three frozen PDF/Image assets, and scorer `r100-v1`.
+Canonical evidence is in [`artifacts/r803-v1/`](artifacts/r803-v1/), with the
+frozen package in [`r803-evaluation-package-v1.json`](r803-evaluation-package-v1.json)
+and the detailed run record in
+[`r803-real-model-first-run.md`](r803-real-model-first-run.md).
+
+| Area | Result | Evidence |
+| --- | --- | --- |
+| Comparison keys | pass | Fixture, Asset scope, provider/model, provider profile, and scorer hashes match |
+| Quick engineering | pass | 6/6 cases completed; 6 provider calls; USD 0.084350 |
+| Research engineering | fail | 4/6 cases completed; 36 provider calls; USD 0.578043 |
+| Strict output handling | pass | Both concatenated pseudo tool-call/result payloads failed closed as `researcher_invalid_output` |
+| Model-quality release | blocked | One execution per case/mode and no approved release threshold; `not_evaluable` |
+| User value | blocked | M404 evidence remains absent; `not_evaluable` |
+| Product stage | pass | Remains `internal_preview` |
+
+The two failed Research cases were `r100-refuse-energy` and
+`r100-refuse-customer`. The model prefixed the required Claims object with a
+second JSON object resembling a tool call. The evaluator intentionally does not
+extract a later JSON fragment or coerce the payload. R803 therefore remains open.
+
+The complete Agent result schemas used by this evaluation are frozen separately
+as `research-agent-results-v1` and included in the Research prompt-binding hash.
+They are injected only by the R803 evaluator. Production Research continues to
+send the existing V2 runtime schema values, so this evidence does not silently
+change an append-only PromptVersion or historical replay contract.
 
 ## Verification Evidence
 
@@ -181,7 +211,8 @@ Repair delivery ledger:
 
 ## Remaining Gates
 
-R803 must run paired Quick/Research cases with an explicitly approved real provider
-and matching fixture, Asset scope, provider/model, Workflow, and Prompt comparison
-keys. M404 must separately collect qualified target-user task evidence. Neither gate
-can be inferred from deterministic R800 success.
+R803 has an approved first paired baseline, but remains open because Research failed
+two of six cases and no release threshold exists. The next R803 slice must version
+and fix strict structured-output behavior, then create a new immutable run directory
+for all six Quick/Research pairs. M404 must separately collect qualified target-user
+task evidence. Neither gate can be inferred from R800 or this single R803 sample.

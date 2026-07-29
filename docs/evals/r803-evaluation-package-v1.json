@@ -1,0 +1,87 @@
+{
+  "schemaVersion": "r803-evaluation-package-v1",
+  "suite": {
+    "suiteKey": "r100-real-model-paired",
+    "version": 1,
+    "title": "R100 Real-model Paired Quality",
+    "caseManifestPath": "docs/evals/r100-research-cases-v1.json",
+    "caseManifestSha256": "acc5ca446127d8dbb144f810324c8bb01a5f98cf8f95a672804e46293d32b377",
+    "goldenManifestPath": "docs/evals/multimodal-golden-v1.json",
+    "goldenManifestSha256": "4106659d928390b361af66ccd6ebf13c581cefe27ae8ffe906b478a2c578fa90",
+    "scorerVersion": "r100-v1"
+  },
+  "providerProfile": {
+    "provider": "openai",
+    "model": "gpt-5.5",
+    "apiBase": "https://us-direct-api.sourcesdata.com",
+    "apiProtocol": "responses-v1",
+    "maxOutputTokens": 1200,
+    "pricingVersion": "research-pricing-v1"
+  },
+  "quick": {
+    "systemPrompt": "Answer only from supplied evidence. If it does not support the question, state that the selected assets do not contain supporting evidence.",
+    "evaluationContract": "For this offline evaluation only, return one JSON object with exactly these fields: answer (string), claims (array of objects with exactly text and evidenceIds, where evidenceIds contains only supplied evidence IDs that directly support that claim), and conflictDetected (boolean). Use an empty claims array when the evidence is insufficient. Do not include markdown fences or hidden reasoning."
+  },
+  "research": {
+    "releaseId": "citeframe-research-v2",
+    "workflowVersionId": "20000000-0000-4000-8000-000000000001",
+    "agentResultSchemaVersion": "research-agent-results-v1",
+    "conflictDecisionPolicy": "evaluation_keep_as_unresolved"
+  },
+  "assets": [
+    {
+      "id": "pdf-coordinate",
+      "title": "pdf-coordinate-fixture.pdf",
+      "sourcePath": "docs/fixtures/evidence-contract/pdf-coordinate-fixture.pdf",
+      "sourceSha256": "142c86f9ae04aba21fc00e983469b3e686e458c6dc038e90598fd6fa6bb3e0bf",
+      "manifestPath": "docs/fixtures/evidence-contract/pdf-coordinate-fixture.json",
+      "manifestSha256": "54eb47122268d633e5b4a2c5327d19acd3c2eaed472e11270d5de39b9ae16429",
+      "evidence": [
+        {
+          "id": "answer-pdf-chart",
+          "locatorKind": "pdf_region",
+          "locatorKey": "page-10-chart-multi-region",
+          "content": "Figure 1. Trend rises after the third point. Supporting caption in a separate region."
+        }
+      ]
+    },
+    {
+      "id": "pdf-artifact-matrix",
+      "title": "pdf-artifact-matrix-fixture.pdf",
+      "sourcePath": "docs/fixtures/evidence-contract/pdf-artifact-matrix-fixture.pdf",
+      "sourceSha256": "0a648609ea6a91f203c1a3e69668b6c73d8de1504c78cbd2e0fed79fcc1fc830",
+      "manifestPath": "docs/fixtures/evidence-contract/pdf-artifact-matrix-fixture.json",
+      "manifestSha256": "85270f3d3d15398f95c8c760ba512e79065e160678befe25ee5fc0205289e0d1",
+      "evidence": [
+        {
+          "id": "answer-pdf-table",
+          "locatorKind": "pdf_region",
+          "locatorKey": "page-1-table-rotation-0",
+          "content": "| Model | Score |\n| --- | --- |\n| Atlas | 91.4 |"
+        }
+      ]
+    },
+    {
+      "id": "image-coordinate",
+      "title": "image-coordinate-fixture.png",
+      "sourcePath": "docs/fixtures/evidence-contract/image-coordinate-fixture.png",
+      "sourceSha256": "585b2489a7e6288d71636258b84e56610b345a1fc74ffd42967ee434678d8955",
+      "manifestPath": "docs/fixtures/evidence-contract/image-coordinate-fixture.json",
+      "manifestSha256": "a8b3523d253485e7ccd53ac749bdfe9bdff7a88f9bc9bf97fa3546304fe71f77",
+      "evidence": [
+        {
+          "id": "answer-image-trend",
+          "locatorKind": "image_region",
+          "locatorKey": "chart",
+          "content": "Observation: latency falls after the third release. Release 4 begins the sustained drop."
+        },
+        {
+          "id": "answer-image-constraint",
+          "locatorKind": "image_region",
+          "locatorKey": "caption",
+          "content": "Release 4 begins the sustained drop. Verify chart and caption together."
+        }
+      ]
+    }
+  ]
+}

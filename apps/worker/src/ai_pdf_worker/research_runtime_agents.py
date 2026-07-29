@@ -8,13 +8,11 @@ SQLAlchemy model imports: a missing or incomplete API port is a hard failure.
 from __future__ import annotations
 
 import json
-from collections.abc import Mapping, Sequence
+from collections.abc import Callable, Mapping, Sequence
 from typing import Any
 from uuid import uuid4
 
-from ai_pdf_api.services.providers import (
-    GenerationMessage,
-)
+from ai_pdf_api.services.providers import GenerationMessage
 
 from ai_pdf_worker.research_executor import (
     BranchResult,
@@ -34,12 +32,34 @@ from ai_pdf_worker.research_runtime_core import (
 )
 from ai_pdf_worker.research_runtime_ports import LedgeredGeneration
 
+DEFAULT_AGENT_RESULT_SCHEMAS: dict[str, dict[str, object]] = {
+    "planner": {
+        "type": "object",
+        "required": ["summary", "knownGaps", "estimatedProviderCalls", "subproblems"],
+    },
+    "researcher": {"type": "object", "required": ["claims"]},
+    "verifier": {"type": "object", "required": ["claims"]},
+    "critic": {"type": "object", "required": ["conflictClaimIds"]},
+    "synthesizer": {
+        "type": "object",
+        "required": ["factClaimIds", "unresolvedClaimIds"],
+    },
+}
+
 
 class GenerationResearchAgents:
     """Strict JSON agents.  All content is treated as untrusted evidence."""
 
-    def __init__(self, generation: LedgeredGeneration) -> None:
+    def __init__(
+        self,
+        generation: LedgeredGeneration,
+        *,
+        result_schemas: Mapping[str, dict[str, object]] | None = None,
+        result_validator: Callable[[str, dict[str, Any]], None] | None = None,
+    ) -> None:
         self._generation = generation
+        self._result_schemas = result_schemas or DEFAULT_AGENT_RESULT_SCHEMAS
+        self._result_validator = result_validator
         self.plan_summary: str | None = None
         self.plan_known_gaps: tuple[str, ...] = ()
         self.plan_estimated_provider_calls: int | None = None
@@ -69,10 +89,7 @@ class GenerationResearchAgents:
                     "maxOutputTokens": self._generation.execution.max_output_tokens,
                     "maxCostMicrounits": self._generation.execution.max_cost_microunits,
                 },
-                "planOutputSchema": {
-                    "type": "object",
-                    "required": ["summary", "knownGaps", "estimatedProviderCalls", "subproblems"],
-                },
+                "planOutputSchema": self._result_schemas["planner"],
             },
         )
         rows = payload.get("subproblems") if isinstance(payload, dict) else None
@@ -115,10 +132,7 @@ class GenerationResearchAgents:
                         for item in loaded
                     ],
                 },
-                "resultSchema": {
-                    "type": "object",
-                    "required": ["claims"],
-                },
+                "resultSchema": self._result_schemas["researcher"],
             },
         )
         rows = payload.get("claims") if isinstance(payload, dict) else None
@@ -170,10 +184,7 @@ class GenerationResearchAgents:
                     for handle_id in referenced_ids
                 ],
                 "reasonTaxonomy": ["supported", "unsupported"],
-                "resultSchema": {
-                    "type": "object",
-                    "required": ["claims"],
-                },
+                "resultSchema": self._result_schemas["verifier"],
             },
         )
         rows = payload.get("claims") if isinstance(payload, dict) else None
@@ -193,10 +204,7 @@ class GenerationResearchAgents:
                     {"id": claim.id, "text": claim.text, "status": claim.verification_status}
                     for claim in claims
                 ],
-                "resultSchema": {
-                    "type": "object",
-                    "required": ["conflictClaimIds"],
-                },
+                "resultSchema": self._result_schemas["critic"],
             },
         )
         conflicts = payload.get("conflictClaimIds") if isinstance(payload, dict) else None
@@ -221,10 +229,7 @@ class GenerationResearchAgents:
                     }
                     for item in (*claims, *unresolved)
                 ],
-                "resultSchema": {
-                    "type": "object",
-                    "required": ["factClaimIds", "unresolvedClaimIds"],
-                },
+                "resultSchema": self._result_schemas["synthesizer"],
             },
         )
         return SynthesisSelection(tuple(str(item) for item in payload.get("factClaimIds", ())), tuple(str(item) for item in payload.get("unresolvedClaimIds", ())))
@@ -243,4 +248,9 @@ class GenerationResearchAgents:
             raise ResearchExecutionError(f"{node_key}_invalid_output") from error
         if not isinstance(value, dict):
             raise ResearchExecutionError(f"{node_key}_invalid_output")
+        if self._result_validator is not None:
+            try:
+                self._result_validator(node_key, value)
+            except (KeyError, TypeError, ValueError) as error:
+                raise ResearchExecutionError(f"{node_key}_invalid_output") from error
         return value

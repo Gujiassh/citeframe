@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass
 from threading import Barrier, Lock
@@ -276,6 +277,8 @@ def test_researcher_ignores_model_supplied_claim_identifier() -> None:
         "role": "system",
         "content": V2_PROMPT_SPECS["researchers"].template_text,
     }
+    variables = json.loads(str(generation.messages[1]["content"]))
+    assert variables["resultSchema"] == {"type": "object", "required": ["claims"]}
     assert "FrozenAssetScope" not in str(generation.messages[0])
 
 

@@ -4,8 +4,10 @@
 
 - Implemented baseline: V4 R200-R800 engineering scope
 - Canonical engineering evidence: [`../evals/artifacts/r800-v1/deployment-20260728-v4/`](../evals/artifacts/r800-v1/deployment-20260728-v4/)
+- First provider-backed evidence: [`../evals/artifacts/r803-v1/`](../evals/artifacts/r803-v1/)
 - Engineering gate: `pass`
-- Model-quality gate: `not_evaluable` because R800 uses a scripted provider
+- R803 paired engineering gates: Quick `pass`; Research `fail` with 4/6 completed cases
+- Model-quality gate: `not_evaluable` because one sample has no approved release threshold
 - User-value gate: `not_evaluable` until M404 contains qualified target-user evidence
 - Product stage: `internal_preview`
 
@@ -119,6 +121,30 @@ Required R800 scenario checks are `mainCompleted`, `parallelFanout`,
 `unsupportedWithheld`, `conflictResume`, `transientRetry`, `leaseReclaim`,
 `sseReplay`, `cancelNoFinal`, `membershipRemoval`, and `uniqueFinal`.
 
+### Provider-backed R803 paired evaluation
+
+The package validates every fixture/source hash and the effective provider/model/
+endpoint before sending a request. Supply the API key only through the existing
+Worker settings; never add it to the package, command, log, or report. Use a new
+output directory for every execution:
+
+```bash
+uv run --project apps/worker python apps/worker/scripts/evaluate_r803.py \
+  --package docs/evals/r803-evaluation-package-v1.json \
+  --output-dir docs/evals/artifacts/r803-YYYYMMDD-vN
+
+(cd docs/evals/artifacts/r803-YYYYMMDD-vN && sha256sum -c SHA256SUMS)
+```
+
+Interpret the result in this order:
+
+1. `comparisonKeysMatch` must be true; otherwise no Quick/Research comparison is valid.
+2. Quick and Research engineering gates report execution completeness, not release quality.
+3. Any case output that is not one strict JSON object fails closed. Do not extract a later JSON fragment.
+4. One execution per case/mode remains observational evidence until an approved release threshold and sample plan exist.
+5. R803 cannot set M404 user value or move the product beyond `internal_preview`.
+6. Never overwrite a failed run directory; defects and retries require a new immutable directory.
+
 ### Cleanup oracle
 
 The script owns its disposable project and removes containers, volumes, networks,
@@ -151,3 +177,9 @@ R800 v4 proves deterministic engineering behavior on PostgreSQL, MinIO, the real
 API/Worker/Web images, and a scripted provider. It proves persistence, concurrency,
 recovery, provenance, isolation, and cleanup oracles. It does not evaluate a real
 model's research quality and does not replace M404 user-value evidence.
+
+R803 v1 adds one real `openai / gpt-5.5` observation under matching frozen keys.
+Quick completed 6/6, while Research completed 4/6 and failed both refusal cases at
+strict Researcher JSON parsing. This is a valid failed baseline, not a model-quality
+release result. See
+[`../evals/r803-real-model-first-run.md`](../evals/r803-real-model-first-run.md).

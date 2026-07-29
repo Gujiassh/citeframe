@@ -17,7 +17,7 @@
 
 ## 2. 当前总状态
 
-当前项目状态：`V1、Chat-first 工作台、V2-A Hybrid/RRF、阶段 9、V3 M401-M403B 与 V4 R000-R800 确定性工程基线已完成；R803 真实模型质量和 M404 用户价值仍为 not_evaluable，产品保持 internal_preview。`
+当前项目状态：`V1、Chat-first 工作台、V2-A Hybrid/RRF、阶段 9、V3 M401-M403B 与 V4 R000-R800 确定性工程基线已完成；R803 首次真实模型 baseline 已执行但 Research 仅完成 4/6，R803 保持 open，模型质量与 M404 用户价值仍为 not_evaluable，产品保持 internal_preview。`
 
 M403A 的逐次优化假设、实验手段、通过/否决结果、指标和 artifact 统一记录在 `docs/evals/m403a-optimization-log.md`；后续不得只更新最终结论而遗漏失败实验与运行环境证据。
 
@@ -50,7 +50,7 @@ M403A 的逐次优化假设、实验手段、通过/否决结果、指标和 art
 | V3-2 | 多模态 PDF Evidence | 已完成 | 已完成 | 页面几何、layout/OCR、表格/图表/页内图片、`pdf_page/pdf_region` Citation/NoteSource、Viewer 区域交互与失败 Chat 回放已通过两轮 Critical 复验 |
 | V3-3 | 独立图片闭环 | 已完成 | M301-M305 已通过最终 Critical | 图片归一化、OCR/caption、Evidence 历史快照、Viewer、区域 Chat/Note 与混合检索已完成；M403B 已将生产 Image 正式启用 |
 | V3-4 | 质量与发布验收 | M401-M403B 已完成 | M403B 已完成 | M403 恢复、M403A binary64/3N canonical 与 M403B 三格式生产上传/恢复/浏览器门均通过；工程 `releaseGatePassed=true` |
-| V4 | Evidence Research Workflow | R000-R800 已完成 | 确定性工程门通过 | Research ledger、固定 executor、HITL/SSE/retry/recovery、Web、observability、Evaluation 与 R800 PostgreSQL/MinIO 恢复全部通过；R803/M404 仍 not_evaluable |
+| V4 | Evidence Research Workflow | R000-R800 已完成；R803 open | 确定性工程门通过；首次真实模型 Research 失败 | Research ledger、固定 executor、HITL/SSE/retry/recovery、Web、observability、Evaluation 与 R800 PostgreSQL/MinIO 恢复全部通过；R803 Quick 6/6、Research 4/6，模型质量/M404 仍 not_evaluable |
 
 ## 4. 已完成的设计文档
 
@@ -66,13 +66,21 @@ M403A 的逐次优化假设、实验手段、通过/否决结果、指标和 art
 
 V1、V2-A、阶段 9、V3 M401-M403B 与 V4 R000-R800 工程基线已完成。后续按以下顺序推进：
 
-1. 仅在真实 provider、fixture、Asset scope 与 comparison keys 明确批准后执行 R803 Quick/Research 成对质量
+1. 对 R803 两个拒答 case 的严格 structured-output 缺陷建立新版本，随后用同一冻结 comparison keys 重跑全部 6 对 Quick/Research
 2. 真实用户验证作为 M404 Beta 门推进；数据不足时保持 `not_evaluable` 和内部预览
 3. 后续切片继续沿用确定性 fixture、真实 BFF、恢复与独立复审门，不以“多 Agent”或工程绿灯替代证据质量
 
 ## 6. 当前正在做什么
 
-当前：`V4 R800 v4 确定性工程门已通过。Research main Run、bounded parallel fan-out、unsupported withholding、冲突审批恢复、分支重试、lease reclaim、SSE replay、取消/成员移除、唯一 final Artifact、PostgreSQL/MinIO 空部署恢复和最终清理均通过；R803/M404 继续 not_evaluable。`
+当前：`V4 R800 v4 确定性工程门已通过。R803 首次 provider-backed baseline 的 comparison keys 全部匹配，Quick 工程门通过，Research 因两个拒答 case 严格 JSON 失败而仅完成 4/6；R803 保持 open，模型质量与 M404 继续 not_evaluable。`
+
+## 2026-07-29：R803 首次真实模型成对 baseline
+
+- 冻结 package 为 `openai / gpt-5.5`、Responses v1、全部 6 个 R100 case、`pdf-coordinate` / `pdf-artifact-matrix` / `image-coordinate` 与 `r100-v1` scorer；fixture、Asset scope、provider profile 和 prompt binding 均以 SHA-256 固定，API key 未进入代码、package 或报告。
+- canonical 报告位于 `docs/evals/artifacts/r803-v1/`。Quick 6/6 完成，工程门 `pass`，6 次 provider call、52.700 秒、USD 0.084350；Research 4/6 完成，工程门 `fail`，36 次 provider call、443.375 秒、USD 0.578043，并行 speedup 1.9900。
+- Research 的 `r100-refuse-energy` 与 `r100-refuse-customer` 在 Researcher 节点输出 pseudo tool-call JSON 后继续输出 Claims JSON；严格 `json.loads` 按合同拒绝串联 object，记录为 `researcher_invalid_output`，未增加片段提取、容错 coercion 或假成功。
+- 单 case/mode 仅有一次真实执行，且尚无 approved release threshold，因此模型质量固定 `not_evaluable`；M404 用户价值证据没有被本次模型评测替代，产品保持 `internal_preview`。
+- 完整 Agent 结果 schema 以 evaluator-only `research-agent-results-v1` 进入独立 Research prompt-binding hash；生产 V2 默认运行变量不变，避免同一 PromptVersion ID 对应未冻结的新推理合同。下一切片需创建正式版本化 strict structured-output 修复，并在新目录重跑全部 6 对 case，不能覆盖本次失败报告。
 
 ## 2026-07-20：M403A 完成记录
 
