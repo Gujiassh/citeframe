@@ -55,6 +55,23 @@ The run raised `R803EvaluationError` before any round artifact completed. The ru
 
 Terminal resume recomputes the same report without writes. The interruption detail intentionally excludes raw exception text and retained only the class name, so the exact internal evaluator-integrity code is unknown. Do not infer a model failure or provider outage from elapsed time or missing artifacts. Before any newly approved v2 attempt, the runner must record an allowlisted, non-secret internal error code and pass independent review. V1 remains immutable and must not be resumed, replaced, deleted, or relabeled.
 
+## Post-V1 Runner Hardening
+
+The current runner code adds two forward-only integrity fixes without changing the
+formal v1 directory or its interpretation:
+
+- A successful Research execution that selects only part of the required claim set
+  now binds the missing-claim failure to the final Synthesizer output and remains a
+  model-quality failure. It no longer becomes an engineering interruption solely
+  because the omitted claim has no Researcher claim text to bind.
+- A frozen interruption now records the exact partial-round file set, every file
+  SHA-256, and a closure hash. Terminal resume rejects added, removed, or modified
+  partial files instead of checking only `round-start.json`.
+
+These fixes apply only to a future, separately approved campaign directory. They do
+not authorize v2 and do not close the remaining requirement for an allowlisted,
+non-secret internal evaluator error code.
+
 ## V4 Semantic Observations (Not Relabeled)
 
 `artifacts/r803-v4/` remains the latest provider-backed diagnostic sample. It

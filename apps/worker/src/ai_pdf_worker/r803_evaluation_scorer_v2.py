@@ -617,27 +617,43 @@ def _resolve_hint_record(
     raise R803EvaluationError(f"quality_failure_provenance_unresolved:unknown_hint_kind:{kind}")
 
 
-def _normalize_research_empty_selection_hints(
+def _normalize_research_selection_hints(
     hints: list[dict[str, object]],
     execution: CaseExecution,
 ) -> list[dict[str, object]]:
-    """Subsume empty-selection downstream unresolved hints under Synthesizer.
+    """Bind final-selection quality failures to the Synthesizer output.
 
-    When a successful Research execution ends with an empty Synthesizer selection
-    (no observed claims) and the scorer already emitted a Synthesizer
-    disposition/refusal mismatch node hint, ``missing_expected_claim`` unresolved
-    hints are causal consequences of that empty final selection and must not
-    block binding the unique Synthesizer raw record.
+    A successful Research execution exposes only claims selected by Synthesizer.
+    When that final selection omits an expected claim, the missing-claim failure is
+    therefore bound to the unique Synthesizer raw record instead of being promoted
+    to an evaluator-integrity failure.
 
-    Does not broadly ignore unresolved hints: missing claims without this exact
-    Research empty-selection disposition condition still fail closed. Independent
-    claim-text / critic hints are preserved so multi-record ambiguity remains.
+    Empty final selections already carry a Synthesizer disposition mismatch. Their
+    missing-claim and empty-evidence hints are downstream consequences and remain
+    subsumed under that same record. Independent Researcher/Critic failures are
+    preserved so genuinely multi-record ambiguity still fails closed.
     """
     if execution.mode != "research":
         return hints
-    # Final empty selection: successful transport produced no selected claims.
+
     if execution.observed_claims:
-        return hints
+        normalized: list[dict[str, object]] = []
+        for hint in hints:
+            if (
+                hint.get("kind") == "unresolved"
+                and str(hint.get("rule") or "") == "missing_expected_claim"
+            ):
+                normalized.append(
+                    {
+                        **hint,
+                        "kind": "node",
+                        "nodeKey": "synthesizer",
+                    }
+                )
+                continue
+            normalized.append(hint)
+        return normalized
+
     synth_rules = frozenset(
         {
             "disposition_mismatch",
@@ -653,25 +669,21 @@ def _normalize_research_empty_selection_hints(
     if not has_synth_disposition:
         return hints
 
-    # Only empty-selection downstream consequences are subsumed.
     subsumed_unresolved_rules = frozenset(
         {
             "missing_expected_claim",
-            # Empty selection yields empty evidence set; pure evidence-target
-            # unresolved is a downstream consequence, not an independent root cause.
             "evidence_missing",
             "locator_inaccurate",
         }
     )
-    normalized: list[dict[str, object]] = []
-    for hint in hints:
-        if (
+    return [
+        hint
+        for hint in hints
+        if not (
             hint.get("kind") == "unresolved"
             and str(hint.get("rule") or "") in subsumed_unresolved_rules
-        ):
-            continue
-        normalized.append(hint)
-    return normalized
+        )
+    ]
 
 
 def resolve_successful_quality_failure_diagnostic(
@@ -696,7 +708,7 @@ def resolve_successful_quality_failure_diagnostic(
     hints = list(score.get("_quality_failure_provenance_hints") or [])
     if not hints:
         raise R803EvaluationError("quality_failure_provenance_unresolved:empty_hints")
-    hints = _normalize_research_empty_selection_hints(hints, execution)
+    hints = _normalize_research_selection_hints(hints, execution)
     if not hints:
         raise R803EvaluationError("quality_failure_provenance_unresolved:empty_hints")
 

@@ -81,6 +81,7 @@ V1、V2-A、阶段 9、V3 M401-M403B 与 V4 R000-R800 工程基线已完成。�
 - v1 在 round-01 完成 artifact 写入前触发 `R803EvaluationError` 并按 stop rule 冻结：`status=failed`、`engineering=fail`、`modelQuality=not_evaluable`、`completedRounds=0`、`totalCaseExecutionsCompleted=0`。terminal resume 已复算且确认无写入；失败 round 不得替换、续跑或删除。
 - 失败报告只保存 allowlisted 类名 `R803EvaluationError`，没有泄露异常文本，但也无法区分 provenance unresolved、secret boundary 或其他 evaluator integrity code；精确根因因此必须记为 unknown，不能根据运行时长或缺失 artifact 猜测。下一步先为 future runner 增加受控内部错误码诊断并独立复审，再由 owner 决定是否批准新 campaign v2。
 - v1 不提供模型质量分母或 Quick/Research 结论；M404 仍为 `not_evaluable`，产品仍为 `internal_preview`。
+- v1 之后的代码复审补强了 future runner：成功 Research 只漏选部分必答 claim 时按模型质量失败处理，不再升级为工程中断；中断终态同时冻结 partial round 的完整文件清单、逐文件 SHA-256 与 closure hash，恢复时拒绝增删改。该补强不改写 v1 artifact，也不构成 v2 运行授权；受控内部错误码仍是下一项阻塞。
 
 ## 2026-07-29：R803 v5 threshold and campaign evaluator
 

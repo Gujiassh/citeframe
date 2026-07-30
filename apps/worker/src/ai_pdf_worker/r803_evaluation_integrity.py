@@ -338,7 +338,11 @@ def _assert_round_root_boundary(root: Path) -> None:
         raise R803EvaluationError("round_directory_missing")
 
 
-def list_regular_files_relative(root: Path) -> list[str]:
+def list_regular_files_relative(
+    root: Path,
+    *,
+    include_checksum_manifest: bool = False,
+) -> list[str]:
     _assert_round_root_boundary(root)
     found: list[str] = []
     for path in sorted(root.rglob("*")):
@@ -350,6 +354,8 @@ def list_regular_files_relative(root: Path) -> list[str]:
         if not path.is_file():
             raise R803EvaluationError(f"round_non_regular_file:{relative}")
         if relative == "SHA256SUMS":
+            if include_checksum_manifest:
+                found.append(relative)
             continue
         assert_safe_relative_path(relative)
         found.append(relative)

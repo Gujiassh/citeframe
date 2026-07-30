@@ -30,6 +30,7 @@ from ai_pdf_worker.r803_evaluation_diagnostics import (
 )
 from ai_pdf_worker.r803_evaluation_integrity import (
     compute_evaluator_closure,
+    list_regular_files_relative,
     scorer_implementation_sha256,
     verify_checksums_exact,
     write_checksums,
@@ -445,6 +446,16 @@ def _round_is_started(round_dir: Path) -> bool:
     return (round_dir / "round-start.json").is_file() or (
         round_dir.exists() and any(round_dir.iterdir())
     )
+
+
+def _partial_round_file_hashes(round_dir: Path) -> dict[str, str]:
+    return {
+        name: file_sha256(round_dir / name)
+        for name in list_regular_files_relative(
+            round_dir,
+            include_checksum_manifest=True,
+        )
+    }
 
 
 def run_campaign_round(
@@ -1225,6 +1236,27 @@ def _verify_partial_interrupted_round(
     companion_doc = json.loads(companion.read_text(encoding="utf-8"))
     if companion_doc.get("sha256") != file_sha256(start_path):
         raise R803EvaluationError("partial_round_start_companion_hash_drift")
+
+    stored_hashes = interruption.get("partialRoundFileHashes")
+    if not isinstance(stored_hashes, dict) or not stored_hashes:
+        raise R803EvaluationError("interruption_partial_file_hashes_missing")
+    if not all(
+        isinstance(name, str)
+        and isinstance(digest, str)
+        and len(digest) == 64
+        for name, digest in stored_hashes.items()
+    ):
+        raise R803EvaluationError("interruption_partial_file_hashes_invalid")
+    actual_hashes = _partial_round_file_hashes(round_dir)
+    if set(actual_hashes) != set(stored_hashes):
+        raise R803EvaluationError("partial_round_file_set_drift")
+    for name, digest in actual_hashes.items():
+        if stored_hashes.get(name) != digest:
+            raise R803EvaluationError(f"partial_round_file_hash_drift:{name}")
+    closure_sha256 = canonical_sha256(actual_hashes)
+    if interruption.get("partialRoundClosureSha256") != closure_sha256:
+        raise R803EvaluationError("partial_round_closure_hash_drift")
+
     # Interruption provenance must match the frozen plan.
     for key in (
         "packageSha256",
@@ -1369,11 +1401,15 @@ def _freeze_interruption(
     error: BaseException | None = None,
 ) -> dict[str, Any]:
     safe_detail = _safe_interruption_detail(detail if error is None else reason, error)
+    partial_dir = campaign_dir / f"round-{round_index:02d}"
+    partial_hashes = _partial_round_file_hashes(partial_dir)
     interruption = {
         "roundIndex": round_index,
         "reason": reason,
         "detail": safe_detail,
         "partialRoundPreserved": True,
+        "partialRoundFileHashes": partial_hashes,
+        "partialRoundClosureSha256": canonical_sha256(partial_hashes),
         "packageSha256": plan.package_sha256,
         "thresholdSha256": plan.threshold_sha256,
         "planSha256": plan.plan_sha256,
@@ -1388,7 +1424,6 @@ def _freeze_interruption(
     # already carry a plan-matching start marker + companion. Exception-path freezes
     # after run_campaign_round wrote the marker; resume freezes of pre-existing
     # partials must not emit a terminal that only fails on next resume.
-    partial_dir = campaign_dir / f"round-{round_index:02d}"
     _verify_partial_interrupted_round(
         partial_dir,
         plan,
