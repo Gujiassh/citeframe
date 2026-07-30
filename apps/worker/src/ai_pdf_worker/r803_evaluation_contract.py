@@ -3,10 +3,12 @@ from __future__ import annotations
 import hashlib
 import json
 import re
+from collections.abc import Mapping
 from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Literal
+from types import MappingProxyType
+from typing import Any, Final, Literal
 
 from ai_pdf_api.schemas.evaluation import EvaluationImportReport
 
@@ -31,8 +33,30 @@ SUPPORTED_PACKAGE_SCHEMAS = {
 }
 
 
+_SAFE_R803_INTERRUPTION_CODE_BY_PREFIX: Final[Mapping[str, str]] = MappingProxyType(
+    {
+        "quality_failure_provenance_unresolved": "quality_failure_provenance_unresolved",
+        "diagnostic_scope_not_approved": "diagnostic_scope_not_approved",
+        "raw_output_contains_forbidden_material": "raw_output_contains_forbidden_material",
+        "duplicate_raw_output_path": "duplicate_raw_output_path",
+        "unsafe_raw_output_path": "unsafe_raw_output_path",
+        "raw_output_hash_mismatch": "raw_output_hash_mismatch",
+        "secret_material_in_raw_output": "secret_material_in_raw_output",
+        "scorer_version_mismatch": "scorer_version_mismatch",
+        "execution_case_set_mismatch": "execution_case_set_mismatch",
+        "unsupported_pricing_version": "unsupported_pricing_version",
+    }
+)
+
+
 class R803EvaluationError(ValueError):
-    pass
+    def __init__(self, message: str) -> None:
+        super().__init__(message)
+        self._safe_code_key = message.partition(":")[0]
+
+    @property
+    def safe_code(self) -> str | None:
+        return _SAFE_R803_INTERRUPTION_CODE_BY_PREFIX.get(self._safe_code_key)
 
 
 def canonical_bytes(value: object) -> bytes:

@@ -410,12 +410,15 @@ def _safe_interruption_detail(reason: str, error: BaseException | None = None) -
         if token in _SAFE_INTERRUPTION_DETAILS:
             return token
         return "round_execution_exception"
+    if type(error) is R803EvaluationError:
+        return error.safe_code or "R803EvaluationError"
+    if isinstance(error, R803EvaluationError):
+        return "R803EvaluationError"
     name = type(error).__name__
     if name in _SAFE_INTERRUPTION_DETAILS:
         return name
-    if isinstance(error, R803EvaluationError):
-        return "R803EvaluationError"
     return "Exception"
+
 
 def _write_round_start_marker(
     round_dir: Path,

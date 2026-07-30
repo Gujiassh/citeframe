@@ -98,7 +98,7 @@ R200/R300 必须等待 R000 approval、两阶段 Git recovery point 和 R100 exi
 - [ ] R803 完成单 Agent/多 Agent 成对质量报告
 - [x] R804 完成架构文档、运行手册和 5 分钟演示脚本
 
-R803 保持 open：v5 已冻结 approved five-round release threshold、`r100-v2` scorer、raw-output 诊断与可恢复 campaign runner（见 `docs/evals/r803-v5-campaign-threshold.md`）。formal attempt `docs/evals/artifacts/r803-campaign-20260730-v1/` 已执行但在 round-01 完成前冻结：0/5 rounds、0/60 completed executions、engineering fail、model quality not_evaluable；安全 interruption detail 只保留 `R803EvaluationError` 类名，精确 evaluator-integrity 根因未知。v1 不得覆盖、续跑或替换；future v2 必须先增加 allowlisted 内部错误码诊断、独立复审并取得 owner 新授权。历史 r803-v1-v4 保持不可变；v4 仍是最新可判读 provider 诊断样本（Quick 6/6、Research 5/6）。模型质量与 M404 继续 `not_evaluable`，产品保持 `internal_preview`。
+R803 保持 open：v5 已冻结 approved five-round release threshold、`r100-v2` scorer、raw-output 诊断与可恢复 campaign runner（见 `docs/evals/r803-v5-campaign-threshold.md`）。formal attempt `docs/evals/artifacts/r803-campaign-20260730-v1/` 已执行但在 round-01 完成前冻结：0/5 rounds、0/60 completed executions、engineering fail、model quality not_evaluable；安全 interruption detail 只保留 `R803EvaluationError` 类名，因此 v1 的精确 evaluator-integrity 根因永久未知。v1 不得覆盖、续跑或替换；future runner 已通过封闭 literal mapping 输出 allowlisted 内部错误码并完成独立 Critical review，`r803-campaign-report-v1` 结构不变，但 future v2 仍必须使用新目录并取得 owner 新授权。历史 r803-v1-v4 保持不可变；v4 仍是最新可判读 provider 诊断样本（Quick 6/6、Research 5/6）。模型质量与 M404 继续 `not_evaluable`，产品保持 `internal_preview`。
 
 ## 明确不做
 

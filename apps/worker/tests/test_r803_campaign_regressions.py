@@ -4,13 +4,43 @@ import json
 from pathlib import Path
 
 import pytest
-from ai_pdf_worker.r803_evaluation_campaign import run_or_resume_campaign
+from ai_pdf_worker.r803_evaluation_campaign import (
+    _safe_interruption_detail,
+    run_or_resume_campaign,
+)
 from ai_pdf_worker.r803_evaluation_contract import (
     DEFAULT_PACKAGE_V5_PATH,
     R803EvaluationError,
     load_evaluation_package,
 )
 from r803_test_helpers import CampaignProvider, DeterministicProvider
+
+_SECRET_CANARY = (
+    "api-key=R803_TEST_CANARY_NOT_A_SECRET\n"
+    "/home/private/raw-output-\u79d8\u5bc6"
+)
+_SAFE_R803_CODES = (
+    "quality_failure_provenance_unresolved",
+    "diagnostic_scope_not_approved",
+    "raw_output_contains_forbidden_material",
+    "duplicate_raw_output_path",
+    "unsafe_raw_output_path",
+    "raw_output_hash_mismatch",
+    "secret_material_in_raw_output",
+    "scorer_version_mismatch",
+    "execution_case_set_mismatch",
+    "unsupported_pricing_version",
+)
+
+
+class HostileCodeError(Exception):
+    code = _SECRET_CANARY
+
+
+class HostileR803Error(R803EvaluationError):
+    @property
+    def safe_code(self) -> str:
+        return _SECRET_CANARY
 
 
 class PartialResearchSelectionProvider(CampaignProvider):
@@ -62,6 +92,142 @@ def test_partial_research_selection_is_model_quality_failure(tmp_path: Path) -> 
     assert research["diagnostic"]["nodeKey"] == "synthesizer"
     assert research["diagnostic"]["rule"] == "missing_expected_claim"
     assert research["diagnostic"]["failureOrigin"] == "model_or_workflow_quality"
+
+
+@pytest.mark.parametrize("code", _SAFE_R803_CODES)
+def test_r803_evaluation_error_safe_code_is_closed(code: str) -> None:
+    error = R803EvaluationError(f"{code}:{_SECRET_CANARY}")
+
+    assert str(error) == f"{code}:{_SECRET_CANARY}"
+    assert error.safe_code == code
+    assert _safe_interruption_detail("round_execution_exception", error) == code
+
+
+def test_interruption_detail_rejects_unknown_or_hostile_codes() -> None:
+    unknown = R803EvaluationError(f"unknown_internal_code:{_SECRET_CANARY}")
+    mutated = R803EvaluationError("quality_failure_provenance_unresolved")
+    object.__setattr__(mutated, "_safe_code_key", _SECRET_CANARY)
+
+    assert unknown.safe_code is None
+    assert mutated.safe_code is None
+    assert (
+        _safe_interruption_detail("round_execution_exception", unknown)
+        == "R803EvaluationError"
+    )
+    assert (
+        _safe_interruption_detail("round_execution_exception", mutated)
+        == "R803EvaluationError"
+    )
+    assert (
+        _safe_interruption_detail(
+            "round_execution_exception",
+            HostileR803Error("quality_failure_provenance_unresolved"),
+        )
+        == "R803EvaluationError"
+    )
+    assert (
+        _safe_interruption_detail("round_execution_exception", HostileCodeError())
+        == "Exception"
+    )
+    assert (
+        _safe_interruption_detail(
+            "round_execution_exception",
+            RuntimeError(_SECRET_CANARY),
+        )
+        == "RuntimeError"
+    )
+
+
+def test_safe_internal_code_terminal_is_canonical_and_does_not_leak(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    package = load_evaluation_package(DEFAULT_PACKAGE_V5_PATH)
+    campaign_dir = tmp_path / "safe-internal-code"
+
+    def fail_with_safe_code(*_args, **_kwargs):
+        raise R803EvaluationError(
+            f"quality_failure_provenance_unresolved:{_SECRET_CANARY}"
+        )
+
+    monkeypatch.setattr(
+        "ai_pdf_worker.r803_evaluation_campaign.run_quick_case_with_diagnostics",
+        fail_with_safe_code,
+    )
+    report = run_or_resume_campaign(
+        campaign_dir=campaign_dir,
+        provider=CampaignProvider(),
+        package=package,
+        max_new_rounds=1,
+        allow_test_provider=True,
+    )
+
+    assert report["status"] == "failed"
+    assert report["gates"]["engineering"] == "fail"
+    assert report["gates"]["modelQuality"] == "not_evaluable"
+    assert report["interruption"]["detail"] == "quality_failure_provenance_unresolved"
+    assert _SECRET_CANARY not in json.dumps(report, ensure_ascii=False)
+    canary_bytes = _SECRET_CANARY.encode()
+    assert all(
+        canary_bytes not in path.read_bytes()
+        for path in campaign_dir.rglob("*")
+        if path.is_file()
+    )
+
+    before = {
+        path.relative_to(campaign_dir).as_posix(): (
+            path.read_bytes(),
+            path.stat().st_mtime_ns,
+        )
+        for path in campaign_dir.rglob("*")
+        if path.is_file()
+    }
+
+    def provider_must_not_be_configured(*_args, **_kwargs):
+        raise AssertionError("terminal resume configured a provider")
+
+    monkeypatch.setattr(
+        "ai_pdf_worker.r803_evaluation_campaign.configured_provider",
+        provider_must_not_be_configured,
+    )
+    resumed = run_or_resume_campaign(
+        campaign_dir=campaign_dir,
+        package=package,
+        max_new_rounds=0,
+    )
+    after = {
+        path.relative_to(campaign_dir).as_posix(): (
+            path.read_bytes(),
+            path.stat().st_mtime_ns,
+        )
+        for path in campaign_dir.rglob("*")
+        if path.is_file()
+    }
+
+    assert resumed == report
+    assert after == before
+
+
+def test_preflight_failure_does_not_consume_round_or_write_terminal(
+    tmp_path: Path,
+) -> None:
+    package = load_evaluation_package(DEFAULT_PACKAGE_V5_PATH)
+    campaign_dir = tmp_path / "preflight-failure"
+
+    with pytest.raises(
+        R803EvaluationError,
+        match="injected_provider_requires_allow_test_provider",
+    ):
+        run_or_resume_campaign(
+            campaign_dir=campaign_dir,
+            provider=CampaignProvider(),
+            package=package,
+            max_new_rounds=1,
+        )
+
+    assert not (campaign_dir / "round-01").exists()
+    assert not (campaign_dir / "campaign-report.json").exists()
+    assert not (campaign_dir / "campaign-report.sha256.json").exists()
 
 
 @pytest.mark.parametrize(

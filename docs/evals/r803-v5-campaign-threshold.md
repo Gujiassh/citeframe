@@ -53,7 +53,7 @@ The run raised `R803EvaluationError` before any round artifact completed. The ru
 - `completedRounds=0`
 - `totalCaseExecutionsCompleted=0`
 
-Terminal resume recomputes the same report without writes. The interruption detail intentionally excludes raw exception text and retained only the class name, so the exact internal evaluator-integrity code is unknown. Do not infer a model failure or provider outage from elapsed time or missing artifacts. Before any newly approved v2 attempt, the runner must record an allowlisted, non-secret internal error code and pass independent review. V1 remains immutable and must not be resumed, replaced, deleted, or relabeled.
+Terminal resume recomputes the same report without writes. The interruption detail intentionally excludes raw exception text and retained only the class name, so the exact internal evaluator-integrity code for v1 is permanently unknown. Do not infer a model failure or provider outage from elapsed time or missing artifacts. The current future runner now derives an allowlisted, non-secret internal code through a closed literal mapping and has passed independent Critical review; it does not reinterpret v1 or authorize a v2 attempt. V1 remains immutable and must not be resumed, replaced, deleted, or relabeled.
 
 ## Post-V1 Runner Hardening
 
@@ -67,10 +67,16 @@ formal v1 directory or its interpretation:
 - A frozen interruption now records the exact partial-round file set, every file
   SHA-256, and a closure hash. Terminal resume rejects added, removed, or modified
   partial files instead of checking only `round-start.json`.
+- An exact `R803EvaluationError` now derives `interruption.detail` from a closed
+  prefix-to-literal mapping for current post-start evaluator failures. Unknown
+  prefixes, subclasses, hostile attributes, exception text, paths, and raw-output
+  canaries collapse to the existing safe fallback. The report remains
+  `r803-campaign-report-v1`; no field or historical artifact shape changed.
 
 These fixes apply only to a future, separately approved campaign directory. They do
-not authorize v2 and do not close the remaining requirement for an allowlisted,
-non-secret internal evaluator error code.
+not authorize v2. Any future plan naturally binds the changed evaluator closure;
+the immutable v1 plan continues to reject current-code replay as implementation
+drift and remains reproducible from its execution snapshot commit.
 
 ## V4 Semantic Observations (Not Relabeled)
 
@@ -166,7 +172,7 @@ This was the pre-run estimate for a complete five-round campaign. Formal v1 star
 
 | Gate | Status |
 | --- | --- |
-| Engineering campaign readiness | formal v1 failed before round-01 completion; root cause unknown pending safer internal error-code diagnostics |
+| Engineering campaign readiness | formal v1 failed before round-01 completion and its root cause remains unknown; future-runner safe internal-code diagnostics passed Critical review, but no v2 run is authorized |
 | Model quality | `not_evaluable`; formal v1 produced no completed round denominator |
 | User value (M404) | `not_evaluable` |
 | Product stage | `internal_preview` |

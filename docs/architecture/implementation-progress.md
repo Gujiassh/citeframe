@@ -17,7 +17,7 @@
 
 ## 2. 当前总状态
 
-当前项目状态：`V1、Chat-first 工作台、V2-A Hybrid/RRF、阶段 9、V3 M401-M403B 与 V4 R000-R800 确定性工程基线已完成；R803 v5 已冻结五轮 prospective 阈值/scorer v2/可恢复 campaign 与 raw-output 诊断。首次 formal campaign r803-campaign-20260730-v1 已启动，但在 round-01 完成前按 fail-closed 规则冻结为 engineering=fail、modelQuality=not_evaluable，0/5 rounds、0/60 completed executions；该失败目录不可覆盖或续跑。v4 仍为最新可判读的 provider 诊断样本（Quick 6/6、Research 5/6），M404 用户价值仍为 not_evaluable，产品保持 internal_preview。`
+当前项目状态：`V1、Chat-first 工作台、V2-A Hybrid/RRF、阶段 9、V3 M401-M403B 与 V4 R000-R800 确定性工程基线已完成；R803 v5 已冻结五轮 prospective 阈值/scorer v2/可恢复 campaign 与 raw-output 诊断。首次 formal campaign r803-campaign-20260730-v1 已启动，但在 round-01 完成前按 fail-closed 规则冻结为 engineering=fail、modelQuality=not_evaluable，0/5 rounds、0/60 completed executions；该失败目录不可覆盖或续跑，精确根因永久未知。future runner 的 allowlisted、非机密内部错误码已实现并通过 Critical review，但不构成 v2 运行授权。v4 仍为最新可判读的 provider 诊断样本（Quick 6/6、Research 5/6），M404 用户价值仍为 not_evaluable，产品保持 internal_preview。`
 
 M403A 的逐次优化假设、实验手段、通过/否决结果、指标和 artifact 统一记录在 `docs/evals/m403a-optimization-log.md`；后续不得只更新最终结论而遗漏失败实验与运行环境证据。
 
@@ -50,7 +50,7 @@ M403A 的逐次优化假设、实验手段、通过/否决结果、指标和 art
 | V3-2 | 多模态 PDF Evidence | 已完成 | 已完成 | 页面几何、layout/OCR、表格/图表/页内图片、`pdf_page/pdf_region` Citation/NoteSource、Viewer 区域交互与失败 Chat 回放已通过两轮 Critical 复验 |
 | V3-3 | 独立图片闭环 | 已完成 | M301-M305 已通过最终 Critical | 图片归一化、OCR/caption、Evidence 历史快照、Viewer、区域 Chat/Note 与混合检索已完成；M403B 已将生产 Image 正式启用 |
 | V3-4 | 质量与发布验收 | M401-M403B 已完成 | M403B 已完成 | M403 恢复、M403A binary64/3N canonical 与 M403B 三格式生产上传/恢复/浏览器门均通过；工程 `releaseGatePassed=true` |
-| V4 | Evidence Research Workflow | R000-R800 已完成；R803 open | 确定性工程门通过；v5 formal v1 在 round-01 前冻结失败 | Research ledger、固定 executor、HITL/SSE/retry/recovery、Web、observability、Evaluation 与 R800 PostgreSQL/MinIO 恢复全部通过；R803 v5 阈值/scorer/campaign 已冻结；formal v1 为 0/5 rounds、engineering fail、model quality not_evaluable，根因待在新 runner 版本中补足安全错误码后裁决；v4 仍是最新可判读 provider 诊断样本 |
+| V4 | Evidence Research Workflow | R000-R800 已完成；R803 open | 确定性工程门通过；v5 formal v1 在 round-01 前冻结失败 | Research ledger、固定 executor、HITL/SSE/retry/recovery、Web、observability、Evaluation 与 R800 PostgreSQL/MinIO 恢复全部通过；R803 v5 阈值/scorer/campaign 已冻结；formal v1 为 0/5 rounds、engineering fail、model quality not_evaluable，精确根因永久未知；future runner 安全内部错误码已通过复审，v2 仍需 Owner 新授权；v4 仍是最新可判读 provider 诊断样本 |
 
 ## 4. 已完成的设计文档
 
@@ -66,22 +66,22 @@ M403A 的逐次优化假设、实验手段、通过/否决结果、指标和 art
 
 V1、V2-A、阶段 9、V3 M401-M403B 与 V4 R000-R800 工程基线已完成。后续按以下顺序推进：
 
-1. 保留 `r803-campaign-20260730-v1` 不可变失败证据；先让 future campaign 的 interruption 记录安全、受控的内部错误码并完成独立复审，再由 owner 明确批准是否创建新目录运行 v2；不得覆盖或续跑 v1
+1. 保留 `r803-campaign-20260730-v1` 不可变失败证据；future runner 的安全内部错误码与独立 Critical review 已完成，下一步由 Owner 明确批准是否创建新目录运行 v2；不得覆盖或续跑 v1
 2. 真实用户验证作为 M404 Beta 门推进；数据不足时保持 `not_evaluable` 和内部预览
 3. 后续切片继续沿用确定性 fixture、真实 BFF、恢复与独立复审门，不以“多 Agent”或工程绿灯替代证据质量
 
 ## 6. 当前正在做什么
 
-当前：`R803 v5 已冻结 release threshold、scorer v2、raw-output 诊断和可恢复五轮 campaign runner。formal v1 已运行但在 round-01 完成前冻结失败：0/5 rounds、0/60 completed executions、engineering=fail、modelQuality=not_evaluable；只保留 plan/report/round-start 证据，安全 detail 仅记录 R803EvaluationError 类名，因此精确根因未知。v1 不得覆盖或续跑；v4 仍是最新可判读 provider 诊断样本。R803 保持 open，M404 继续 not_evaluable。`
+当前：`R803 v5 已冻结 release threshold、scorer v2、raw-output 诊断和可恢复五轮 campaign runner。formal v1 已运行但在 round-01 完成前冻结失败：0/5 rounds、0/60 completed executions、engineering=fail、modelQuality=not_evaluable；只保留 plan/report/round-start 证据，安全 detail 仅记录 R803EvaluationError 类名，因此精确根因永久未知。future runner 已通过封闭 literal mapping 输出 allowlisted 内部错误码并完成 Critical review，但 v1 不得覆盖或续跑、v2 尚未获运行授权；v4 仍是最新可判读 provider 诊断样本。R803 保持 open，M404 继续 not_evaluable。`
 
 ## 2026-07-30：R803 v5 formal campaign v1 失败证据
 
 - 在双 Critical review `ACCEPTED`、Worker `215 passed`、Ruff/compileall/BasedPyright、v1-v4 checksum、v5 hash binding 与确定性 60-case smoke 全绿后，通过唯一 formal 路径（`provider=None -> configured_provider()`）启动 `docs/evals/artifacts/r803-campaign-20260730-v1/`。
 - `round-01/round-start.json` 已在首个 provider 调用前持久化，attestation 为 `formal_configured_provider`、`formalEvidence=true`，provider/model/profile、package、threshold、scorer、prompt binding、55-module evaluator closure 与 plan hash 全部匹配。
 - v1 在 round-01 完成 artifact 写入前触发 `R803EvaluationError` 并按 stop rule 冻结：`status=failed`、`engineering=fail`、`modelQuality=not_evaluable`、`completedRounds=0`、`totalCaseExecutionsCompleted=0`。terminal resume 已复算且确认无写入；失败 round 不得替换、续跑或删除。
-- 失败报告只保存 allowlisted 类名 `R803EvaluationError`，没有泄露异常文本，但也无法区分 provenance unresolved、secret boundary 或其他 evaluator integrity code；精确根因因此必须记为 unknown，不能根据运行时长或缺失 artifact 猜测。下一步先为 future runner 增加受控内部错误码诊断并独立复审，再由 owner 决定是否批准新 campaign v2。
+- 失败报告只保存 allowlisted 类名 `R803EvaluationError`，没有泄露异常文本，但也无法区分 provenance unresolved、secret boundary 或其他 evaluator integrity code；v1 的精确根因因此永久记为 unknown，不能根据运行时长或缺失 artifact 猜测。future runner 现已通过封闭 prefix-to-literal mapping 输出受控内部错误码，并通过独立 Critical review；该能力不追溯改写 v1。
 - v1 不提供模型质量分母或 Quick/Research 结论；M404 仍为 `not_evaluable`，产品仍为 `internal_preview`。
-- v1 之后的代码复审补强了 future runner：成功 Research 只漏选部分必答 claim 时按模型质量失败处理，不再升级为工程中断；中断终态同时冻结 partial round 的完整文件清单、逐文件 SHA-256 与 closure hash，恢复时拒绝增删改。该补强不改写 v1 artifact，也不构成 v2 运行授权；受控内部错误码仍是下一项阻塞。
+- v1 之后的代码复审补强了 future runner：成功 Research 只漏选部分必答 claim 时按模型质量失败处理，不再升级为工程中断；中断终态同时冻结 partial round 的完整文件清单、逐文件 SHA-256 与 closure hash，恢复时拒绝增删改；精确 `R803EvaluationError` 只可从封闭映射输出固定内部 code，未知前缀、子类、伪造属性、异常文本、路径与 raw-output canary 均降为安全 fallback。上述补强不改写 v1 artifact，也不构成 v2 运行授权。
 
 ## 2026-07-29：R803 v5 threshold and campaign evaluator
 
@@ -193,11 +193,11 @@ V1、V2-A、阶段 9、V3 M401-M403B 与 V4 R000-R800 工程基线已完成。�
 
 ## 7. 下一步
 
-下一步：`保留 r803-campaign-20260730-v1 不可变失败证据；先为 future runner 增加受控内部错误码并完成独立复审，再由 Owner 明确批准是否创建新目录执行 v2。M404 继续收集目标用户证据。`
+下一步：`保留 r803-campaign-20260730-v1 不可变失败证据；future runner 安全内部错误码与 Critical review 已完成，等待 Owner 明确决定是否批准在新目录执行 v2。M404 继续收集目标用户证据。`
 
 具体建议从这些内容开始：
 
-1. future runner 只记录 allowlisted、非机密的内部错误码，不保存原始异常文本；修复需先通过独立 Critical review。
+1. future runner 的 allowlisted、非机密内部错误码已通过独立 Critical review；不保存原始异常文本，`r803-campaign-report-v1` 结构不变。
 2. 未获得新的 Owner 授权前，不重跑 provider；v2 必须使用新目录，不能覆盖、续跑或替换 v1。
 3. M404 真实用户任务验证继续收集；结果未完成前产品继续作为内部预览。
 4. Audio/Video 仍按独立模态 adapter/locator/Viewer 立项，不和 V4 workflow 状态机混成一次迁移。
