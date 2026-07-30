@@ -258,6 +258,33 @@ two future-runner defects; neither changes or authorizes a rerun of immutable v1
 - Push state: the linked dev-workbench checkpoint records final local/remote SHA
   parity after this delivery record is pushed.
 
+## R803 Safe Interruption Code Delivery
+
+The future campaign runner now preserves a useful evaluator failure category
+without exposing exception payloads or changing the report schema.
+
+- Source branch/ref: `main@4ffbe89ea34e9ed4fc2f06de9111e227bc3141bf`.
+- Repair branch/target: `main` -> `origin/main`; no secondary worktree,
+  downstream merge, or cherry-pick is required.
+- Symptom and root cause: formal v1 retained only `R803EvaluationError`, because
+  the terminal sanitizer discarded every internal message to prevent paths,
+  provider data, and raw output from leaking.
+- Changed scope: exact `R803EvaluationError` instances derive the existing
+  `interruption.detail` from a closed prefix-to-literal mapping; unknown prefixes,
+  mutable private state, subclasses, arbitrary exception attributes, messages,
+  paths, and raw-output canaries collapse to safe fallbacks. The
+  `r803-campaign-report-v1` shape and model-quality classification are unchanged.
+- Implementation commit: `e99ca2a` (`fix: add safe R803 interruption codes`).
+- Verification: Worker `235 passed`; focused regressions `20 passed`; Ruff,
+  compileall, diff checks, documentation links, and immutable companions passed;
+  BasedPyright LSP reported zero diagnostics. Formal v1's six-file aggregate
+  remained `282571d2c73913e5640063a40f1819b092b026e52348ea558dab340bf55785d0`.
+- Independent review: final Critical review accepted the code, tests, SSoT/spec
+  alignment, prospective-only boundary, and unchanged v1 report shape.
+- Provider/push state: no provider run occurred and v2 remains unauthorized. The
+  linked dev-workbench checkpoint records final local/remote SHA parity after this
+  delivery record is pushed.
+
 ## Remaining Gates
 
 R803 v5 freezes the approved five-round threshold, scorer v2, raw-output diagnostics, and resumable campaign runner in [`r803-v5-campaign-threshold.md`](r803-v5-campaign-threshold.md). Formal attempt `artifacts/r803-campaign-20260730-v1/` executed but froze before round-01 completed (`engineering=fail`, `modelQuality=not_evaluable`, 0/5 rounds); its exact evaluator-integrity root cause is permanently unknown because the immutable interruption detail retained only the exception class. The future runner now emits allowlisted internal codes through a closed literal mapping and has passed Critical review without changing the v1 report shape, but no v2 run is authorized. Historical v4 remains the latest interpretable provider diagnostic sample (Quick 6/6, Research 5/6) and is not relabeled. M404 remains a separate target-user evidence gate. Neither gate can be inferred from R800, v4, or the incomplete formal v1 attempt.
