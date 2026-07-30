@@ -1,0 +1,129 @@
+{
+  "schemaVersion": "r803-evaluation-package-v5",
+  "suite": {
+    "suiteKey": "r100-real-model-paired",
+    "version": 1,
+    "title": "R100 Real-model Paired Quality",
+    "caseManifestPath": "docs/evals/r100-research-cases-v2.json",
+    "caseManifestSha256": "10c502c77275efb0010ab8f024e2cbe890c8dd4e5d17caf111778948aeba7646",
+    "goldenManifestPath": "docs/evals/multimodal-golden-v1.json",
+    "goldenManifestSha256": "4106659d928390b361af66ccd6ebf13c581cefe27ae8ffe906b478a2c578fa90",
+    "scorerVersion": "r100-v2",
+    "thresholdPath": "docs/evals/r803-release-threshold-v1.json",
+    "thresholdSha256": "9095401cd5a92719705113e8f674fa9e03832220462cb605ce7d32d4c9c066d1"
+  },
+  "providerProfile": {
+    "provider": "openai",
+    "model": "gpt-5.5",
+    "apiBase": "https://us-direct-api.sourcesdata.com",
+    "apiProtocol": "responses-v1",
+    "maxOutputTokens": 1200,
+    "pricingVersion": "research-pricing-v1"
+  },
+  "structuredOutput": {
+    "transportVersion": "responses-json-schema-v1",
+    "schemaSetVersion": "r803-provider-output-schemas-v2"
+  },
+  "executionPolicy": {
+    "retryPolicyVersion": "r803-provider-retry-v3",
+    "maxProviderAttempts": 3,
+    "retryBackoffSeconds": [
+      5,
+      15
+    ],
+    "retryableProviderCodes": [
+      "generation_incomplete_response",
+      "generation_invalid_response",
+      "generation_provider_transient",
+      "generation_provider_unreachable"
+    ]
+  },
+  "diagnostics": {
+    "version": "r803-raw-output-diagnostics-v1",
+    "scope": "frozen_non_confidential_synthetic_fixtures_only",
+    "persistRawProviderOutputs": true,
+    "persistProviderRequests": false,
+    "persistHeaders": false,
+    "persistApiKeysOrSecrets": false,
+    "persistHiddenReasoning": false
+  },
+  "quick": {
+    "systemPrompt": "Answer only from supplied evidence. If it does not support the question, state that the selected assets do not contain supporting evidence.",
+    "evaluationContract": "For this offline evaluation only, return one JSON object with exactly these fields: answer (string), claims (array of objects with exactly text and evidenceIds, where evidenceIds contains only supplied evidence IDs that directly support that claim), and conflictDetected (boolean). Use an empty claims array when the evidence is insufficient. Do not include markdown fences or hidden reasoning.",
+    "resultSchemaVersion": "r803-quick-result-v2"
+  },
+  "research": {
+    "releaseId": "citeframe-research-v2",
+    "workflowVersionId": "20000000-0000-4000-8000-000000000001",
+    "agentResultSchemaVersion": "research-agent-results-v1",
+    "conflictDecisionPolicy": "evaluation_keep_as_unresolved"
+  },
+  "assets": [
+    {
+      "id": "pdf-coordinate",
+      "title": "pdf-coordinate-fixture.pdf",
+      "sourcePath": "docs/fixtures/evidence-contract/pdf-coordinate-fixture.pdf",
+      "sourceSha256": "142c86f9ae04aba21fc00e983469b3e686e458c6dc038e90598fd6fa6bb3e0bf",
+      "manifestPath": "docs/fixtures/evidence-contract/pdf-coordinate-fixture.json",
+      "manifestSha256": "54eb47122268d633e5b4a2c5327d19acd3c2eaed472e11270d5de39b9ae16429",
+      "evidence": [
+        {
+          "id": "answer-pdf-chart",
+          "locatorKind": "pdf_region",
+          "locatorKey": "page-10-chart-multi-region",
+          "content": "Figure 1. Trend rises after the third point. Supporting caption in a separate region."
+        }
+      ]
+    },
+    {
+      "id": "pdf-artifact-matrix",
+      "title": "pdf-artifact-matrix-fixture.pdf",
+      "sourcePath": "docs/fixtures/evidence-contract/pdf-artifact-matrix-fixture.pdf",
+      "sourceSha256": "0a648609ea6a91f203c1a3e69668b6c73d8de1504c78cbd2e0fed79fcc1fc830",
+      "manifestPath": "docs/fixtures/evidence-contract/pdf-artifact-matrix-fixture.json",
+      "manifestSha256": "85270f3d3d15398f95c8c760ba512e79065e160678befe25ee5fc0205289e0d1",
+      "evidence": [
+        {
+          "id": "answer-pdf-table",
+          "locatorKind": "pdf_region",
+          "locatorKey": "page-1-table-rotation-0",
+          "content": "| Model | Score |\n| --- | --- |\n| Atlas | 91.4 |"
+        }
+      ]
+    },
+    {
+      "id": "image-coordinate",
+      "title": "image-coordinate-fixture.png",
+      "sourcePath": "docs/fixtures/evidence-contract/image-coordinate-fixture.png",
+      "sourceSha256": "585b2489a7e6288d71636258b84e56610b345a1fc74ffd42967ee434678d8955",
+      "manifestPath": "docs/fixtures/evidence-contract/image-coordinate-fixture.json",
+      "manifestSha256": "a8b3523d253485e7ccd53ac749bdfe9bdff7a88f9bc9bf97fa3546304fe71f77",
+      "evidence": [
+        {
+          "id": "answer-image-trend",
+          "locatorKind": "image_region",
+          "locatorKey": "chart",
+          "content": "Observation: latency falls after the third release. Release 4 begins the sustained drop."
+        },
+        {
+          "id": "answer-image-constraint",
+          "locatorKind": "image_region",
+          "locatorKey": "caption",
+          "content": "Release 4 begins the sustained drop. Verify chart and caption together."
+        }
+      ]
+    }
+  ],
+  "implementationProvenance": {
+    "scorerVersion": "r100-v2",
+    "evaluatorClosureStrategy": "recursive_ast_import_closure",
+    "evaluatorClosureRoots": [
+      "ai_pdf_worker.r803_evaluation_campaign"
+    ],
+    "evaluatorClosureSourceRoots": {
+      "ai_pdf_worker": "apps/worker/src",
+      "ai_pdf_api": "apps/api/src"
+    },
+    "note": "Campaign plan freezes scorer implementation SHA, Quick/Research prompt-binding hashes, and a deterministic recursive AST import closure rooted at ai_pdf_worker.r803_evaluation_campaign. Closure includes repository-local ai_pdf_worker.* and ai_pdf_api.* runtime imports (skipping only if TYPE_CHECKING bodies), stores exact sorted path->SHA mapping, and digests that map. Tests and scripts are not frozen."
+  }
+}

@@ -1,0 +1,114 @@
+{
+  "schemaVersion": "r803-release-threshold-v1",
+  "title": "R803 Frozen-Suite Prospective Release Threshold",
+  "approvedAt": "2026-07-29",
+  "claimBoundary": {
+    "scope": "frozen_six_case_synthetic_suite_only",
+    "suiteKey": "r100-real-model-paired",
+    "caseCount": 6,
+    "modes": ["quick", "research"],
+    "scorerVersion": "r100-v2",
+    "doesNotEstablish": [
+      "general_model_quality",
+      "m404_user_value",
+      "beta_readiness",
+      "product_stage_change",
+      "automatic_quick_or_research_winner"
+    ]
+  },
+  "samplePlan": {
+    "prospectivePairedRounds": 5,
+    "casesPerRound": 6,
+    "modesPerCase": 2,
+    "totalCaseExecutions": 60,
+    "independentJudgmentPerMode": true,
+    "automaticWinnerSelection": false,
+    "excludeDiagnosticHistory": [
+      "r803-v1",
+      "r803-v2",
+      "r803-v3",
+      "r803-v4"
+    ],
+    "formalCampaignStatus": "not_run"
+  },
+  "budgetEstimate": {
+    "currency": "USD",
+    "amount": 3.27,
+    "wallTimeMinutes": 26,
+    "basis": "r803-v4_single_round_scaled_to_five_rounds",
+    "status": "estimate_only_formal_campaign_not_run"
+  },
+  "qualityGates": {
+    "requiredRoundCount": 5,
+    "zeroTolerance": true,
+    "everyExecutionMustCompleteWithValidOutput": true,
+    "modelSuccessfulInvalidOutputIsQualityFailure": true,
+    "primaryRates": {
+      "claimSupportRate": 1.0,
+      "evidenceRecall": 1.0,
+      "evidencePrecision": 1.0,
+      "evidenceTargetExactness": 1.0,
+      "conflictDetectionRate": 1.0,
+      "refusalCorrectness": 1.0
+    },
+    "forbiddenCounts": {
+      "unsupportedClaimCount": 0,
+      "extraClaimCount": 0,
+      "negatedClaimCount": 0,
+      "forbiddenAnswerCount": 0
+    },
+    "refusalRules": {
+      "requiredCaseIds": ["r100-refuse-energy", "r100-refuse-customer"],
+      "requiredDisposition": "refuse",
+      "requiredFinalClaimCount": 0,
+      "forbiddenAnswerPatternsEnforced": true
+    },
+    "conflictRules": {
+      "requiredConflictCaseIds": ["r100-compare-rise-drop", "r100-conflict-direction"],
+      "requiredNonConflictCaseIds": [
+        "r100-synthesize-table-constraint",
+        "r100-locate-chart-caption",
+        "r100-refuse-energy",
+        "r100-refuse-customer"
+      ],
+      "falseConflictFails": true,
+      "missedConflictFails": true
+    }
+  },
+  "stoppingRules": {
+    "requireAllFiveRoundsForSuccess": true,
+    "noEarlySuccess": true,
+    "firstModelQualityFailureFreezesCampaign": true,
+    "failedOrCompletedRoundImmutable": true,
+    "noRoundReplacement": true,
+    "evaluatorOrIntegrityDefect": "freeze_engineering_fail_model_not_evaluable_start_new_campaign",
+    "providerOutageExhausted": "freeze_engineering_fail_model_not_evaluable_start_new_campaign",
+    "preflightFailureBeforeFormalStart": "abort_without_consuming_round"
+  },
+  "productGates": {
+    "userValue": "not_evaluable",
+    "userValueReason": "m404_evidence_absent",
+    "productStage": "internal_preview"
+  },
+  "evidenceRequirements": {
+    "freezePackageThresholdAndScorerHashesBeforeFirstProviderCall": true,
+    "immutableRoundArtifacts": true,
+    "checksumAddressedRounds": true,
+    "rawProviderOutputSha256RequiredOnModelOutputFailures": true,
+    "persistRawProviderOutputs": true,
+    "persistProviderRequests": false,
+    "persistHeaders": false,
+    "persistApiKeysOrSecrets": false,
+    "persistHiddenReasoning": false,
+    "rawOutputScope": "frozen_non_confidential_synthetic_fixtures_only"
+  },
+  "observationsOnly": [
+    "paired_deltas",
+    "cost",
+    "latency",
+    "tokens",
+    "retries",
+    "recovery",
+    "parallel_speedup"
+  ]
+}

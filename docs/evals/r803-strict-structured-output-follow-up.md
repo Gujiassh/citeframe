@@ -110,8 +110,28 @@ research-evaluation.json     72b4395ff5bfa2f6ce65dc14e1d2c79bb61528dff844826a61b
 
 ## Next Gate
 
-R803 remains open. The next change must define an approved sample/release threshold
-and decide whether the remaining complete-schema failure is a model-quality failure
-to measure or requires another explicitly versioned output contract. It must not
-normalize the failed output or rerun the same package until a green sample appears.
-M404 remains a separate target-user evidence gate.
+The approved sample/release threshold and evaluator-only campaign infrastructure
+are frozen in [`r803-v5-campaign-threshold.md`](r803-v5-campaign-threshold.md),
+[`r803-release-threshold-v1.json`](r803-release-threshold-v1.json), and
+[`r803-evaluation-package-v5.json`](r803-evaluation-package-v5.json).
+
+This v4 diagnostic sample is not relabeled. Research semantic observations from
+completed v4 cases remain: evidence precision `0.5`, Evidence-target exactness /
+legacy `locatorAccuracy` `0.0`, conflict detection `0.8`, refusal correctness
+`0.0`. The exact `r100-refuse-customer` schema root cause is still unknown because
+v4 lacked raw diagnostics. Under the approved v5 policy, a future model-successful
+local-schema failure counts as a campaign quality failure and stays in the
+denominator.
+
+The first formal attempt is now retained at
+[`artifacts/r803-campaign-20260730-v1/`](artifacts/r803-campaign-20260730-v1/).
+It failed before round-01 completed and therefore produced no model-quality
+denominator: `engineering=fail`, `modelQuality=not_evaluable`, `0/5` completed
+rounds, and `0/60` completed case executions. Its safe interruption detail only
+retained `R803EvaluationError`, so the exact evaluator-integrity root cause is
+unknown and must not be guessed. V1 is immutable and cannot be resumed or replaced.
+Before any separately approved v2, future runner diagnostics must retain an
+allowlisted internal error code without persisting raw exception text.
+
+R803 remains open. Do not rerun or overwrite v4 or formal v1. M404 remains a
+separate target-user evidence gate.

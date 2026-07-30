@@ -98,7 +98,7 @@ R200/R300 必须等待 R000 approval、两阶段 Git recovery point 和 R100 exi
 - [ ] R803 完成单 Agent/多 Agent 成对质量报告
 - [x] R804 完成架构文档、运行手册和 5 分钟演示脚本
 
-R803 保持 open：2026-07-29 的 evaluator-only strict structured-output v4 保持全部 v1 comparison keys，Quick 6/6 完成且工程门通过，Research 5/6；`r100-refuse-energy` 已不再出现串联 JSON，`r100-refuse-customer` 的一个 Researcher 输出仍未通过完整本地 schema。v2 记录旧 wrapper usage 缺陷，v3 记录 provider outage，均未覆盖；当前 canonical 为 `docs/evals/artifacts/r803-v4/`。单 case/mode 仅一次执行且未定义 approved release threshold，模型质量继续 `not_evaluable`。下一步必须先冻结样本/发布阈值并裁决剩余 schema 失败口径，不能对同一 package 刷绿；M404 用户价值继续独立 `not_evaluable`。
+R803 保持 open：v5 已冻结 approved five-round release threshold、`r100-v2` scorer、raw-output 诊断与可恢复 campaign runner（见 `docs/evals/r803-v5-campaign-threshold.md`）。formal attempt `docs/evals/artifacts/r803-campaign-20260730-v1/` 已执行但在 round-01 完成前冻结：0/5 rounds、0/60 completed executions、engineering fail、model quality not_evaluable；安全 interruption detail 只保留 `R803EvaluationError` 类名，精确 evaluator-integrity 根因未知。v1 不得覆盖、续跑或替换；future v2 必须先增加 allowlisted 内部错误码诊断、独立复审并取得 owner 新授权。历史 r803-v1-v4 保持不可变；v4 仍是最新可判读 provider 诊断样本（Quick 6/6、Research 5/6）。模型质量与 M404 继续 `not_evaluable`，产品保持 `internal_preview`。
 
 ## 明确不做
 

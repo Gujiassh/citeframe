@@ -17,7 +17,7 @@
 
 ## 2. 当前总状态
 
-当前项目状态：`V1、Chat-first 工作台、V2-A Hybrid/RRF、阶段 9、V3 M401-M403B 与 V4 R000-R800 确定性工程基线已完成；R803 strict structured-output follow-up 的 Quick 完成 6/6、Research 完成 5/6，R803 保持 open，模型质量与 M404 用户价值仍为 not_evaluable，产品保持 internal_preview。`
+当前项目状态：`V1、Chat-first 工作台、V2-A Hybrid/RRF、阶段 9、V3 M401-M403B 与 V4 R000-R800 确定性工程基线已完成；R803 v5 已冻结五轮 prospective 阈值/scorer v2/可恢复 campaign 与 raw-output 诊断。首次 formal campaign r803-campaign-20260730-v1 已启动，但在 round-01 完成前按 fail-closed 规则冻结为 engineering=fail、modelQuality=not_evaluable，0/5 rounds、0/60 completed executions；该失败目录不可覆盖或续跑。v4 仍为最新可判读的 provider 诊断样本（Quick 6/6、Research 5/6），M404 用户价值仍为 not_evaluable，产品保持 internal_preview。`
 
 M403A 的逐次优化假设、实验手段、通过/否决结果、指标和 artifact 统一记录在 `docs/evals/m403a-optimization-log.md`；后续不得只更新最终结论而遗漏失败实验与运行环境证据。
 
@@ -50,7 +50,7 @@ M403A 的逐次优化假设、实验手段、通过/否决结果、指标和 art
 | V3-2 | 多模态 PDF Evidence | 已完成 | 已完成 | 页面几何、layout/OCR、表格/图表/页内图片、`pdf_page/pdf_region` Citation/NoteSource、Viewer 区域交互与失败 Chat 回放已通过两轮 Critical 复验 |
 | V3-3 | 独立图片闭环 | 已完成 | M301-M305 已通过最终 Critical | 图片归一化、OCR/caption、Evidence 历史快照、Viewer、区域 Chat/Note 与混合检索已完成；M403B 已将生产 Image 正式启用 |
 | V3-4 | 质量与发布验收 | M401-M403B 已完成 | M403B 已完成 | M403 恢复、M403A binary64/3N canonical 与 M403B 三格式生产上传/恢复/浏览器门均通过；工程 `releaseGatePassed=true` |
-| V4 | Evidence Research Workflow | R000-R800 已完成；R803 open | 确定性工程门通过；strict Research 仍失败 | Research ledger、固定 executor、HITL/SSE/retry/recovery、Web、observability、Evaluation 与 R800 PostgreSQL/MinIO 恢复全部通过；R803 v4 Quick 6/6、Research 5/6，模型质量/M404 仍 not_evaluable |
+| V4 | Evidence Research Workflow | R000-R800 已完成；R803 open | 确定性工程门通过；v5 formal v1 在 round-01 前冻结失败 | Research ledger、固定 executor、HITL/SSE/retry/recovery、Web、observability、Evaluation 与 R800 PostgreSQL/MinIO 恢复全部通过；R803 v5 阈值/scorer/campaign 已冻结；formal v1 为 0/5 rounds、engineering fail、model quality not_evaluable，根因待在新 runner 版本中补足安全错误码后裁决；v4 仍是最新可判读 provider 诊断样本 |
 
 ## 4. 已完成的设计文档
 
@@ -66,13 +66,30 @@ M403A 的逐次优化假设、实验手段、通过/否决结果、指标和 art
 
 V1、V2-A、阶段 9、V3 M401-M403B 与 V4 R000-R800 工程基线已完成。后续按以下顺序推进：
 
-1. 为 R803 定义 approved sample/release threshold，并裁决剩余 `r100-refuse-customer` 完整 schema 失败应作为模型质量样本还是进入新的显式版本合同；不得对同一 package 刷绿
+1. 保留 `r803-campaign-20260730-v1` 不可变失败证据；先让 future campaign 的 interruption 记录安全、受控的内部错误码并完成独立复审，再由 owner 明确批准是否创建新目录运行 v2；不得覆盖或续跑 v1
 2. 真实用户验证作为 M404 Beta 门推进；数据不足时保持 `not_evaluable` 和内部预览
 3. 后续切片继续沿用确定性 fixture、真实 BFF、恢复与独立复审门，不以“多 Agent”或工程绿灯替代证据质量
 
 ## 6. 当前正在做什么
 
-当前：`V4 R800 v4 确定性工程门已通过。R803 evaluator-only strict transport 与可计费 retry 已版本化，最新 canonical v4 的 comparison keys 继续匹配，Quick 6/6，Research 5/6；r100-refuse-customer 在完整本地 Researcher schema 处 fail closed。R803 保持 open，模型质量与 M404 继续 not_evaluable。`
+当前：`R803 v5 已冻结 release threshold、scorer v2、raw-output 诊断和可恢复五轮 campaign runner。formal v1 已运行但在 round-01 完成前冻结失败：0/5 rounds、0/60 completed executions、engineering=fail、modelQuality=not_evaluable；只保留 plan/report/round-start 证据，安全 detail 仅记录 R803EvaluationError 类名，因此精确根因未知。v1 不得覆盖或续跑；v4 仍是最新可判读 provider 诊断样本。R803 保持 open，M404 继续 not_evaluable。`
+
+## 2026-07-30：R803 v5 formal campaign v1 失败证据
+
+- 在双 Critical review `ACCEPTED`、Worker `215 passed`、Ruff/compileall/BasedPyright、v1-v4 checksum、v5 hash binding 与确定性 60-case smoke 全绿后，通过唯一 formal 路径（`provider=None -> configured_provider()`）启动 `docs/evals/artifacts/r803-campaign-20260730-v1/`。
+- `round-01/round-start.json` 已在首个 provider 调用前持久化，attestation 为 `formal_configured_provider`、`formalEvidence=true`，provider/model/profile、package、threshold、scorer、prompt binding、55-module evaluator closure 与 plan hash 全部匹配。
+- v1 在 round-01 完成 artifact 写入前触发 `R803EvaluationError` 并按 stop rule 冻结：`status=failed`、`engineering=fail`、`modelQuality=not_evaluable`、`completedRounds=0`、`totalCaseExecutionsCompleted=0`。terminal resume 已复算且确认无写入；失败 round 不得替换、续跑或删除。
+- 失败报告只保存 allowlisted 类名 `R803EvaluationError`，没有泄露异常文本，但也无法区分 provenance unresolved、secret boundary 或其他 evaluator integrity code；精确根因因此必须记为 unknown，不能根据运行时长或缺失 artifact 猜测。下一步先为 future runner 增加受控内部错误码诊断并独立复审，再由 owner 决定是否批准新 campaign v2。
+- v1 不提供模型质量分母或 Quick/Research 结论；M404 仍为 `not_evaluable`，产品仍为 `internal_preview`。
+
+## 2026-07-29：R803 v5 threshold and campaign evaluator
+
+- 冻结 `docs/evals/r803-release-threshold-v1.json`、`docs/evals/r100-research-cases-v2.json` 与 `docs/evals/r803-evaluation-package-v5.json`：五轮 prospective paired sample（60 case executions）、绝对零容忍质量门、失败即冻结、不自动选择 Quick/Research 赢家、M404/`internal_preview` 不变。
+- 新增 evaluator-only `r100-v2` scorer：模型成功但违反本地语义合同计为质量失败并保留分母；拒绝额外/否定/重复 claim；拒答必须零 final claim；冲突与非冲突双向强制；精确术语为 Evidence-target exactness，R700 兼容字段仍写 `locatorAccuracy`。
+- 新增 raw provider output 诊断与 round manifest：记录 stage/rule/path/node/logical call 与 raw SHA-256；只允许冻结非机密合成 fixture；不落盘 request/header/secret/hidden reasoning。
+- 新增可恢复 fail-closed campaign runner/CLI：首调 provider 前冻结 package/threshold/scorer/plan hash；完成 round 不可变且校验和寻址；resume 拒绝 drift/overwrite；成功必须满五轮。
+- v4 语义观察保留且不事后改写：Research precision 0.5、Evidence-target exactness/legacy locatorAccuracy 0.0、conflict 0.8、refusal 0.0；`r100-refuse-customer` 精确 schema 根因未知。正式 campaign 原预算估计约 USD 3.27 / 26 分钟；2026-07-30 的 v1 attempt 已失败冻结，结果见上节。
+- 生产 Research 默认行为、R700 持久化/API、PromptVersion/WorkflowVersion/Chat/Citation/NoteSource/save 语义未改。详情见 `docs/evals/r803-v5-campaign-threshold.md`。
 
 ## 2026-07-29：R803 strict structured-output follow-up
 
@@ -175,13 +192,14 @@ V1、V2-A、阶段 9、V3 M401-M403B 与 V4 R000-R800 工程基线已完成。�
 
 ## 7. 下一步
 
-下一步：`在明确批准真实 provider 与成对 comparison keys 后执行 R803；M404 继续收集目标用户证据。两者未完成前不扩大产品发布声明。`
+下一步：`保留 r803-campaign-20260730-v1 不可变失败证据；先为 future runner 增加受控内部错误码并完成独立复审，再由 Owner 明确批准是否创建新目录执行 v2。M404 继续收集目标用户证据。`
 
 具体建议从这些内容开始：
 
-1. R803 使用同一 fixture、Asset scope、provider/model、Workflow/Prompt comparison keys 运行 Quick/Research 成对质量，不复用 scripted R800 结论。
-2. M404 真实用户任务验证继续收集；结果未完成前产品继续作为内部预览。
-3. Audio/Video 仍按独立模态 adapter/locator/Viewer 立项，不和 V4 workflow 状态机混成一次迁移。
+1. future runner 只记录 allowlisted、非机密的内部错误码，不保存原始异常文本；修复需先通过独立 Critical review。
+2. 未获得新的 Owner 授权前，不重跑 provider；v2 必须使用新目录，不能覆盖、续跑或替换 v1。
+3. M404 真实用户任务验证继续收集；结果未完成前产品继续作为内部预览。
+4. Audio/Video 仍按独立模态 adapter/locator/Viewer 立项，不和 V4 workflow 状态机混成一次迁移。
 
 ## 8. 当前不进入主线
 

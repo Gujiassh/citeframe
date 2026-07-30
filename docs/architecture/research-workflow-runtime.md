@@ -5,10 +5,12 @@
 - Implemented baseline: V4 R200-R800 engineering scope
 - Canonical engineering evidence: [`../evals/artifacts/r800-v1/deployment-20260728-v4/`](../evals/artifacts/r800-v1/deployment-20260728-v4/)
 - First provider-backed evidence: [`../evals/artifacts/r803-v1/`](../evals/artifacts/r803-v1/)
-- Latest strict provider-backed evidence: [`../evals/artifacts/r803-v4/`](../evals/artifacts/r803-v4/)
-- Engineering gate: `pass`
-- R803 paired engineering gates: Quick `pass`; Research `fail` with 5/6 completed cases
-- Model-quality gate: `not_evaluable` because one sample has no approved release threshold
+- Latest strict provider-backed diagnostic evidence: [`../evals/artifacts/r803-v4/`](../evals/artifacts/r803-v4/)
+- Frozen formal campaign contracts: [`../evals/r803-v5-campaign-threshold.md`](../evals/r803-v5-campaign-threshold.md)
+- First formal campaign attempt: [`../evals/artifacts/r803-campaign-20260730-v1/`](../evals/artifacts/r803-campaign-20260730-v1/) (`failed`, 0/5 completed rounds; immutable)
+- Engineering gate: deterministic R800 baseline `pass`; R803 formal campaign v1 `fail`
+- Latest interpretable paired diagnostic gates (v4): Quick `pass`; Research `fail` with 5/6 completed cases
+- Model-quality gate: `not_evaluable` because formal v1 interrupted before any round completed
 - User-value gate: `not_evaluable` until M404 contains qualified target-user evidence
 - Product stage: `internal_preview`
 
@@ -122,6 +124,29 @@ Required R800 scenario checks are `mainCompleted`, `parallelFanout`,
 `unsupportedWithheld`, `conflictResume`, `transientRetry`, `leaseReclaim`,
 `sseReplay`, `cancelNoFinal`, `membershipRemoval`, and `uniqueFinal`.
 
+
+### Provider-backed R803 five-round campaign (v5)
+
+Formal model-quality evidence requires the frozen five-round campaign, not a
+single paired directory. Package v5 binds threshold v1 and scorer `r100-v2`.
+
+```bash
+uv run --project apps/worker python apps/worker/scripts/evaluate_r803_campaign.py \
+  --package docs/evals/r803-evaluation-package-v5.json \
+  --campaign-dir docs/evals/artifacts/r803-campaign-YYYYMMDD-vN
+```
+
+The first formal attempt, `r803-campaign-20260730-v1`, is immutable failed evidence. It froze before round-01 completed with `engineering=fail`, `modelQuality=not_evaluable`, and 0 completed case executions. Its safe interruption detail retained only `R803EvaluationError`, so the exact evaluator-integrity root cause is unknown. Do not overwrite, delete, resume, or infer a model result from this directory. A future v2 requires a runner that records an allowlisted internal error code plus a new owner-approved directory.
+
+Interpret campaign results in this order:
+
+1. `campaign-plan.json` package/threshold/scorer/plan hashes must match the frozen v5 contracts.
+2. All five rounds are required for success; failed/completed rounds are immutable and never replaced.
+3. Model-successful local semantic violations are quality failures and remain in the denominator.
+4. Provider/evaluator integrity failures freeze engineering fail and leave model quality `not_evaluable`.
+5. R803 still cannot set M404 user value or move the product beyond `internal_preview`.
+6. Historical `r803-v1`..`r803-v4` directories remain diagnostic only.
+
 ### Provider-backed R803 paired evaluation
 
 The package validates every fixture/source hash and the effective provider/model/
@@ -142,7 +167,7 @@ Interpret the result in this order:
 1. `comparisonKeysMatch` must be true; otherwise no Quick/Research comparison is valid.
 2. Quick and Research engineering gates report execution completeness, not release quality.
 3. Any case output that is not one strict JSON object fails closed. Do not extract a later JSON fragment.
-4. One execution per case/mode remains observational evidence until an approved release threshold and sample plan exist.
+4. One execution per case/mode remains observational evidence; formal model quality requires the five-round v5 campaign.
 5. R803 cannot set M404 user value or move the product beyond `internal_preview`.
 6. Never overwrite a failed run directory; defects and retries require a new immutable directory.
 

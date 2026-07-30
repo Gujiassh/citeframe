@@ -7,6 +7,7 @@ SQLAlchemy model imports: a missing or incomplete API port is a hard failure.
 
 from __future__ import annotations
 
+import hashlib
 import json
 from collections.abc import Callable, Mapping, Sequence
 from typing import Any
@@ -56,10 +57,15 @@ class GenerationResearchAgents:
         *,
         result_schemas: Mapping[str, dict[str, object]] | None = None,
         result_validator: Callable[[str, dict[str, Any]], None] | None = None,
+        output_observer: Callable[[str, str, str], None] | None = None,
+        diagnostic_mode: bool = False,
     ) -> None:
         self._generation = generation
         self._result_schemas = result_schemas or DEFAULT_AGENT_RESULT_SCHEMAS
         self._result_validator = result_validator
+        self._output_observer = output_observer
+        # Evaluator-only boundary. Production/default remains historical failure codes.
+        self._diagnostic_mode = bool(diagnostic_mode)
         self.plan_summary: str | None = None
         self.plan_known_gaps: tuple[str, ...] = ()
         self.plan_estimated_provider_calls: int | None = None
@@ -242,15 +248,62 @@ class GenerationResearchAgents:
             {"role": "user", "content": json.dumps(variables, ensure_ascii=True)},
         ]
         raw = self._generation.generate(lease, node_key=node_key, messages=messages)
+        logical_call_key = f"{lease.step_id}:{node_key}"
+        raw_sha256 = hashlib.sha256(raw.encode("utf-8")).hexdigest()
+        if self._output_observer is not None:
+            self._output_observer(node_key, logical_call_key, raw)
         try:
             value = json.loads(raw)
         except json.JSONDecodeError as error:
+            if self._diagnostic_mode:
+                from ai_pdf_worker.r803_evaluation_diagnostics import (
+                    AgentResultValidationError,
+                )
+
+                raise AgentResultValidationError(
+                    node_key,
+                    "json_decode",
+                    "$",
+                    logical_call_key=logical_call_key,
+                    raw_output_sha256=raw_sha256,
+                ) from error
             raise ResearchExecutionError(f"{node_key}_invalid_output") from error
         if not isinstance(value, dict):
+            if self._diagnostic_mode:
+                from ai_pdf_worker.r803_evaluation_diagnostics import (
+                    AgentResultValidationError,
+                )
+
+                raise AgentResultValidationError(
+                    node_key,
+                    "json_root_object",
+                    "$",
+                    logical_call_key=logical_call_key,
+                    raw_output_sha256=raw_sha256,
+                )
             raise ResearchExecutionError(f"{node_key}_invalid_output")
         if self._result_validator is not None:
             try:
-                self._result_validator(node_key, value)
-            except (KeyError, TypeError, ValueError) as error:
-                raise ResearchExecutionError(f"{node_key}_invalid_output") from error
+                # Prefer keyword-aware diagnostic validators when available.
+                try:
+                    self._result_validator(
+                        node_key,
+                        value,
+                        logical_call_key=logical_call_key,
+                        raw_output_sha256=raw_sha256,
+                    )
+                except TypeError:
+                    self._result_validator(node_key, value)
+            except Exception as error:
+                # Preserve production failure codes while allowing evaluator-only
+                # typed diagnostics to propagate when callers opt into them.
+                from ai_pdf_worker.r803_evaluation_diagnostics import (
+                    AgentResultValidationError,
+                )
+
+                if isinstance(error, AgentResultValidationError):
+                    raise
+                if isinstance(error, (KeyError, TypeError, ValueError)):
+                    raise ResearchExecutionError(f"{node_key}_invalid_output") from error
+                raise
         return value

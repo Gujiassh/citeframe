@@ -1,0 +1,364 @@
+{
+  "schemaVersion": "r100-research-cases-v2",
+  "referenceGoldenSet": {
+    "path": "docs/evals/multimodal-golden-v1.json",
+    "sha256": "4106659d928390b361af66ccd6ebf13c581cefe27ae8ffe906b478a2c578fa90",
+    "fixtureIds": [
+      "pdf-coordinate",
+      "pdf-artifact-matrix",
+      "image-coordinate"
+    ]
+  },
+  "referenceRetrievalBaseline": {
+    "path": "docs/evals/retrieval-v1.jsonl",
+    "sha256": "4e5ce744c8e42986f976b87a1736f87e1603ea2a554ed0e15660d5120e1e5040",
+    "caseCount": 40
+  },
+  "referenceFailureTaxonomy": {
+    "path": "docs/evals/multimodal-failures-v1.json",
+    "sha256": "b99972c0394a7de09755599cb19892b48cfdfce07a0b64129d0914811a76b285",
+    "taxonomyVersion": "multimodal-failures-v1"
+  },
+  "cases": [
+    {
+      "id": "r100-compare-rise-drop",
+      "caseType": "comparison",
+      "question": "Compare the change described by the PDF chart with the image observation.",
+      "assetScope": [
+        "pdf-coordinate",
+        "image-coordinate"
+      ],
+      "expectedDisposition": "answer",
+      "expectedConflict": true,
+      "expectedEvidenceCaseIds": [
+        "answer-pdf-chart",
+        "answer-image-trend"
+      ],
+      "claims": [
+        {
+          "id": "pdf-rise",
+          "requiredConcepts": [
+            [
+              "pdf"
+            ],
+            [
+              "trend"
+            ],
+            [
+              "rise",
+              "rises",
+              "increasing",
+              "increase",
+              "increases"
+            ],
+            [
+              "third point",
+              "third data point"
+            ]
+          ],
+          "supportedBy": [
+            "answer-pdf-chart"
+          ],
+          "forbiddenPatterns": [
+            "\\bnot\\s+rise",
+            "\\bno\\s+rise",
+            "\\bdoes\\s+not\\s+rise",
+            "\\bdid\\s+not\\s+rise",
+            "\\bnever\\s+rise",
+            "\\bfails?\\s+to\\s+rise",
+            "\\bdoes\\s+not\\s+increase",
+            "\\bdid\\s+not\\s+increase",
+            "\\bnever\\s+increase",
+            "\\bfails?\\s+to\\s+increase",
+            "\\bwithout\\s+.*rise",
+            "\\bno\\s+increase\\b"
+          ],
+          "negationPatterns": [
+            "\\bnot\\s+rise",
+            "\\bno\\s+rise",
+            "\\bdoes\\s+not\\s+rise",
+            "\\bdid\\s+not\\s+rise",
+            "\\bnever\\s+rise",
+            "\\bfails?\\s+to\\s+rise",
+            "\\bdoes\\s+not\\s+increase",
+            "\\bdid\\s+not\\s+increase",
+            "\\bnever\\s+increase",
+            "\\bfails?\\s+to\\s+increase"
+          ],
+          "positiveAssertionPatterns": [
+            "\\brise[sd]?\\b",
+            "\\bincreas(?:e|es|ing)\\b"
+          ]
+        },
+        {
+          "id": "image-drop",
+          "requiredConcepts": [
+            [
+              "image"
+            ],
+            [
+              "release 4",
+              "release four"
+            ],
+            [
+              "sustained drop",
+              "sustained decline"
+            ]
+          ],
+          "supportedBy": [
+            "answer-image-trend"
+          ],
+          "forbiddenPatterns": [
+            "\\bnot\\s+.*\\b(drop|decline|fall)",
+            "\\bno\\s+.*\\b(drop|decline|fall)",
+            "\\bdoes\\s+not\\s+.*\\b(drop|decline|fall)",
+            "\\bdid\\s+not\\s+.*\\b(drop|decline|fall)",
+            "\\bfails?\\s+to\\s+.*\\b(drop|decline|fall)"
+          ],
+          "negationPatterns": [
+            "\\bnot\\s+.*\\b(drop|decline|fall)",
+            "\\bno\\s+.*\\b(drop|decline|fall)",
+            "\\bdoes\\s+not\\s+.*\\b(drop|decline|fall)",
+            "\\bdid\\s+not\\s+.*\\b(drop|decline|fall)",
+            "\\bfails?\\s+to\\s+.*\\b(drop|decline|fall)"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "r100-synthesize-table-constraint",
+      "caseType": "synthesis",
+      "question": "Summarize the Atlas score and the image's verification constraint.",
+      "assetScope": [
+        "pdf-artifact-matrix",
+        "image-coordinate"
+      ],
+      "expectedDisposition": "answer",
+      "expectedConflict": false,
+      "expectedEvidenceCaseIds": [
+        "answer-pdf-table",
+        "answer-image-constraint"
+      ],
+      "claims": [
+        {
+          "id": "atlas-score",
+          "requiredConcepts": [
+            [
+              "atlas"
+            ],
+            [
+              "91.4"
+            ]
+          ],
+          "supportedBy": [
+            "answer-pdf-table"
+          ],
+          "forbiddenPatterns": [
+            "\\bnot\\s+.*91\\.4",
+            "\\bno\\s+.*91\\.4",
+            "\\bdoes\\s+not\\s+.*91\\.4"
+          ],
+          "negationPatterns": [
+            "\\bnot\\s+.*91\\.4",
+            "\\bno\\s+.*atlas",
+            "\\bdoes\\s+not\\s+.*score"
+          ]
+        },
+        {
+          "id": "verify-pair",
+          "requiredConcepts": [
+            [
+              "verify",
+              "verified"
+            ],
+            [
+              "chart"
+            ],
+            [
+              "caption"
+            ],
+            [
+              "together"
+            ]
+          ],
+          "supportedBy": [
+            "answer-image-constraint"
+          ],
+          "forbiddenPatterns": [
+            "\\bdo\\s+not\\s+verify",
+            "\\bnot\\s+verify",
+            "\\bnever\\s+verify",
+            "\\bwithout\\s+verif"
+          ],
+          "negationPatterns": [
+            "\\bdo\\s+not\\s+verify",
+            "\\bnot\\s+verify",
+            "\\bnever\\s+verify",
+            "\\bdid\\s+not\\s+verify"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "r100-conflict-direction",
+      "caseType": "conflict",
+      "question": "Are the PDF trend and the image observation directionally consistent? Explain the conflict.",
+      "assetScope": [
+        "pdf-coordinate",
+        "image-coordinate"
+      ],
+      "expectedDisposition": "answer",
+      "expectedConflict": true,
+      "expectedEvidenceCaseIds": [
+        "answer-pdf-chart",
+        "answer-image-trend"
+      ],
+      "claims": [
+        {
+          "id": "pdf-direction",
+          "requiredConcepts": [
+            [
+              "pdf"
+            ],
+            [
+              "trend"
+            ],
+            [
+              "rise",
+              "rises",
+              "increasing"
+            ]
+          ],
+          "supportedBy": [
+            "answer-pdf-chart"
+          ],
+          "forbiddenPatterns": [
+            "\\bnot\\s+rise",
+            "\\bno\\s+rise",
+            "\\bdoes\\s+not\\s+rise"
+          ],
+          "negationPatterns": [
+            "\\bnot\\s+rise",
+            "\\bno\\s+rise",
+            "\\bdoes\\s+not\\s+rise",
+            "\\bdid\\s+not\\s+rise"
+          ]
+        },
+        {
+          "id": "image-direction",
+          "requiredConcepts": [
+            [
+              "image"
+            ],
+            [
+              "drop",
+              "decline",
+              "falls"
+            ]
+          ],
+          "supportedBy": [
+            "answer-image-trend"
+          ],
+          "forbiddenPatterns": [
+            "\\bnot\\s+.*\\b(drop|decline|falls)",
+            "\\bno\\s+.*\\b(drop|decline|falls)"
+          ],
+          "negationPatterns": [
+            "\\bnot\\s+.*\\b(drop|decline|falls)",
+            "\\bno\\s+.*\\b(drop|decline|falls)",
+            "\\bdoes\\s+not\\s+.*\\b(drop|decline|falls)"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "r100-locate-chart-caption",
+      "caseType": "evidence_gap",
+      "question": "What evidence must be checked together before accepting the image observation?",
+      "assetScope": [
+        "image-coordinate"
+      ],
+      "expectedDisposition": "answer",
+      "expectedConflict": false,
+      "expectedEvidenceCaseIds": [
+        "answer-image-constraint"
+      ],
+      "claims": [
+        {
+          "id": "paired-evidence",
+          "requiredConcepts": [
+            [
+              "verify",
+              "verified"
+            ],
+            [
+              "chart"
+            ],
+            [
+              "caption"
+            ],
+            [
+              "together"
+            ]
+          ],
+          "supportedBy": [
+            "answer-image-constraint"
+          ],
+          "forbiddenPatterns": [
+            "\\bdo\\s+not\\s+verify",
+            "\\bnot\\s+verify",
+            "\\bnever\\s+verify",
+            "\\bdid\\s+not\\s+verify",
+            "\\brefuse(?:s|d)?\\s+to\\s+verify",
+            "\\bfails?\\s+to\\s+verify",
+            "\\bwithout\\s+verif",
+            "\\bSKIP\\s+VERIFY"
+          ],
+          "negationPatterns": [
+            "\\bdo\\s+not\\s+verify",
+            "\\bnot\\s+verify",
+            "\\bnever\\s+verify",
+            "\\bdid\\s+not\\s+verify",
+            "\\brefuse(?:s|d)?\\s+to\\s+verify",
+            "\\bfails?\\s+to\\s+verify"
+          ],
+          "positiveAssertionPatterns": [
+            "\\bverif(?:y|ies|ied|ication)\\b"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "r100-refuse-energy",
+      "caseType": "insufficiency",
+      "question": "What energy consumption does the PDF report for Atlas?",
+      "assetScope": [
+        "pdf-artifact-matrix"
+      ],
+      "expectedDisposition": "refuse",
+      "expectedConflict": false,
+      "expectedEvidenceCaseIds": [],
+      "claims": [],
+      "forbiddenAnswerPatterns": [
+        "\\b\\d+(?:\\.\\d+)?\\s*(?:kwh|mwh|joules?)\\b"
+      ]
+    },
+    {
+      "id": "r100-refuse-customer",
+      "caseType": "insufficiency",
+      "question": "Which production customer approved the release shown in these fixtures?",
+      "assetScope": [
+        "pdf-coordinate",
+        "image-coordinate"
+      ],
+      "expectedDisposition": "refuse",
+      "expectedConflict": false,
+      "expectedEvidenceCaseIds": [],
+      "claims": [],
+      "forbiddenAnswerPatterns": [
+        "\\bcustomer\\s+[A-Z][a-z]+",
+        "\\bapproved by\\s+[A-Z][a-z]+"
+      ]
+    }
+  ]
+}

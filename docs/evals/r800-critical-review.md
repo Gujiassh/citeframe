@@ -27,7 +27,7 @@ validated value.
 | Permissions/isolation | pass | owner/creator/member and cross-Workspace API/Worker tests plus membership-removal runtime |
 | Failure/recovery | pass | retry, lease reclaim, SSE replay, restart, cancellation race, unique final Artifact |
 | Persistence/restore | pass | PostgreSQL/MinIO empty-deployment restore with equal semantic SHA and object hashes |
-| Real-model quality | blocked | R803 strict v4 completed Quick 6/6 and Research 5/6; one sample has no release threshold and one Researcher schema failure remains |
+| Real-model quality | blocked | R803 v5 formal campaign v1 failed before round 1 completed; v4 remains the latest interpretable diagnostic at Quick 6/6 and Research 5/6 |
 | Target-user value | blocked | M404 does not yet contain qualified user evidence |
 
 ## Findings And Resolution
@@ -234,9 +234,4 @@ Repair delivery ledger:
 
 ## Remaining Gates
 
-R803 has an approved strict paired follow-up, but remains open because Research
-completed only five of six cases and no sample/release threshold exists. The next
-R803 slice must first freeze that threshold and decide whether the remaining complete
-schema failure is a measured model failure or requires a new explicit contract; it
-must not rerun the same package until green. M404 must separately collect qualified
-target-user task evidence. Neither gate can be inferred from R800 or these R803 samples.
+R803 v5 freezes the approved five-round threshold, scorer v2, raw-output diagnostics, and resumable campaign runner in [`r803-v5-campaign-threshold.md`](r803-v5-campaign-threshold.md). Formal attempt `artifacts/r803-campaign-20260730-v1/` executed but froze before round-01 completed (`engineering=fail`, `modelQuality=not_evaluable`, 0/5 rounds); its exact evaluator-integrity root cause is unknown because safe interruption detail retained only the exception class. Historical v4 remains the latest interpretable provider diagnostic sample (Quick 6/6, Research 5/6) and is not relabeled. M404 remains a separate target-user evidence gate. Neither gate can be inferred from R800, v4, or the incomplete formal v1 attempt.

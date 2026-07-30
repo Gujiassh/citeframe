@@ -19,6 +19,9 @@ __pycache__/
 !.env.example
 !infra/docker/.env.deploy.example
 
+# Local agent artifacts
+.pi-subagents/
+
 # OS / editors
 .DS_Store
 .vscode/

@@ -24,6 +24,11 @@ from ai_pdf_worker.r803_structured_output import (
 
 REPO_ROOT = Path(__file__).resolve().parents[4]
 DEFAULT_PACKAGE_PATH = REPO_ROOT / "docs/evals/r803-evaluation-package-v4.json"
+DEFAULT_PACKAGE_V5_PATH = REPO_ROOT / "docs/evals/r803-evaluation-package-v5.json"
+SUPPORTED_PACKAGE_SCHEMAS = {
+    "r803-evaluation-package-v4": "r100-v1",
+    "r803-evaluation-package-v5": "r100-v2",
+}
 
 
 class R803EvaluationError(ValueError):
@@ -161,8 +166,10 @@ def _validated_repo_file(relative: str, expected_sha256: str) -> Path:
 
 def load_evaluation_package(path: Path = DEFAULT_PACKAGE_PATH) -> EvaluationPackage:
     document = _load_object(path)
-    if document.get("schemaVersion") != "r803-evaluation-package-v4":
+    schema_version = document.get("schemaVersion")
+    if schema_version not in SUPPORTED_PACKAGE_SCHEMAS:
         raise R803EvaluationError("unsupported_package_schema")
+    expected_scorer = SUPPORTED_PACKAGE_SCHEMAS[schema_version]
     suite = document.get("suite")
     provider = document.get("providerProfile")
     research = document.get("research")
@@ -172,6 +179,7 @@ def load_evaluation_package(path: Path = DEFAULT_PACKAGE_PATH) -> EvaluationPack
     quick = document.get("quick")
     structured_output = document.get("structuredOutput")
     execution_policy = document.get("executionPolicy")
+    diagnostics = document.get("diagnostics")
     if (
         not isinstance(quick, dict)
         or not isinstance(structured_output, dict)
@@ -191,7 +199,7 @@ def load_evaluation_package(path: Path = DEFAULT_PACKAGE_PATH) -> EvaluationPack
         != list(RETRY_BACKOFF_SECONDS)
         or execution_policy.get("retryableProviderCodes")
         != sorted(RETRYABLE_PROVIDER_CODES)
-        or suite.get("scorerVersion") != "r100-v1"
+        or suite.get("scorerVersion") != expected_scorer
         or provider.get("provider") != "openai"
         or provider.get("model") != "gpt-5.5"
         or provider.get("apiProtocol") != "responses-v1"
@@ -200,12 +208,40 @@ def load_evaluation_package(path: Path = DEFAULT_PACKAGE_PATH) -> EvaluationPack
         or provider["maxOutputTokens"] < 1
     ):
         raise R803EvaluationError("unsupported_evaluation_package")
+    if schema_version == "r803-evaluation-package-v5":
+        if (
+            not isinstance(diagnostics, dict)
+            or diagnostics.get("version") != "r803-raw-output-diagnostics-v1"
+            or diagnostics.get("scope") != "frozen_non_confidential_synthetic_fixtures_only"
+            or diagnostics.get("persistRawProviderOutputs") is not True
+            or diagnostics.get("persistProviderRequests") is not False
+            or diagnostics.get("persistHeaders") is not False
+            or diagnostics.get("persistApiKeysOrSecrets") is not False
+            or diagnostics.get("persistHiddenReasoning") is not False
+            or not isinstance(suite.get("thresholdPath"), str)
+            or not isinstance(suite.get("thresholdSha256"), str)
+        ):
+            raise R803EvaluationError("unsupported_evaluation_package")
+        threshold_path = _validated_repo_file(suite["thresholdPath"], suite["thresholdSha256"])
+        threshold = _load_object(threshold_path)
+        if (
+            threshold.get("schemaVersion") != "r803-release-threshold-v1"
+            or threshold.get("samplePlan", {}).get("prospectivePairedRounds") != 5
+            or threshold.get("qualityGates", {}).get("zeroTolerance") is not True
+            or threshold.get("claimBoundary", {}).get("scorerVersion") != "r100-v2"
+        ):
+            raise R803EvaluationError("invalid_release_threshold")
 
     cases_path = _validated_repo_file(suite["caseManifestPath"], suite["caseManifestSha256"])
     _validated_repo_file(suite["goldenManifestPath"], suite["goldenManifestSha256"])
     cases_document = _load_object(cases_path)
     cases = cases_document.get("cases")
-    if cases_document.get("schemaVersion") != "r100-research-cases-v1" or not isinstance(cases, list):
+    case_schema = cases_document.get("schemaVersion")
+    if schema_version == "r803-evaluation-package-v5":
+        allowed_case_schemas = {"r100-research-cases-v2"}
+    else:
+        allowed_case_schemas = {"r100-research-cases-v1"}
+    if case_schema not in allowed_case_schemas or not isinstance(cases, list):
         raise R803EvaluationError("invalid_case_manifest")
     golden_reference = cases_document.get("referenceGoldenSet")
     if (
@@ -271,6 +307,28 @@ def load_evaluation_package(path: Path = DEFAULT_PACKAGE_PATH) -> EvaluationPack
             raise R803EvaluationError(f"case_evidence_mismatch:{case['id']}")
         if any(evidence[item].asset_id not in case_scope for item in expected_evidence):
             raise R803EvaluationError(f"case_evidence_scope_mismatch:{case['id']}")
+        if case_schema == "r100-research-cases-v2":
+            claims = case.get("claims")
+            if not isinstance(claims, list):
+                raise R803EvaluationError(f"invalid_case_claims:{case['id']}")
+            for claim in claims:
+                if (
+                    not isinstance(claim, dict)
+                    or not isinstance(claim.get("id"), str)
+                    or not isinstance(claim.get("requiredConcepts"), list)
+                    or not isinstance(claim.get("supportedBy"), list)
+                    or not isinstance(claim.get("negationPatterns"), list)
+                    or not isinstance(claim.get("forbiddenPatterns"), list)
+                ):
+                    raise R803EvaluationError(f"invalid_case_claim_oracle:{case['id']}")
+                positive = claim.get("positiveAssertionPatterns")
+                if positive is not None and (
+                    not isinstance(positive, list)
+                    or any(not isinstance(item, str) or not item for item in positive)
+                ):
+                    raise R803EvaluationError(
+                        f"invalid_case_claim_positive_assertion:{case['id']}"
+                    )
         if case["id"] in expected_case_ids:
             raise R803EvaluationError(f"duplicate_case:{case['id']}")
         expected_case_ids.add(case["id"])
