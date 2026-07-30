@@ -232,6 +232,32 @@ Repair delivery ledger:
   The linked dev-workbench checkpoint records final pushed SHA parity because this
   repository document cannot contain the SHA of its own follow-up commit.
 
+## R803 V5 Post-Campaign Hardening Delivery
+
+The formal v1 execution snapshot is preserved at `main@246e384` so its frozen
+55-module evaluator closure remains reproducible. Post-campaign review then found
+two future-runner defects; neither changes or authorizes a rerun of immutable v1.
+
+- Source branch/ref: `main@246e384` (`feat: add R803 campaign evaluation`).
+- Repair branch/target: `main` -> `origin/main`; no secondary worktree,
+  downstream merge, or cherry-pick is required.
+- Symptoms and root causes: a successful partial Research selection could leave a
+  missing expected Claim without exact provenance and classify it as engineering
+  interruption; terminal partial-round evidence hashed only `round-start.json`
+  and did not bind the complete file set, including root `SHA256SUMS`.
+- Changed scope: missing Research Claims now bind to the final Synthesizer raw
+  output and remain model-quality failures; terminal interruption evidence stores
+  every partial-round regular-file hash plus a canonical closure hash and rejects
+  file addition, modification, or deletion on resume.
+- Implementation commit: `3f6d5e0` (`fix: harden R803 campaign failure handling`).
+- Verification: Worker `222 passed`; focused campaign suites `62 passed`; Ruff,
+  compileall, repository diff checks, and immutable artifact checksum checks
+  passed; BasedPyright LSP reported zero diagnostics on changed Python files.
+- Independent review: accepted after regressions covered partial Research
+  selection and ordinary/`SHA256SUMS` add, modify, and delete tampering.
+- Push state: the linked dev-workbench checkpoint records final local/remote SHA
+  parity after this delivery record is pushed.
+
 ## Remaining Gates
 
 R803 v5 freezes the approved five-round threshold, scorer v2, raw-output diagnostics, and resumable campaign runner in [`r803-v5-campaign-threshold.md`](r803-v5-campaign-threshold.md). Formal attempt `artifacts/r803-campaign-20260730-v1/` executed but froze before round-01 completed (`engineering=fail`, `modelQuality=not_evaluable`, 0/5 rounds); its exact evaluator-integrity root cause is unknown because safe interruption detail retained only the exception class. Historical v4 remains the latest interpretable provider diagnostic sample (Quick 6/6, Research 5/6) and is not relabeled. M404 remains a separate target-user evidence gate. Neither gate can be inferred from R800, v4, or the incomplete formal v1 attempt.
