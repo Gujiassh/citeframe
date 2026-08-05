@@ -25,6 +25,11 @@ class Settings(BaseSettings):
         validation_alias=AliasChoices("AI_PDF_API_INTERNAL_TOKEN"),
         min_length=16,
     )
+    capability_fingerprint_pepper: str = Field(
+        default="local-development-capability-fingerprint-pepper",
+        validation_alias=AliasChoices("AI_PDF_CAPABILITY_FINGERPRINT_PEPPER"),
+        min_length=16,
+    )
 
     embedding_provider: str = Field(default="openai", pattern="^(openai|ollama)$")
     embedding_model: str = "text-embedding-3-small"
@@ -42,7 +47,7 @@ class Settings(BaseSettings):
     retrieval_candidate_k: int = Field(default=10, ge=6, le=100)
     retrieval_rrf_constant: int = Field(default=60, ge=1, le=1000)
 
-    generation_provider: str = Field(default="openai", pattern="^openai$")
+    generation_provider: str = Field(default="openai", pattern="^(openai|deepseek)$")
     generation_model: str = "gpt-5.5"
     generation_timeout_seconds: float = Field(default=120.0, gt=0)
     generation_max_output_tokens: int = Field(default=1200, ge=64, le=8192)
@@ -65,6 +70,14 @@ class Settings(BaseSettings):
     ollama_base_url: str = Field(
         default="http://127.0.0.1:11434",
         validation_alias=AliasChoices("AI_PDF_OLLAMA_BASE_URL", "OLLAMA_BASE_URL"),
+    )
+    deepseek_api_key: str | None = Field(
+        default=None,
+        validation_alias=AliasChoices("AI_PDF_DEEPSEEK_API_KEY", "DEEPSEEK_API_KEY"),
+    )
+    deepseek_api_base: str = Field(
+        default="https://api.deepseek.com",
+        validation_alias=AliasChoices("AI_PDF_DEEPSEEK_API_BASE", "DEEPSEEK_API_BASE"),
     )
 
     model_config = SettingsConfigDict(

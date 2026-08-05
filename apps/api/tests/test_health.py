@@ -3,10 +3,12 @@ import logging
 from contextlib import contextmanager
 from types import SimpleNamespace
 
+import pytest
+from fastapi.testclient import TestClient
+
 import ai_pdf_api.main as main_module
 from ai_pdf_api.core.logging import APPLICATION_HANDLER_NAME
 from ai_pdf_api.core.metrics import HTTP_REQUEST_DURATION, HTTP_REQUESTS
-from fastapi.testclient import TestClient
 
 
 def test_application_logs_use_flat_info_formatter() -> None:
@@ -142,6 +144,35 @@ def test_readiness_fails_when_enabled_image_caption_is_not_configured(monkeypatc
 
     assert response.status_code == 503
     assert response.json()["checks"]["imageCaptionConfiguration"] == "not_configured"
+
+
+@pytest.mark.parametrize("missing_key", [None, "", "   ", "\t\n"])
+def test_embedding_and_generation_readiness_treat_blank_keys_as_not_configured(
+    monkeypatch,
+    missing_key: str | None,
+) -> None:
+    http_calls: list[str] = []
+
+    def reject_http(*_args, **_kwargs):
+        http_calls.append("called")
+        raise AssertionError("whitespace embedding key must not call /models")
+
+    monkeypatch.setattr(main_module.httpx, "get", reject_http)
+    monkeypatch.setattr(main_module.settings, "embedding_provider", "openai")
+    monkeypatch.setattr(main_module.settings, "generation_provider", "openai")
+    monkeypatch.setattr(main_module.settings, "openai_api_key", missing_key)
+    monkeypatch.setattr(main_module.settings, "openai_api_base", "https://api.openai.com/v1")
+
+    assert main_module._check_embedding_provider() == "not_configured"
+    assert main_module._check_generation_provider() == "not_configured"
+    assert http_calls == []
+
+    monkeypatch.setattr(main_module.settings, "generation_provider", "deepseek")
+    monkeypatch.setattr(main_module.settings, "deepseek_api_key", missing_key)
+    assert main_module._check_generation_provider() == "not_configured"
+    if missing_key:
+        # readiness paths never surface the raw secret
+        assert missing_key not in str(main_module._check_embedding_provider())
 
 
 def test_readiness_omits_image_caption_configuration_when_image_is_disabled(monkeypatch) -> None:

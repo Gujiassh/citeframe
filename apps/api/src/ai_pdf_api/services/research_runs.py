@@ -235,7 +235,7 @@ def _add_revision(
         planner_prompt_version_id=planner_prompt.id,
         proposed_generation_provider=settings.generation_provider,
         proposed_generation_model=settings.generation_model,
-        proposed_provider_config_fingerprint=_profile_fingerprint(),
+        proposed_provider_config_fingerprint=_profile_fingerprint(retrieval_top_k=workspace.retrieval_top_k),
         proposed_pricing_version=PRICING_VERSION,
         proposed_data_boundary_policy_version=DATA_BOUNDARY_POLICY,
         proposed_embedding_provider=settings.embedding_provider,

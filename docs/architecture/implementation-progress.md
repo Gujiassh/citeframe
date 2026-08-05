@@ -17,7 +17,9 @@
 
 ## 2. 当前总状态
 
-当前项目状态：`V1、Chat-first 工作台、V2-A Hybrid/RRF、阶段 9、V3 M401-M403B 与 V4 R000-R800 确定性工程基线已完成；R803 v5 已冻结五轮 prospective 阈值/scorer v2/可恢复 campaign 与 raw-output 诊断。首次 formal campaign r803-campaign-20260730-v1 已启动，但在 round-01 完成前按 fail-closed 规则冻结为 engineering=fail、modelQuality=not_evaluable，0/5 rounds、0/60 completed executions；该失败目录不可覆盖或续跑，精确根因永久未知。future runner 的 allowlisted、非机密内部错误码已实现并通过 Critical review，但不构成 v2 运行授权。v4 仍为最新可判读的 provider 诊断样本（Quick 6/6、Research 5/6），M404 用户价值仍为 not_evaluable，产品保持 internal_preview。`
+当前项目状态：`V1/V2 基础闭环、V3 PDF/Image 多模态 Evidence 主链与 V4 R000-R800 Research 工程基线已完成。当前主动主线切换为 V5：先建设多模型/provider profile、多模态资料接入和受控多 Agent 协作，再集中进行 R803 模型质量评估与 M404 真实用户验证。R803 formal v1 的失败目录保持不可变，modelQuality 与 M404 仍为 not_evaluable，产品保持 internal_preview；这些后置证据不阻塞 V5 功能开发。`
+
+当前策略与任务入口：`specs/v5/multimodal-agent-product/`。V3/V4 规格、R803 artifact 和 M404 协议继续作为历史合同与后置验收证据。
 
 M403A 的逐次优化假设、实验手段、通过/否决结果、指标和 artifact 统一记录在 `docs/evals/m403a-optimization-log.md`；后续不得只更新最终结论而遗漏失败实验与运行环境证据。
 
@@ -50,7 +52,12 @@ M403A 的逐次优化假设、实验手段、通过/否决结果、指标和 art
 | V3-2 | 多模态 PDF Evidence | 已完成 | 已完成 | 页面几何、layout/OCR、表格/图表/页内图片、`pdf_page/pdf_region` Citation/NoteSource、Viewer 区域交互与失败 Chat 回放已通过两轮 Critical 复验 |
 | V3-3 | 独立图片闭环 | 已完成 | M301-M305 已通过最终 Critical | 图片归一化、OCR/caption、Evidence 历史快照、Viewer、区域 Chat/Note 与混合检索已完成；M403B 已将生产 Image 正式启用 |
 | V3-4 | 质量与发布验收 | M401-M403B 已完成 | M403B 已完成 | M403 恢复、M403A binary64/3N canonical 与 M403B 三格式生产上传/恢复/浏览器门均通过；工程 `releaseGatePassed=true` |
-| V4 | Evidence Research Workflow | R000-R800 已完成；R803 open | 确定性工程门通过；v5 formal v1 在 round-01 前冻结失败 | Research ledger、固定 executor、HITL/SSE/retry/recovery、Web、observability、Evaluation 与 R800 PostgreSQL/MinIO 恢复全部通过；R803 v5 阈值/scorer/campaign 已冻结；formal v1 为 0/5 rounds、engineering fail、model quality not_evaluable，精确根因永久未知；future runner 安全内部错误码已通过复审，v2 仍需 Owner 新授权；v4 仍是最新可判读 provider 诊断样本 |
+| V4 | Evidence Research Workflow | R000-R800 已完成；R803 后置 | 确定性工程门通过；v5 formal v1 在 round-01 前冻结失败 | Research ledger、固定 executor、HITL/SSE/retry/recovery、Web、observability、Evaluation 与 R800 PostgreSQL/MinIO 恢复全部通过；R803 v1 失败证据不可变，v2 不阻塞功能主线 |
+| V5-A | Provider 与模型能力层 | 已完成 | A002-A007 已交付并通过独立复审 | generation 已支持 OpenAI/DeepSeek adapter；registry/fingerprint/Research-ingestion drift gate 与 embedding index contract 已接入；vision/ASR/provider secret fail-closed 已完成；Web 分离 current Settings profile 与 frozen Research run/revision snapshot；A007 完成 Quick Chat/Citation/NoteSource/Research/ingestion/reindex/Worker/Web 回归 |
+| V5-B | 多模态资料扩展 | 规划中 | 尚未实现 | 在 PDF/Image 基线上逐步接入文档、Audio、Video 等模态；每种模态独立 adapter、locator、Viewer、检索和恢复 |
+| V5-C | 多 Agent 协作产品化 | 规划中 | V4 executor 已有工程基线 | 将固定 Research DAG 做成用户可理解的计划、并行、审批、重试、恢复和 Artifact 体验，不建设通用 Agent 平台 |
+| V5-D | 端到端整合与工程稳定 | 规划中 | 尚未开始 | 混合模态 Workspace、多模型 profile、跨层错误展示、部署和回归 |
+| V5-E | 模型质量与用户价值 | 后置 | R803/M404 未评估 | 按模态、任务、provider/model 运行质量评估和真实用户验证，决定 Beta/发布 |
 
 ## 4. 已完成的设计文档
 
@@ -61,20 +68,59 @@ M403A 的逐次优化假设、实验手段、通过/否决结果、指标和 art
 - `docs/architecture/database-design.md`
 - `docs/architecture/api-contracts.md`
 - `docs/architecture/job-state-machine.md`
+- `specs/v5/multimodal-agent-product/`
 
 ## 5. 当前建议实施顺序
 
-V1、V2-A、阶段 9、V3 M401-M403B 与 V4 R000-R800 工程基线已完成。后续按以下顺序推进：
+V1、V2-A、阶段 9、V3 M401-M403B 与 V4 R000-R800 工程基线已完成。后续按 V5 capability-first 顺序推进：
 
-1. 保留 `r803-campaign-20260730-v1` 不可变失败证据；future runner 的安全内部错误码与独立 Critical review 已完成，下一步由 Owner 明确批准是否创建新目录运行 v2；不得覆盖或续跑 v1
-2. 真实用户验证作为 M404 Beta 门推进；数据不足时保持 `not_evaluable` 和内部预览
-3. 后续切片继续沿用确定性 fixture、真实 BFF、恢复与独立复审门，不以“多 Agent”或工程绿灯替代证据质量
+1. V5-A：A002-A007 已完成；后续进入 V5-B 多模态资料扩展和按需的 V5-D 工程整合
+2. V5-B：在 Asset/Evidence 稳定内核上逐模态接入文档、Audio、Video 等资料，完成 Representation、ContentUnit、typed locator、Viewer、检索、删除和恢复
+3. V5-C：复用 V4 fixed Research executor，完成用户可用的多 Agent 计划、并行、审批、重试、恢复和 Artifact 体验
+4. V5-D：完成多模型、多模态、多 Agent 的混合 Workspace 整合和端到端工程回归
+5. V5-E：功能稳定后再运行 R803/后续模型质量评估和 M404；保留冻结失败证据，不覆盖或续跑 v1
 
 ## 6. 当前正在做什么
 
-当前：`R803 v5 已冻结 release threshold、scorer v2、raw-output 诊断和可恢复五轮 campaign runner。formal v1 已运行但在 round-01 完成前冻结失败：0/5 rounds、0/60 completed executions、engineering=fail、modelQuality=not_evaluable；只保留 plan/report/round-start 证据，安全 detail 仅记录 R803EvaluationError 类名，因此精确根因永久未知。future runner 已通过封闭 literal mapping 输出 allowlisted 内部错误码并完成 Critical review，但 v1 不得覆盖或续跑、v2 尚未获运行授权；v4 仍是最新可判读 provider 诊断样本。R803 保持 open，M404 继续 not_evaluable。`
+当前：`V5-A A002-A007 已完成并通过独立复审。A004/A005/A006 的 capability/index/Web 语义与 A007 跨层回归均已集成；下一步转入 V5-B 多模态资料扩展。开发环境 dev Turbopack 仍可能受 OS file-watch limit 影响，但 production-start Research E2E 五用例已通过。R803 formal v1 失败证据继续冻结，R803 v2 与 M404 暂不阻塞功能主线。`
 
-## 2026-07-30：R803 v5 formal campaign v1 失败证据
+## 2026-08-05：V5-A A007 cross-layer regression
+
+- 真实 Research provider drift 通过 `search_frozen_evidence` production path 验证：在 provider factory/reservation 前 fail-closed，保持 `research_provider_config_drift` / `409`；embedding mismatch 保留 `ResearchError(409)`、tool `error_code` 和 non-retryable policy。
+- Chat embedding mismatch 维持既有 HTTP `502` + detail-only body，不引入 Research envelope，不产生半保存消息；Citation/NoteSource/旧保存语义继续由既有全量回归覆盖。
+- Embedding index 新增多个 successful job newest-wins、finalize snapshot active contract 全字段断言；Worker Image 增加非空 fingerprint mismatch persistence gate；Web fixture 对齐完整 Research API snapshot DTO 并覆盖 proposed/approved/malformed profile。
+- 独立验收：API 全量 `480 passed, 4 skipped`；Worker 全量 `238 passed`；Web 全量 `113 passed`；TypeScript/lint/build/compileall/diff-check 通过；production-start `e2e/research-run.spec.ts` `5 passed`；Ruff `not-run`（executable unavailable）；API/Worker 与 Web reviewer `ACCEPT`。无 commit/push。
+
+## 2026-08-04：V5-A A006 Web frozen Research profile display
+
+- Web Research run detail 展示 frozen provider/model/profile fingerprint：approved run 读取 execution snapshot，未批准 plan 读取 proposed revision snapshot，并明确区分来源。
+- 已选 snapshot 不完整时 fail closed 为 unavailable；不读取 `planningExecution`，不 fallback 到另一 frozen layer 或当前 Workspace profile。Settings 仅展示 current server-selected profile。
+- 未新增 API/数据库字段、selector 或保存语义。Web focused `10 passed`、全量 `113 passed`，TypeScript、lint、production build、diff-check 通过；独立复审 `ACCEPT`。
+- Playwright fixture/assertion 已覆盖两种来源，但本机 Turbopack 因 OS file-watch limit 在页面启动前失败，未形成 DOM runtime 证据，留给 A007 处理。
+
+## 2026-08-04：V5-A A004 embedding index contract
+
+- 新增 `services/embedding_index.py`：active provider/model/dimensions/version/config_fingerprint 作为 index contract；fingerprint fail-closed。
+- `retrieve_content` 在 dense 检索前校验 current vectors；仅有不匹配向量时 raise `embedding_index_mismatch`（`ModelProviderError`），无 ready/current vectors 保持空结果。
+- latest successful job snapshot 含 fingerprint 时强制一致；legacy 缺字段兼容；cross-scope job pointer fail-closed。
+- Research evidence search 映射为 non-retryable `ResearchError(embedding_index_mismatch, 409)`；Chat public HTTP detail 仍为既有 provider 映射（A007 residual）。
+- `reindex_asset` 继续显式排队 `embed_chunks`，snapshot 使用 contract fields；settings 变化不自动 reindex，不改 schema/save 语义。
+- Focused tests：`test_embedding_index_contract.py` + Research evidence mapping regression；不 commit/push。
+
+## 2026-08-04：V5-A A005 Vision/ASR capability fail-closed errors
+
+- 新增 `services/capability_errors.py`：vision factory/readiness 统一使用 strip 语义，缺失配置在 provider HTTP 前返回 `image_caption_provider_not_configured`；ASR 永远返回 `capability_unavailable`，无 fallback。
+- `main.capability_status()` 提供 informational vision/ASR 状态，不改变 `/health/ready` 历史 body shape；worker 保留 `image_caption_configuration_mismatch`。
+- OpenAI/DeepSeek generation 与 embedding provider 及 readiness 对 `None`、空字符串、纯空白 key 统一 fail-closed，且测试确认不发起 HTTP、不泄漏 secret。
+- 独立验收：API focused `76 passed`，Worker image `8 passed`，compileall 与 `git diff --check` 通过；Ruff 缺失为 `not-run`；无 commit/push。
+
+## 2026-08-04：V5-A capability registry/profile 验收
+
+- A002 capability registry/profile 与 A003 DeepSeek generation 当前切片已实现；保留现有 provider/model/Research snapshot/save 字段和 Citation/NoteSource/Chat 语义，无迁移、无用户 selector、无自动 fallback。
+- DeepSeek 适配器支持 Chat-shaped system 提取到 Anthropic 顶层 `system`，支持文本和 data URL 图片映射；不支持的 part/远程图片 URL 在 HTTP 前 fail-closed。
+- Research v2 fingerprint、legacy dual-read、embedding evidence drift、ingestion snapshot fingerprint、image-caption worker 校验和 pepper 配置均有 focused regression。
+- 验证证据：API `431 passed, 4 skipped`；Worker `236 passed`；compileall 通过；`git diff --check` 通过；Ruff 因环境缺少 executable 未运行；独立复审 `ACCEPT`。
+- 已知残余风险：legacy fingerprint dual-read 按 cutover 设计不覆盖旧 preimage 未记录的 endpoint/secret/adapter/limit drift；Research evidence drift 测试仍需在 A007 直接调用真实 `search_frozen_evidence` 路径，避免只复现 gate 逻辑。
 
 - 在双 Critical review `ACCEPTED`、Worker `215 passed`、Ruff/compileall/BasedPyright、v1-v4 checksum、v5 hash binding 与确定性 60-case smoke 全绿后，通过唯一 formal 路径（`provider=None -> configured_provider()`）启动 `docs/evals/artifacts/r803-campaign-20260730-v1/`。
 - `round-01/round-start.json` 已在首个 provider 调用前持久化，attestation 为 `formal_configured_provider`、`formalEvidence=true`，provider/model/profile、package、threshold、scorer、prompt binding、55-module evaluator closure 与 plan hash 全部匹配。
@@ -193,24 +239,25 @@ V1、V2-A、阶段 9、V3 M401-M403B 与 V4 R000-R800 工程基线已完成。�
 
 ## 7. 下一步
 
-下一步：`保留 r803-campaign-20260730-v1 不可变失败证据；future runner 安全内部错误码与 Critical review 已完成，等待 Owner 明确决定是否批准在新目录执行 v2。M404 继续收集目标用户证据。`
+下一步：`先进入 V5-A Provider 与模型能力层，完成多模型 profile/capability contract 的设计评审；随后进入 V5-B 多模态资料扩展和 V5-C 多 Agent 协作产品化。R803/M404 作为 V5-E 后置验证保留。`
 
-具体建议从这些内容开始：
+具体实施原则：
 
-1. future runner 的 allowlisted、非机密内部错误码已通过独立 Critical review；不保存原始异常文本，`r803-campaign-report-v1` 结构不变。
-2. 未获得新的 Owner 授权前，不重跑 provider；v2 必须使用新目录，不能覆盖、续跑或替换 v1。
-3. M404 真实用户任务验证继续收集；结果未完成前产品继续作为内部预览。
-4. Audio/Video 仍按独立模态 adapter/locator/Viewer 立项，不和 V4 workflow 状态机混成一次迁移。
+1. 先检查当前 provider 事实和 R000 单 Run provider/model 合同，任何多模型持久化/API/save 语义变更先形成独立 V5 contract 和审批记录。
+2. 新模态必须逐个完成 modality brief、adapter、Representation、ContentUnit、typed locator、retrieval、Viewer、删除/恢复和权限测试。
+3. 多 Agent 复用 V4 fixed typed executor，不建设通用 Agent 平台；Quick Chat、Citation、NoteSource 和历史保存语义继续回归。
+4. 工程测试、contract test 和每个切片的 fixture 持续执行，但不把尚未完成的模型质量分数写成功能开发阻塞。
+5. R803 v1 不覆盖、不续跑、不替换；M404 阈值和协议不降低。
 
 ## 8. 当前不进入主线
 
 当前不进入主线：
 
-- 音频、视频的一次性全模态接入
-- 把 Omnilabel 标注/预测/数据集分析当作文件格式扩展
-- 复杂 Agent 编排平台
-- 多模型策略路由
-- 复杂权限系统
+- 一次性覆盖所有模态、没有 modality brief 和任务边界的全模态承诺
+- 把 Omnilabel 标注/预测/数据集分析当作普通文件格式扩展
+- 通用 Agent 平台、无限递归委派、自由插件市场或任意网络访问
+- 未经合同和审批的多模型持久化/API/save 语义变更
+- 复杂权限系统；只实现当前功能需要的 Workspace/Run 边界
 
 ## 9. 更新方式
 

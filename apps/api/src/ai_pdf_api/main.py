@@ -129,6 +129,12 @@ def _check_modality_catalog() -> str:
         return "failed"
 
 
+def _provider_secret_configured(secret: str | None) -> bool:
+    """Shared strip semantics with provider constructors: blank/whitespace is missing."""
+
+    return bool(secret and secret.strip())
+
+
 def _check_embedding_provider() -> str:
     try:
         if settings.embedding_provider == "ollama":
@@ -137,14 +143,15 @@ def _check_embedding_provider() -> str:
                 timeout=min(settings.embedding_timeout_seconds, 5.0),
             )
         else:
-            if not settings.openai_api_key:
+            # Do not call /models when the OpenAI embedding key is blank/whitespace.
+            if not _provider_secret_configured(settings.openai_api_key):
                 return "not_configured"
             base_url = settings.openai_api_base.rstrip("/")
             if not base_url.endswith("/v1"):
                 base_url = f"{base_url}/v1"
             response = httpx.get(
                 f"{base_url}/models",
-                headers={"Authorization": f"Bearer {settings.openai_api_key}"},
+                headers={"Authorization": f"Bearer {settings.openai_api_key.strip()}"},
                 timeout=min(settings.embedding_timeout_seconds, 5.0),
             )
         return "ok" if response.is_success else "failed"
@@ -153,18 +160,41 @@ def _check_embedding_provider() -> str:
 
 
 def _check_generation_provider() -> str:
-    return "ok" if settings.generation_provider == "openai" and settings.openai_api_key else "not_configured"
+    if settings.generation_provider == "openai":
+        return "ok" if _provider_secret_configured(settings.openai_api_key) else "not_configured"
+    if settings.generation_provider == "deepseek":
+        return "ok" if _provider_secret_configured(settings.deepseek_api_key) else "not_configured"
+    return "not_configured"
 
 
 def _check_image_caption_configuration() -> str:
-    configured = (
-        settings.image_caption_provider == "openai"
-        and bool(settings.image_caption_model.strip())
-        and bool(settings.image_caption_version.strip())
-        and bool(settings.openai_api_key and settings.openai_api_key.strip())
-        and bool(settings.openai_api_base.strip())
-    )
-    return "ok" if configured else "not_configured"
+    # Local vision/image-caption readiness only; never probe provider HTTP or expose secrets.
+    from ai_pdf_api.services.capability_errors import vision_readiness_status
+
+    status = vision_readiness_status()
+    if status == "ok":
+        # Keep the historical field-level guards so empty model/version/base still fail closed.
+        configured = (
+            settings.image_caption_provider == "openai"
+            and bool(settings.image_caption_model.strip())
+            and bool(settings.image_caption_version.strip())
+            and bool(settings.openai_api_key and settings.openai_api_key.strip())
+            and bool(settings.openai_api_base.strip())
+        )
+        return "ok" if configured else "not_configured"
+    return "not_configured"
+
+
+def capability_status() -> dict[str, str]:
+    """Bounded capability availability for operators; excluded from readiness hard-gate values."""
+
+    from ai_pdf_api.services.capability_errors import asr_capability_status, vision_readiness_status
+
+    vision = vision_readiness_status()
+    return {
+        "vision": "ok" if vision == "ok" else "not_configured",
+        "asr": asr_capability_status(),
+    }
 
 
 def readiness_checks() -> dict[str, str]:
@@ -196,6 +226,8 @@ def readiness(response: Response) -> dict[str, object]:
     ready = all(value == "ok" for value in checks.values())
     if not ready:
         response.status_code = status.HTTP_503_SERVICE_UNAVAILABLE
+    # Keep historical readiness body shape. capability_status() is the explicit
+    # vision/ASR status surface and must not hard-fail readiness on ASR=unavailable.
     return {"status": "ok" if ready else "not_ready", "service": "api", "checks": checks}
 
 

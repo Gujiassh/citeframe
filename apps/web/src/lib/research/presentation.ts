@@ -1,4 +1,50 @@
-import type { ResearchRunStatus, ResearchRunSummary, ResearchStepStatus } from "./types";
+import type {
+  ResearchProviderSnapshot,
+  ResearchRunDetail,
+  ResearchRunStatus,
+  ResearchRunSummary,
+  ResearchStepStatus,
+} from "./types";
+
+export type FrozenResearchProfile = {
+  source: "execution" | "proposed_revision";
+  snapshot: ResearchProviderSnapshot;
+};
+
+function isNonEmptyString(value: unknown): value is string {
+  return typeof value === "string" && value.trim().length > 0;
+}
+
+function isResearchProviderSnapshot(value: unknown): value is ResearchProviderSnapshot {
+  if (!value || typeof value !== "object") return false;
+  const snapshot = value as Record<string, unknown>;
+  return isNonEmptyString(snapshot.generationProvider)
+    && isNonEmptyString(snapshot.generationModel)
+    && isNonEmptyString(snapshot.embeddingProvider)
+    && isNonEmptyString(snapshot.embeddingModel)
+    && isNonEmptyString(snapshot.embeddingVersion)
+    && isNonEmptyString(snapshot.retrievalStrategy)
+    && Number.isInteger(snapshot.retrievalTopK)
+    && (snapshot.retrievalTopK as number) > 0
+    && typeof snapshot.providerConfigFingerprint === "string"
+    && /^[0-9a-f]{64}$/.test(snapshot.providerConfigFingerprint)
+    && (snapshot.pricingVersion === null || isNonEmptyString(snapshot.pricingVersion))
+    && isNonEmptyString(snapshot.dataBoundaryPolicyVersion);
+}
+
+export function getFrozenResearchProfile(run: ResearchRunDetail | null): FrozenResearchProfile | null {
+  if (!run) return null;
+
+  if (run.researchExecution !== undefined && run.researchExecution !== null) {
+    const snapshot = run.researchExecution.execution?.provider;
+    return isResearchProviderSnapshot(snapshot) ? { source: "execution", snapshot } : null;
+  }
+
+  if (run.plan?.status !== "proposed") return null;
+  const snapshot = run.plan.inputSnapshot?.proposedResearchExecution?.provider;
+  return isResearchProviderSnapshot(snapshot) ? { source: "proposed_revision", snapshot } : null;
+}
+
 
 export type WorkspaceQuestionMode = "quick" | "research";
 

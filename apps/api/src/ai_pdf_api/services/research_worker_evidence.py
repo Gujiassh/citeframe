@@ -22,7 +22,12 @@ from ai_pdf_api.models import (
     ResearchToolCall,
     ResearchToolCallInputHandle,
 )
-from ai_pdf_api.services.providers import EmbeddingProvider, get_embedding_provider
+from ai_pdf_api.services.embedding_index import EMBEDDING_INDEX_MISMATCH_CODE
+from ai_pdf_api.services.providers import (
+    EmbeddingProvider,
+    ModelProviderError,
+    get_embedding_provider,
+)
 from ai_pdf_api.services.research import (
     ResearchError,
     canonical_sha256,
@@ -227,7 +232,22 @@ def search_frozen_evidence(
             ).all()
         )
         return [_frozen_evidence_value(db, handle, branch_key=branch_key) for handle in handles]
-    provider = embedding_provider or get_embedding_provider()
+    if embedding_provider is None:
+        from ai_pdf_api.services.capabilities import matches_frozen_execution_fingerprint
+
+        if not matches_frozen_execution_fingerprint(
+            snapshot.provider_config_fingerprint,
+            retrieval_top_k=snapshot.retrieval_top_k,
+        ):
+            raise ResearchError(
+                "research_provider_config_drift",
+                "Actual provider capability profile does not match the frozen Research fingerprint.",
+                409,
+            )
+        provider = get_embedding_provider()
+    else:
+        # Explicit test-only/injected provider path: skip live capability fingerprint dual-read.
+        provider = embedding_provider
     if (
         provider.provider != snapshot.embedding_provider
         or provider.model != snapshot.embedding_model
@@ -341,6 +361,31 @@ def search_frozen_evidence(
             now=called_at,
         )
         return values
+    except ModelProviderError as error:
+        db.rollback()
+        call = db.get(ResearchToolCall, reservation.tool_call_id)
+        if error.code == EMBEDDING_INDEX_MISMATCH_CODE:
+            if call is not None and call.status in {"requested", "running"}:
+                complete_tool_call(
+                    db,
+                    tool_call_id=call.id,
+                    status="failed",
+                    error_code=error.code,
+                    error_message=error.message,
+                    now=called_at,
+                )
+            # Non-retryable configuration/index drift: preserve reindex-required meaning.
+            raise ResearchError(error.code, error.message, 409) from error
+        if call is not None and call.status in {"requested", "running"}:
+            complete_tool_call(
+                db,
+                tool_call_id=call.id,
+                status="failed",
+                error_code="tool_temporarily_unavailable",
+                error_message="Evidence search failed.",
+                now=called_at,
+            )
+        raise
     except Exception:
         db.rollback()
         call = db.get(ResearchToolCall, reservation.tool_call_id)

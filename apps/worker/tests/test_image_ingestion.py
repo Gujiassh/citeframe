@@ -415,6 +415,178 @@ def test_image_adapter_fails_before_persistence_on_caption_config_drift() -> Non
         engine.dispose()
 
 
+def test_image_adapter_ingest_fails_closed_on_mismatched_caption_profile_fingerprint() -> None:
+    """Non-empty snapshot fingerprint mismatch fails closed before image persistence."""
+
+    class FingerprintedCaptionProvider(StaticCaptionProvider):
+        config_fingerprint = "b" * 64
+
+    engine = create_engine(
+        "sqlite://",
+        connect_args={"check_same_thread": False},
+        poolclass=StaticPool,
+        future=True,
+    )
+    Base.metadata.create_all(bind=engine)
+    now = datetime.now(UTC)
+    source = IMAGE_FIXTURE.read_bytes()
+    try:
+        with Session(engine) as db:
+            asset = Asset(
+                workspace_id="workspace-image-fingerprint-mismatch",
+                created_by_user_id="user-image-fingerprint-mismatch",
+                asset_kind="image",
+                title="Image fingerprint mismatch",
+                source_filename=IMAGE_FIXTURE.name,
+                object_key=(
+                    "workspaces/workspace-image-fingerprint-mismatch/assets/source/original.png"
+                ),
+                mime_type="image/png",
+                byte_size=len(source),
+                source_sha256=sha256(source).hexdigest(),
+                status="parsing",
+                current_processing_generation=1,
+                current_index_version=1,
+                created_at=now,
+                updated_at=now,
+            )
+            db.add(asset)
+            db.flush()
+            adapter = ImageIngestionAdapter(
+                caption_provider=FingerprintedCaptionProvider(),
+                ocr_extractor=_fixture_ocr,
+            )
+
+            with pytest.raises(ModelProviderError) as captured:
+                adapter.ingest(
+                    db,
+                    asset=asset,
+                    payload=source,
+                    processing_generation=1,
+                    config_snapshot={
+                        **_caption_config(),
+                        "imageCaptionProfileFingerprint": "a" * 64,
+                    },
+                    created_at=now,
+                )
+
+            assert captured.value.code == "image_caption_configuration_mismatch"
+            assert db.scalars(
+                select(AssetRepresentation).where(AssetRepresentation.asset_id == asset.id)
+            ).all() == []
+            assert db.scalars(
+                select(ContentUnit).where(ContentUnit.asset_id == asset.id)
+            ).all() == []
+    finally:
+        Base.metadata.drop_all(bind=engine)
+        engine.dispose()
+
+
+def test_image_adapter_rejects_missing_or_empty_caption_profile_fingerprint() -> None:
+    from ai_pdf_api.services.providers import ModelProviderError
+    from ai_pdf_worker.image_ingestion import _validate_caption_config
+
+    class Provider:
+        provider = "openai"
+        model = "gpt-5.5"
+        version = "image-caption-v1"
+        detail = "high"
+        max_output_tokens = 320
+        config_fingerprint = ""
+
+    snapshot = {
+        "imageCaptionProvider": "openai",
+        "imageCaptionModel": "gpt-5.5",
+        "imageCaptionVersion": "image-caption-v1",
+        "imageCaptionDetail": "high",
+        "imageCaptionMaxOutputTokens": 320,
+        "imageCaptionProfileFingerprint": "a" * 64,
+    }
+    with pytest.raises(ModelProviderError) as captured:
+        _validate_caption_config(snapshot, Provider())
+    assert captured.value.code == "image_caption_configuration_mismatch"
+
+    class MatchingProvider(Provider):
+        config_fingerprint = "a" * 64
+
+    _validate_caption_config(snapshot, MatchingProvider())
+
+    legacy = {
+        "imageCaptionProvider": "openai",
+        "imageCaptionModel": "gpt-5.5",
+        "imageCaptionVersion": "image-caption-v1",
+        "imageCaptionDetail": "high",
+        "imageCaptionMaxOutputTokens": 320,
+    }
+    _validate_caption_config(legacy, Provider())
+
+
+def test_image_adapter_required_caption_failure_preserves_not_configured_code() -> None:
+    """Caption is required; stable image_caption_provider_not_configured must surface as-is."""
+
+    from ai_pdf_api.services.providers import ModelProviderError
+
+    class NotConfiguredCaptionProvider(StaticCaptionProvider):
+        def caption(self, payload: bytes, *, content_type: str) -> str:
+            del payload, content_type
+            raise ModelProviderError(
+                "image_caption_provider_not_configured",
+                "OpenAI image caption API key is not configured.",
+            )
+
+    engine = create_engine(
+        "sqlite://",
+        connect_args={"check_same_thread": False},
+        poolclass=StaticPool,
+        future=True,
+    )
+    Base.metadata.create_all(bind=engine)
+    now = datetime.now(UTC)
+    source = IMAGE_FIXTURE.read_bytes()
+    try:
+        with Session(engine) as db:
+            asset = Asset(
+                workspace_id="workspace-image-not-configured",
+                created_by_user_id="user-image-not-configured",
+                asset_kind="image",
+                title="Image caption not configured",
+                source_filename=IMAGE_FIXTURE.name,
+                object_key=(
+                    "workspaces/workspace-image-not-configured/assets/source/original.png"
+                ),
+                mime_type="image/png",
+                byte_size=len(source),
+                source_sha256=sha256(source).hexdigest(),
+                status="parsing",
+                current_processing_generation=1,
+                current_index_version=1,
+                created_at=now,
+                updated_at=now,
+            )
+            db.add(asset)
+            db.flush()
+            adapter = ImageIngestionAdapter(
+                caption_provider=NotConfiguredCaptionProvider(),
+                ocr_extractor=_fixture_ocr,
+            )
+            with pytest.raises(ModelProviderError) as captured:
+                adapter.ingest(
+                    db,
+                    asset=asset,
+                    payload=source,
+                    processing_generation=1,
+                    config_snapshot=_caption_config(),
+                    created_at=now,
+                )
+            assert captured.value.code == "image_caption_provider_not_configured"
+            assert db.scalars(
+                select(AssetRepresentation).where(AssetRepresentation.asset_id == asset.id)
+            ).all() == []
+    finally:
+        Base.metadata.drop_all(bind=engine)
+        engine.dispose()
+
+
 def test_image_adapter_reports_ocr_failure_before_caption_or_persistence() -> None:
     engine = create_engine(
         "sqlite://",

@@ -55,6 +55,10 @@ from ai_pdf_api.services.research_worker_lease import (
     _locked_attempt,
     _locked_attempt_chain,
 )
+from ai_pdf_api.services.research_worker_policy import (
+    is_transient_failure,
+    normalize_failure_code,
+)
 
 
 @pytest.mark.parametrize(
@@ -876,3 +880,10 @@ def test_mark_provider_call_sent_rejects_after_run_cancellation(research_worker_
     assert call is not None and call.status == "reserved"
     assert fixture.ledger.reserved_provider_calls == 1
     assert fixture.ledger.actual_provider_calls == 0
+
+def test_embedding_index_mismatch_is_non_retryable_failure_code() -> None:
+    reason = normalize_failure_code("embedding_index_mismatch")
+    assert reason == "embedding_index_mismatch"
+    assert is_transient_failure(reason) is False
+    # Generic unmapped codes remain non-retryable execution failures.
+    assert is_transient_failure(normalize_failure_code("some_unknown_code")) is False

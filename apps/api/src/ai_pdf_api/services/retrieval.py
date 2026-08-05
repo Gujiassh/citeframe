@@ -25,6 +25,10 @@ from ai_pdf_api.models import (
     ContentUnitEmbedding,
     EvidenceLocator,
 )
+from ai_pdf_api.services.embedding_index import (
+    assert_current_embeddings_match_contract,
+    resolve_embedding_index_contract,
+)
 from ai_pdf_api.services.providers import EmbeddingProvider
 
 logger = logging.getLogger(__name__)
@@ -107,11 +111,17 @@ def retrieve_content(
         raise ValueError("limit must be positive")
     if asset_ids == []:
         return []
-    provider = embedding_provider
-    provider_name = provider.provider if provider is not None else settings.embedding_provider
-    provider_model = provider.model if provider is not None else settings.embedding_model
-    provider_version = provider.version if provider is not None else settings.embedding_version
-    provider_dimensions = provider.dimensions if provider is not None else settings.embedding_dimensions
+    contract = resolve_embedding_index_contract(embedding_provider)
+    assert_current_embeddings_match_contract(
+        db,
+        workspace_id,
+        contract,
+        asset_ids=asset_ids,
+    )
+    provider_name = contract.provider
+    provider_model = contract.model
+    provider_version = contract.version
+    provider_dimensions = contract.dimensions
 
     statement = retrieval_scope_statement(workspace_id, asset_ids, TEXT_CHANNEL)
     if db.bind is not None and db.bind.dialect.name == "sqlite":

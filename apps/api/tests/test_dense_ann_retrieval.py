@@ -403,6 +403,8 @@ def test_dense_replenishes_duplicate_locations_with_a_larger_ranked_window(
     monkeypatch.setattr(retrieval, "_candidates", build_candidates)
     db = SimpleNamespace(
         bind=SimpleNamespace(dialect=SimpleNamespace(name="postgresql")),
+        # Unit test has no SQL contract rows; A004 gate treats None as empty scope.
+        scalar=lambda *_args, **_kwargs: None,
     )
 
     result = retrieval.retrieve_content(

@@ -136,6 +136,8 @@ def _validate_caption_config(
     snapshot: Mapping[str, object],
     provider: ImageCaptionProvider,
 ) -> None:
+    from ai_pdf_api.services.capabilities import require_matching_snapshot_fingerprint
+
     expected = {
         "imageCaptionProvider": provider.provider,
         "imageCaptionModel": provider.model,
@@ -148,3 +150,11 @@ def _validate_caption_config(
             "image_caption_configuration_mismatch",
             "Image caption provider configuration does not match the job snapshot.",
         )
+    require_matching_snapshot_fingerprint(
+        snapshot,
+        field_name="imageCaptionProfileFingerprint",
+        actual_fingerprint=getattr(provider, "config_fingerprint", None),
+        error_code="image_caption_configuration_mismatch",
+        error_message="Image caption provider configuration does not match the job snapshot.",
+        error_cls=ModelProviderError,
+    )

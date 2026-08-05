@@ -7,6 +7,7 @@ from ai_pdf_api.models import (
     IngestionJob,
     WorkspaceMembership,
 )
+from ai_pdf_api.services.embedding_index import resolve_embedding_index_contract
 from asset_router_test_support import (
     create_asset,
     create_user,
@@ -281,6 +282,18 @@ def test_binary_upload_and_finalize_creates_queued_ingestion_job(
     assert job is not None
     assert job.asset_id == asset_id
     assert job.job_type == "ingest"
+    assert job.config_snapshot is not None
+    assert job.config_snapshot["source"] == "finalize_upload"
+
+    active_contract = resolve_embedding_index_contract()
+    assert job.config_snapshot["embeddingProvider"] == active_contract.provider
+    assert job.config_snapshot["embeddingModel"] == active_contract.model
+    assert job.config_snapshot["embeddingDimensions"] == active_contract.dimensions
+    assert job.config_snapshot["embeddingVersion"] == active_contract.version
+    assert (
+        job.config_snapshot["embeddingProfileFingerprint"]
+        == active_contract.config_fingerprint
+    )
 
 
 def test_binary_upload_rejects_size_mismatch(

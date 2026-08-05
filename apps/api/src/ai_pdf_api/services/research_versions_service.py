@@ -24,17 +24,30 @@ from ai_pdf_api.services.research_prompt_provenance import (
 from sqlalchemy.orm import Session
 
 
-def _profile_fingerprint() -> str:
-    return canonical_sha256(
-        {
-            "generationProvider": settings.generation_provider,
-            "generationModel": settings.generation_model,
-            "embeddingProvider": settings.embedding_provider,
-            "embeddingModel": settings.embedding_model,
-            "embeddingVersion": settings.embedding_version,
-            "retrievalStrategy": settings.retrieval_strategy,
-            "dataBoundaryPolicyVersion": DATA_BOUNDARY_POLICY,
-        }
+def _profile_fingerprint(*, retrieval_top_k: int | None = None) -> str:
+    from ai_pdf_api.services.capabilities import current_execution_profile_fingerprint
+
+    # New revisions always write the v2 capability execution fingerprint.
+    # Historical frozen fingerprints are dual-read at approval/reservation time.
+    return current_execution_profile_fingerprint(retrieval_top_k=retrieval_top_k)
+
+
+def _legacy_profile_fingerprint() -> str:
+    from ai_pdf_api.services.capabilities import legacy_execution_profile_fingerprint
+
+    return legacy_execution_profile_fingerprint()
+
+
+def _matches_frozen_profile_fingerprint(
+    frozen_fingerprint: str,
+    *,
+    retrieval_top_k: int | None = None,
+) -> bool:
+    from ai_pdf_api.services.capabilities import matches_frozen_execution_fingerprint
+
+    return matches_frozen_execution_fingerprint(
+        frozen_fingerprint,
+        retrieval_top_k=retrieval_top_k,
     )
 
 

@@ -7,6 +7,130 @@ const runId = "e2e-research-run";
 const decisionId = "e2e-plan-decision";
 const now = "2026-07-27T00:00:00Z";
 
+const researchQuestion = "Compare the frozen evidence and identify conflicts.";
+const workflowVersionId = "research-workflow-v1";
+const plannerPromptVersionId = "planner-prompt-v1";
+const planningSnapshotSha = "e".repeat(64);
+const executionSnapshotId = "e2e-research-execution";
+const executionSnapshotSha = "f".repeat(64);
+const planArtifactId = "plan-artifact";
+const planArtifactSha = "a".repeat(64);
+
+function providerSnapshot(generationModel: string) {
+  return {
+    generationProvider: "scripted",
+    generationModel,
+    embeddingProvider: "scripted",
+    embeddingModel: "fixture-embedding",
+    embeddingVersion: "v1",
+    retrievalStrategy: "hybrid",
+    retrievalTopK: 6,
+    providerConfigFingerprint: "a".repeat(64),
+    pricingVersion: null,
+    dataBoundaryPolicyVersion: "v1",
+  };
+}
+
+function frozenAssetScope() {
+  return {
+    frozenAt: now,
+    assets: [{
+      assetId,
+      assetKind: "pdf",
+      assetTitle: "Research Fixture",
+      processingGeneration: 1,
+      indexVersion: 1,
+    }],
+  };
+}
+
+function planningBudgetLimits() {
+  return {
+    maxProviderCalls: 2,
+    maxInputTokens: 32000,
+    maxOutputTokens: 8000,
+    maxCost: { currency: "USD", amountMicros: 500000 },
+    plannerTimeoutSeconds: 300,
+    providerTimeoutSeconds: 120,
+    maxPlannerAttempts: 3,
+  };
+}
+
+function researchBudgetLimits() {
+  return {
+    maxProviderCalls: 32,
+    maxToolCalls: 64,
+    maxInputTokens: 250000,
+    maxOutputTokens: 64000,
+    maxCost: { currency: "USD", amountMicros: 5000000 },
+    maxParallelResearchers: 3,
+    runTimeoutSeconds: 1800,
+    stepTimeoutSeconds: 300,
+    providerTimeoutSeconds: 120,
+    maxAttemptsPerStep: 3,
+  };
+}
+
+function researchPromptVersions() {
+  return [
+    { nodeKey: "planner", promptVersionId: plannerPromptVersionId },
+    { nodeKey: "researchers", promptVersionId: "researchers-prompt-v1" },
+    { nodeKey: "verifier", promptVersionId: "verifier-prompt-v1" },
+    { nodeKey: "critic", promptVersionId: "critic-prompt-v1" },
+    { nodeKey: "synthesizer", promptVersionId: "synthesizer-prompt-v1" },
+  ];
+}
+
+function planningExecutionSnapshot(generationModel: string) {
+  return {
+    workflowVersionId,
+    plannerPromptVersionId,
+    provider: providerSnapshot(generationModel),
+    budgetPolicyVersion: "research-budget-v1",
+    retryPolicyVersion: "research-retry-v1",
+    limits: planningBudgetLimits(),
+  };
+}
+
+function executionConfigSnapshot(generationModel: string) {
+  return {
+    workflowVersionId,
+    promptVersions: researchPromptVersions(),
+    provider: providerSnapshot(generationModel),
+    budgetPolicyVersion: "research-budget-v1",
+    retryPolicyVersion: "research-retry-v1",
+    limits: researchBudgetLimits(),
+  };
+}
+
+function planningInputSnapshot(proposedGenerationModel: string) {
+  return {
+    revisionNumber: 1,
+    question: researchQuestion,
+    requestedAssetScope: { mode: "all_ready" },
+    planningAssetScope: frozenAssetScope(),
+    planningExecution: planningExecutionSnapshot("fixture-planning-generation"),
+    proposedResearchExecution: executionConfigSnapshot(proposedGenerationModel),
+    snapshotSha256: planningSnapshotSha,
+    frozenAt: now,
+  };
+}
+
+function approvedResearchExecutionSnapshot() {
+  return {
+    id: executionSnapshotId,
+    inputVersion: 1,
+    approvalDecisionId: decisionId,
+    approvedPlanArtifactId: planArtifactId,
+    approvedPlanArtifactSha256: planArtifactSha,
+    question: researchQuestion,
+    frozenAssetScope: frozenAssetScope(),
+    execution: executionConfigSnapshot("fixture-frozen-generation"),
+    snapshotSha256: executionSnapshotSha,
+    createdAt: now,
+  };
+}
+
 const workspace = {
   id: workspaceId,
   name: "Research Evidence Workspace",
@@ -50,7 +174,7 @@ function summary(status: string, stateVersion: number, currentEventSeq: number) 
     id: runId,
     workspaceId,
     createdByUserId: "e2e-user",
-    question: "Compare the frozen evidence and identify conflicts.",
+    question: researchQuestion,
     status,
     stateVersion,
     requestedAssetScope: { mode: "all_ready" },
@@ -70,20 +194,11 @@ function detail(status: string, stateVersion: number, currentEventSeq: number) {
   const approved = status === "queued";
   return {
     ...summary(status, stateVersion, currentEventSeq),
-    frozenAssetScope: {
-      frozenAt: now,
-      assets: [{
-        assetId,
-        assetKind: "pdf",
-        assetTitle: "Research Fixture",
-        processingGeneration: 1,
-        indexVersion: 1,
-      }],
-    },
+    frozenAssetScope: frozenAssetScope(),
     plan: {
       version: 1,
       status: approved ? "approved" : "proposed",
-      inputSnapshot: {},
+      inputSnapshot: planningInputSnapshot("fixture-revision-generation"),
       summary: "Compare the source claims, verify support, and report unresolved conflicts.",
       subproblems: [
         { id: "subproblem-1", order: 0, question: "What claims are directly supported?", assetIds: [assetId], expectedEvidence: ["Typed locators"] },
@@ -106,7 +221,7 @@ function detail(status: string, stateVersion: number, currentEventSeq: number) {
       createdAt: now,
       approvedAt: approved ? now : null,
     },
-    researchExecution: approved ? {} : null,
+    researchExecution: approved ? approvedResearchExecutionSnapshot() : null,
     planningUsage: {
       providerCalls: 1,
       toolCalls: 0,
@@ -163,9 +278,9 @@ function detail(status: string, stateVersion: number, currentEventSeq: number) {
       status: "pending",
       requestNumber: 1,
       stateVersion: 1,
-      inputArtifactId: "plan-artifact",
-      inputArtifactSha256: "a".repeat(64),
-      inputSnapshotSha256: "b".repeat(64),
+      inputArtifactId: planArtifactId,
+      inputArtifactSha256: planArtifactSha,
+      inputSnapshotSha256: planningSnapshotSha,
       requestedAt: now,
       expiresAt: null,
       decidedByUserId: null,
@@ -185,7 +300,7 @@ function detail(status: string, stateVersion: number, currentEventSeq: number) {
 type MockResearchOptions = {
   sessionUserId?: string;
   initialCreated?: boolean;
-  scenario?: "plan" | "conflict";
+  scenario?: "plan" | "conflict" | "malformed";
 };
 
 const conflictArtifactId = "e2e-conflict-artifact";
@@ -231,6 +346,20 @@ function conflictDetail() {
     decidedAt: null,
   }];
   run.artifactCount = 2;
+  return run;
+}
+
+function malformedDetail() {
+  const run = detail("awaiting_plan_approval", 3, 3);
+  run.researchExecution = null;
+  // Intentionally incomplete selected frozen provider; cast keeps the payload malformed for fail-closed UI.
+  run.plan.inputSnapshot = {
+    ...planningInputSnapshot("fixture-revision-generation"),
+    proposedResearchExecution: {
+      ...executionConfigSnapshot("fixture-revision-generation"),
+      provider: { generationProvider: "scripted" },
+    },
+  } as unknown as typeof run.plan.inputSnapshot;
   return run;
 }
 
@@ -362,7 +491,9 @@ async function mockWorkspace(page: Page, options: MockResearchOptions = {}) {
     if (pathname === `${base}/${runId}`) {
       const run = scenario === "conflict"
         ? conflictDetail()
-        : detail(approved ? "queued" : "awaiting_plan_approval", approved ? 4 : 3, approved ? 4 : 3);
+        : scenario === "malformed"
+          ? malformedDetail()
+          : detail(approved ? "queued" : "awaiting_plan_approval", approved ? 4 : 3, approved ? 4 : 3);
       await route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({ run }) });
       return;
     }
@@ -390,11 +521,13 @@ for (const viewport of [
     await expect(researchTab).toHaveAttribute("aria-selected", "true");
     const composer = page.getByPlaceholder(/多步骤查证|multi-step evidence/i);
     await expect(composer).toBeEnabled();
-    await composer.fill("Compare the frozen evidence and identify conflicts.");
+    await composer.fill(researchQuestion);
     await page.getByRole("button", { name: /开始研究|start research/i }).click();
 
     await expect(page.getByRole("heading", { name: /Compare the frozen evidence/i })).toBeVisible();
     await expect(page.getByText(/研究计划 v1|Research plan v1/i)).toBeVisible();
+    await expect(page.getByText(/计划 revision 冻结快照|Proposed plan revision snapshot/i)).toBeVisible();
+    await expect(page.getByText("scripted / fixture-revision-generation", { exact: true })).toBeVisible();
     await expect(page.getByText(/制定研究计划|Draft research plan/i)).toBeVisible();
     await expect(page.getByText(/冻结范围|Frozen scope/i)).toBeVisible();
     await expect(page.getByText("Research Fixture", { exact: true })).toBeVisible();
@@ -404,12 +537,14 @@ for (const viewport of [
     expect(requests.createRequests).toHaveLength(1);
     expect(requests.createRequests[0].idempotencyKey).toBeTruthy();
     expect(requests.createRequests[0].body).toMatchObject({
-      question: "Compare the frozen evidence and identify conflicts.",
+      question: researchQuestion,
       assetScope: { mode: "all_ready" },
     });
 
     await page.getByRole("button", { name: /批准计划|approve plan/i }).click();
     await expect(page.getByText(/已排队|Queued/i).first()).toBeVisible();
+    await expect(page.getByText(/Run execution 冻结快照|Run execution snapshot/i)).toBeVisible();
+    await expect(page.getByText("scripted / fixture-frozen-generation", { exact: true })).toBeVisible();
     expect(requests.approvalRequests).toHaveLength(1);
     expect(requests.approvalRequests[0].idempotencyKey).toBeTruthy();
     expect(requests.approvalRequests[0].body).toMatchObject({ action: "approve", revision: null });
@@ -445,4 +580,18 @@ test("Conflict actions wait for the exact Decision-bound report", async ({ page 
   await expect(page.getByText("The source reports both 12% and 18% for the same frozen metric.")).toBeVisible();
   await expect(page.getByText(/关联 1 条证据|1 linked evidence/i)).toBeVisible();
   await expect(page.getByRole("button", { name: /排除冲突结论|exclude conflicted claims/i })).toBeVisible();
+});
+
+test("Malformed selected frozen profile stays unavailable", async ({ page }) => {
+  await page.setViewportSize({ width: 1280, height: 800 });
+  await mockWorkspace(page, { initialCreated: true, scenario: "malformed" });
+  await page.goto(`/workspaces/${workspaceId}`);
+  await page.getByRole("tab", { name: /深度研究|research/i }).click();
+
+  await expect(page.getByText(/研究计划 v1|Research plan v1/i)).toBeVisible();
+  await expect(page.getByText(/冻结 profile 不可用|Frozen profile unavailable/i)).toBeVisible();
+  await expect(page.getByText(/计划 revision 冻结快照|Proposed plan revision snapshot/i)).toHaveCount(0);
+  await expect(page.getByText(/Run execution 冻结快照|Run execution snapshot/i)).toHaveCount(0);
+  await expect(page.getByText("scripted / fixture-revision-generation", { exact: true })).toHaveCount(0);
+  await expect(page.getByText("scripted / fixture-planning-generation", { exact: true })).toHaveCount(0);
 });

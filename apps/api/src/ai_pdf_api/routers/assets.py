@@ -12,6 +12,8 @@ from sqlalchemy import case, func, select
 from sqlalchemy.orm import Session
 
 from ai_pdf_api.core.settings import settings
+from ai_pdf_api.services.capabilities import embedding_profile_snapshot_fields
+from ai_pdf_api.services.embedding_index import embedding_index_job_snapshot_fields
 from ai_pdf_api.db.session import get_db
 from ai_pdf_api.modalities.registry import ModalityContractError, build_production_registry
 from ai_pdf_api.models import (
@@ -141,11 +143,8 @@ def build_ingest_job(
 ) -> IngestionJob:
     config_snapshot: dict[str, object] = {
         "source": source,
-        "embeddingProvider": settings.embedding_provider,
-        "embeddingModel": settings.embedding_model,
-        "embeddingDimensions": settings.embedding_dimensions,
-        "embeddingVersion": settings.embedding_version,
         "chunkSize": chunk_size,
+        **embedding_profile_snapshot_fields(),
     }
     config_snapshot.update(modality_registry.ingestion_config_snapshot(asset_kind))
     return IngestionJob(
@@ -743,11 +742,8 @@ def reindex_asset(
         attempt_count=1,
         config_snapshot={
             "source": "reindex",
-            "embeddingProvider": settings.embedding_provider,
-            "embeddingModel": settings.embedding_model,
-            "embeddingDimensions": settings.embedding_dimensions,
-            "embeddingVersion": settings.embedding_version,
             "chunkSize": workspace.chunk_size,
+            **embedding_index_job_snapshot_fields(),
         },
         requested_by_user_id=user.id,
         queued_at=now,

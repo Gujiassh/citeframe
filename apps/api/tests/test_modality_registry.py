@@ -122,13 +122,14 @@ def test_test_only_modality_extends_protocol_without_changing_production_modules
 def test_image_module_owns_caption_job_config_without_changing_shared_registry() -> None:
     registry = build_production_registry()
 
-    assert registry.ingestion_config_snapshot("image") == {
-        "imageCaptionProvider": "openai",
-        "imageCaptionModel": "gpt-5.5",
-        "imageCaptionVersion": "image-caption-v1",
-        "imageCaptionDetail": "high",
-        "imageCaptionMaxOutputTokens": 320,
-    }
+    snapshot = registry.ingestion_config_snapshot("image")
+    assert snapshot["imageCaptionProvider"] == "openai"
+    assert snapshot["imageCaptionModel"] == "gpt-5.5"
+    assert snapshot["imageCaptionVersion"] == "image-caption-v1"
+    assert snapshot["imageCaptionDetail"] == "high"
+    assert snapshot["imageCaptionMaxOutputTokens"] == 320
+    assert isinstance(snapshot["imageCaptionProfileFingerprint"], str)
+    assert len(snapshot["imageCaptionProfileFingerprint"]) == 64
     assert registry.ingestion_config_snapshot("pdf") == {}
 
 

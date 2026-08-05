@@ -9,6 +9,11 @@ import httpx
 
 from ai_pdf_api.core.metrics import observe_provider_request
 from ai_pdf_api.core.settings import settings
+from ai_pdf_api.services.capabilities import vision_profile_snapshot_fields
+from ai_pdf_api.services.capability_errors import (
+    normalize_vision_api_key,
+    require_configured_vision_profile,
+)
 from ai_pdf_api.services.providers import ModelProviderError
 
 logger = logging.getLogger(__name__)
@@ -20,6 +25,7 @@ class ImageCaptionProvider(Protocol):
     version: str
     detail: str
     max_output_tokens: int
+    config_fingerprint: str
 
     def caption(self, payload: bytes, *, content_type: str) -> str: ...
 
@@ -45,10 +51,12 @@ class OpenAIImageCaptionProvider:
         self.version = version
         self.detail = detail
         self.max_output_tokens = max_output_tokens
-        self._api_key = api_key
+        # Blank/whitespace-only keys normalize to None so preflight matches readiness.
+        self._api_key = normalize_vision_api_key(api_key)
         self._api_base = _normalize_openai_base(api_base)
         self._timeout_seconds = timeout_seconds
         self._client = client
+        self.config_fingerprint = ""
 
     def caption(self, payload: bytes, *, content_type: str) -> str:
         if content_type != "image/png" or not payload:
@@ -56,12 +64,13 @@ class OpenAIImageCaptionProvider:
                 "image_caption_input_invalid",
                 "Image caption provider requires a non-empty canonical PNG.",
             )
+        # Fail closed before metrics/HTTP so missing/blank secrets never leave the process.
+        if normalize_vision_api_key(self._api_key) is None:
+            raise ModelProviderError(
+                "image_caption_provider_not_configured",
+                "OpenAI image caption API key is not configured.",
+            )
         with observe_provider_request(self.provider, "image_caption"):
-            if not self._api_key:
-                raise ModelProviderError(
-                    "image_caption_provider_not_configured",
-                    "OpenAI image caption API key is not configured.",
-                )
             encoded = base64.b64encode(payload).decode("ascii")
             response = self._post(
                 f"{self._api_base}/responses",
@@ -143,25 +152,24 @@ class OpenAIImageCaptionProvider:
 
 
 def get_image_caption_provider() -> ImageCaptionProvider:
-    return OpenAIImageCaptionProvider(
+    # Production factory only. Tests inject ImageCaptionProvider fakes and skip this path.
+    profile = require_configured_vision_profile()
+    provider = OpenAIImageCaptionProvider(
         model=settings.image_caption_model,
         version=settings.image_caption_version,
         detail=settings.image_caption_detail,
-        api_key=settings.openai_api_key,
+        api_key=normalize_vision_api_key(settings.openai_api_key),
         api_base=settings.openai_api_base,
         timeout_seconds=settings.image_caption_timeout_seconds,
         max_output_tokens=settings.image_caption_max_output_tokens,
     )
+    provider.config_fingerprint = profile.config_fingerprint
+    setattr(provider, "capability_profile", profile)
+    return provider
 
 
 def image_caption_config_snapshot() -> dict[str, object]:
-    return {
-        "imageCaptionProvider": settings.image_caption_provider,
-        "imageCaptionModel": settings.image_caption_model,
-        "imageCaptionVersion": settings.image_caption_version,
-        "imageCaptionDetail": settings.image_caption_detail,
-        "imageCaptionMaxOutputTokens": settings.image_caption_max_output_tokens,
-    }
+    return vision_profile_snapshot_fields()
 
 
 def _normalize_openai_base(api_base: str) -> str:

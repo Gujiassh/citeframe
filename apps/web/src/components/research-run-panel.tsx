@@ -18,7 +18,7 @@ import remarkGfm from "remark-gfm";
 import { getLocatorSummary } from "@/lib/evidence/types";
 import { useTranslation, type TranslationKey } from "@/lib/i18n-context";
 import { getResearchArtifactContentUrl } from "@/lib/research/client";
-import { RUN_STATUS_KEYS, STEP_KIND_KEYS, STEP_STATUS_KEYS } from "@/lib/research/presentation";
+import { getFrozenResearchProfile, RUN_STATUS_KEYS, STEP_KIND_KEYS, STEP_STATUS_KEYS } from "@/lib/research/presentation";
 import type { ResearchStreamState } from "@/lib/use-research";
 import type {
   ResearchArtifactDetail,
@@ -116,6 +116,7 @@ export function ResearchRunPanel({
     && conflictArtifactDetail.kind === "conflict_report",
   );
   const streamKey = streamStatusKey(streamState);
+  const frozenProfile = getFrozenResearchProfile(run);
   const submitRevision = () => {
     if (!revisionQuestion.trim() || !revisionComment.trim()) return;
     onRevisePlan(revisionQuestion.trim(), revisionComment.trim());
@@ -165,6 +166,33 @@ export function ResearchRunPanel({
       </header>
 
       {error ? <p role="alert" className="py-3 text-xs text-red-600 dark:text-red-400">{error}</p> : null}
+
+      <section className="border-y border-border py-4">
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <h4 className="text-xs font-semibold text-zinc-950 dark:text-white">{t("research.frozenProfile")}</h4>
+          {frozenProfile ? <span className="text-[10px] text-zinc-500">{t(frozenProfile.source === "execution" ? "research.frozenProfileSourceExecution" : "research.frozenProfileSourceProposedRevision")}</span> : null}
+        </div>
+        {frozenProfile ? (
+          <dl className="mt-3 grid grid-cols-1 gap-x-5 gap-y-3 text-xs sm:grid-cols-2">
+            <div>
+              <dt className="text-[10px] font-semibold text-zinc-500">{t("research.generationProviderModel")}</dt>
+              <dd className="mt-1 break-all font-mono text-[10px] text-zinc-800 dark:text-zinc-200">{frozenProfile.snapshot.generationProvider} / {frozenProfile.snapshot.generationModel}</dd>
+            </div>
+            <div>
+              <dt className="text-[10px] font-semibold text-zinc-500">{t("research.embeddingProviderModel")}</dt>
+              <dd className="mt-1 break-all font-mono text-[10px] text-zinc-800 dark:text-zinc-200">{frozenProfile.snapshot.embeddingProvider} / {frozenProfile.snapshot.embeddingModel}</dd>
+            </div>
+            <div>
+              <dt className="text-[10px] font-semibold text-zinc-500">{t("research.embeddingVersion")}</dt>
+              <dd className="mt-1 font-mono text-[10px] text-zinc-800 dark:text-zinc-200">{frozenProfile.snapshot.embeddingVersion}</dd>
+            </div>
+            <div>
+              <dt className="text-[10px] font-semibold text-zinc-500">{t("research.profileFingerprint")}</dt>
+              <dd className="mt-1 break-all font-mono text-[10px] text-zinc-800 dark:text-zinc-200">{frozenProfile.snapshot.providerConfigFingerprint.slice(0, 12)}</dd>
+            </div>
+          </dl>
+        ) : <p className="mt-2 text-xs text-zinc-500">{t("research.frozenProfileUnavailable")}</p>}
+      </section>
 
       {run.plan ? (
         <section className="py-5">

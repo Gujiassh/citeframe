@@ -512,14 +512,15 @@ def test_retry_failed_asset_creates_new_ingestion_job(
     retried_job = asset_db_session.get(IngestionJob, payload["job"]["id"])
     refreshed_asset = asset_db_session.get(Asset, asset.id)
     assert retried_job is not None
-    assert retried_job.config_snapshot == {
-        "source": "retry",
-        "embeddingProvider": settings.embedding_provider,
-        "embeddingModel": settings.embedding_model,
-        "embeddingDimensions": settings.embedding_dimensions,
-        "embeddingVersion": settings.embedding_version,
-        "chunkSize": workspace.chunk_size,
-    }
+    assert retried_job.config_snapshot is not None
+    assert retried_job.config_snapshot["source"] == "retry"
+    assert retried_job.config_snapshot["embeddingProvider"] == settings.embedding_provider
+    assert retried_job.config_snapshot["embeddingModel"] == settings.embedding_model
+    assert retried_job.config_snapshot["embeddingDimensions"] == settings.embedding_dimensions
+    assert retried_job.config_snapshot["embeddingVersion"] == settings.embedding_version
+    assert retried_job.config_snapshot["chunkSize"] == workspace.chunk_size
+    assert isinstance(retried_job.config_snapshot["embeddingProfileFingerprint"], str)
+    assert len(retried_job.config_snapshot["embeddingProfileFingerprint"]) == 64
     assert refreshed_asset is not None
     assert refreshed_asset.latest_ingestion_job_id == retried_job.id
     assert refreshed_asset.last_error_code is None

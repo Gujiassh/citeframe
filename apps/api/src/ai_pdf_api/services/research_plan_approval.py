@@ -36,7 +36,7 @@ from ai_pdf_api.services.research_runs import (
     build_plan_snapshot_hash_payload,
 )
 from ai_pdf_api.services.research_versions_service import (
-    _profile_fingerprint,
+    _matches_frozen_profile_fingerprint,
     ensure_research_versions,
 )
 from sqlalchemy import select
@@ -105,7 +105,8 @@ def _approve_plan(
         PROMPT_VERSION_IDS["planner"],
         settings.generation_provider,
         settings.generation_model,
-        _profile_fingerprint(),
+        # Fingerprint compared via dual-read below; keep placeholder slot shape stable.
+        revision.proposed_provider_config_fingerprint,
         PRICING_VERSION,
         DATA_BOUNDARY_POLICY,
         settings.embedding_provider,
@@ -178,6 +179,10 @@ def _approve_plan(
         workflow.id != revision.proposed_workflow_version_id
         or planner_prompt.id != revision.planner_prompt_version_id
         or frozen_policy != expected_policy
+        or not _matches_frozen_profile_fingerprint(
+            revision.proposed_provider_config_fingerprint,
+            retrieval_top_k=revision.proposed_retrieval_top_k,
+        )
         or any(prompt.availability != "active" for _binding, prompt in bindings)
         or canonical_sha256(build_plan_snapshot_hash_payload(revision, frozen_assets, bindings))
         != revision.planning_snapshot_sha256

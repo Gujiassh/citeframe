@@ -51,6 +51,8 @@ SAFE_FAILURE_CODE_MAP = {
     "evidence_handle_not_found": "evidence_handle_not_found",
     "research_budget_limit": "research_budget_limit",
     "lease_expired": "lease_expired",
+    # Dense index contract mismatch: non-retryable; operator must reindex explicitly.
+    "embedding_index_mismatch": "embedding_index_mismatch",
 }
 
 

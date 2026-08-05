@@ -76,6 +76,7 @@ class BranchResultValue:
 def research_worker_db(
     tmp_path: Path,
     research_schema_db: Path,
+    monkeypatch: pytest.MonkeyPatch,
 ) -> Generator[ResearchWorkerFixture, None, None]:
     database_path = tmp_path / "research-worker.db"
     shutil.copyfile(research_schema_db, database_path)
@@ -207,6 +208,10 @@ def research_worker_db(
     )
     db.add_all([user, workspace, membership, asset, run, snapshot, ledger, step])
     db.commit()
+    monkeypatch.setattr(
+        "ai_pdf_api.services.research_worker_provider.frozen_provider_config_matches_actual",
+        lambda db, step, frozen_fingerprint: frozen_fingerprint == snapshot.provider_config_fingerprint,
+    )
     yield ResearchWorkerFixture(
         db=db,
         run=run,

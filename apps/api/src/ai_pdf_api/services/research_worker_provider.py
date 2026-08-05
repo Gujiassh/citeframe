@@ -27,6 +27,55 @@ from ai_pdf_api.services.research_worker_policy import estimate_provider_cost
 from ai_pdf_api.services.research_worker_types import ProviderReservation
 
 
+
+def resolve_actual_research_provider_config_fingerprint(db: Session, step: ResearchStep) -> str:
+    """Return the worker's current v2 capability execution fingerprint for the frozen top-k."""
+
+    from ai_pdf_api.services.capabilities import current_execution_profile_fingerprint
+
+    retrieval_top_k = _frozen_retrieval_top_k(db, step)
+    return current_execution_profile_fingerprint(retrieval_top_k=retrieval_top_k)
+
+
+def _frozen_retrieval_top_k(db: Session, step: ResearchStep) -> int:
+    if step.execution_snapshot_id is not None:
+        frozen_snapshot = db.get(ResearchExecutionSnapshot, step.execution_snapshot_id)
+        if frozen_snapshot is None:
+            raise ResearchError(
+                "research_state_conflict",
+                "Research execution snapshot is missing for provider profile resolution.",
+                409,
+            )
+        return frozen_snapshot.retrieval_top_k
+    if step.plan_revision_id is not None:
+        frozen_revision = db.get(ResearchPlanRevision, step.plan_revision_id)
+        if frozen_revision is None:
+            raise ResearchError(
+                "research_state_conflict",
+                "Research plan revision is missing for provider profile resolution.",
+                409,
+            )
+        return frozen_revision.proposed_retrieval_top_k
+    raise ResearchError(
+        "research_state_conflict",
+        "Research step is missing a frozen plan revision or execution snapshot.",
+        409,
+    )
+
+
+def frozen_provider_config_matches_actual(
+    db: Session,
+    step: ResearchStep,
+    frozen_fingerprint: str,
+) -> bool:
+    from ai_pdf_api.services.capabilities import matches_frozen_execution_fingerprint
+
+    return matches_frozen_execution_fingerprint(
+        frozen_fingerprint,
+        retrieval_top_k=_frozen_retrieval_top_k(db, step),
+    )
+
+
 def reserve_provider_call(
     db: Session,
     *,
@@ -69,6 +118,12 @@ def reserve_provider_call(
         pricing_version = snapshot.pricing_version
     if (provider, model, provider_config_fingerprint) != frozen_provider:
         raise ResearchError("research_state_conflict", "Provider reservation does not match the frozen profile.", 409)
+    if not frozen_provider_config_matches_actual(db, step, provider_config_fingerprint):
+        raise ResearchError(
+            "research_provider_config_drift",
+            "Actual provider capability profile does not match the frozen Research fingerprint.",
+            409,
+        )
     try:
         reserved_cost_microunits = estimate_provider_cost(
             provider=provider,

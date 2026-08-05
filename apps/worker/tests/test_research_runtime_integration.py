@@ -18,7 +18,10 @@ from ai_pdf_api.models import (
     Workspace,
     WorkspaceMembership,
 )
+from ai_pdf_api.core.settings import settings
 from ai_pdf_api.services import research_worker
+from ai_pdf_api.services.capabilities import current_execution_profile_fingerprint
+from ai_pdf_api.services.research_constants import DATA_BOUNDARY_POLICY, PRICING_VERSION
 from ai_pdf_worker.research_executor import (
     ApprovedResearchExecution,
     FrozenAsset,
@@ -83,6 +86,7 @@ def runtime_db(tmp_path):
         created_at=now,
         updated_at=now,
     )
+    provider_config_fingerprint = current_execution_profile_fingerprint(retrieval_top_k=6)
     snapshot = ResearchExecutionSnapshot(
         id=str(uuid4()),
         workspace_id=workspace.id,
@@ -95,15 +99,15 @@ def runtime_db(tmp_path):
         question_text="Question",
         scope_mode="selected",
         workflow_version_id=str(uuid4()),
-        generation_provider="openai",
-        generation_model="gpt-5.5",
-        provider_config_fingerprint=sha256("provider"),
-        pricing_version="research-pricing-v1",
-        data_boundary_policy_version="boundary-v1",
-        embedding_provider="embedding-provider",
-        embedding_model="embedding-model",
-        embedding_version="embedding-v1",
-        retrieval_strategy="hybrid",
+        generation_provider=settings.generation_provider,
+        generation_model=settings.generation_model,
+        provider_config_fingerprint=provider_config_fingerprint,
+        pricing_version=PRICING_VERSION,
+        data_boundary_policy_version=DATA_BOUNDARY_POLICY,
+        embedding_provider=settings.embedding_provider,
+        embedding_model=settings.embedding_model,
+        embedding_version=settings.embedding_version,
+        retrieval_strategy=settings.retrieval_strategy,
         retrieval_top_k=6,
         max_parallel_researchers=2,
         max_step_attempts=3,
@@ -168,7 +172,7 @@ def execution(workspace_id: str, run_id: str, snapshot_id: str, step_id: str, as
         (FrozenAsset(asset_id, 2, 3),),
         "workflow-unused",
         ("prompt-unused",),
-        sha256("provider"),
+        current_execution_profile_fingerprint(retrieval_top_k=6),
         "budget-v1",
         "retry-v1",
         2,
@@ -191,8 +195,8 @@ def test_real_ledger_lease_and_provider_reconcile(runtime_db) -> None:
     )
 
     class Provider:
-        provider = "openai"
-        model = "gpt-5.5"
+        provider = settings.generation_provider
+        model = settings.generation_model
 
         def generate(self, _messages: list[dict[str, object]]) -> str:
             return '{"claims":[]}'
@@ -237,8 +241,8 @@ def test_real_send_rejection_cancels_reservation_without_calling_provider(runtim
             return reservation
 
     class Provider:
-        provider = "openai"
-        model = "gpt-5.5"
+        provider = settings.generation_provider
+        model = settings.generation_model
 
         def generate(self, _messages: list[dict[str, object]]) -> str:
             raise AssertionError("provider must not be called")

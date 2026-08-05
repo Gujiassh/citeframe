@@ -27,6 +27,11 @@ from ai_pdf_api.services import (
     research_worker_evidence,
     research_worker_publication,
 )
+from ai_pdf_api.services.embedding_index import (
+    EMBEDDING_INDEX_MISMATCH_CODE,
+    EMBEDDING_INDEX_MISMATCH_MESSAGE,
+)
+from ai_pdf_api.services.providers import ModelProviderError
 from ai_pdf_api.services.research_evidence_provenance import evidence_source_fingerprint
 from ai_pdf_api.services.research_idempotency import ResearchError
 from ai_pdf_api.services.research_worker import (
@@ -34,6 +39,10 @@ from ai_pdf_api.services.research_worker import (
     publish_final_report,
     restore_frozen_evidence,
     search_frozen_evidence,
+)
+from ai_pdf_api.services.research_worker_policy import (
+    is_transient_failure,
+    normalize_failure_code,
 )
 from ai_pdf_api.services.retrieval import RetrievedContent
 from research_worker_test_support import (
@@ -573,3 +582,72 @@ def test_publish_final_report_cleans_object_when_commit_is_confirmed_absent(
         assert verification_db.scalar(
             select(ResearchArtifact).where(ResearchArtifact.run_id == fixture.run.id)
         ) is None
+
+
+def test_frozen_evidence_search_maps_embedding_index_mismatch_to_research_error(
+    research_worker_db,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    fixture = research_worker_db
+    lease = lease_default_step(fixture)
+    fixture.db.add(
+        ResearchExecutionAsset(
+            execution_snapshot_id=fixture.snapshot.id,
+            workspace_id=fixture.run.workspace_id,
+            asset_id=fixture.asset.id,
+            asset_order=0,
+            asset_kind_snapshot=fixture.asset.asset_kind,
+            asset_title_snapshot=fixture.asset.title,
+            processing_generation_snapshot=fixture.asset.current_processing_generation,
+            index_version_snapshot=fixture.asset.current_index_version,
+        )
+    )
+    fixture.db.commit()
+
+    class FakeEmbeddingProvider:
+        provider = fixture.snapshot.embedding_provider
+        model = fixture.snapshot.embedding_model
+        version = fixture.snapshot.embedding_version
+
+        def embed_query(self, query: str) -> list[float]:
+            assert query == "facts"
+            return [0.25, 0.75]
+
+    def raise_mismatch(*_args, **_kwargs):
+        raise ModelProviderError(
+            EMBEDDING_INDEX_MISMATCH_CODE,
+            EMBEDDING_INDEX_MISMATCH_MESSAGE,
+        )
+
+    monkeypatch.setattr(research_worker_evidence, "retrieve_query_content", raise_mismatch)
+
+    with pytest.raises(ResearchError) as mismatch_error:
+        search_frozen_evidence(
+            fixture.db,
+            run_id=fixture.run.id,
+            execution_snapshot_id=fixture.snapshot.id,
+            step_id=fixture.step.id,
+            attempt_id=lease.attempt_id,
+            branch_key=fixture.step.branch_key or "",
+            tool_call_key="search-embedding-index-mismatch",
+            query="facts",
+            asset_ids=(fixture.asset.id,),
+            top_k=3,
+            embedding_provider=FakeEmbeddingProvider(),
+            now=fixture.now + timedelta(seconds=1),
+        )
+
+    assert_research_error(mismatch_error, EMBEDDING_INDEX_MISMATCH_CODE, 409)
+    assert mismatch_error.value.message == EMBEDDING_INDEX_MISMATCH_MESSAGE
+    assert "explicit reindex" in mismatch_error.value.message.lower()
+
+    call = fixture.db.scalar(select(ResearchToolCall))
+    assert call is not None
+    assert call.status == "failed"
+    assert call.error_code == EMBEDDING_INDEX_MISMATCH_CODE
+    assert call.error_code != "tool_temporarily_unavailable"
+
+    # Policy path used by fail_research_step must keep this non-retryable.
+    reason = normalize_failure_code(EMBEDDING_INDEX_MISMATCH_CODE)
+    assert reason == EMBEDDING_INDEX_MISMATCH_CODE
+    assert is_transient_failure(reason) is False

@@ -16,6 +16,32 @@ export type FrozenAssetScope = {
   }>;
 };
 
+export type ResearchProviderSnapshot = {
+  generationProvider: string;
+  generationModel: string;
+  embeddingProvider: string;
+  embeddingModel: string;
+  embeddingVersion: string;
+  retrievalStrategy: string;
+  retrievalTopK: number;
+  providerConfigFingerprint: string;
+  pricingVersion: string | null;
+  dataBoundaryPolicyVersion: string;
+};
+
+export type ResearchExecutionConfigSnapshot = {
+  provider: ResearchProviderSnapshot;
+};
+
+export type ResearchPlanningInputSnapshot = {
+  revisionNumber: number;
+  planningExecution: ResearchExecutionConfigSnapshot;
+  proposedResearchExecution: ResearchExecutionConfigSnapshot;
+};
+
+export type ResearchExecutionSnapshot = {
+  execution: ResearchExecutionConfigSnapshot;
+};
 export type ResearchRunStatus =
   | "planning"
   | "awaiting_plan_approval"
@@ -73,6 +99,7 @@ export type ResearchDecision = {
 export type ResearchPlan = {
   version: number;
   status: "proposed" | "approved" | "superseded";
+  inputSnapshot?: ResearchPlanningInputSnapshot | null;
   summary: string;
   subproblems: Array<{ id: string; order: number; question: string; assetIds: string[]; expectedEvidence: string[] }>;
   knownGaps: string[];
@@ -148,6 +175,7 @@ export type ResearchRunSummary = {
 export type ResearchRunDetail = ResearchRunSummary & {
   frozenAssetScope: FrozenAssetScope | null;
   plan: ResearchPlan | null;
+  researchExecution?: ResearchExecutionSnapshot | null;
   steps: ResearchStep[];
   pendingDecisions: ResearchDecision[];
   submittedDecisions: ResearchDecision[];

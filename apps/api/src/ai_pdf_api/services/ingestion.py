@@ -167,6 +167,9 @@ def process_ingestion_job(
     try:
         if embedding_provider is not None:
             _validate_job_embedding_config(job, embedding_provider)
+        # Image caption config/fingerprint validation is performed by the
+        # modality adapter against the injected caption provider (not a fresh
+        # global factory that can require live API keys in tests/workers).
         if ingestion_adapters is None:
             raise IngestionError(
                 "modality_adapter_unavailable",
@@ -512,6 +515,8 @@ def _cancel_superseded_job(
 
 
 def _validate_job_embedding_config(job: IngestionJob, embedding_provider: EmbeddingProvider) -> None:
+    from ai_pdf_api.services.capabilities import require_matching_snapshot_fingerprint
+
     snapshot = job.config_snapshot or {}
     expected = {
         "embeddingProvider": embedding_provider.provider,
@@ -524,6 +529,15 @@ def _validate_job_embedding_config(job: IngestionJob, embedding_provider: Embedd
             "embedding_configuration_mismatch",
             "Embedding provider configuration does not match the job snapshot.",
         )
+    require_matching_snapshot_fingerprint(
+        snapshot,
+        field_name="embeddingProfileFingerprint",
+        actual_fingerprint=getattr(embedding_provider, "config_fingerprint", None),
+        error_code="embedding_configuration_mismatch",
+        error_message="Embedding provider configuration does not match the job snapshot.",
+        error_cls=ModelProviderError,
+    )
+
 
 
 def _available_asset_status(db: Session, asset_id: str) -> str:

@@ -433,14 +433,15 @@ def test_reindex_queues_embed_job_with_embedding_config_snapshot(
     assert payload["job"]["jobType"] == "embed_chunks"
     job = asset_db_session.get(IngestionJob, payload["job"]["id"])
     assert job is not None
-    assert job.config_snapshot == {
-        "source": "reindex",
-        "embeddingProvider": "fake",
-        "embeddingModel": "fake-embedding",
-        "embeddingDimensions": 3,
-        "embeddingVersion": "fake-v1",
-        "chunkSize": 1200,
-    }
+    assert job.config_snapshot is not None
+    assert job.config_snapshot["source"] == "reindex"
+    assert job.config_snapshot["embeddingProvider"] == "fake"
+    assert job.config_snapshot["embeddingModel"] == "fake-embedding"
+    assert job.config_snapshot["embeddingDimensions"] == 3
+    assert job.config_snapshot["embeddingVersion"] == "fake-v1"
+    assert job.config_snapshot["chunkSize"] == 1200
+    assert isinstance(job.config_snapshot["embeddingProfileFingerprint"], str)
+    assert len(job.config_snapshot["embeddingProfileFingerprint"]) == 64
 
 
 def test_ingestion_worker_uses_ocr_for_image_only_pdf(
