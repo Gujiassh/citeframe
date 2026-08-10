@@ -1,0 +1,54 @@
+{
+  "schemaVersion": "v5b-runtime-container-manifest-v1",
+  "containers": [
+    {
+      "service": "api",
+      "containerId": "b0f2d5b125726e26a5480b57befce3a69fef1e0fbe4ed1de136ccc2f2e7554ea",
+      "expectedImageTag": "ai-pdf-workspace-api:v5b-20260810t025923z-236905",
+      "configuredImage": "ai-pdf-workspace-api:v5b-20260810t025923z-236905",
+      "resolvedImageId": "sha256:e8d6aaea768f9a70dc89811aa214cce664651900ee028ff0587b166046b1aff4",
+      "status": "running",
+      "health": "healthy",
+      "command": [
+        "uvicorn",
+        "ai_pdf_api.main:app",
+        "--host",
+        "0.0.0.0",
+        "--port",
+        "8000"
+      ],
+      "entrypoint": null
+    },
+    {
+      "service": "worker",
+      "containerId": "feecc1433194139b7eaa92f7afb4a344f11eb0a599494c6032b2ac64db318159",
+      "expectedImageTag": "ai-pdf-workspace-worker:v5b-20260810t025923z-236905",
+      "configuredImage": "ai-pdf-workspace-worker:v5b-20260810t025923z-236905",
+      "resolvedImageId": "sha256:d5eea909bead5abd338e4a908ddbff853ff2e2f630281914b2aafcb594bd99a8",
+      "status": "running",
+      "health": null,
+      "command": [
+        "python",
+        "-m",
+        "ai_pdf_worker.main"
+      ],
+      "entrypoint": null
+    },
+    {
+      "service": "web",
+      "containerId": "269a20725cf68ee93c1f13f93d50fbcfaf3957393b92bcab94d8f83c4cf8b85a",
+      "expectedImageTag": "ai-pdf-workspace-web:v5b-20260810t025923z-236905",
+      "configuredImage": "ai-pdf-workspace-web:v5b-20260810t025923z-236905",
+      "resolvedImageId": "sha256:cfe2b71658f62abff8318a12e8b51d79838fab70a4d628bee2fa1844a9f71f5d",
+      "status": "running",
+      "health": "healthy",
+      "command": [
+        "node",
+        "apps/web/server.js"
+      ],
+      "entrypoint": [
+        "docker-entrypoint.sh"
+      ]
+    }
+  ]
+}

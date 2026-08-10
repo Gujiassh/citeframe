@@ -1,0 +1,6 @@
+8ee425fa5f112db2d4221673cbeff75091b4d55a5a4cc03da47c3310113b7fae  manifest.env
+5fca7c272fee8667c22c89205c2ddb3d1b161b85ef584b0fd471f1ddd61cd1df  minio/workspaces/d532ed4a-194f-4599-b8a7-474472edfbd8/assets/0aada081-7678-4d57-96ed-0260218bf23f/original.md
+41f767c38f2c8d46f661a554f01d65f12b795ff21665f631268a6eb1c64be741  minio/workspaces/d532ed4a-194f-4599-b8a7-474472edfbd8/assets/0aada081-7678-4d57-96ed-0260218bf23f/representations/1/document-normalized.txt
+5fca7c272fee8667c22c89205c2ddb3d1b161b85ef584b0fd471f1ddd61cd1df  minio/workspaces/d532ed4a-194f-4599-b8a7-474472edfbd8/assets/1f7820ba-a68f-4e07-804e-7f2c98978c08/original.md
+41f767c38f2c8d46f661a554f01d65f12b795ff21665f631268a6eb1c64be741  minio/workspaces/d532ed4a-194f-4599-b8a7-474472edfbd8/assets/1f7820ba-a68f-4e07-804e-7f2c98978c08/representations/1/document-normalized.txt
+548a57e158363d1851c3edbbb650a8f03a48dd2b5c3bf59184d474abe9e483dd  postgres.dump

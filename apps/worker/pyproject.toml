@@ -11,6 +11,7 @@ dependencies = [
   "pymupdf>=1.28.0",
   "rapidocr-onnxruntime>=1.4.4",
   "langgraph>=1.0,<2.0",
+  "markdown-it-py>=3.0.0",
 ]
 
 [tool.uv.sources]

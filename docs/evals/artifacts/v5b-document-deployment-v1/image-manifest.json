@@ -1,0 +1,32 @@
+{
+  "schemaVersion": "v5b-built-image-manifest-v1",
+  "images": [
+    {
+      "tag": "ai-pdf-workspace-api:v5b-20260808t170050z-3531238",
+      "id": "sha256:3d6747049a4be5905d5374a2157eb16116a125e2cd8720bc3bbae1b60ca5b5ef",
+      "created": "2026-08-08T17:01:12.579645618Z",
+      "size": 234151375,
+      "repoTags": [
+        "ai-pdf-workspace-api:v5b-20260808t170050z-3531238"
+      ]
+    },
+    {
+      "tag": "ai-pdf-workspace-worker:v5b-20260808t170050z-3531238",
+      "id": "sha256:1b9365f6e760d63a5a452075f624a331677629f32e89f4fa41237839fee77402",
+      "created": "2026-08-08T17:02:57.256651347Z",
+      "size": 922060083,
+      "repoTags": [
+        "ai-pdf-workspace-worker:v5b-20260808t170050z-3531238"
+      ]
+    },
+    {
+      "tag": "ai-pdf-workspace-web:v5b-20260808t170050z-3531238",
+      "id": "sha256:b30bc45188b3568b50a8e43cdcb3cb3233f3c5cb4fb25adaf382e4009a984969",
+      "created": "2026-08-08T17:01:22.285891038Z",
+      "size": 264966825,
+      "repoTags": [
+        "ai-pdf-workspace-web:v5b-20260808t170050z-3531238"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,35 @@
+Attaching to citeframe-v5b-20260808t170050z-3531238_api_1
+api_1            | INFO:     Started server process [1]
+api_1            | INFO:     Waiting for application startup.
+api_1            | INFO:     Application startup complete.
+api_1            | INFO:     Uvicorn running on http://0.0.0.0:8000 (Press CTRL+C to quit)
+api_1            | INFO:     127.0.0.1:41602 - "GET /health/ready HTTP/1.1" 200 OK
+api_1            | INFO:     127.0.0.1:55884 - "GET /health/ready HTTP/1.1" 200 OK
+api_1            | INFO:     127.0.0.1:41810 - "GET /health/ready HTTP/1.1" 200 OK
+api_1            | INFO:     127.0.0.1:52292 - "GET /health/ready HTTP/1.1" 200 OK
+api_1            | INFO:     172.24.0.8:49972 - "POST /v1/auth/login HTTP/1.1" 200 OK
+api_1            | INFO:     172.24.0.8:57190 - "GET /v1/workspaces HTTP/1.1" 200 OK
+api_1            | INFO:     172.24.0.8:49972 - "POST /v1/workspaces/2faca4d0-9767-4361-9229-0c9bfe59d175/assets/upload-session HTTP/1.1" 201 Created
+api_1            | INFO:     172.24.0.8:57190 - "GET /v1/workspaces/2faca4d0-9767-4361-9229-0c9bfe59d175/research-runs HTTP/1.1" 200 OK
+api_1            | INFO:     172.24.0.8:49972 - "GET /v1/workspaces/2faca4d0-9767-4361-9229-0c9bfe59d175/threads HTTP/1.1" 200 OK
+api_1            | INFO:     172.24.0.8:57210 - "GET /v1/workspaces/2faca4d0-9767-4361-9229-0c9bfe59d175/tags HTTP/1.1" 200 OK
+api_1            | INFO:     172.24.0.8:57200 - "GET /v1/workspaces/2faca4d0-9767-4361-9229-0c9bfe59d175/assets HTTP/1.1" 200 OK
+api_1            | INFO:     172.24.0.8:57218 - "GET /v1/workspaces/2faca4d0-9767-4361-9229-0c9bfe59d175/notes HTTP/1.1" 200 OK
+api_1            | INFO:     172.24.0.8:49972 - "PUT /v1/workspaces/2faca4d0-9767-4361-9229-0c9bfe59d175/assets/713ef1e4-3b19-4d35-97f7-42838e110724/upload?objectKey=workspaces%2F2faca4d0-9767-4361-9229-0c9bfe59d175%2Fassets%2F713ef1e4-3b19-4d35-97f7-42838e110724%2Foriginal.md HTTP/1.1" 204 No Content
+api_1            | INFO:     172.24.0.8:57190 - "GET /v1/workspaces/2faca4d0-9767-4361-9229-0c9bfe59d175/threads/54a85b19-05a8-4641-ac3a-a0f61eba30e4/messages HTTP/1.1" 200 OK
+api_1            | INFO:     172.24.0.8:49972 - "POST /v1/workspaces/2faca4d0-9767-4361-9229-0c9bfe59d175/assets/713ef1e4-3b19-4d35-97f7-42838e110724/finalize-upload HTTP/1.1" 200 OK
+api_1            | INFO:     172.24.0.8:49972 - "GET /v1/workspaces/2faca4d0-9767-4361-9229-0c9bfe59d175/jobs/cbdedb04-e7a8-4bf6-9370-1be130336bcf HTTP/1.1" 200 OK
+api_1            | INFO:     172.24.0.8:49972 - "GET /v1/workspaces/2faca4d0-9767-4361-9229-0c9bfe59d175/jobs/cbdedb04-e7a8-4bf6-9370-1be130336bcf HTTP/1.1" 200 OK
+api_1            | INFO:     172.24.0.8:49972 - "GET /v1/workspaces/2faca4d0-9767-4361-9229-0c9bfe59d175/assets/713ef1e4-3b19-4d35-97f7-42838e110724 HTTP/1.1" 200 OK
+api_1            | INFO:     172.24.0.8:49972 - "GET /v1/workspaces/2faca4d0-9767-4361-9229-0c9bfe59d175/assets/713ef1e4-3b19-4d35-97f7-42838e110724/representations/74c62509-6dab-4f10-be00-332c42caebc7/content HTTP/1.1" 200 OK
+api_1            | INFO:     172.24.0.8:49972 - "POST /v1/auth/login HTTP/1.1" 200 OK
+api_1            | INFO:     172.24.0.8:49972 - "GET /v1/workspaces HTTP/1.1" 200 OK
+api_1            | INFO:     172.24.0.8:57190 - "GET /v1/workspaces/2faca4d0-9767-4361-9229-0c9bfe59d175/assets/e97371d8-88c2-4360-a097-88b15567a403 HTTP/1.1" 200 OK
+api_1            | INFO:     172.24.0.8:49972 - "GET /v1/workspaces/2faca4d0-9767-4361-9229-0c9bfe59d175/assets/e97371d8-88c2-4360-a097-88b15567a403/representations/7eff845d-7e7c-441b-aaec-c878ae77392b/content HTTP/1.1" 200 OK
+api_1            | INFO:     172.24.0.8:49972 - "GET /v1/workspaces/2faca4d0-9767-4361-9229-0c9bfe59d175/research-runs HTTP/1.1" 200 OK
+api_1            | INFO:     172.24.0.8:57190 - "GET /v1/workspaces/2faca4d0-9767-4361-9229-0c9bfe59d175/assets HTTP/1.1" 200 OK
+api_1            | INFO:     172.24.0.8:57210 - "GET /v1/workspaces/2faca4d0-9767-4361-9229-0c9bfe59d175/tags HTTP/1.1" 200 OK
+api_1            | INFO:     172.24.0.8:57200 - "GET /v1/workspaces/2faca4d0-9767-4361-9229-0c9bfe59d175/notes HTTP/1.1" 200 OK
+api_1            | INFO:     172.24.0.8:57218 - "GET /v1/workspaces/2faca4d0-9767-4361-9229-0c9bfe59d175/threads HTTP/1.1" 200 OK
+api_1            | INFO:     172.24.0.8:49972 - "GET /v1/workspaces/2faca4d0-9767-4361-9229-0c9bfe59d175/threads/54a85b19-05a8-4641-ac3a-a0f61eba30e4/messages HTTP/1.1" 200 OK
+api_1            | INFO:     172.24.0.8:49972 - "GET /v1/workspaces/2faca4d0-9767-4361-9229-0c9bfe59d175/assets/e97371d8-88c2-4360-a097-88b15567a403/representations/7eff845d-7e7c-441b-aaec-c878ae77392b/content HTTP/1.1" 200 OK

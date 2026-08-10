@@ -160,8 +160,28 @@ def asset_client(
     def override_get_db() -> Generator[Session, None, None]:
         yield asset_db_session
 
+    uploaded_objects: dict[str, bytes] = {}
+
+    def fake_upload_stream(
+        object_key: str,
+        payload,
+        length: int,
+        content_type: str,
+    ) -> None:
+        del content_type
+        uploaded_objects[object_key] = payload.read(length)
+
+    def fake_download_bytes(object_key: str) -> bytes:
+        try:
+            return uploaded_objects[object_key]
+        except KeyError as error:
+            raise FileNotFoundError(object_key) from error
+
     monkeypatch.setattr(
-        "ai_pdf_api.routers.assets.upload_stream", lambda *args, **kwargs: None
+        "ai_pdf_api.routers.assets.upload_stream", fake_upload_stream
+    )
+    monkeypatch.setattr(
+        "ai_pdf_api.routers.assets.download_bytes", fake_download_bytes
     )
     monkeypatch.setattr(
         "ai_pdf_api.routers.assets.object_exists", lambda object_key: True

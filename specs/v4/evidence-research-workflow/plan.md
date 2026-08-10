@@ -1,5 +1,7 @@
 # V4 Evidence Research Workflow 实施计划提案
 
+> 当前策略说明（2026-08-03）：V4 R000-R800 是已完成的固定 Research/多 Agent 工程基线。后续产品顺序由 `specs/v5/multimodal-agent-product/` 接管：先多模型/provider profile，再多模态扩展，再多 Agent 协作产品化，最后进行 R803/M404。R803/M404 仍是后置验证，不阻塞 V5 功能开发；本文件中的 R000-D007、R100-R800 和历史评估结果保持不变。
+
 ## 0. 与当前主线衔接
 
 1. M403A binary ANN S2 diagnostic 与新的完整 S0/S1/S2 canonical 已完成并关闭。
@@ -7,7 +9,7 @@
 3. V3 SSoT、测试与运行证据已同步；contract snapshot commit A=`466e5a3` 与 approval record commit B 已形成。
 4. V4 R000-R800 确定性工程基线已完成，且未修改 Quick、Citation、Chat、NoteSource 或保存语义。
 
-M404 真实用户验证继续推进。它不阻塞内部技术演示开发，但未完成时 V4 仍是 `internal_preview`，不得宣称用户价值已验证。
+M404 真实用户验证后置推进。它不阻塞 V5 功能开发，但未完成时产品仍是 `internal_preview`，不得宣称用户价值已验证。
 
 当前 canonical 为 `docs/evals/artifacts/r800-v1/deployment-20260728-v4/`：全部场景、真实 PostgreSQL/MinIO 备份恢复、对象字节/hash 与最终清理通过。scripted provider 只形成工程证据，R803 真实模型成对质量仍保持 `not_evaluable`。
 
@@ -21,7 +23,7 @@ M404 真实用户验证继续推进。它不阻塞内部技术演示开发，但
 - 明确 LangGraph 只负责无状态固定图执行且不配置 checkpointer；PostgreSQL 业务账本与 immutable Artifact 是恢复和审计的唯一事实来源。
 - 已完成持久化、权限、删除、取消、备份恢复和版本重放影响评审并取得明确批准。
 
-R001-R007 已由以下获批交付物与 commit A/B 关闭；下一阶段为 R100 Evaluation-first：
+R001-R007 已由以下获批交付物与 commit A/B 关闭；R100 已完成并作为后置质量基础设施保留；V5 当前功能主线见 `specs/v5/multimodal-agent-product/`：
 
 - 字段级 schema：实体字段、枚举、必填/可空、唯一键、外键、版本字段、敏感字段和保留期限。
 - 状态迁移表：Run/Step/HumanDecision 的合法迁移、终态、取消、超时、失败分支和恢复 checkpoint。

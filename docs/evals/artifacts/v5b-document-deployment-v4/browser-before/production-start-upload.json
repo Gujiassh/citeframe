@@ -1,0 +1,29 @@
+{
+  "schemaVersion": "v5b-document-browser-artifact-v1",
+  "productionStart": true,
+  "playWrightStartWeb": null,
+  "playWrightStandaloneServer": "1",
+  "baseURL": "http://localhost:46771",
+  "assetId": "206cfd6c-8486-4942-a01e-404291320299",
+  "assetKind": "document",
+  "mimeType": "text/markdown",
+  "objectKey": "workspaces/c8c528e4-1003-40c5-bd15-af47af6df42e/assets/206cfd6c-8486-4942-a01e-404291320299/original.md",
+  "finalizeUploadStatus": 200,
+  "jobId": "24c0c90a-ec67-44a5-af38-29d7a530a3f1",
+  "jobStatus": "succeeded",
+  "jobType": "ingest",
+  "jobWorkspaceId": "c8c528e4-1003-40c5-bd15-af47af6df42e",
+  "jobAssetId": "206cfd6c-8486-4942-a01e-404291320299",
+  "jobErrorCode": null,
+  "jobErrorMessage": null,
+  "assetStatus": "ready",
+  "processingGeneration": 1,
+  "representationId": "2ad32b1f-a9a0-407f-9997-ac19d59e055a",
+  "contentSha256": "41f767c38f2c8d46f661a554f01d65f12b795ff21665f631268a6eb1c64be741",
+  "blockCount": 7,
+  "dockerfileWebCmd": [
+    "node",
+    "apps/web/server.js"
+  ],
+  "standaloneEntry": "apps/web/.next/standalone/apps/web/server.js"
+}

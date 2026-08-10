@@ -1,0 +1,35 @@
+INFO:     Started server process [3275719]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://127.0.0.1:8000 (Press CTRL+C to quit)
+INFO:     127.0.0.1:50828 - "GET /health/live HTTP/1.1" 200 OK
+INFO:     127.0.0.1:46462 - "POST /v1/auth/login HTTP/1.1" 200 OK
+INFO:     127.0.0.1:46466 - "GET /v1/workspaces HTTP/1.1" 200 OK
+INFO:     127.0.0.1:46462 - "POST /v1/workspaces/799a0be5-270b-4aac-96a5-592bbfafb72e/assets/upload-session HTTP/1.1" 201 Created
+INFO:     127.0.0.1:46462 - "PUT /v1/workspaces/799a0be5-270b-4aac-96a5-592bbfafb72e/assets/243f5b8d-3b0f-482b-94f5-f037ee978ad6/upload?objectKey=workspaces%2F799a0be5-270b-4aac-96a5-592bbfafb72e%2Fassets%2F243f5b8d-3b0f-482b-94f5-f037ee978ad6%2Foriginal.md HTTP/1.1" 204 No Content
+INFO:     127.0.0.1:46472 - "GET /v1/workspaces/799a0be5-270b-4aac-96a5-592bbfafb72e/assets HTTP/1.1" 200 OK
+INFO:     127.0.0.1:46496 - "GET /v1/workspaces/799a0be5-270b-4aac-96a5-592bbfafb72e/tags HTTP/1.1" 200 OK
+INFO:     127.0.0.1:46466 - "GET /v1/workspaces/799a0be5-270b-4aac-96a5-592bbfafb72e/research-runs HTTP/1.1" 200 OK
+INFO:     127.0.0.1:46502 - "GET /v1/workspaces/799a0be5-270b-4aac-96a5-592bbfafb72e/threads HTTP/1.1" 200 OK
+INFO:     127.0.0.1:46488 - "GET /v1/workspaces/799a0be5-270b-4aac-96a5-592bbfafb72e/notes HTTP/1.1" 200 OK
+INFO:     127.0.0.1:46466 - "GET /v1/workspaces/799a0be5-270b-4aac-96a5-592bbfafb72e/threads/be197b38-9228-4a3d-b247-63b2eafecc5b/messages HTTP/1.1" 200 OK
+INFO:     127.0.0.1:46462 - "POST /v1/workspaces/799a0be5-270b-4aac-96a5-592bbfafb72e/assets/243f5b8d-3b0f-482b-94f5-f037ee978ad6/finalize-upload HTTP/1.1" 200 OK
+INFO:     127.0.0.1:46462 - "GET /v1/workspaces/799a0be5-270b-4aac-96a5-592bbfafb72e/jobs/7b96ba7b-008c-494a-9a45-ea1c5960ac8e HTTP/1.1" 200 OK
+INFO:     127.0.0.1:46462 - "GET /v1/workspaces/799a0be5-270b-4aac-96a5-592bbfafb72e/jobs/7b96ba7b-008c-494a-9a45-ea1c5960ac8e HTTP/1.1" 200 OK
+INFO:     127.0.0.1:46462 - "GET /v1/workspaces/799a0be5-270b-4aac-96a5-592bbfafb72e/assets/243f5b8d-3b0f-482b-94f5-f037ee978ad6 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:46462 - "GET /v1/workspaces/799a0be5-270b-4aac-96a5-592bbfafb72e/assets/243f5b8d-3b0f-482b-94f5-f037ee978ad6/representations/d1c35f9e-8351-46b3-9bef-6390c9e5eb96/content HTTP/1.1" 200 OK
+INFO:     127.0.0.1:46462 - "POST /v1/auth/login HTTP/1.1" 200 OK
+INFO:     127.0.0.1:46462 - "GET /v1/workspaces HTTP/1.1" 200 OK
+INFO:     127.0.0.1:46466 - "GET /v1/workspaces/799a0be5-270b-4aac-96a5-592bbfafb72e/assets/cd166a6a-ddc5-47b2-8bae-bf6e5bb7eeaf HTTP/1.1" 200 OK
+INFO:     127.0.0.1:46466 - "GET /v1/workspaces/799a0be5-270b-4aac-96a5-592bbfafb72e/assets HTTP/1.1" 200 OK
+INFO:     127.0.0.1:46496 - "GET /v1/workspaces/799a0be5-270b-4aac-96a5-592bbfafb72e/research-runs HTTP/1.1" 200 OK
+INFO:     127.0.0.1:46488 - "GET /v1/workspaces/799a0be5-270b-4aac-96a5-592bbfafb72e/tags HTTP/1.1" 200 OK
+INFO:     127.0.0.1:46462 - "GET /v1/workspaces/799a0be5-270b-4aac-96a5-592bbfafb72e/assets/cd166a6a-ddc5-47b2-8bae-bf6e5bb7eeaf/representations/7e9f4ee5-13d6-4ab1-8c62-31a109d5b721/content HTTP/1.1" 200 OK
+INFO:     127.0.0.1:46502 - "GET /v1/workspaces/799a0be5-270b-4aac-96a5-592bbfafb72e/threads HTTP/1.1" 200 OK
+INFO:     127.0.0.1:46472 - "GET /v1/workspaces/799a0be5-270b-4aac-96a5-592bbfafb72e/notes HTTP/1.1" 200 OK
+INFO:     127.0.0.1:46462 - "GET /v1/workspaces/799a0be5-270b-4aac-96a5-592bbfafb72e/threads/be197b38-9228-4a3d-b247-63b2eafecc5b/messages HTTP/1.1" 200 OK
+INFO:     127.0.0.1:46462 - "GET /v1/workspaces/799a0be5-270b-4aac-96a5-592bbfafb72e/assets/cd166a6a-ddc5-47b2-8bae-bf6e5bb7eeaf/representations/7e9f4ee5-13d6-4ab1-8c62-31a109d5b721/content HTTP/1.1" 200 OK
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [3275719]

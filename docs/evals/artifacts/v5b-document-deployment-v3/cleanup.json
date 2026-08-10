@@ -1,0 +1,10 @@
+{
+  "composeDownExitCode": 0,
+  "containersRemaining": [],
+  "envRemoved": true,
+  "imageRemoveExitCode": 0,
+  "imageResidueCheckExitCode": 0,
+  "networksRemaining": [],
+  "passed": true,
+  "volumesRemaining": []
+}

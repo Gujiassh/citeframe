@@ -2,6 +2,7 @@ from dataclasses import replace
 
 import pytest
 from ai_pdf_api.modalities.registry import (
+    DOCUMENT_MODULE,
     IMAGE_MODULE,
     PDF_MODULE,
     CatalogSnapshot,
@@ -14,13 +15,14 @@ from ai_pdf_api.modalities.registry import (
 )
 
 
-def test_production_registry_enables_pdf_and_image_ingestion() -> None:
+def test_production_registry_enables_pdf_image_and_document_ingestion() -> None:
     registry = build_production_registry()
 
-    assert registry.asset_kinds == frozenset({"pdf", "image"})
-    assert registry.enabled_asset_kinds == frozenset({"pdf", "image"})
+    assert registry.asset_kinds == frozenset({"pdf", "image", "document"})
+    assert registry.enabled_asset_kinds == frozenset({"pdf", "image", "document"})
     assert registry.inspect_upload("application/pdf", b"%PDF-1.7").asset_kind == "pdf"
     assert registry.inspect_upload("image/png", b"\x89PNG\r\n\x1a\n").asset_kind == "image"
+    assert registry.inspect_upload("text/markdown", b"# Title\n\nHello").asset_kind == "document"
 
 
 def test_registry_rejects_mime_and_signature_mismatches() -> None:
@@ -105,7 +107,7 @@ def test_test_only_modality_extends_protocol_without_changing_production_modules
         ingestion_config_snapshot=lambda: {"timelineParserVersion": "test-v1"},
     )
     registry = ModalityRegistry(
-        (PDF_MODULE, IMAGE_MODULE, test_module),
+        (PDF_MODULE, IMAGE_MODULE, DOCUMENT_MODULE, test_module),
         embedding_spaces=(TypeRegistration("text"),),
     )
 
@@ -116,7 +118,7 @@ def test_test_only_modality_extends_protocol_without_changing_production_modules
     assert registry.ingestion_config_snapshot("test_timeline") == {
         "timelineParserVersion": "test-v1"
     }
-    assert build_production_registry().asset_kinds == frozenset({"pdf", "image"})
+    assert build_production_registry().asset_kinds == frozenset({"pdf", "image", "document"})
 
 
 def test_image_module_owns_caption_job_config_without_changing_shared_registry() -> None:
@@ -133,7 +135,7 @@ def test_image_module_owns_caption_job_config_without_changing_shared_registry()
     assert registry.ingestion_config_snapshot("pdf") == {}
 
 
-def test_text_retrieval_channel_registers_exact_pdf_and_image_type_signatures() -> None:
+def test_text_retrieval_channel_registers_exact_pdf_image_and_document_type_signatures() -> None:
     channel = build_production_registry().retrieval_channel_scope("text")
 
     assert channel.embedding_space == "text"
@@ -147,6 +149,7 @@ def test_text_retrieval_channel_registers_exact_pdf_and_image_type_signatures() 
             ("pdf", "pdf_figure", "pdf_figure", "pdf_region"),
             ("image", "image_ocr_region", "image_ocr", "image_region"),
             ("image", "image_caption", "image_caption", "image_region"),
+            ("document", "document_text_chunk", "document_normalized", "document_anchor"),
         }
     )
 
@@ -178,3 +181,53 @@ def test_retrieval_channel_requires_a_registered_embedding_space() -> None:
             (invalid_module,),
             embedding_spaces=(TypeRegistration("text"),),
         )
+
+
+def test_document_module_registers_markdown_only_contract() -> None:
+    registry = build_production_registry()
+    module = registry.get("document")
+    assert module.enabled is True
+    assert module.supported_mime_types == frozenset({"text/markdown"})
+    assert {item.kind for item in module.representation_types} == {
+        "document_source",
+        "document_normalized",
+    }
+    assert {item.kind for item in module.content_unit_types} == {
+        "document_block",
+        "document_text_chunk",
+    }
+    assert module.locator_types == (
+        TypeRegistration("document_anchor", detail_family="record"),
+    )
+    assert module.full_payload_validator is not None
+    assert registry.get("pdf").full_payload_validator is None
+    assert registry.get("image").full_payload_validator is None
+    snapshot = registry.ingestion_config_snapshot("document")
+    assert snapshot == {
+        "documentFormat": "markdown",
+        "documentParserVersion": "document-parser-v1",
+        "documentNormalizationVersion": "document-normalization-v1",
+    }
+    registry.validate_upload_payload(module, b"# title\n")
+    with pytest.raises(ModalityContractError, match="declared MIME type|UTF-8|empty"):
+        registry.validate_upload_payload(module, b"PK\x03\x04" + b"0" * 32)
+
+
+@pytest.mark.parametrize(
+    ("header", "matches"),
+    [
+        (b"# Hello\n", True),
+        (b"plain text", True),
+        (b"%PDF-1.7", False),
+        (b"\x89PNG\r\n\x1a\nrest", False),
+        (b"\xff\xd8\xff\xe0rest", False),
+        (b"\x00\x01binary", False),
+    ],
+)
+def test_document_signature_must_match_markdown_text(header: bytes, matches: bool) -> None:
+    registry = build_production_registry()
+    if matches:
+        assert registry.inspect_upload("text/markdown", header).asset_kind == "document"
+    else:
+        with pytest.raises(ModalityContractError, match="declared MIME type"):
+            registry.inspect_upload("text/markdown", header)

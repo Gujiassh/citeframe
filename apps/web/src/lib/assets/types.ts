@@ -62,9 +62,49 @@ export type ImageAssetDetailDto = {
   orientationApplied: boolean;
 };
 
+export type DocumentHeadingSummaryDto = {
+  blockId: string;
+  level: number;
+  text: string;
+  order: number;
+};
+
+export type DocumentAssetDetailDto = {
+  kind: "document";
+  format: "markdown";
+  parserVersion: "document-parser-v1";
+  normalizationVersion: "document-normalization-v1";
+  representationId: string;
+  blockCount: number;
+  headings: DocumentHeadingSummaryDto[];
+};
+
+export type DocumentNormalizedBlockDto = {
+  blockId: string;
+  blockOrder: number;
+  blockKind: "heading" | "paragraph" | "list_item" | "code_block" | "quote" | "table";
+  headingPath: string[];
+  charStart: number;
+  charEnd: number;
+  textSha256: string;
+  text: string;
+};
+
+export type DocumentNormalizedContentDto = {
+  assetId: string;
+  representationId: string;
+  processingGeneration: number;
+  format: "markdown";
+  parserVersion: "document-parser-v1";
+  normalizationVersion: "document-normalization-v1";
+  contentSha256: string;
+  normalizedText: string;
+  blocks: DocumentNormalizedBlockDto[];
+};
+
 export type AssetDetailResponseDto = {
   asset: AssetSummaryDto;
-  detail: PdfAssetDetailDto | ImageAssetDetailDto;
+  detail: PdfAssetDetailDto | ImageAssetDetailDto | DocumentAssetDetailDto;
 };
 
 export type UploadDescriptorDto = {

@@ -14,7 +14,7 @@
 - `api-contracts.md`：浏览器、BFF、FastAPI 之间的接口契约设计
 - `job-state-machine.md`：V1 Document 入库状态机历史设计；当前 Asset job 合同以数据库/API/Worker 文档为准
 - `auth-workstream.md`：已完成认证链路的历史模块任务拆分与执行顺序
-- `implementation-roadmap.md`：项目实施路线与阶段目标
+- `implementation-roadmap.md`：V5 capability-first 项目实施路线与阶段目标
 - `implementation-progress.md`：当前实施进度、下一步与阶段状态
 - `research-workflow-runtime.md`：V4 Research runtime 边界、锁序、验证与故障处理 runbook
 - `../research/product-strategy-2026-07.md`：`555.txt` 战略调研、风险判断与 skill 结论
@@ -29,18 +29,21 @@
 - `../../specs/v2/deployment-baseline/`：已完成的阶段 9 部署、观测、恢复和入口基线
 - `../../specs/v3/evidence-contract/`：用户验证与早期 Evidence 合同发现记录
 - `../../specs/v3/multimodal-workspace/`：已完成的 PDF + 图片 V3 需求、计划和任务；合同已批准，Phase 1-4 M401-M403B 已完成，M404 保持独立 Beta 门
-- `../../specs/v4/evidence-research-workflow/`：V4 Research Workflow 的已批准合同、实施计划、任务、Critical review 与剩余 R803/M404 门禁
+- `../../specs/v4/evidence-research-workflow/`：V4 Research Workflow 的已批准合同、实施计划、任务和历史验收证据
+- `../../specs/v5/multimodal-agent-product/`：当前多模型、多模态、多 Agent 主线规格、计划和任务
 
 建议阅读顺序：
 
-1. `implementation-progress.md`
+1. `../ssot/product-design.md`
 2. `implementation-roadmap.md`
-3. `../ssot/product-design.md`
-4. `../ssot/system-architecture.md`
-5. `database-design.md`
-6. `api-contracts.md`
-7. `modality-extension-contract.md`
-8. `../../specs/v4/evidence-research-workflow/`
-9. 历史追溯需要时再读取 `detailed-system-architecture.md`、`job-state-machine.md` 和 `auth-workstream.md`
+3. `implementation-progress.md`
+4. `../../specs/v5/multimodal-agent-product/`
+5. `../ssot/system-architecture.md`
+6. `database-design.md`
+7. `api-contracts.md`
+8. `modality-extension-contract.md`
+9. `research-workflow-runtime.md`
+10. `../../specs/v4/evidence-research-workflow/`
+11. 历史追溯需要时再读取 `detailed-system-architecture.md`、`job-state-machine.md` 和 `auth-workstream.md`
 
-当前开发应优先阅读 `implementation-progress.md`、`research-workflow-runtime.md`、产品/系统 SSoT 与 V4 spec/tasks。V3 M401-M403B 和 V4 R000-R800 工程基线已完成；真实模型 R803 与目标用户 M404 仍未评估。
+当前开发优先阅读 V5 规格、实施路线、实施进度、产品/系统 SSoT 和现有 Research runtime。V3 PDF/Image 与 V4 R000-R800 是完成基线；R803/M404 是后置验证，不是当前功能主线。

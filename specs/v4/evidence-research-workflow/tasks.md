@@ -1,5 +1,7 @@
 # V4 Evidence Research Workflow 任务提案
 
+> 当前策略说明（2026-08-03）：V4 R000-R800 是已完成的固定 Research/多 Agent 工程基线。后续产品顺序由 `specs/v5/multimodal-agent-product/` 接管：先多模型/provider profile，再多模态扩展，再多 Agent 协作产品化，最后进行 R803/M404。R803/M404 仍是后置验证，不阻塞 V5 功能开发；本文件中的 R000-D007、R100-R800 和历史评估结果保持不变。
+
 ## 当前状态
 
 - [x] V3 M403A 完成 binary ANN S2 与完整 canonical
@@ -46,7 +48,7 @@
 - [x] R204 实现 HumanDecision、RetryRequest、ToolCall/EvidenceHandle、BudgetLedger/ProviderCall 与等待/恢复状态
 - [x] R205 完成 Alembic、downgrade 限制、dump/restore 和跨 Workspace 测试
 
-R200/R300 必须等待 R000 approval、两阶段 Git recovery point 和 R100 exit gate，并取得单独实现授权。R000/R100/R200/R300/R400/R500/R600/R700/R800 的完成判定必须分别绑定 spec、plan、tasks、测试、运行 artifact 和 review 记录；不能只勾选代码任务。
+R200/R300 的历史实现已完成。V5 复用其固定账本和 executor；新 provider/model 或新模态合同须在 V5 规格中另行审批。R000/R100/R200/R300/R400/R500/R600/R700/R800 的完成判定必须分别绑定 spec、plan、tasks、测试、运行 artifact 和 review 记录；不能只勾选代码任务。
 
 ## R300 执行器
 

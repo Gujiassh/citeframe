@@ -20,8 +20,9 @@ class SessionContext:
         return None
 
 
-def test_production_worker_enables_pdf_and_image_adapters() -> None:
-    assert worker.INGESTION_ADAPTERS.asset_kinds == frozenset({"pdf", "image"})
+def test_production_worker_enables_pdf_image_and_document_adapters() -> None:
+    assert worker.INGESTION_ADAPTERS.asset_kinds == frozenset({"pdf", "image", "document"})
+    assert worker.INGESTION_ADAPTERS.get("document").asset_kind == "document"
 
 
 def test_process_one_job_claims_and_handles_one_job(

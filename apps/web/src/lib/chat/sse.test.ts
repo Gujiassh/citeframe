@@ -369,3 +369,52 @@ test("chat stream surfaces a transport interruption after partial output", async
   );
   assert.deepEqual(deltas, ["partial"]);
 });
+
+
+test("citation stream accepts document_anchor evidence locators", async () => {
+  const payload = JSON.stringify({
+    items: [{
+      id: "citation-doc-1",
+      messageId: "message-1",
+      citationIndex: 0,
+      assetId: "asset-doc",
+      assetKind: "document",
+      assetTitle: "notes.md",
+      sourceAvailable: true,
+      excerpt: "paragraph",
+      locator: {
+        kind: "document_anchor",
+        version: 1,
+        blockId: "block-2",
+        blockKind: "paragraph",
+        headingPath: ["Intro"],
+        charStart: 10,
+        charEnd: 15,
+        textSha256: "b".repeat(64),
+        normalizationVersion: "document-normalization-v1",
+      },
+      sourceVersions: {
+        parserVersion: "document-parser-v1",
+        processingGeneration: 1,
+        representationId: "representation-doc",
+        indexVersion: 1,
+      },
+    }],
+  });
+  const stream = new ReadableStream<Uint8Array>({
+    start(controller) {
+      controller.enqueue(new TextEncoder().encode(
+        `event: citations\ndata: ${payload}\n\nevent: done\ndata: {"threadId":"thread-1","assistantMessageId":"message-1"}\n\n`,
+      ));
+      controller.close();
+    },
+  });
+  const citations: Array<{ locator: { kind: string } }> = [];
+  await consumeChatStream(new Response(stream), {
+    onCitations: (event) => {
+      citations.push(...event.items);
+    },
+  });
+  assert.equal(citations.length, 1);
+  assert.equal(citations[0]?.locator.kind, "document_anchor");
+});

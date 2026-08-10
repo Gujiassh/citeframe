@@ -112,6 +112,22 @@ export function isEvidenceLocator(value: unknown): boolean {
       && value.regions.length > 0
       && value.regions.every(isSpatialRegion);
   }
+  if (value.kind === "document_anchor") {
+    return isString(value.blockId)
+      && value.blockId.length > 0
+      && isString(value.blockKind)
+      && ["heading", "paragraph", "list_item", "code_block", "quote", "table"].includes(value.blockKind)
+      && Array.isArray(value.headingPath)
+      && value.headingPath.every((part) => isString(part) && part.length > 0)
+      && isInteger(value.charStart)
+      && value.charStart >= 0
+      && isInteger(value.charEnd)
+      && value.charEnd > value.charStart
+      && isString(value.textSha256)
+      && value.textSha256.length === 64
+      && /^[0-9a-f]{64}$/.test(value.textSha256)
+      && value.normalizationVersion === "document-normalization-v1";
+  }
   return false;
 }
 

@@ -73,10 +73,14 @@ minio_client_shell \
   'mc alias set source http://127.0.0.1:9000 "$MINIO_ROOT_USER" "$MINIO_ROOT_PASSWORD" >/dev/null && mc mirror --overwrite "source/$MINIO_BUCKET" /backup >/dev/null'
 
 cat > "$OUTPUT_DIR/manifest.env" <<EOF
-FORMAT_VERSION=1
+FORMAT_VERSION=2
 COMPOSE_PROJECT=$COMPOSE_PROJECT
 POSTGRES_DB=$POSTGRES_DB
 MINIO_BUCKET=$MINIO_BUCKET
+BACKUP_CONTRACT=document-modality-v1
+DOCUMENT_TYPED_TABLES=document_normalized_contents,document_blocks,document_locator_details
+DOCUMENT_CATALOG_TABLES=asset_types,representation_types,content_unit_types,locator_types
+DOCUMENT_OBJECT_LAYOUT=workspaces/{workspace_id}/assets/{asset_id}/
 EOF
 
 (

@@ -1,0 +1,52 @@
+{
+  "schemaVersion": "v5b-document-production-start-run-v1",
+  "codeRevision": "80d73e34db9d86936da6e3fe36d01dc993783c27",
+  "dirtyWorktree": true,
+  "runtimeKind": "host-production-processes",
+  "standalone": {
+    "buildId": "5OqvPgBBWBuCtDeU6okig",
+    "serverSha256": "1459a52604f4e8d19133a94639475c5bea584dd4a7267f012fafd2376d80a96a",
+    "baseURL": "http://localhost:3100",
+    "configuredEntry": "apps/web/.next/standalone/apps/web/server.js",
+    "configuredCommand": "node apps/web/.next/standalone/apps/web/server.js",
+    "observedProcessTitle": "next-server (v16.2.10)",
+    "pid": 3275721
+  },
+  "processes": {
+    "provider": {
+      "command": "apps/api/.venv/bin/python apps/api/scripts/provider_r800_stub.py ",
+      "pid": 3275718,
+      "engineeringOnly": true
+    },
+    "api": {
+      "command": "/home/cc/code/citeframe/apps/api/.venv/bin/python apps/api/.venv/bin/uvicorn ai_pdf_api.main:app --host 127.0.0.1 --port 8000 ",
+      "pid": 3275719
+    },
+    "worker": {
+      "command": "uv run --project apps/worker --frozen python -m ai_pdf_worker.main ",
+      "pid": 3275720
+    }
+  },
+  "readiness": {
+    "provider": true,
+    "apiLive": true,
+    "web": true,
+    "passed": true
+  },
+  "playwright": {
+    "command": "pnpm exec playwright test e2e/v5b-document-production-start.spec.ts",
+    "exitCode": 0,
+    "passed": true
+  },
+  "logs": {
+    "providerSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "apiSha256": "7826260aa8718479dc61f0e0cf27e0c7603db61557305d2038a8fad3e5d1238a",
+    "workerSha256": "6e0af35ecdb3b2d926888aeef5221a3c5913c1818d59d44753c546a0f59925af",
+    "webSha256": "0587aa23c16b5acdf8771ad464817bfd4a258393869752cd013b54674be0f90b",
+    "playwrightSha256": "9e23592febcf62af76437b710b9c13655f812a37156cf82f84b8ba2ead74dfc6"
+  },
+  "shutdown": {
+    "signal": "SIGTERM",
+    "clean": true
+  }
+}

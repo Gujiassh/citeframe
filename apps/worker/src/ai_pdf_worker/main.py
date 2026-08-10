@@ -21,6 +21,7 @@ from ai_pdf_api.core.research_observability import (
     research_log,
 )
 
+from ai_pdf_worker.document_ingestion import DocumentIngestionAdapter
 from ai_pdf_worker.image_ingestion import ImageIngestionAdapter
 from ai_pdf_worker.metrics import WORKER_ACTIVE_JOBS, WORKER_JOBS, start_metrics_server
 from ai_pdf_worker.pdf_ingestion import PdfIngestionAdapter
@@ -34,6 +35,7 @@ INGESTION_ADAPTERS = IngestionAdapterRegistry(
     (
         PdfIngestionAdapter(),
         ImageIngestionAdapter(caption_provider=get_image_caption_provider()),
+        DocumentIngestionAdapter(),
     )
 )
 

@@ -54,7 +54,7 @@ M403A 的逐次优化假设、实验手段、通过/否决结果、指标和 art
 | V3-4 | 质量与发布验收 | M401-M403B 已完成 | M403B 已完成 | M403 恢复、M403A binary64/3N canonical 与 M403B 三格式生产上传/恢复/浏览器门均通过；工程 `releaseGatePassed=true` |
 | V4 | Evidence Research Workflow | R000-R800 已完成；R803 后置 | 确定性工程门通过；v5 formal v1 在 round-01 前冻结失败 | Research ledger、固定 executor、HITL/SSE/retry/recovery、Web、observability、Evaluation 与 R800 PostgreSQL/MinIO 恢复全部通过；R803 v1 失败证据不可变，v2 不阻塞功能主线 |
 | V5-A | Provider 与模型能力层 | 已完成 | A002-A007 已交付并通过独立复审 | generation 已支持 OpenAI/DeepSeek adapter；registry/fingerprint/Research-ingestion drift gate 与 embedding index contract 已接入；vision/ASR/provider secret fail-closed 已完成；Web 分离 current Settings profile 与 frozen Research run/revision snapshot；A007 完成 Quick Chat/Citation/NoteSource/Research/ingestion/reindex/Worker/Web 回归 |
-| V5-B | 多模态资料扩展 | 规划中 | 尚未实现 | 在 PDF/Image 基线上逐步接入文档、Audio、Video 等模态；每种模态独立 adapter、locator、Viewer、检索和恢复 |
+| V5-B | 多模态资料扩展 | Markdown-only v1 已实现 | isolated/canonical、live scoped restore、online migration、standalone browser 与 B008 formal isolated deployment/Critical closure 已通过；accepted artifact 为 `v5b-document-deployment-v4` | Document registry/catalog、Markdown adapter、typed `document_anchor`、retrieval、Citation/NoteSource、Viewer、delete/recovery/restore 已完成；HTML/Office/Audio/Video 不在本切片，需独立决策与 gate |
 | V5-C | 多 Agent 协作产品化 | 规划中 | V4 executor 已有工程基线 | 将固定 Research DAG 做成用户可理解的计划、并行、审批、重试、恢复和 Artifact 体验，不建设通用 Agent 平台 |
 | V5-D | 端到端整合与工程稳定 | 规划中 | 尚未开始 | 混合模态 Workspace、多模型 profile、跨层错误展示、部署和回归 |
 | V5-E | 模型质量与用户价值 | 后置 | R803/M404 未评估 | 按模态、任务、provider/model 运行质量评估和真实用户验证，决定 Beta/发布 |
@@ -82,7 +82,7 @@ V1、V2-A、阶段 9、V3 M401-M403B 与 V4 R000-R800 工程基线已完成。�
 
 ## 6. 当前正在做什么
 
-当前：`V5-A A002-A007 已完成并通过独立复审。A004/A005/A006 的 capability/index/Web 语义与 A007 跨层回归均已集成；下一步转入 V5-B 多模态资料扩展。开发环境 dev Turbopack 仍可能受 OS file-watch limit 影响，但 production-start Research E2E 五用例已通过。R803 formal v1 失败证据继续冻结，R803 v2 与 M404 暂不阻塞功能主线。`
+当前：`V5-A A002-A007 已完成并通过独立复审；V5-B Markdown-only document v1 已完成 API/Worker/Web/canonical integration、reprocess fail-closed 修正、live restore/browser evidence 与 B008 formal isolated deployment Critical closure。accepted B008 artifact 为 `docs/evals/artifacts/v5b-document-deployment-v4/`（`deploymentGate=pass`、`releaseGatePassed=true`）；v1 为旧 runner 证据、v2 为 Worker health predicate 失败证据、v3 为中断 partial 证据，均保留且不可改写。V5-C 继续停留在 spec/owner-decision 阶段，OD-C1/C2/C3/C4/C5/C8 未批准，不启动 production implementation。R803 formal v1 失败证据继续冻结，R803 v2 与 M404 暂不阻塞功能主线。`
 
 ## 2026-08-05：V5-A A007 cross-layer regression
 
@@ -91,7 +91,13 @@ V1、V2-A、阶段 9、V3 M401-M403B 与 V4 R000-R800 工程基线已完成。�
 - Embedding index 新增多个 successful job newest-wins、finalize snapshot active contract 全字段断言；Worker Image 增加非空 fingerprint mismatch persistence gate；Web fixture 对齐完整 Research API snapshot DTO 并覆盖 proposed/approved/malformed profile。
 - 独立验收：API 全量 `480 passed, 4 skipped`；Worker 全量 `238 passed`；Web 全量 `113 passed`；TypeScript/lint/build/compileall/diff-check 通过；production-start `e2e/research-run.spec.ts` `5 passed`；Ruff `not-run`（executable unavailable）；API/Worker 与 Web reviewer `ACCEPT`。无 commit/push。
 
-## 2026-08-04：V5-A A006 Web frozen Research profile display
+## 2026-08-05：V5-B/V5-C detailed spec freeze candidates
+
+- 现有 V5 `spec/plan/tasks` 只冻结路线和高层退出条件，不能直接指导新模态或多 Agent worker；新增 `specs/v5/multimodal-agent-product/README.md`、`open-decisions.md`、`v5b-detailed-spec.md`、`v5c-detailed-spec.md`、`implementation-lanes-v5bc.md`、`verification-matrix-v5bc.md` 和 `save-contract-checklist.md`。
+- V5-B 规格明确复用 Asset/Representation/ContentUnit/EvidenceLocator kernel，要求每个模态同时具备 registry/catalog、adapter、typed locator、retrieval、renderer、fixture、delete/recovery/restore gate；Markdown/HTML、Audio、Video 的 literals 仍按 open decision 处理，不允许 worker 猜 schema。
+- V5-C 规格明确是 V4 R000-R800 的 productization delta，冻结 Quick/Research 边界、Research statuses、role I/O、branch/join、Evidence/Claim/Artifact、budget、permission、SSE/timeline、retry/cancel/recovery 和 Web projection；不重做 V4 executor，不开放通用 Agent 平台。
+- V5-B Markdown v1 的 owner decisions `OD-B1/B2/B3/B4` 已批准，`OD-B5` 明确拒绝 HTML，`OD-B6/B7` 继续阻塞 Audio/Video。详细规格包已从候选转为 Markdown v1 实施记录；V5-C 仍保留独立 owner blockers，不得由 V5-B 实现推断。
+- B008 的 code/catalog enablement 已在当前 canonical 代码和 migration 中落地并通过 registry/catalog/live table checks；formal isolated deployment gate 与 final independent Critical closure 也已通过，accepted artifact 为 `docs/evals/artifacts/v5b-document-deployment-v4/`。
 
 - Web Research run detail 展示 frozen provider/model/profile fingerprint：approved run 读取 execution snapshot，未批准 plan 读取 proposed revision snapshot，并明确区分来源。
 - 已选 snapshot 不完整时 fail closed 为 unavailable；不读取 `planningExecution`，不 fallback 到另一 frozen layer 或当前 Workspace profile。Settings 仅展示 current server-selected profile。
@@ -258,6 +264,22 @@ V1、V2-A、阶段 9、V3 M401-M403B 与 V4 R000-R800 工程基线已完成。�
 - 通用 Agent 平台、无限递归委派、自由插件市场或任意网络访问
 - 未经合同和审批的多模型持久化/API/save 语义变更
 - 复杂权限系统；只实现当前功能需要的 Workspace/Run 边界
+
+## 2026-08-07：V5-B Markdown Document canonical/live closure slice
+
+- Markdown-only `document` slice 已完成 API/Worker/Web/Integration 实现：typed catalog/representation/normalized content/block/`document_anchor` locator、`markdown-it-py` parser、generation-scoped persistence、lexical+dense retrieval、Document renderer、BFF content route、Citation/NoteSource source availability、delete/no-resurrection 和 mixed workspace contract。
+- Source/save integrity 已加固：上传 PUT 在首个 source SHA 写入前后均使用 Asset row lock 与 identity recheck；finalize-upload 要求已持久化 source SHA，并重新下载校验 object byte size/SHA 后才创建 ingest job；production `build_ingest_job` 同时冻结 embedding profile 与 Document parser/normalization config。
+- Document history 已确认：generation 1 source/normalized/block/locator rows 在同源 reprocess generation 2 后保留；同一 generation 不覆盖已物化历史；delete 仅清理 ContentUnit/embedding 与对象，保留 representation、normalized content、blocks 和 locator snapshot，Citation/NoteSource 动态返回 `sourceAvailable=false`。
+- Isolated Critical review gates：API、Worker、Web、Integration mixed/recovery/restore/E2E 均为 `ACCEPT`；reprocess failure 已修为 fail-closed：只有完整 current unit/locator/embedding chain 才保留 `ready`，首次/partial ingest 保持 `failed`，failed job/error、旧 generation、Citation/NoteSource 和 source identity 不变。canonical full regression 已完成：API `522 passed, 1 warning`，Worker `281 passed`，Web `130 passed`，TypeScript、ESLint、Next production build、compileall、Alembic head 和 shell backup/restore tests 通过；Ruff executable unavailable，记录为 `not-run`。
+- Live PostgreSQL/MinIO 已恢复并设置 `unless-stopped`；online migration round-trip `1 passed`，live scoped restore `passed=true`，before/after semantic SHA 同为 `4913e985d71652490c5fb879f289f8ea99bf139e768b06615b6c815686404367`，live table/catalog check `passed=true`。详细 artifact 位于 `docs/evals/artifacts/v5b-document-restore-v1/`。
+- Standalone production browser 已对真实 API/Worker/PG/MinIO运行：Playwright `4 passed`，覆盖 upload/finalize/ready/content 与历史 Citation viewer highlight；process/readiness/log SHA/clean shutdown 位于 `docs/evals/artifacts/v5b-document-browser-v1/`。该 host-process artifact 保留为独立浏览器证据，不再承担 B008 formal deployment gate。
+- B008 formal isolated deployment 证据分层保留：
+  - `v1`：旧 runner 的 early pass，缺少后续 runtime container image-binding checks，仅作历史证据。
+  - `v2`：完整 fresh run；真实 deployment/restore/browser/cleanup 通过，但旧 runner 错误要求 Worker `health=healthy`，因此 `deploymentGate=fail`。
+  - `v3`：修正 runner 后启动并被用户中断的 partial 证据；cleanup 通过，不得记为 pass。
+  - `v4`：accepted fresh run。`./infra/scripts/run-v5b-document-acceptance.sh --output-dir docs/evals/artifacts/v5b-document-deployment-v4` 在 project `citeframe-v5b-20260810t025923z-236905` 上完整通过；Alembic 到 head `f9a1b2c3d4e5`；built API/Worker/Web image IDs 与 before/after runtime manifests 一致；API/Web `health=healthy`、Worker `health=null` 但 `status=running`；Web command 为 `node apps/web/server.js`；seed + browser-created 双 Document asset 的 live PostgreSQL/MinIO semantic SHA 前后相等；backup checksums 覆盖两资产 object prefixes；restore 到 empty deployment 后 browser before/after 各 `4 passed`；`cleanup.json` `passed=true` 且 zero residue；`report.json` `deploymentGate=pass`、`releaseGatePassed=true`。独立 Critical review 对 raw manifests/logs 复核为 `ACCEPT`。
+- residual risk：scripted provider 只证明工程 plumbing，不证明模型质量或用户价值；R803/M404 继续后置。canonical dirty worktree 仍保留既有 V5-B 实现变更，本切片未 commit/push。
+
 
 ## 9. 更新方式
 

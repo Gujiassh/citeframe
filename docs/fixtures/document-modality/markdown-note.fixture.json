@@ -1,0 +1,353 @@
+{
+  "schemaVersion": "document-modality-fixture-v1",
+  "assetKind": "document",
+  "format": "markdown",
+  "mimeType": "text/markdown",
+  "acceptedMimeTypes": [
+    "text/markdown"
+  ],
+  "rejectedMimeTypes": [
+    "text/html",
+    "application/pdf",
+    "image/png"
+  ],
+  "parserVersion": "document-parser-v1",
+  "normalizationVersion": "document-normalization-v1",
+  "sourceFilename": "markdown-note.md",
+  "sourcePath": "docs/fixtures/document-modality/markdown-note.md",
+  "sourceSha256": "5fca7c272fee8667c22c89205c2ddb3d1b161b85ef584b0fd471f1ddd61cd1df",
+  "byteSize": 114,
+  "normalizedText": "Intro\nHello world paragraph.\nDetails\n- first item\n- second item\npython\nprint('ok')\nquoted note\n",
+  "normalizedContentSha256": "41f767c38f2c8d46f661a554f01d65f12b795ff21665f631268a6eb1c64be741",
+  "normalizedContentType": "text/plain; charset=utf-8",
+  "representationKinds": [
+    "document_source",
+    "document_normalized"
+  ],
+  "contentUnitKinds": [
+    "document_text_chunk"
+  ],
+  "locatorKind": "document_anchor",
+  "locatorDetailFamily": "record",
+  "retrieval": {
+    "embeddingSpace": "text",
+    "channels": [
+      "text",
+      "lexical"
+    ],
+    "unitKinds": [
+      "document_text_chunk"
+    ],
+    "expectedPrimaryExcerpt": "Hello world paragraph."
+  },
+  "blocks": [
+    {
+      "blockOrder": 0,
+      "blockKind": "heading",
+      "headingLevel": 1,
+      "headingPath": [
+        "Intro"
+      ],
+      "text": "Intro",
+      "charStart": 0,
+      "charEnd": 5,
+      "textSha256": "24601bcaae6e170b381367ec4f4475786c6dbef5e8332f8903779c76d298d304",
+      "blockId": "docblk_976f35b9f80ae838b040884ef8ee30ba",
+      "normalizationVersion": "document-normalization-v1"
+    },
+    {
+      "blockOrder": 1,
+      "blockKind": "paragraph",
+      "headingLevel": null,
+      "headingPath": [
+        "Intro"
+      ],
+      "text": "Hello world paragraph.",
+      "charStart": 6,
+      "charEnd": 28,
+      "textSha256": "615bad435819abcd9488e2aaad0a623a9aaca67f299ace86224cc7fe6a4afc28",
+      "blockId": "docblk_4ee5160d6645659f098b1812f883d683",
+      "normalizationVersion": "document-normalization-v1"
+    },
+    {
+      "blockOrder": 2,
+      "blockKind": "heading",
+      "headingLevel": 2,
+      "headingPath": [
+        "Intro",
+        "Details"
+      ],
+      "text": "Details",
+      "charStart": 29,
+      "charEnd": 36,
+      "textSha256": "45989de49fb7f66dfe17a8fc26f3a02c7abcd74f7e8e6cf9f39fa0e3775780df",
+      "blockId": "docblk_3c5e1af0e21d41a55ce4cc31652bc4a2",
+      "normalizationVersion": "document-normalization-v1"
+    },
+    {
+      "blockOrder": 3,
+      "blockKind": "list_item",
+      "headingLevel": null,
+      "headingPath": [
+        "Intro",
+        "Details"
+      ],
+      "text": "- first item",
+      "charStart": 37,
+      "charEnd": 49,
+      "textSha256": "3f9651f671a71e09433441b82c5b6d5ceed0f5325f811f56831afcb05ad00e1c",
+      "blockId": "docblk_5cbbab174a7aa2eb74872d12648326d3",
+      "normalizationVersion": "document-normalization-v1"
+    },
+    {
+      "blockOrder": 4,
+      "blockKind": "list_item",
+      "headingLevel": null,
+      "headingPath": [
+        "Intro",
+        "Details"
+      ],
+      "text": "- second item",
+      "charStart": 50,
+      "charEnd": 63,
+      "textSha256": "5189ae95d971257ead08eef3745b4ef3d159e10a91de5ace752a58ba2ea048a6",
+      "blockId": "docblk_e72b5488d7170e91864daa15ff90349a",
+      "normalizationVersion": "document-normalization-v1"
+    },
+    {
+      "blockOrder": 5,
+      "blockKind": "code_block",
+      "headingLevel": null,
+      "headingPath": [
+        "Intro",
+        "Details"
+      ],
+      "text": "python\nprint('ok')",
+      "charStart": 64,
+      "charEnd": 82,
+      "textSha256": "15e9b5cae1f34629a05b8bff2117fb91123ddd87f85bc160db654cf853dcb51e",
+      "blockId": "docblk_e1b0a42d56a04e7a62a5d89bc6d22292",
+      "normalizationVersion": "document-normalization-v1"
+    },
+    {
+      "blockOrder": 6,
+      "blockKind": "quote",
+      "headingLevel": null,
+      "headingPath": [
+        "Intro",
+        "Details"
+      ],
+      "text": "quoted note",
+      "charStart": 83,
+      "charEnd": 94,
+      "textSha256": "6a46a712696d8ff3b4145d58cd5094eaf98c2ee0a67cba541fa52e8cf33ef9aa",
+      "blockId": "docblk_4b74818f3b22aab1d101bfac8cfa81c6",
+      "normalizationVersion": "document-normalization-v1"
+    }
+  ],
+  "locatorSnapshots": [
+    {
+      "kind": "document_anchor",
+      "version": 1,
+      "blockId": "docblk_976f35b9f80ae838b040884ef8ee30ba",
+      "blockKind": "heading",
+      "headingPath": [
+        "Intro"
+      ],
+      "charStart": 0,
+      "charEnd": 5,
+      "textSha256": "24601bcaae6e170b381367ec4f4475786c6dbef5e8332f8903779c76d298d304",
+      "normalizationVersion": "document-normalization-v1"
+    },
+    {
+      "kind": "document_anchor",
+      "version": 1,
+      "blockId": "docblk_4ee5160d6645659f098b1812f883d683",
+      "blockKind": "paragraph",
+      "headingPath": [
+        "Intro"
+      ],
+      "charStart": 6,
+      "charEnd": 28,
+      "textSha256": "615bad435819abcd9488e2aaad0a623a9aaca67f299ace86224cc7fe6a4afc28",
+      "normalizationVersion": "document-normalization-v1"
+    },
+    {
+      "kind": "document_anchor",
+      "version": 1,
+      "blockId": "docblk_3c5e1af0e21d41a55ce4cc31652bc4a2",
+      "blockKind": "heading",
+      "headingPath": [
+        "Intro",
+        "Details"
+      ],
+      "charStart": 29,
+      "charEnd": 36,
+      "textSha256": "45989de49fb7f66dfe17a8fc26f3a02c7abcd74f7e8e6cf9f39fa0e3775780df",
+      "normalizationVersion": "document-normalization-v1"
+    },
+    {
+      "kind": "document_anchor",
+      "version": 1,
+      "blockId": "docblk_5cbbab174a7aa2eb74872d12648326d3",
+      "blockKind": "list_item",
+      "headingPath": [
+        "Intro",
+        "Details"
+      ],
+      "charStart": 37,
+      "charEnd": 49,
+      "textSha256": "3f9651f671a71e09433441b82c5b6d5ceed0f5325f811f56831afcb05ad00e1c",
+      "normalizationVersion": "document-normalization-v1"
+    },
+    {
+      "kind": "document_anchor",
+      "version": 1,
+      "blockId": "docblk_e72b5488d7170e91864daa15ff90349a",
+      "blockKind": "list_item",
+      "headingPath": [
+        "Intro",
+        "Details"
+      ],
+      "charStart": 50,
+      "charEnd": 63,
+      "textSha256": "5189ae95d971257ead08eef3745b4ef3d159e10a91de5ace752a58ba2ea048a6",
+      "normalizationVersion": "document-normalization-v1"
+    },
+    {
+      "kind": "document_anchor",
+      "version": 1,
+      "blockId": "docblk_e1b0a42d56a04e7a62a5d89bc6d22292",
+      "blockKind": "code_block",
+      "headingPath": [
+        "Intro",
+        "Details"
+      ],
+      "charStart": 64,
+      "charEnd": 82,
+      "textSha256": "15e9b5cae1f34629a05b8bff2117fb91123ddd87f85bc160db654cf853dcb51e",
+      "normalizationVersion": "document-normalization-v1"
+    },
+    {
+      "kind": "document_anchor",
+      "version": 1,
+      "blockId": "docblk_4b74818f3b22aab1d101bfac8cfa81c6",
+      "blockKind": "quote",
+      "headingPath": [
+        "Intro",
+        "Details"
+      ],
+      "charStart": 83,
+      "charEnd": 94,
+      "textSha256": "6a46a712696d8ff3b4145d58cd5094eaf98c2ee0a67cba541fa52e8cf33ef9aa",
+      "normalizationVersion": "document-normalization-v1"
+    }
+  ],
+  "expectedCitationProjection": {
+    "assetKind": "document",
+    "assetTitle": "Markdown Note",
+    "sourceAvailable": true,
+    "excerpt": "Hello world paragraph.",
+    "locator": {
+      "kind": "document_anchor",
+      "version": 1,
+      "blockId": "docblk_4ee5160d6645659f098b1812f883d683",
+      "blockKind": "paragraph",
+      "headingPath": [
+        "Intro"
+      ],
+      "charStart": 6,
+      "charEnd": 28,
+      "textSha256": "615bad435819abcd9488e2aaad0a623a9aaca67f299ace86224cc7fe6a4afc28",
+      "normalizationVersion": "document-normalization-v1"
+    },
+    "sourceVersions": {
+      "parserVersion": "document-parser-v1",
+      "processingGeneration": 1,
+      "representationId": "rep_document_normalized_fixture_v1",
+      "indexVersion": 1
+    }
+  },
+  "expectedNoteSourceProjection": {
+    "assetKind": "document",
+    "assetTitle": "Markdown Note",
+    "sourceAvailable": true,
+    "excerpt": "Hello world paragraph.",
+    "locator": {
+      "kind": "document_anchor",
+      "version": 1,
+      "blockId": "docblk_4ee5160d6645659f098b1812f883d683",
+      "blockKind": "paragraph",
+      "headingPath": [
+        "Intro"
+      ],
+      "charStart": 6,
+      "charEnd": 28,
+      "textSha256": "615bad435819abcd9488e2aaad0a623a9aaca67f299ace86224cc7fe6a4afc28",
+      "normalizationVersion": "document-normalization-v1"
+    },
+    "sourceVersions": {
+      "parserVersion": "document-parser-v1",
+      "processingGeneration": 1,
+      "representationId": "rep_document_normalized_fixture_v1",
+      "indexVersion": 1
+    }
+  },
+  "historicalAfterDeleteProjection": {
+    "sourceAvailable": false,
+    "locatorUnchanged": true,
+    "sourceVersionsUnchanged": true
+  },
+  "failureContracts": [
+    {
+      "id": "invalid-utf8",
+      "payloadBase64": "//5ub3QgdXRmOA==",
+      "mimeType": "text/markdown",
+      "expectedErrorCode": "asset_encoding_unsupported",
+      "persistDerivedRows": false
+    },
+    {
+      "id": "invalid-mime-html",
+      "payloadText": "# x\n",
+      "mimeType": "text/html",
+      "expectedErrorCode": "asset_mime_mismatch",
+      "persistDerivedRows": false
+    },
+    {
+      "id": "empty-bytes",
+      "payloadText": "",
+      "mimeType": "text/markdown",
+      "expectedErrorCode": "asset_bytes_invalid",
+      "persistDerivedRows": false
+    },
+    {
+      "id": "binary-nul",
+      "payloadBase64": "IyB4AHkK",
+      "mimeType": "text/markdown",
+      "expectedErrorCode": "asset_bytes_invalid",
+      "persistDerivedRows": false
+    },
+    {
+      "id": "pdf-signature",
+      "payloadText": "%PDF-1.4\n",
+      "mimeType": "text/markdown",
+      "expectedErrorCode": "asset_bytes_invalid",
+      "persistDerivedRows": false
+    }
+  ],
+  "lifecycleInvariants": {
+    "retryIdempotent": true,
+    "partialObjectCleanupOnFailure": true,
+    "deleteNoResurrection": true,
+    "historicalSnapshotReadable": true,
+    "backupRestoreTypedTables": [
+      "document_normalized_contents",
+      "document_blocks",
+      "document_locator_details",
+      "asset_types",
+      "representation_types",
+      "content_unit_types",
+      "locator_types"
+    ]
+  }
+}

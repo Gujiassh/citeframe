@@ -1,4 +1,5 @@
 export const PDF_UPLOAD_MIME_TYPE = "application/pdf";
+export const DOCUMENT_UPLOAD_MIME_TYPE = "text/markdown";
 export const IMAGE_UPLOAD_MIME_TYPES = [
   "image/png",
   "image/jpeg",
@@ -7,6 +8,7 @@ export const IMAGE_UPLOAD_MIME_TYPES = [
 export const PRODUCTION_UPLOAD_MIME_TYPES = [
   PDF_UPLOAD_MIME_TYPE,
   ...IMAGE_UPLOAD_MIME_TYPES,
+  DOCUMENT_UPLOAD_MIME_TYPE,
 ] as const;
 
 const MIME_TYPE_BY_EXTENSION: Readonly<Record<string, typeof PRODUCTION_UPLOAD_MIME_TYPES[number]>> = {
@@ -15,6 +17,8 @@ const MIME_TYPE_BY_EXTENSION: Readonly<Record<string, typeof PRODUCTION_UPLOAD_M
   jpg: "image/jpeg",
   jpeg: "image/jpeg",
   webp: "image/webp",
+  md: DOCUMENT_UPLOAD_MIME_TYPE,
+  markdown: DOCUMENT_UPLOAD_MIME_TYPE,
 };
 
 export const PRODUCTION_UPLOAD_ACCEPT = [

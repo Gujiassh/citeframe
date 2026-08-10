@@ -4,6 +4,10 @@ from collections.abc import Callable, Iterable, Mapping
 from dataclasses import dataclass
 
 from ai_pdf_api.modalities.image_caption import image_caption_config_snapshot
+from ai_pdf_api.modalities.document import (
+    detect_markdown_mime_type,
+    validate_markdown_upload_payload,
+)
 
 
 class ModalityContractError(ValueError):
@@ -44,6 +48,9 @@ class ModalityModule:
     retrieval_channels: tuple[RetrievalChannelRegistration, ...]
     metrics_namespace: str
     ingestion_config_snapshot: Callable[[], Mapping[str, object]]
+    # Optional full-body upload validator. When set, the upload router may load the
+    # complete bounded payload for this modality only; PDF/Image leave this unset.
+    full_payload_validator: Callable[[bytes], None] | None = None
 
 
 @dataclass(frozen=True)
@@ -157,6 +164,16 @@ class ModalityRegistry:
                 f"File signature does not match declared MIME type: {normalized_mime_type}"
             )
         return module
+
+    def validate_upload_payload(self, module: ModalityModule, payload: bytes) -> None:
+        """Run a modality's optional full-payload validator when registered."""
+        validator = module.full_payload_validator
+        if validator is None:
+            return
+        try:
+            validator(payload)
+        except ValueError as error:
+            raise ModalityContractError(str(error)) from error
 
     def for_mime_type(self, mime_type: str) -> ModalityModule:
         asset_kind = self._mime_owners.get(mime_type.lower())
@@ -364,9 +381,44 @@ IMAGE_MODULE = ModalityModule(
     ingestion_config_snapshot=image_caption_config_snapshot,
 )
 
+DOCUMENT_MODULE = ModalityModule(
+    asset_kind="document",
+    contract_version=1,
+    enabled=True,
+    supported_mime_types=frozenset({"text/markdown"}),
+    byte_inspector=detect_markdown_mime_type,
+    representation_types=(
+        TypeRegistration("document_source"),
+        TypeRegistration("document_normalized"),
+    ),
+    content_unit_types=(
+        TypeRegistration("document_block"),
+        TypeRegistration("document_text_chunk"),
+    ),
+    locator_types=(TypeRegistration("document_anchor", detail_family="record"),),
+    retrieval_channels=(
+        RetrievalChannelRegistration(
+            kind="text",
+            embedding_space="text",
+            type_signatures=frozenset(
+                {
+                    ("document_text_chunk", "document_normalized", "document_anchor"),
+                }
+            ),
+        ),
+    ),
+    metrics_namespace="document",
+    ingestion_config_snapshot=lambda: {
+        "documentFormat": "markdown",
+        "documentParserVersion": "document-parser-v1",
+        "documentNormalizationVersion": "document-normalization-v1",
+    },
+    full_payload_validator=validate_markdown_upload_payload,
+)
+
 
 def build_production_registry() -> ModalityRegistry:
     return ModalityRegistry(
-        (PDF_MODULE, IMAGE_MODULE),
+        (PDF_MODULE, IMAGE_MODULE, DOCUMENT_MODULE),
         embedding_spaces=(TypeRegistration("text"),),
     )

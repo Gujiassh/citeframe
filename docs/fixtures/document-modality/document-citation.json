@@ -1,0 +1,29 @@
+{
+  "id": "cit_document_fixture",
+  "messageId": "msg_document_fixture",
+  "citationIndex": 0,
+  "assetId": "asset_document_fixture",
+  "assetKind": "document",
+  "assetTitle": "Markdown Note",
+  "sourceAvailable": true,
+  "excerpt": "Hello world paragraph.",
+  "locator": {
+    "kind": "document_anchor",
+    "version": 1,
+    "blockId": "docblk_4ee5160d6645659f098b1812f883d683",
+    "blockKind": "paragraph",
+    "headingPath": [
+      "Intro"
+    ],
+    "charStart": 6,
+    "charEnd": 28,
+    "textSha256": "615bad435819abcd9488e2aaad0a623a9aaca67f299ace86224cc7fe6a4afc28",
+    "normalizationVersion": "document-normalization-v1"
+  },
+  "sourceVersions": {
+    "parserVersion": "document-parser-v1",
+    "processingGeneration": 1,
+    "representationId": "rep_document_normalized_fixture_v1",
+    "indexVersion": 1
+  }
+}

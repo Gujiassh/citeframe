@@ -37,7 +37,31 @@ export type ImageRegionLocator = {
   regions: SpatialRegion[];
 };
 
-export type EvidenceLocator = PdfPageLocator | PdfRegionLocator | ImageRegionLocator;
+export type DocumentBlockKind =
+  | "heading"
+  | "paragraph"
+  | "list_item"
+  | "code_block"
+  | "quote"
+  | "table";
+
+export type DocumentAnchorLocator = {
+  kind: "document_anchor";
+  version: number;
+  blockId: string;
+  blockKind: DocumentBlockKind;
+  headingPath: string[];
+  charStart: number;
+  charEnd: number;
+  textSha256: string;
+  normalizationVersion: "document-normalization-v1";
+};
+
+export type EvidenceLocator =
+  | PdfPageLocator
+  | PdfRegionLocator
+  | ImageRegionLocator
+  | DocumentAnchorLocator;
 
 export type SourceVersions = {
   parserVersion: string;
@@ -77,6 +101,12 @@ export function getLocatorSummary(locator: EvidenceLocator): string {
   }
   if (locator.kind === "pdf_region") {
     return `PDF p.${locator.pageNumber} · ${locator.regions.length > 1 ? `${locator.regions.length} regions` : "region"}`;
+  }
+  if (locator.kind === "document_anchor") {
+    const heading = locator.headingPath.length > 0
+      ? locator.headingPath[locator.headingPath.length - 1]
+      : locator.blockKind;
+    return `Document · ${heading}`;
   }
   return `Image · ${locator.regions.length > 1 ? `${locator.regions.length} regions` : "region"}`;
 }

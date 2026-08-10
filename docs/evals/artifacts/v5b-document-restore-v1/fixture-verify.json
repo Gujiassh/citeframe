@@ -1,0 +1,8 @@
+{
+  "passed": false,
+  "skipped": true,
+  "reason": "fixture-shape snapshots are offline checks only and cannot satisfy live restore verify",
+  "mismatches": [],
+  "livePostgresMinio": false,
+  "schemaVersion": "v5b-document-restore-acceptance-v1"
+}

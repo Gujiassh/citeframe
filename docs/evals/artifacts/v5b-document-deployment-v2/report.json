@@ -1,0 +1,256 @@
+{
+  "artifactSha256": {
+    "after": "16da7dcf33eb9d030976a01553ddb4d5206f48c6eccb7c6e5b4004be564f8867",
+    "backupChecksums": "d57c7885606e0de15ab39dfbf51551ede4d888bcaa3ae6ee874351747fb0aa42",
+    "backupManifest": "8ee425fa5f112db2d4221673cbeff75091b4d55a5a4cc03da47c3310113b7fae",
+    "before": "60b7a4726fbcf43cdc48402edd95c37a9297c85ff81cf8324708bea5e0322113",
+    "browserAssetAfter": "f76a5588989c0c4cd57aef4898d7e85c0385b1df945e051aff2fe9156d062aeb",
+    "browserAssetBefore": "56f1db1e525dd5a8e64e2f82295d950c7c069b498be9bd1e02d201666244eeb7",
+    "browserAssetVerification": "d77f4120f12e139a65184dc9b2f7080bf44f953f87ff7430cb66bc72d870153b",
+    "composeConfig": "4add4428e9d7553e860a4961811eab8183e15c5ff0ea1a7bf32be2bcf8e0f55b",
+    "runtimeContainersAfter": "ef263f7eb3339ae2804b844e5ca7cef46f505829ba1980c6ae25b0d6a60126f7",
+    "runtimeContainersBefore": "ef01e934a11f86793b21cc1edd926e9e559553933ee64adeda358a11cf35621c",
+    "seed": "660046b15bc0d1fb420735b1768c2f614b5f933f19ff27a99e77cf93ddbb022e",
+    "verification": "84d609ee20910711356585eb6ba10b944658366fa3b82033d18ca4cdb6dfdc6a"
+  },
+  "browser": {
+    "afterExitCode": 0,
+    "afterPlaywrightSha256": "0c4fa56aab37bed7d320ace783ffe59e14c44f6480fdb1f56c373334b6cb473e",
+    "artifactFiles": {
+      "browser-after/document-historical-citation.json": true,
+      "browser-after/document-historical-citation.png": true,
+      "browser-after/production-start-upload.json": true,
+      "browser-after/standalone-entry-check.json": true,
+      "browser-before/document-historical-citation.json": true,
+      "browser-before/document-historical-citation.png": true,
+      "browser-before/production-start-upload.json": true,
+      "browser-before/standalone-entry-check.json": true
+    },
+    "baseURL": "http://localhost:48649",
+    "beforeExitCode": 0,
+    "beforePlaywrightSha256": "a1a42fdc220e745f2f90974936272a1f84cd1372d08a35a6c7c7ebf25d62503b",
+    "email": "v5b-browser-20260810t023605z-185747@example.com",
+    "stateSha256": "8c5a088a128adaec3e280c4bcc0496809b37bc4a48894bddd58ce7b1bb044935"
+  },
+  "builtImages": {
+    "images": [
+      {
+        "created": "2026-08-10T02:36:51.647235222Z",
+        "id": "sha256:b6c6e6ae091c45f49918dd437959a8e676e8021c842e6721dcffafbc6d444fdd",
+        "repoTags": [
+          "ai-pdf-workspace-api:v5b-20260810t023605z-185747"
+        ],
+        "size": 234152593,
+        "tag": "ai-pdf-workspace-api:v5b-20260810t023605z-185747"
+      },
+      {
+        "created": "2026-08-10T02:39:20.348240578Z",
+        "id": "sha256:f8b5384deb4a86dbea229e974109047e5c7a4a68c2c54eb722a0c42cf5cf52e1",
+        "repoTags": [
+          "ai-pdf-workspace-worker:v5b-20260810t023605z-185747"
+        ],
+        "size": 922062027,
+        "tag": "ai-pdf-workspace-worker:v5b-20260810t023605z-185747"
+      },
+      {
+        "created": "2026-08-10T02:37:43.944366769Z",
+        "id": "sha256:f8d4dacf868ff01637b3095a9787609c8e05e753500a0017eeb7d73aaa8f9d04",
+        "repoTags": [
+          "ai-pdf-workspace-web:v5b-20260810t023605z-185747"
+        ],
+        "size": 264966825,
+        "tag": "ai-pdf-workspace-web:v5b-20260810t023605z-185747"
+      }
+    ],
+    "schemaVersion": "v5b-built-image-manifest-v1"
+  },
+  "cleanup": {
+    "composeDownExitCode": 0,
+    "containersRemaining": [],
+    "envRemoved": true,
+    "imageRemoveExitCode": 0,
+    "imageResidueCheckExitCode": 0,
+    "networksRemaining": [],
+    "passed": true,
+    "volumesRemaining": []
+  },
+  "deploymentGate": "fail",
+  "engineeringChecks": {
+    "backupIncludesBothDocumentAssets": true,
+    "browserAfterPassed": true,
+    "browserArtifactsComplete": true,
+    "browserAssetIdentity": true,
+    "browserAssetRestoreVerification": true,
+    "browserAssetRestoreWasLivePostgresMinio": true,
+    "browserAssetSemanticIdentity": true,
+    "browserBeforePassed": true,
+    "builtImagesRecorded": true,
+    "deploymentBaseURL": true,
+    "documentSeedSucceeded": true,
+    "restoreVerification": true,
+    "restoreWasLivePostgresMinio": true,
+    "runtimeContainersAfterMatchBuiltImages": false,
+    "runtimeContainersBeforeMatchBuiltImages": false,
+    "seedFixtureDigest": true,
+    "seedStateIdentity": true,
+    "semanticIdentity": true
+  },
+  "imageIds": {
+    "ai-pdf-workspace-api:v5b-20260810t023605z-185747": "sha256:b6c6e6ae091c45f49918dd437959a8e676e8021c842e6721dcffafbc6d444fdd",
+    "ai-pdf-workspace-web:v5b-20260810t023605z-185747": "sha256:f8d4dacf868ff01637b3095a9787609c8e05e753500a0017eeb7d73aaa8f9d04",
+    "ai-pdf-workspace-worker:v5b-20260810t023605z-185747": "sha256:f8b5384deb4a86dbea229e974109047e5c7a4a68c2c54eb722a0c42cf5cf52e1"
+  },
+  "modelQualityGate": "not_evaluable",
+  "modelQualityReason": "scripted_provider_is_engineering_evidence_only",
+  "project": "citeframe-v5b-20260810t023605z-185747",
+  "releaseGatePassed": false,
+  "restore": {
+    "afterSha256": "16da7dcf33eb9d030976a01553ddb4d5206f48c6eccb7c6e5b4004be564f8867",
+    "beforeSha256": "60b7a4726fbcf43cdc48402edd95c37a9297c85ff81cf8324708bea5e0322113",
+    "documentAssets": {
+      "browserUpload": {
+        "afterSha256": "f76a5588989c0c4cd57aef4898d7e85c0385b1df945e051aff2fe9156d062aeb",
+        "allowEmptyEvidenceLinks": true,
+        "assetId": "0aada081-7678-4d57-96ed-0260218bf23f",
+        "beforeSha256": "56f1db1e525dd5a8e64e2f82295d950c7c069b498be9bd1e02d201666244eeb7",
+        "passed": true,
+        "semanticSha256": "49ce805d8367dba0d4b9bf715533b5a610ab567c30c2dc686cf1a1367ea7956a",
+        "verificationSha256": "d77f4120f12e139a65184dc9b2f7080bf44f953f87ff7430cb66bc72d870153b"
+      },
+      "seed": {
+        "afterSha256": "16da7dcf33eb9d030976a01553ddb4d5206f48c6eccb7c6e5b4004be564f8867",
+        "assetId": "1f7820ba-a68f-4e07-804e-7f2c98978c08",
+        "beforeSha256": "60b7a4726fbcf43cdc48402edd95c37a9297c85ff81cf8324708bea5e0322113",
+        "passed": true,
+        "semanticSha256": "391013d0c71363a1627ce52715359c2b680a0bc1c9ad262696d9b7ebf4f8608e",
+        "verificationSha256": "84d609ee20910711356585eb6ba10b944658366fa3b82033d18ca4cdb6dfdc6a"
+      }
+    },
+    "passed": true,
+    "semanticSha256": "391013d0c71363a1627ce52715359c2b680a0bc1c9ad262696d9b7ebf4f8608e",
+    "verificationSha256": "84d609ee20910711356585eb6ba10b944658366fa3b82033d18ca4cdb6dfdc6a"
+  },
+  "runtimeContainers": {
+    "after": {
+      "containers": [
+        {
+          "command": [
+            "uvicorn",
+            "ai_pdf_api.main:app",
+            "--host",
+            "0.0.0.0",
+            "--port",
+            "8000"
+          ],
+          "configuredImage": "ai-pdf-workspace-api:v5b-20260810t023605z-185747",
+          "containerId": "997d98730099f3aab932bf361e51d5cdadaba70b4ac703fd2655a4a28b5a5285",
+          "entrypoint": null,
+          "expectedImageTag": "ai-pdf-workspace-api:v5b-20260810t023605z-185747",
+          "health": "healthy",
+          "resolvedImageId": "sha256:b6c6e6ae091c45f49918dd437959a8e676e8021c842e6721dcffafbc6d444fdd",
+          "service": "api",
+          "status": "running"
+        },
+        {
+          "command": [
+            "python",
+            "-m",
+            "ai_pdf_worker.main"
+          ],
+          "configuredImage": "ai-pdf-workspace-worker:v5b-20260810t023605z-185747",
+          "containerId": "dd0168856996dbd88a1395639898178c8c69744f70ca6173ce1c2bb9407d389d",
+          "entrypoint": null,
+          "expectedImageTag": "ai-pdf-workspace-worker:v5b-20260810t023605z-185747",
+          "health": null,
+          "resolvedImageId": "sha256:f8b5384deb4a86dbea229e974109047e5c7a4a68c2c54eb722a0c42cf5cf52e1",
+          "service": "worker",
+          "status": "running"
+        },
+        {
+          "command": [
+            "node",
+            "apps/web/server.js"
+          ],
+          "configuredImage": "ai-pdf-workspace-web:v5b-20260810t023605z-185747",
+          "containerId": "51e56c23fa3c2bb0b50e06f2013ba81a8cfc59b20cf0553ae3ef4ee7c416421a",
+          "entrypoint": [
+            "docker-entrypoint.sh"
+          ],
+          "expectedImageTag": "ai-pdf-workspace-web:v5b-20260810t023605z-185747",
+          "health": "healthy",
+          "resolvedImageId": "sha256:f8d4dacf868ff01637b3095a9787609c8e05e753500a0017eeb7d73aaa8f9d04",
+          "service": "web",
+          "status": "running"
+        }
+      ],
+      "schemaVersion": "v5b-runtime-container-manifest-v1"
+    },
+    "before": {
+      "containers": [
+        {
+          "command": [
+            "uvicorn",
+            "ai_pdf_api.main:app",
+            "--host",
+            "0.0.0.0",
+            "--port",
+            "8000"
+          ],
+          "configuredImage": "ai-pdf-workspace-api:v5b-20260810t023605z-185747",
+          "containerId": "8d6504eba0faed1c3e502aed1025232fb2e0d78d9478563fa50f8216f6270d64",
+          "entrypoint": null,
+          "expectedImageTag": "ai-pdf-workspace-api:v5b-20260810t023605z-185747",
+          "health": "healthy",
+          "resolvedImageId": "sha256:b6c6e6ae091c45f49918dd437959a8e676e8021c842e6721dcffafbc6d444fdd",
+          "service": "api",
+          "status": "running"
+        },
+        {
+          "command": [
+            "python",
+            "-m",
+            "ai_pdf_worker.main"
+          ],
+          "configuredImage": "ai-pdf-workspace-worker:v5b-20260810t023605z-185747",
+          "containerId": "5be0b786ba42fd08886807978ae3ba0a20264d9c5068b070c54ef987dc48ed0a",
+          "entrypoint": null,
+          "expectedImageTag": "ai-pdf-workspace-worker:v5b-20260810t023605z-185747",
+          "health": null,
+          "resolvedImageId": "sha256:f8b5384deb4a86dbea229e974109047e5c7a4a68c2c54eb722a0c42cf5cf52e1",
+          "service": "worker",
+          "status": "running"
+        },
+        {
+          "command": [
+            "node",
+            "apps/web/server.js"
+          ],
+          "configuredImage": "ai-pdf-workspace-web:v5b-20260810t023605z-185747",
+          "containerId": "848a3425f39774a4713a650092d58e15bafe1c9f5a6e5e1811c404162ec0e030",
+          "entrypoint": [
+            "docker-entrypoint.sh"
+          ],
+          "expectedImageTag": "ai-pdf-workspace-web:v5b-20260810t023605z-185747",
+          "health": "healthy",
+          "resolvedImageId": "sha256:f8d4dacf868ff01637b3095a9787609c8e05e753500a0017eeb7d73aaa8f9d04",
+          "service": "web",
+          "status": "running"
+        }
+      ],
+      "schemaVersion": "v5b-runtime-container-manifest-v1"
+    }
+  },
+  "runtimeKind": "isolated-compose-built-images",
+  "schemaVersion": "v5b-document-deployment-acceptance-v1",
+  "seed": {
+    "assetId": "1f7820ba-a68f-4e07-804e-7f2c98978c08",
+    "citationId": "4edf838f-ae87-43e2-a0bb-fd279f73c44d",
+    "fixtureSourceSha256": "5fca7c272fee8667c22c89205c2ddb3d1b161b85ef584b0fd471f1ddd61cd1df",
+    "jobId": "ea8ea300-577d-4bbe-b545-64a5df43bdf8",
+    "schemaVersion": "v5b-document-deployment-seed-v1",
+    "sourceAvailable": true,
+    "sourceSha256": "5fca7c272fee8667c22c89205c2ddb3d1b161b85ef584b0fd471f1ddd61cd1df",
+    "statePath": "/tmp/v5b-output/browser-state.json",
+    "workspaceId": "d532ed4a-194f-4599-b8a7-474472edfbd8"
+  }
+}

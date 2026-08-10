@@ -1,0 +1,12 @@
+{
+  "schemaVersion": "v5b-document-restore-acceptance-v1",
+  "capturedAt": "2026-08-06T11:23:40.246177+00:00",
+  "evidenceMode": "blocked",
+  "livePostgresMinio": false,
+  "skipReason": "Live Document restore evidence requires explicit V5B_WORKSPACE_ID and V5B_ASSET_ID (or --workspace-id/--asset-id)",
+  "passed": false,
+  "scopedRows": {},
+  "objects": [],
+  "typedTables": {},
+  "catalog": {}
+}

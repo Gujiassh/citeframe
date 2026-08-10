@@ -1,0 +1,49 @@
+{
+  "passed": true,
+  "skipped": false,
+  "mismatches": [],
+  "livePostgresMinio": true,
+  "schemaVersion": "v5b-document-restore-acceptance-v1",
+  "beforeSemanticSha256": "391013d0c71363a1627ce52715359c2b680a0bc1c9ad262696d9b7ebf4f8608e",
+  "afterSemanticSha256": "391013d0c71363a1627ce52715359c2b680a0bc1c9ad262696d9b7ebf4f8608e",
+  "requiredCatalog": {
+    "asset_types": [
+      {
+        "kind": "document",
+        "enabled": true,
+        "contract_version": 1
+      }
+    ],
+    "representation_types": [
+      {
+        "kind": "document_normalized",
+        "asset_kind": "document",
+        "contract_version": 1
+      },
+      {
+        "kind": "document_source",
+        "asset_kind": "document",
+        "contract_version": 1
+      }
+    ],
+    "content_unit_types": [
+      {
+        "kind": "document_block",
+        "asset_kind": "document",
+        "contract_version": 1
+      },
+      {
+        "kind": "document_text_chunk",
+        "asset_kind": "document",
+        "contract_version": 1
+      }
+    ],
+    "locator_types": [
+      {
+        "kind": "document_anchor",
+        "detail_family": "record",
+        "contract_version": 1
+      }
+    ]
+  }
+}

@@ -15,11 +15,17 @@ from ai_pdf_api.core.settings import settings
 from ai_pdf_api.services.capabilities import embedding_profile_snapshot_fields
 from ai_pdf_api.services.embedding_index import embedding_index_job_snapshot_fields
 from ai_pdf_api.db.session import get_db
+from ai_pdf_api.modalities.document import (
+    DocumentIntegrityError,
+    validate_document_normalized_bundle,
+)
 from ai_pdf_api.modalities.registry import ModalityContractError, build_production_registry
 from ai_pdf_api.models import (
     Asset,
     AssetRepresentation,
     ContentUnit,
+    DocumentBlock,
+    DocumentNormalizedContent,
     ImageRepresentationGeometry,
     IngestionJob,
     PdfPage,
@@ -31,6 +37,10 @@ from ai_pdf_api.schemas.asset import (
     CreateUploadSessionResponse,
     AssetDetailResponse,
     AssetListResponse,
+    DocumentAssetDetail,
+    DocumentHeadingSummary,
+    DocumentNormalizedBlock,
+    DocumentNormalizedContentResponse,
     PdfPageContent,
     PdfPageOcrBlock,
     AssetSummary,
@@ -41,7 +51,7 @@ from ai_pdf_api.schemas.asset import (
     PdfAssetDetail,
 )
 from ai_pdf_api.schemas.job import JobStatus
-from ai_pdf_api.services.storage import object_exists, stream_bytes, upload_stream
+from ai_pdf_api.services.storage import download_bytes, object_exists, stream_bytes, upload_stream
 
 router = APIRouter(prefix="/v1/workspaces/{workspace_id}/assets", tags=["assets"])
 modality_registry = build_production_registry()
@@ -239,6 +249,59 @@ def get_asset_detail(
                 orientationApplied=geometry.orientation_applied,
             ),
         )
+    if asset.asset_kind == "document":
+        representation = db.scalar(
+            select(AssetRepresentation).where(
+                AssetRepresentation.asset_id == asset.id,
+                AssetRepresentation.workspace_id == workspace_id,
+                AssetRepresentation.representation_kind == "document_normalized",
+                AssetRepresentation.processing_generation
+                == asset.current_processing_generation,
+            )
+        )
+        if representation is None:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND, detail="Asset detail not found."
+            )
+        normalized = db.get(DocumentNormalizedContent, representation.id)
+        if normalized is None:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND, detail="Asset detail not found."
+            )
+        heading_blocks = db.scalars(
+            select(DocumentBlock)
+            .where(
+                DocumentBlock.representation_id == representation.id,
+                DocumentBlock.block_kind == "heading",
+            )
+            .order_by(DocumentBlock.block_order)
+        ).all()
+        headings: list[DocumentHeadingSummary] = []
+        for block in heading_blocks:
+            if block.heading_level is None or not (1 <= block.heading_level <= 6):
+                raise HTTPException(
+                    status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                    detail="Document heading level is invalid.",
+                )
+            headings.append(
+                DocumentHeadingSummary(
+                    blockId=block.block_id,
+                    level=block.heading_level,
+                    text=block.text_content,
+                    order=block.block_order,
+                )
+            )
+        return AssetDetailResponse(
+            asset=to_asset_summary(asset),
+            detail=DocumentAssetDetail(
+                format="markdown",
+                parserVersion=normalized.parser_version,  # type: ignore[arg-type]
+                normalizationVersion=normalized.normalization_version,  # type: ignore[arg-type]
+                representationId=representation.id,
+                blockCount=normalized.block_count,
+                headings=headings,
+            ),
+        )
     representation = db.scalar(
         select(AssetRepresentation)
         .where(
@@ -308,6 +371,88 @@ def get_asset_file(
             "Content-Disposition": f"inline; filename*=UTF-8''{quote(asset.source_filename)}",
             "X-Content-Type-Options": "nosniff",
         },
+    )
+
+
+
+@router.get(
+    "/{asset_id}/representations/{representation_id}/content",
+    response_model=DocumentNormalizedContentResponse,
+)
+def get_document_representation_content(
+    workspace_id: str,
+    asset_id: str,
+    representation_id: str,
+    user_id: str = Depends(require_user_id),
+    db: Session = Depends(get_db),
+) -> DocumentNormalizedContentResponse:
+    """Generation-scoped normalized document content for exact block lookup.
+
+    Source `/file` remains the immutable upload object and is unchanged.
+    """
+    get_accessible_workspace(db, user_id, workspace_id)
+    asset = get_workspace_asset(db, workspace_id, asset_id)
+    if asset.asset_kind != "document":
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Document representation not found.",
+        )
+    representation = db.scalar(
+        select(AssetRepresentation).where(
+            AssetRepresentation.id == representation_id,
+            AssetRepresentation.asset_id == asset.id,
+            AssetRepresentation.workspace_id == workspace_id,
+            AssetRepresentation.representation_kind == "document_normalized",
+        )
+    )
+    if representation is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Document representation not found.",
+        )
+    normalized = db.get(DocumentNormalizedContent, representation.id)
+    if normalized is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Document normalized content not found.",
+        )
+    blocks = db.scalars(
+        select(DocumentBlock)
+        .where(DocumentBlock.representation_id == representation.id)
+        .order_by(DocumentBlock.block_order)
+    ).all()
+    try:
+        normalized_text, validated_blocks = validate_document_normalized_bundle(
+            normalized, blocks
+        )
+    except DocumentIntegrityError as error:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Document normalized content is corrupt: {error}",
+        ) from error
+    return DocumentNormalizedContentResponse(
+        assetId=asset.id,
+        representationId=representation.id,
+        processingGeneration=representation.processing_generation,
+        format="markdown",
+        parserVersion=normalized.parser_version,  # type: ignore[arg-type]
+        normalizationVersion=normalized.normalization_version,  # type: ignore[arg-type]
+        contentSha256=normalized.content_sha256,
+        normalizedText=normalized_text,
+        blocks=[
+            DocumentNormalizedBlock(
+                blockId=block.block_id,
+                blockOrder=block.block_order,
+                blockKind=block.block_kind,  # type: ignore[arg-type]
+                headingLevel=block.heading_level,
+                headingPath=list(block.heading_path or []),
+                charStart=block.char_start,
+                charEnd=block.char_end,
+                textSha256=block.text_sha256,
+                text=block.text_content,
+            )
+            for block in validated_blocks
+        ],
     )
 
 
@@ -506,6 +651,9 @@ async def upload_asset_binary(
 ) -> Response:
     get_accessible_workspace(db, user_id, workspace_id)
     asset = get_workspace_asset(db, workspace_id, asset_id)
+    # Serialize concurrent first PUTs before streaming the body so only one
+    # request can persist source bytes / source_sha256 for this Asset.
+    db.refresh(asset, with_for_update=True)
     if asset.status != "pending_upload":
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
@@ -515,6 +663,11 @@ async def upload_asset_binary(
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
             detail="Object key mismatch.",
+        )
+    if asset.source_sha256 is not None:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="Asset source object is immutable after upload.",
         )
 
     declared_length = request.headers.get("content-length")
@@ -565,6 +718,18 @@ async def upload_asset_binary(
             raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_CONTENT, detail=str(error)) from error
         if inspected.asset_kind != asset.asset_kind:
             raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Asset kind mismatch.")
+        if inspected.full_payload_validator is not None:
+            payload.seek(0)
+            full_payload = payload.read()
+            try:
+                modality_registry.validate_upload_payload(inspected, full_payload)
+            except ModalityContractError as error:
+                raise HTTPException(
+                    status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
+                    detail=str(error),
+                ) from error
+        # Re-lock/recheck after body validation. Covers same-session mutations
+        # during stream and keeps the pre-storage identity gate explicit.
         db.refresh(asset, with_for_update=True)
         if asset.status != "pending_upload":
             raise HTTPException(
@@ -575,6 +740,11 @@ async def upload_asset_binary(
             raise HTTPException(
                 status_code=status.HTTP_409_CONFLICT,
                 detail="Object key mismatch.",
+            )
+        if asset.source_sha256 is not None:
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail="Asset source object is immutable after upload.",
             )
         payload.seek(0)
         upload_stream(asset.object_key, payload, total_size, asset.mime_type)
@@ -606,10 +776,25 @@ def finalize_upload(
             status_code=status.HTTP_409_CONFLICT,
             detail="Object key mismatch.",
         )
+    if asset.source_sha256 is None:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="Asset source hash is missing.",
+        )
     if not object_exists(asset.object_key):
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
             detail="Uploaded object not found in storage.",
+        )
+    stored_bytes = download_bytes(asset.object_key)
+    stored_sha256 = sha256(stored_bytes).hexdigest()
+    if (
+        len(stored_bytes) != asset.byte_size
+        or stored_sha256 != asset.source_sha256.lower()
+    ):
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="Uploaded object does not match its persisted size or SHA-256.",
         )
 
     now = datetime.now(UTC)

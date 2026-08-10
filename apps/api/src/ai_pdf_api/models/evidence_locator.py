@@ -2,6 +2,7 @@ from datetime import UTC, datetime
 from uuid import uuid4
 
 from sqlalchemy import Boolean, CheckConstraint, DateTime, Float, ForeignKey, Integer, String, UniqueConstraint
+from sqlalchemy.types import JSON
 from sqlalchemy.orm import Mapped, mapped_column
 
 from ai_pdf_api.db.base import Base
@@ -75,3 +76,30 @@ class SpatialLocatorRegion(Base):
     y: Mapped[float] = mapped_column(Float)
     width: Mapped[float] = mapped_column(Float)
     height: Mapped[float] = mapped_column(Float)
+
+class DocumentLocatorDetail(Base):
+    __tablename__ = "document_locator_details"
+    __table_args__ = (
+        CheckConstraint(
+            "block_kind IN ('heading', 'paragraph', 'list_item', 'code_block', 'quote', 'table')",
+            name="ck_document_locator_details_block_kind",
+        ),
+        CheckConstraint("char_start >= 0", name="ck_document_locator_details_char_start"),
+        CheckConstraint("char_end > char_start", name="ck_document_locator_details_char_range"),
+        CheckConstraint(
+            "normalization_version = 'document-normalization-v1'",
+            name="ck_document_locator_details_normalization_version",
+        ),
+    )
+
+    locator_id: Mapped[str] = mapped_column(
+        String(36), ForeignKey("evidence_locators.id", ondelete="CASCADE"), primary_key=True
+    )
+    block_id: Mapped[str] = mapped_column(String(64))
+    block_kind: Mapped[str] = mapped_column(String(32))
+    # Schema-validated ordered string array; codec/API reject unconstrained JSON truth.
+    heading_path: Mapped[list[str]] = mapped_column(JSON)
+    char_start: Mapped[int] = mapped_column(Integer)
+    char_end: Mapped[int] = mapped_column(Integer)
+    text_sha256: Mapped[str] = mapped_column(String(64))
+    normalization_version: Mapped[str] = mapped_column(String(64))

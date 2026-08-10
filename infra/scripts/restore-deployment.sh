@@ -65,10 +65,15 @@ require_file "$BACKUP_DIR/SHA256SUMS"
 TARGET_POSTGRES_DB=$(strict_key_value "$ENV_FILE" POSTGRES_DB)
 POSTGRES_USER=$(strict_key_value "$ENV_FILE" POSTGRES_USER)
 TARGET_MINIO_BUCKET=$(strict_key_value "$ENV_FILE" MINIO_BUCKET)
-[[ "$(strict_key_value "$BACKUP_DIR/manifest.env" FORMAT_VERSION)" == "1" ]] || {
-  printf 'backup_format_unsupported\n' >&2
+BACKUP_FORMAT_VERSION=$(strict_key_value "$BACKUP_DIR/manifest.env" FORMAT_VERSION)
+if [[ "$BACKUP_FORMAT_VERSION" == "1" ]]; then
+  printf 'backup_format_unsupported version=1 required=2 message=create_a_new_format_2_backup\n' >&2
   exit 1
-}
+fi
+if [[ "$BACKUP_FORMAT_VERSION" != "2" ]]; then
+  printf 'backup_format_unsupported version=%s required=2\n' "$BACKUP_FORMAT_VERSION" >&2
+  exit 1
+fi
 [[ "$(strict_key_value "$BACKUP_DIR/manifest.env" COMPOSE_PROJECT)" == "$COMPOSE_PROJECT" ]] || {
   printf 'backup_project_mismatch\n' >&2
   exit 1
@@ -79,6 +84,26 @@ TARGET_MINIO_BUCKET=$(strict_key_value "$ENV_FILE" MINIO_BUCKET)
 }
 [[ "$(strict_key_value "$BACKUP_DIR/manifest.env" MINIO_BUCKET)" == "$TARGET_MINIO_BUCKET" ]] || {
   printf 'backup_bucket_mismatch\n' >&2
+  exit 1
+}
+BACKUP_CONTRACT=$(strict_key_value "$BACKUP_DIR/manifest.env" BACKUP_CONTRACT)
+DOCUMENT_TYPED_TABLES=$(strict_key_value "$BACKUP_DIR/manifest.env" DOCUMENT_TYPED_TABLES)
+DOCUMENT_CATALOG_TABLES=$(strict_key_value "$BACKUP_DIR/manifest.env" DOCUMENT_CATALOG_TABLES)
+DOCUMENT_OBJECT_LAYOUT=$(strict_key_value "$BACKUP_DIR/manifest.env" DOCUMENT_OBJECT_LAYOUT)
+[[ "$BACKUP_CONTRACT" == "document-modality-v1" ]] || {
+  printf 'backup_contract_mismatch key=BACKUP_CONTRACT expected=document-modality-v1\n' >&2
+  exit 1
+}
+[[ "$DOCUMENT_TYPED_TABLES" == "document_normalized_contents,document_blocks,document_locator_details" ]] || {
+  printf 'backup_contract_mismatch key=DOCUMENT_TYPED_TABLES\n' >&2
+  exit 1
+}
+[[ "$DOCUMENT_CATALOG_TABLES" == "asset_types,representation_types,content_unit_types,locator_types" ]] || {
+  printf 'backup_contract_mismatch key=DOCUMENT_CATALOG_TABLES\n' >&2
+  exit 1
+}
+[[ "$DOCUMENT_OBJECT_LAYOUT" == "workspaces/{workspace_id}/assets/{asset_id}/" ]] || {
+  printf 'backup_contract_mismatch key=DOCUMENT_OBJECT_LAYOUT\n' >&2
   exit 1
 }
 
@@ -119,7 +144,7 @@ export EXPECTED_OBJECT_COUNT
 docker run --rm -i "$POSTGRES_IMAGE" pg_restore --list < "$BACKUP_DIR/postgres.dump" >/dev/null
 
 # Restore targets are intentionally limited to freshly created empty data volumes.
-if compose ps -q caddy web api worker redis | grep -q .; then
+if compose ps -q caddy web api worker provider-stub redis | grep -q .; then
   printf 'restore_application_services_present project=%s\n' "$COMPOSE_PROJECT" >&2
   exit 1
 fi

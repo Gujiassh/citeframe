@@ -7,14 +7,15 @@ import {
   PRODUCTION_UPLOAD_MIME_TYPES,
 } from "./production-upload";
 
-test("production upload contract exposes PDF, PNG, JPEG, and WebP", () => {
+test("production upload contract exposes PDF, PNG, JPEG, WebP, and Markdown", () => {
   assert.deepEqual(PRODUCTION_UPLOAD_MIME_TYPES, [
     "application/pdf",
     "image/png",
     "image/jpeg",
     "image/webp",
+    "text/markdown",
   ]);
-  for (const accept of [".pdf", ".png", ".jpg", ".jpeg", ".webp"]) {
+  for (const accept of [".pdf", ".png", ".jpg", ".jpeg", ".webp", ".md", ".markdown"]) {
     assert.match(PRODUCTION_UPLOAD_ACCEPT, new RegExp(`(^|,)\\${accept}(,|$)`));
   }
 });
@@ -27,6 +28,10 @@ test("production upload descriptor canonicalizes supported filenames and MIME ty
   assert.deepEqual(
     getProductionUploadDescriptor({ name: "paper.pdf", type: "application/pdf" }),
     { mimeType: "application/pdf" },
+  );
+  assert.deepEqual(
+    getProductionUploadDescriptor({ name: "notes.MD", type: "text/markdown" }),
+    { mimeType: "text/markdown" },
   );
 });
 

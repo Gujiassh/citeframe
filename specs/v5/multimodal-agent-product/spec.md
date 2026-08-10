@@ -7,6 +7,8 @@
 - 基线：V1/V2、V3 PDF/Image、V4 R000-R800 工程合同已经完成；V3/V4 的历史证据和保存语义继续有效
 - 后置门：R803 真实模型质量评估和 M404 真实用户价值验证不再阻塞 V5 功能开发，但仍是后续 Beta/发布判断依据
 
+V5-B Markdown-only `document` v1 的字段级合同已批准并实现，B008 formal isolated deployment gate 已通过，当前仅待最终独立 Critical review 完成 release closure；V5-C 仍是 `draft-for-approval`。V5-C 未批准的 locator/schema/provider/product 决策不得由实现 worker 猜测。
+
 ## 1. 产品目标
 
 Citeframe 是一个自托管的多模态 AI 知识工作台。它将不同类型的资料统一放入 Workspace，完成解析、理解、检索、问答、研究和证据沉淀；用户可以在回答、Research Artifact 和笔记中回到原始资料的具体位置。

@@ -289,8 +289,8 @@ export function useAssets({
       if (!uploadDescriptor) {
         throw new Error(
           locale === "en"
-            ? "Choose a PDF, PNG, JPEG, or WebP file."
-            : "请选择 PDF、PNG、JPEG 或 WebP 文件。",
+            ? "Choose a PDF, PNG, JPEG, WebP, or Markdown file."
+            : "请选择 PDF、PNG、JPEG、WebP 或 Markdown 文件。",
         );
       }
 

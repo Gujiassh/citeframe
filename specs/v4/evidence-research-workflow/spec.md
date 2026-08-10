@@ -1,5 +1,7 @@
 # V4 Evidence Research Workflow 规格提案
 
+> 当前策略说明（2026-08-03）：V4 R000-R800 是已完成的固定 Research/多 Agent 工程基线。后续产品顺序由 `specs/v5/multimodal-agent-product/` 接管：先多模型/provider profile，再多模态扩展，再多 Agent 协作产品化，最后进行 R803/M404。R803/M404 仍是后置验证，不阻塞 V5 功能开发；本文件中的 R000-D007、R100-R800 和历史评估结果保持不变。
+
 ## 状态
 
 - 阶段：R000-R800 确定性工程基线已完成；R803 真实模型成对质量与 M404 目标用户价值仍未评估

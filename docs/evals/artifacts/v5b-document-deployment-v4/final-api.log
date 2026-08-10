@@ -1,0 +1,35 @@
+Attaching to citeframe-v5b-20260810t025923z-236905_api_1
+api_1            | INFO:     Started server process [1]
+api_1            | INFO:     Waiting for application startup.
+api_1            | INFO:     Application startup complete.
+api_1            | INFO:     Uvicorn running on http://0.0.0.0:8000 (Press CTRL+C to quit)
+api_1            | INFO:     127.0.0.1:57914 - "GET /health/ready HTTP/1.1" 200 OK
+api_1            | INFO:     127.0.0.1:36900 - "GET /health/ready HTTP/1.1" 200 OK
+api_1            | INFO:     127.0.0.1:53406 - "GET /health/ready HTTP/1.1" 200 OK
+api_1            | INFO:     127.0.0.1:41448 - "GET /health/ready HTTP/1.1" 200 OK
+api_1            | INFO:     172.24.0.8:33744 - "POST /v1/auth/login HTTP/1.1" 200 OK
+api_1            | INFO:     172.24.0.8:33744 - "POST /v1/workspaces/c8c528e4-1003-40c5-bd15-af47af6df42e/assets/upload-session HTTP/1.1" 201 Created
+api_1            | INFO:     172.24.0.8:33752 - "GET /v1/workspaces HTTP/1.1" 200 OK
+api_1            | INFO:     172.24.0.8:33744 - "PUT /v1/workspaces/c8c528e4-1003-40c5-bd15-af47af6df42e/assets/2c67a779-8653-4f20-9490-82157b83a80c/upload?objectKey=workspaces%2Fc8c528e4-1003-40c5-bd15-af47af6df42e%2Fassets%2F2c67a779-8653-4f20-9490-82157b83a80c%2Foriginal.md HTTP/1.1" 204 No Content
+api_1            | INFO:     172.24.0.8:33752 - "GET /v1/workspaces/c8c528e4-1003-40c5-bd15-af47af6df42e/research-runs HTTP/1.1" 200 OK
+api_1            | INFO:     172.24.0.8:33768 - "GET /v1/workspaces/c8c528e4-1003-40c5-bd15-af47af6df42e/assets HTTP/1.1" 200 OK
+api_1            | INFO:     172.24.0.8:33794 - "GET /v1/workspaces/c8c528e4-1003-40c5-bd15-af47af6df42e/tags HTTP/1.1" 200 OK
+api_1            | INFO:     172.24.0.8:33800 - "GET /v1/workspaces/c8c528e4-1003-40c5-bd15-af47af6df42e/threads HTTP/1.1" 200 OK
+api_1            | INFO:     172.24.0.8:33780 - "GET /v1/workspaces/c8c528e4-1003-40c5-bd15-af47af6df42e/notes HTTP/1.1" 200 OK
+api_1            | INFO:     172.24.0.8:33752 - "GET /v1/workspaces/c8c528e4-1003-40c5-bd15-af47af6df42e/threads/4eb6636b-f40a-42a1-a6fa-f6ab5c24582d/messages HTTP/1.1" 200 OK
+api_1            | INFO:     172.24.0.8:33744 - "POST /v1/workspaces/c8c528e4-1003-40c5-bd15-af47af6df42e/assets/2c67a779-8653-4f20-9490-82157b83a80c/finalize-upload HTTP/1.1" 200 OK
+api_1            | INFO:     172.24.0.8:33744 - "GET /v1/workspaces/c8c528e4-1003-40c5-bd15-af47af6df42e/jobs/1e6e611e-3662-4fdc-8af4-16374b9dca2a HTTP/1.1" 200 OK
+api_1            | INFO:     172.24.0.8:33744 - "GET /v1/workspaces/c8c528e4-1003-40c5-bd15-af47af6df42e/jobs/1e6e611e-3662-4fdc-8af4-16374b9dca2a HTTP/1.1" 200 OK
+api_1            | INFO:     172.24.0.8:33744 - "GET /v1/workspaces/c8c528e4-1003-40c5-bd15-af47af6df42e/assets/2c67a779-8653-4f20-9490-82157b83a80c HTTP/1.1" 200 OK
+api_1            | INFO:     172.24.0.8:33744 - "GET /v1/workspaces/c8c528e4-1003-40c5-bd15-af47af6df42e/assets/2c67a779-8653-4f20-9490-82157b83a80c/representations/4556d96a-9f0e-4af4-94a1-540d714bd134/content HTTP/1.1" 200 OK
+api_1            | INFO:     172.24.0.8:33744 - "POST /v1/auth/login HTTP/1.1" 200 OK
+api_1            | INFO:     172.24.0.8:33744 - "GET /v1/workspaces HTTP/1.1" 200 OK
+api_1            | INFO:     172.24.0.8:33752 - "GET /v1/workspaces/c8c528e4-1003-40c5-bd15-af47af6df42e/assets/e39b0565-498b-4892-8469-86031952ac66 HTTP/1.1" 200 OK
+api_1            | INFO:     172.24.0.8:33744 - "GET /v1/workspaces/c8c528e4-1003-40c5-bd15-af47af6df42e/assets/e39b0565-498b-4892-8469-86031952ac66/representations/2f18d75d-9c1d-4eb7-baf5-ab186e02dc85/content HTTP/1.1" 200 OK
+api_1            | INFO:     172.24.0.8:33794 - "GET /v1/workspaces/c8c528e4-1003-40c5-bd15-af47af6df42e/threads HTTP/1.1" 200 OK
+api_1            | INFO:     172.24.0.8:33752 - "GET /v1/workspaces/c8c528e4-1003-40c5-bd15-af47af6df42e/research-runs HTTP/1.1" 200 OK
+api_1            | INFO:     172.24.0.8:33744 - "GET /v1/workspaces/c8c528e4-1003-40c5-bd15-af47af6df42e/assets HTTP/1.1" 200 OK
+api_1            | INFO:     172.24.0.8:33768 - "GET /v1/workspaces/c8c528e4-1003-40c5-bd15-af47af6df42e/tags HTTP/1.1" 200 OK
+api_1            | INFO:     172.24.0.8:33780 - "GET /v1/workspaces/c8c528e4-1003-40c5-bd15-af47af6df42e/notes HTTP/1.1" 200 OK
+api_1            | INFO:     172.24.0.8:33744 - "GET /v1/workspaces/c8c528e4-1003-40c5-bd15-af47af6df42e/threads/4eb6636b-f40a-42a1-a6fa-f6ab5c24582d/messages HTTP/1.1" 200 OK
+api_1            | INFO:     172.24.0.8:33744 - "GET /v1/workspaces/c8c528e4-1003-40c5-bd15-af47af6df42e/assets/e39b0565-498b-4892-8469-86031952ac66/representations/2f18d75d-9c1d-4eb7-baf5-ab186e02dc85/content HTTP/1.1" 200 OK

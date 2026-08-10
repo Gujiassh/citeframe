@@ -1,5 +1,7 @@
 # V3 多模态工作区实施计划
 
+> 当前说明：V3 已完成 PDF/Image 工程主链，是 V5 多模态扩展的基础。R803/M404 属于后置质量/用户验证，不阻塞 V5 功能开发；本文件保留 V3 当时的范围和验收历史。
+
 ## Phase 0：合同批准
 
 - 评审 Asset/Representation/ContentUnit/Embedding 目标结构。
@@ -40,7 +42,7 @@ M305 不新增对外 API 字段。检索内部已为 `content_unit_embeddings` �
 - 只有 caption/OCR 检索缺口明确时实验视觉向量。
 - 跑 API/Worker/Web、Playwright、定位像素对比和销卷恢复。
 - 用大规模分层 ContentUnit 语料验证 pgvector/HNSW、lexical 执行计划、buffer 命中和 p95；当前 318 条 PDF ContentUnit 报告不能替代容量证据。
-- 完成真实用户任务验证后进入 Beta；评测未完成时只标记内部预览。
+- V3 工程验收已完成；真实用户任务和模型质量评估作为后置 Beta/发布证据，不阻塞 V5 能力建设。
 
 M403 固定使用隔离 Compose project：写入同时覆盖 PDF/Image、当前/历史 generation、当前/历史 index、失败/已删除 Asset、PDF/Image typed locator、Message scope、输入 Evidence、Citation 和两类 NoteSource 的确定性语料；生成备份前语义与对象哈希快照，完成真实 PostgreSQL + MinIO 备份后删除整个 project 及卷，再恢复到空部署并要求快照严格全等。任何数据库行、对象 SHA、历史 generation、直接 NoteSource 空 Citation 语义或服务健康差异都判失败。
 

@@ -5,10 +5,20 @@
 - [x] 完成 capability-first 方向裁决
 - [x] 创建 V5 主规格、实施计划和任务清单
 - [x] V5-A Provider 与模型能力层（A002-A007 已完成；A007 跨层回归已验收）
-- [ ] V5-B 多模态资料扩展
-- [ ] V5-C 多 Agent 协作产品化
+- [x] V5-B 多模态资料扩展（Markdown-only `document` v1：isolated/canonical implementation、前序 Critical review、online migration、live scoped PostgreSQL/MinIO restore、standalone browser `4 passed` 与 B008 formal isolated deployment Critical closure 已通过；accepted deployment artifact=`docs/evals/artifacts/v5b-document-deployment-v4/`；HTML/Audio/Video 仍受 OD-B5/B6/B7 独立 gate 阻塞）
+- [ ] V5-C 多 Agent 协作产品化（V4 delta 冻结候选：[`v5c-detailed-spec.md`](v5c-detailed-spec.md)；当前阻塞 OD-C1/C2/C3/C4/C5/C8）
 - [ ] V5-D 端到端整合与工程稳定
 - [ ] V5-E 模型质量与用户价值
+
+### V5-B/C 详细规格状态
+
+- [x] B-G1 first modality brief and priority approval
+- [x] B-G2 shared PDF/Image entry audit
+- [x] B-G3 document locator/API/catalog contract approval
+- [ ] C-G1 V4 productization delta approval
+- [ ] C-G2 Quick/Research status and control projection approval
+- [ ] C-G3 role I/O, join, Evidence/Claim/Artifact contract approval
+- [x] B/C implementation lanes and verification matrix drafted; Markdown-only V5-B gates are frozen and implemented. V5-C production work remains blocked on its owner decisions.
 
 ## V5-A Provider 与模型能力层
 
@@ -79,16 +89,24 @@
 - 验证：API 全量 `480 passed, 4 skipped`；Worker 全量 `238 passed`；Web 全量 `113 passed`；TypeScript、lint、production build、compileall、`git diff --check` 通过；production-start Research E2E `5 passed`；Ruff 因环境缺失为 `not-run`；独立 API/Worker 与 Web 复审 `ACCEPT`。
 - A007 不改 API、数据库、migration、provider selector、Citation/NoteSource/Chat/Research save semantics；无 commit/push。
 
-## V5-B 多模态资料扩展
+### V5-B Markdown v1 slice（2026-08-06）
 
-- [ ] B001 输出每种新模态的 modality brief 和用户任务边界
-- [ ] B002 收口 PDF/Image 共用 Asset/Evidence、检索和 Viewer 入口
-- [ ] B003 接入 Markdown/HTML 文档类资料并实现结构化来源定位
+- [x] B001 Markdown modality brief、locator/save-contract 和 verification matrix 冻结
+- [x] B002 shared Asset/Evidence/retrieval/delete entry audit covered by registry, mixed workspace and production upload tests
+- [x] B003 Markdown `document` adapter、normalized structure、typed `document_anchor` locator、retrieval and renderer implemented
+- [x] B006 Markdown retrieval/Citation/NoteSource/Viewer path implemented without changing existing save columns
+- [x] B007 Markdown mixed Workspace upload/processing/retry/delete/recovery integration suite and scoped restore oracle implemented
+- [x] B008 formal isolated deployment gate: one project records built API/Worker/Web image IDs, dual-Document PostgreSQL/MinIO backup/restore oracles, live API/DOM replay and teardown/zero residue; accepted artifact is `docs/evals/artifacts/v5b-document-deployment-v4/` (v1 historical early pass, v2 Worker-health-predicate failure evidence, v3 interrupted partial evidence retained)
+- [ ] HTML/Office/Audio/Video extensions remain outside this slice and require their own owner decisions/gates
+
+
+- [x] B002 收口 PDF/Image 共用 Asset/Evidence、检索和 Viewer 入口
+- [x] B003 接入 Markdown 文档类资料并实现结构化来源定位
 - [ ] B004 设计并实现 Audio Representation、转写 ContentUnit、`audio_range` locator 和时间轴查看
 - [ ] B005 设计并实现 Video Representation、字幕/关键帧 ContentUnit、时间或 frame locator 和查看
-- [ ] B006 为每种模态接入 retrieval channel、Chat target、Citation 和 NoteSource
-- [ ] B007 覆盖混合 Workspace 的上传、处理、检索、引用、删除、重试和恢复
-- [ ] B008 每种模态独立通过 registry、contract、adapter、geometry/locator 和权限复审后再启用
+- [x] B006 为 Markdown 模态接入 retrieval channel、Chat target、Citation 和 NoteSource
+- [x] B007 覆盖 PDF/Image/Document 混合 Workspace 的上传、处理、检索、引用、删除、重试和 scoped 恢复
+- [x] B008 final independent Critical review and release closure；accepted `v4` report/raw manifests/logs 对 image binding、双资产 restore identity、browser replay 与 zero-residue cleanup 复核为 `ACCEPT`；scripted provider 仅作工程证据，不证明模型质量
 
 ## V5-C 多 Agent 协作产品化
 

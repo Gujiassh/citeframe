@@ -1,5 +1,6 @@
 import asyncio
 from datetime import UTC, datetime
+from hashlib import sha256
 from types import SimpleNamespace
 from unittest.mock import Mock
 from uuid import uuid4
@@ -400,6 +401,8 @@ def test_binary_upload_does_not_recreate_object_after_delete_is_queued(
         asset, _unit = _asset_graph(db)
         payload = b"%PDF-1.7 upload race"
         asset.status = "pending_upload"
+        # First-upload race path: source identity is still unset.
+        asset.source_sha256 = None
         asset.byte_size = len(payload)
         db.commit()
         uploaded: list[str] = []
@@ -465,8 +468,16 @@ def test_finalize_locks_pending_asset_before_creating_ingest_job(
         user = db.get(User, asset.created_by_user_id)
         assert user is not None
         asset.status = "pending_upload"
+        # Finalize requires a persisted source hash and matching stored bytes.
+        source_bytes = b"pdf"
+        asset.byte_size = len(source_bytes)
+        asset.source_sha256 = sha256(source_bytes).hexdigest()
         db.commit()
         monkeypatch.setattr("ai_pdf_api.routers.assets.object_exists", lambda _key: True)
+        monkeypatch.setattr(
+            "ai_pdf_api.routers.assets.download_bytes",
+            lambda _key: source_bytes,
+        )
         refresh_calls: list[bool | dict] = []
         original_refresh = db.refresh
 

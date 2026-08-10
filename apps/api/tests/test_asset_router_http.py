@@ -1,4 +1,5 @@
 from datetime import UTC, datetime
+from hashlib import sha256
 
 import pytest
 from ai_pdf_api.core.settings import settings
@@ -293,6 +294,215 @@ def test_binary_upload_and_finalize_creates_queued_ingestion_job(
     assert (
         job.config_snapshot["embeddingProfileFingerprint"]
         == active_contract.config_fingerprint
+    )
+
+
+def _create_pending_upload_session(
+    asset_client: TestClient,
+    *,
+    owner_id: str,
+    workspace_id: str,
+    source: bytes,
+    source_filename: str = "attention.pdf",
+    mime_type: str = "application/pdf",
+) -> tuple[str, str]:
+    upload_session = asset_client.post(
+        f"/v1/workspaces/{workspace_id}/assets/upload-session",
+        headers={
+            "x-ai-pdf-internal-token": settings.api_internal_token,
+            "x-user-id": owner_id,
+        },
+        json={
+            "sourceFilename": source_filename,
+            "mimeType": mime_type,
+            "byteSize": len(source),
+            "title": "Attention Is All You Need",
+        },
+    ).json()
+    return upload_session["asset"]["id"], upload_session["upload"]["objectKey"]
+
+
+def test_finalize_upload_rejects_missing_source_hash(
+    asset_client: TestClient,
+    asset_db_session: Session,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    owner = create_user(asset_db_session, email="missing-hash@example.com", name="Owner")
+    workspace = create_workspace_with_membership(
+        asset_db_session, user=owner, name="Docs"
+    )
+    source = b"%PDF-1.7 fake pdf bytes"
+    asset_id, object_key = _create_pending_upload_session(
+        asset_client,
+        owner_id=owner.id,
+        workspace_id=workspace.id,
+        source=source,
+    )
+    # Skip PUT so source_sha256 remains null while storage appears present.
+    monkeypatch.setattr(
+        "ai_pdf_api.routers.assets.download_bytes", lambda _key: source
+    )
+
+    finalize_response = asset_client.post(
+        f"/v1/workspaces/{workspace.id}/assets/{asset_id}/finalize-upload",
+        headers={
+            "x-ai-pdf-internal-token": settings.api_internal_token,
+            "x-user-id": owner.id,
+        },
+        json={"objectKey": object_key},
+    )
+
+    assert finalize_response.status_code == 409
+    assert finalize_response.json()["detail"] == "Asset source hash is missing."
+    asset = asset_db_session.get(Asset, asset_id)
+    assert asset is not None
+    assert asset.status == "pending_upload"
+    assert asset.source_sha256 is None
+    assert asset.latest_ingestion_job_id is None
+    assert (
+        asset_db_session.query(IngestionJob)
+        .filter_by(asset_id=asset_id, job_type="ingest")
+        .count()
+        == 0
+    )
+
+
+def test_finalize_upload_rejects_source_integrity_mismatch(
+    asset_client: TestClient,
+    asset_db_session: Session,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    owner = create_user(
+        asset_db_session, email="integrity-mismatch@example.com", name="Owner"
+    )
+    workspace = create_workspace_with_membership(
+        asset_db_session, user=owner, name="Docs"
+    )
+    source = b"%PDF-1.7 fake pdf bytes"
+    asset_id, object_key = _create_pending_upload_session(
+        asset_client,
+        owner_id=owner.id,
+        workspace_id=workspace.id,
+        source=source,
+    )
+
+    upload_response = asset_client.put(
+        f"/v1/workspaces/{workspace.id}/assets/{asset_id}/upload",
+        headers={
+            "x-ai-pdf-internal-token": settings.api_internal_token,
+            "x-user-id": owner.id,
+            "content-type": "application/pdf",
+        },
+        params={"objectKey": object_key},
+        content=source,
+    )
+    assert upload_response.status_code == 204
+
+    asset = asset_db_session.get(Asset, asset_id)
+    assert asset is not None
+    original_sha = asset.source_sha256
+    assert original_sha == sha256(source).hexdigest()
+
+    # Storage object was replaced with different content of the same size.
+    stale_bytes = b"%PDF-1.7 xxxx pdf bytes"
+    assert len(stale_bytes) == len(source)
+    assert stale_bytes != source
+    monkeypatch.setattr(
+        "ai_pdf_api.routers.assets.download_bytes", lambda _key: stale_bytes
+    )
+
+    finalize_response = asset_client.post(
+        f"/v1/workspaces/{workspace.id}/assets/{asset_id}/finalize-upload",
+        headers={
+            "x-ai-pdf-internal-token": settings.api_internal_token,
+            "x-user-id": owner.id,
+        },
+        json={"objectKey": object_key},
+    )
+
+    assert finalize_response.status_code == 409
+    assert (
+        finalize_response.json()["detail"]
+        == "Uploaded object does not match its persisted size or SHA-256."
+    )
+    asset_db_session.expire_all()
+    asset = asset_db_session.get(Asset, asset_id)
+    assert asset is not None
+    assert asset.status == "pending_upload"
+    assert asset.source_sha256 == original_sha
+    assert asset.latest_ingestion_job_id is None
+    assert (
+        asset_db_session.query(IngestionJob)
+        .filter_by(asset_id=asset_id, job_type="ingest")
+        .count()
+        == 0
+    )
+
+
+def test_finalize_upload_rejects_byte_size_mismatch(
+    asset_client: TestClient,
+    asset_db_session: Session,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    owner = create_user(asset_db_session, email="size-mismatch@example.com", name="Owner")
+    workspace = create_workspace_with_membership(
+        asset_db_session, user=owner, name="Docs"
+    )
+    source = b"%PDF-1.7 fake pdf bytes"
+    asset_id, object_key = _create_pending_upload_session(
+        asset_client,
+        owner_id=owner.id,
+        workspace_id=workspace.id,
+        source=source,
+    )
+
+    upload_response = asset_client.put(
+        f"/v1/workspaces/{workspace.id}/assets/{asset_id}/upload",
+        headers={
+            "x-ai-pdf-internal-token": settings.api_internal_token,
+            "x-user-id": owner.id,
+            "content-type": "application/pdf",
+        },
+        params={"objectKey": object_key},
+        content=source,
+    )
+    assert upload_response.status_code == 204
+
+    asset = asset_db_session.get(Asset, asset_id)
+    assert asset is not None
+    original_sha = asset.source_sha256
+
+    # Same bytes prefix / different length still fails the size gate.
+    monkeypatch.setattr(
+        "ai_pdf_api.routers.assets.download_bytes",
+        lambda _key: source + b"!",
+    )
+
+    finalize_response = asset_client.post(
+        f"/v1/workspaces/{workspace.id}/assets/{asset_id}/finalize-upload",
+        headers={
+            "x-ai-pdf-internal-token": settings.api_internal_token,
+            "x-user-id": owner.id,
+        },
+        json={"objectKey": object_key},
+    )
+
+    assert finalize_response.status_code == 409
+    assert (
+        finalize_response.json()["detail"]
+        == "Uploaded object does not match its persisted size or SHA-256."
+    )
+    asset_db_session.expire_all()
+    asset = asset_db_session.get(Asset, asset_id)
+    assert asset is not None
+    assert asset.status == "pending_upload"
+    assert asset.source_sha256 == original_sha
+    assert asset.latest_ingestion_job_id is None
+    assert (
+        asset_db_session.query(IngestionJob)
+        .filter_by(asset_id=asset_id, job_type="ingest")
+        .count()
+        == 0
     )
 
 

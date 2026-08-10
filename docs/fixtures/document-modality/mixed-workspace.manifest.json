@@ -1,0 +1,37 @@
+{
+  "schemaVersion": "document-modality-mixed-workspace-v1",
+  "workspaceTitle": "V5-B Mixed Workspace",
+  "assets": [
+    {
+      "kind": "pdf",
+      "mimeType": "application/pdf",
+      "fixturePath": "docs/fixtures/evidence-contract/pdf-coordinate-fixture.pdf"
+    },
+    {
+      "kind": "image",
+      "mimeType": "image/png",
+      "fixturePath": "docs/fixtures/evidence-contract/image-coordinate-fixture.png"
+    },
+    {
+      "kind": "document",
+      "mimeType": "text/markdown",
+      "fixturePath": "docs/fixtures/document-modality/markdown-note.md"
+    }
+  ],
+  "registryExactMatch": {
+    "document": {
+      "assetKind": "document",
+      "mimeType": "text/markdown",
+      "locatorKind": "document_anchor",
+      "representationKinds": [
+        "document_source",
+        "document_normalized"
+      ],
+      "contentUnitKinds": [
+        "document_block",
+        "document_text_chunk"
+      ]
+    }
+  },
+  "noCrossKindLeakage": true
+}

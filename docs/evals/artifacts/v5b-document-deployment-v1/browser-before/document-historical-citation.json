@@ -1,0 +1,15 @@
+{
+  "schemaVersion": "v5b-document-browser-artifact-v1",
+  "citationId": "69422434-cb20-4212-9e69-ad335a8529aa",
+  "expectedProcessingGeneration": 1,
+  "expectedBlockId": "docblk_976f35b9f80ae838b040884ef8ee30ba",
+  "expectedCharStart": 0,
+  "expectedCharEnd": 5,
+  "expectedTextSha256": "24601bcaae6e170b381367ec4f4475786c6dbef5e8332f8903779c76d298d304",
+  "contentOracleSource": "bff-content",
+  "requiredViewer": true,
+  "requiredHighlightReady": true,
+  "requiredHighlightedSpan": true,
+  "playWrightStandaloneServer": "1",
+  "playWrightStartWeb": null
+}

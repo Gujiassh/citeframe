@@ -43,7 +43,7 @@ Citeframe
 
 以上是当前已实现事实。正式数据模型已经切换为 `Asset -> Representation -> ContentUnit -> EvidenceLocator -> Citation/NoteSource`；PDF 与 PNG/JPEG/WebP Image 都已进入生产摄取注册表，并共用稳定的 Asset/Evidence 主链。
 
-## 2. 当前阶段：V4 确定性工程基线完成
+## 2. 当前阶段：V4 基线完成，V5 能力主线启动
 
 Asset 和 Evidence 主链、PDF/Image 生产 registry 与 V4 Research 工程闭环均已实现。R800 v4 在真实 PostgreSQL/MinIO 和生产镜像上通过并行、HITL、失败恢复、SSE replay、Artifact provenance、备份恢复与零残留清理。当前能力包括：
 
@@ -63,7 +63,32 @@ Asset 和 Evidence 主链、PDF/Image 生产 registry 与 V4 Research 工程闭�
 
 Evidence 数据合同与迁移设计已经批准并实施。已有 locator 意义、Citation/NoteSource envelope 和保存语义继续冻结；后续仍不能引入任意 JSON locator 或绕过类型目录与 codec。
 
-R800 使用 scripted provider，只证明工程行为；R803 真实模型成对质量与 M404 目标用户价值均保持 `not_evaluable`，产品仍是 `internal_preview`。
+R800 使用 scripted provider，只证明工程行为；R803 真实模型成对质量与 M404 目标用户价值均保持 `not_evaluable`，产品仍是 `internal_preview`。它们是后置质量/发布证据，不阻塞 V5 功能建设。
+
+## 3. V5 目标能力地图
+
+```text
+V5 capability-first
+├─ Provider / Model Profiles
+│  ├─ generation / embedding / vision / ASR capabilities
+│  ├─ server-side profile、版本、成本与数据边界
+│  └─ Run/Job 快照、能力校验与明确失败
+├─ Modality Expansion
+│  ├─ PDF/Image production baseline
+│  ├─ Markdown/HTML 与批准的文档类 adapter
+│  ├─ Audio transcript / speaker / time-range Evidence
+│  └─ Video transcript / subtitle / keyframe / time-range Evidence
+├─ Multi-Agent Productization
+│  ├─ Quick / Research
+│  ├─ Planner / Researcher / Verifier / Critic / Synthesizer
+│  ├─ bounded parallelism / HITL / retry / recovery
+│  └─ Artifact / Claim / Evidence / Note knowledge outputs
+└─ Deferred Release Evidence
+   ├─ R803 model quality by modality/task/provider
+   └─ M404 real-user value and Beta/release decision
+```
+
+V5 目标能力复用 `Asset -> Representation -> ContentUnit -> EvidenceLocator` 和既有 Research ledger；不建设通用 Agent 平台，不把 Evaluation Dashboard 当作当前主产品入口。
 
 ## 3. 目标领域边界
 

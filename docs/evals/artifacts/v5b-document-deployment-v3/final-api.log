@@ -1,0 +1,7 @@
+Attaching to citeframe-v5b-20260810t024531z-213262_api_1
+api_1            | INFO:     Started server process [1]
+api_1            | INFO:     Waiting for application startup.
+api_1            | INFO:     Application startup complete.
+api_1            | INFO:     Uvicorn running on http://0.0.0.0:8000 (Press CTRL+C to quit)
+api_1            | INFO:     127.0.0.1:34074 - "GET /health/ready HTTP/1.1" 200 OK
+api_1            | INFO:     127.0.0.1:59650 - "GET /health/ready HTTP/1.1" 200 OK

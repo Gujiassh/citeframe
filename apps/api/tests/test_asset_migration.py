@@ -180,7 +180,7 @@ def _assert_migrated_contract(database_url: str) -> None:
         asset_types = connection.execute(
             text("SELECT kind, contract_version, enabled FROM asset_types ORDER BY kind")
         ).all()
-        assert asset_types == [("image", 1, True), ("pdf", 1, True)]
+        assert asset_types == [("document", 1, True), ("image", 1, True), ("pdf", 1, True)]
 
         asset = connection.execute(
             text(
@@ -646,6 +646,135 @@ def test_embedding_scope_migration_rejects_cross_workspace_backfill() -> None:
             assert connection.scalar(text("SELECT version_num FROM alembic_version")) == (
                 "e1f3a5c7d9b2"
             )
+    finally:
+        settings.database_url = original_url
+        with admin_engine.connect() as connection:
+            connection.execute(
+                text(
+                    "SELECT pg_terminate_backend(pid) "
+                    "FROM pg_stat_activity WHERE datname = :name"
+                ),
+                {"name": database_name},
+            )
+            connection.execute(text(f'DROP DATABASE IF EXISTS "{database_name}"'))
+        admin_engine.dispose()
+
+
+
+def test_document_modality_migration_round_trip() -> None:
+    base_url = make_url(settings.database_url)
+    if not base_url.drivername.startswith("postgresql"):
+        pytest.skip("Document modality migration oracle requires PostgreSQL")
+
+    admin_url = _database_url(base_url, "postgres")
+    database_name = f"ai_pdf_document_enable_{uuid4().hex}"
+    admin_engine = create_engine(admin_url, isolation_level="AUTOCOMMIT")
+    try:
+        with admin_engine.connect() as connection:
+            connection.execute(text("SELECT 1"))
+            connection.execute(text(f'CREATE DATABASE "{database_name}"'))
+    except OperationalError:
+        admin_engine.dispose()
+        pytest.skip("Document modality migration oracle requires a reachable PostgreSQL server")
+
+    original_url = settings.database_url
+    database_url = _database_url(base_url, database_name)
+    try:
+        config = _migration_config(database_url)
+        command.upgrade(config, "e8f1a2b3c4d5")
+        with create_engine(database_url).connect() as connection:
+            assert connection.scalar(
+                text("SELECT COUNT(*) FROM asset_types WHERE kind='document'")
+            ) == 0
+        command.upgrade(config, "head")
+        with create_engine(database_url).connect() as connection:
+            assert connection.execute(
+                text(
+                    "SELECT kind, contract_version, enabled FROM asset_types "
+                    "WHERE kind='document'"
+                )
+            ).one() == ("document", 1, True)
+            assert connection.execute(
+                text(
+                    "SELECT kind, detail_family FROM locator_types "
+                    "WHERE kind='document_anchor'"
+                )
+            ).one() == ("document_anchor", "record")
+            assert connection.scalar(
+                text("SELECT to_regclass('document_locator_details')")
+            ) is not None
+            assert connection.scalar(
+                text("SELECT to_regclass('document_normalized_contents')")
+            ) is not None
+            assert connection.scalar(
+                text("SELECT to_regclass('document_blocks')")
+            ) is not None
+            # representation ownership only; no independently writable workspace/asset columns
+            columns = {
+                row[0]
+                for row in connection.execute(
+                    text(
+                        "SELECT column_name FROM information_schema.columns "
+                        "WHERE table_name = 'document_blocks'"
+                    )
+                )
+            }
+            assert "workspace_id" not in columns
+            assert "asset_id" not in columns
+            assert "heading_level" in columns
+        # Empty-data downgrade remains reversible.
+        command.downgrade(config, "e8f1a2b3c4d5")
+        with create_engine(database_url).connect() as connection:
+            assert connection.scalar(
+                text("SELECT COUNT(*) FROM asset_types WHERE kind='document'")
+            ) == 0
+            assert connection.scalar(
+                text("SELECT to_regclass('document_locator_details')")
+            ) is None
+        # Re-upgrade and refuse populated document modality downgrade.
+        command.upgrade(config, "head")
+        with create_engine(database_url).begin() as connection:
+            user_id = str(uuid4())
+            workspace_id = str(uuid4())
+            asset_id = str(uuid4())
+            connection.execute(
+                text(
+                    "INSERT INTO users(id, email, name, password_hash, avatar_url, created_at, updated_at) "
+                    "VALUES (:id, :email, 'Doc', 'x', 'https://example.com/a.png', NOW(), NOW())"
+                ),
+                {"id": user_id, "email": f"{user_id}@example.com"},
+            )
+            connection.execute(
+                text(
+                    "INSERT INTO workspaces("
+                    "id, name, created_by_user_id, created_at, updated_at, "
+                    "system_prompt, retrieval_top_k, chunk_size"
+                    ") VALUES ("
+                    ":id, 'Doc WS', :user_id, NOW(), NOW(), "
+                    "'Evidence only.', 6, 1200"
+                    ")"
+                ),
+                {"id": workspace_id, "user_id": user_id},
+            )
+            connection.execute(
+                text(
+                    "INSERT INTO assets("
+                    "id, workspace_id, created_by_user_id, asset_kind, title, source_filename, "
+                    "object_key, mime_type, byte_size, status, current_processing_generation, "
+                    "current_index_version, created_at, updated_at"
+                    ") VALUES ("
+                    ":id, :workspace_id, :user_id, 'document', 'Note', 'note.md', "
+                    "'obj', 'text/markdown', 12, 'ready', 1, 1, NOW(), NOW()"
+                    ")"
+                ),
+                {
+                    "id": asset_id,
+                    "workspace_id": workspace_id,
+                    "user_id": user_id,
+                },
+            )
+        with pytest.raises(Exception, match="irreversible document modality downgrade"):
+            command.downgrade(config, "e8f1a2b3c4d5")
     finally:
         settings.database_url = original_url
         with admin_engine.connect() as connection:

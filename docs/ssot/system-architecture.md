@@ -10,7 +10,7 @@ Citeframe 采用 `Web App + API Service + Worker + Data Plane` 的分层架构�
 - `FastAPI` 负责业务 API、Asset/Chat/Research 账本、检索编排与模型调用边界
 - `Worker` 负责长任务：解析、切块、embedding、索引、重建索引与固定 Research workflow 执行
 - `Postgres + pgvector` 负责业务数据和检索向量
-- `MinIO` 负责原始 PDF/图片与处理产物
+- `MinIO` 负责原始资产与处理产物
 - `Redis` 当前作为已部署的缓存/队列基础设施预留；业务任务真相源仍是 Postgres `ingestion_jobs`
 
 V1 默认以 `模块化双服务系统` 落地，而不是微服务集群。
@@ -25,12 +25,12 @@ V1 默认以 `模块化双服务系统` 落地，而不是微服务集群。
 ### 2.1 主要目标
 
 - 支撑多 Workspace 的强隔离知识边界
-- 支撑 PDF/图片 Asset 的异步入库与索引
+- 支撑异构 Asset 的异步入库与索引；当前生产基线为 PDF/Image
 - 支撑带引用的 RAG 问答
 - 支撑笔记、标签、聊天历史沉淀
 - 支撑显式、版本化、可恢复且 Evidence-bound 的深度研究运行
 - 支撑本地学习部署和后续云上部署
-- 支撑 OpenAI 与本地开源 embedding provider 并存
+- 支撑 capability-based model/provider profile；当前 embedding 已有 OpenAI/Ollama，generation/vision/ASR 多 provider 是 V5 建设目标
 
 ### 2.2 非目标
 
@@ -39,9 +39,11 @@ V1 架构不追求：
 - 多租户企业级 IAM
 - 多区域高可用
 - 跨 Workspace 联邦检索
-- 多模型 Agent 编排平台
+- 通用 Agent 编排平台、无限递归委派或自由插件市场
 - 超高吞吐搜索集群
-- 音频、视频和标注数据 Asset
+- 一次性覆盖所有新模态
+
+V5 允许在固定、有界、Evidence-bound 的 Research workflow 中建设多 Agent 协作，并按 modality brief 增量接入文档、Audio、Video 等类型；这不等于开放通用 Agent 平台或任意文件插件。
 
 当前运行时已切换到 Asset/Evidence 合同，PDF 与 M403B Image adapter、Evidence、Viewer、区域 Chat/Note 和混合检索均已进入生产 registry 并通过发布门禁。PDF 支持可直接提取文本的页面与无文本层页面的 RapidOCR fallback；Image 只接受 PNG/JPEG/WebP，且不改变 Citation、NoteSource、Chat 或保存语义。
 
@@ -127,8 +129,8 @@ FastAPI 主业务服务。
 对象存储。
 职责：
 
-- 原始 PDF 文件
-- 页面预览图
+- 原始资产对象
+- 页面、图片或后续模态的预览表示
 - 解析中间产物
 - immutable Research plan/checkpoint/conflict/final Artifact bytes
 
@@ -144,10 +146,12 @@ FastAPI 主业务服务。
 
 #### `model providers`
 
-- OpenAI Responses API：问答与结构化输出
-- OpenAI Embeddings：V1 默认托管 embedding provider
-- Ollama `qwen3-embedding:0.6b`：本地 embedding provider
-- 后续可选 reranker provider
+- 当前 generation：OpenAI Responses API 与 DeepSeek Anthropic Messages API adapter（统一暴露 `GenerationProvider`）
+- 当前 embedding：OpenAI Embeddings 与 Ollama `qwen3-embedding:0.6b`
+- V5 目标：generation、embedding、vision、caption、ASR 的 capability registry 和多个 provider profile
+- provider profile 包含能力、模型版本、限制、成本、数据边界和非机密配置指纹
+- Run/ingestion job 在发送前解析并冻结 profile；缺失能力或配置漂移必须明确失败
+- 后续是否启用 reranker 仍由真实检索缺口决定
 
 ## 4. 前端架构
 
@@ -521,13 +525,15 @@ V1 使用 `Redis`。
 
 ### 10.1 生成模型
 
-默认：`OpenAI Responses API`
+当前默认：`OpenAI Responses API`。generation factory 目前仍以该 provider 为主，不能把 capability-based 多 provider 目标误写成已完成能力。
 
 职责：
 
 - 问答生成
 - 结构化输出
 - 引用型回答编排
+
+V5 将在不改变 Quick/Citation/NoteSource 保存语义的前提下增加 provider profile：每个 Chat/Research Run 记录实际 provider、model、version、capability 和非机密配置指纹；provider 能力不满足请求时 fail closed。
 
 ### 10.2 Embedding Provider
 
@@ -548,6 +554,17 @@ V1 支持两类：
 - 运行在 Ollama
 - 可经 `POST /api/embed` 使用
 - 当前维度：`1024`
+
+### 10.3.1 Capability Profile 演进
+
+V5 的模型层以 capability 为边界，而不是在业务代码中判断模型名称：
+
+- `generation`：文本/结构化回答和 Research 节点
+- `embedding`：query/content embedding、维度、index version 和 current-chain
+- `vision`：图片或视频关键帧输入
+- `asr`：音频/视频转写与时间段定位
+
+每个 profile 由服务端解析，包含 provider/model/version、支持的输入输出、超时、预算、定价和数据边界。当前 R000 合同仍是每个 Run 使用一组 server-resolved provider/model；如果 V5 需要改变这一点，必须另行形成 API、持久化、快照、权限和迁移影响合同。
 
 ### 10.4 检索流程
 
@@ -693,13 +710,21 @@ V1 支持两类：
 
 ## 15. 演进路线
 
-### V1
+### V1/V2 基线
 
 - OpenAI 生成
 - OpenAI 或 Ollama/Qwen embedding
 - pgvector 检索
 - MinIO 本地对象存储
 - Redis 缓存 + 队列
+
+### V5 capability-first 演进
+
+- P0：generation、embedding、vision、caption、ASR capability registry 与 provider profile
+- P1：按 modality brief 增量接入文档、Audio、Video 等资料类型
+- P2：复用固定 Research executor，完成有界多 Agent 协作产品化
+- P3：完成混合模态 Workspace、统一检索、证据和知识产物
+- P4：后置 R803 模型质量、M404 用户验证与 Beta/发布判断
 
 ### 已完成的 V2 基线
 
@@ -747,8 +772,10 @@ M402 的 21-case 工程执行、7-case 真实 BFF 全栈/像素 Evidence 与 7-c
 - `Representation`：原文件、OCR、布局、表格、caption、ASR 等不可变且可版本化的派生表示
 - `ContentUnit`：段落、区域、表格、图像或时间片段等可寻址检索/分析单元
 - `Embedding`：ContentUnit 的可重建索引投影，可存在多个空间和版本
-- `EvidenceLocator`：带 discriminator 的稳定定位值；当前运行时已启用 `pdf_page / pdf_region / image_region`
-- `Citation`：回答生成时冻结 locator、标题、摘要、索引映射和版本语义的证据快照
+- `EvidenceLocator`：带 discriminator 的稳定定位值；当前运行时已启用 `pdf_page / pdf_region / image_region / document_anchor`，Document locator 绑定 generation、representation、block/range、heading path/level、文本 SHA 和 normalized content SHA，并在 API/Web 端 fail-closed。
+- `Citation`：回答生成时冻结 locator、标题、摘要、索引映射和版本语义的证据快照；`NoteSource` 复制独立 locator snapshot，`sourceAvailable` 只按当前 Asset 动态投影，不改历史快照。
+- Document Markdown v1 通过 `document-parser-v1` / `document-normalization-v1`、typed `document_normalized` representation、`document_text_chunk` retrieval unit 和 immutable generation rows 接入；删除清理对象与当前检索投影但保留历史 representation/block/locator，以支持 Citation/NoteSource 重放。
+- Upload source identity 在首次 PUT 后不可替换：API 对 pending Asset 使用 row lock 与 source SHA recheck，finalize-upload 重新校验对象 size/SHA 后才创建 ingestion job；不同源必须创建新 Asset。
 
 PDF/Image 不是稳定内核中的硬编码枚举。后端与 Web 使用部署期封闭注册表：每个模态模块提供字节验证、ingestion adapter、Representation/ContentUnit 类型、locator codec、retrieval channel 和 renderer。数据库类型目录与代码注册表不一致时 readiness 失败。后续 Audio/Video 允许增加模块和类型化 locator 明细表，但不得修改 Asset、Chat scope、Citation、NoteSource 或 Evidence Viewer shell 的核心职责。
 

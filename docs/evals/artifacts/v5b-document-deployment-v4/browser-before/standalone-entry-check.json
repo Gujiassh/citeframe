@@ -1,0 +1,11 @@
+{
+  "dockerfileCmd": [
+    "node",
+    "apps/web/server.js"
+  ],
+  "localStandaloneEntry": "apps/web/.next/standalone/apps/web/server.js",
+  "localStandaloneExists": true,
+  "playWrightStartWeb": null,
+  "playWrightStandaloneServer": "1",
+  "note": "E2E must be pointed at a process started from the standalone entry, not pnpm dev. Live upload/citation tests require PLAYWRIGHT_STANDALONE_SERVER=1."
+}

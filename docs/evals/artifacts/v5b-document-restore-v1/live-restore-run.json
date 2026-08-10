@@ -1,0 +1,21 @@
+{
+  "schemaVersion": "v5b-document-live-restore-run-v1",
+  "runId": "20260807T021243Z",
+  "workspaceId": "799a0be5-270b-4aac-96a5-592bbfafb72e",
+  "assetId": "cd166a6a-ddc5-47b2-8bae-bf6e5bb7eeaf",
+  "backup": {
+    "postgresFormat": "custom",
+    "postgresSha256": "4212bc63de83e4dc4acb3e6a4464730a5b05752727bcaf4dd4b263bead00e95d",
+    "minioObjectCount": 18,
+    "minioObjectSetSha256": "99c1bde867ef30ae6bfd5913840afe8fdc41108c939861678cf8a9973b5435a8"
+  },
+  "restore": {
+    "postgres": "pg_restore --single-transaction --exit-on-error",
+    "minio": "byte-for-byte replay into empty target bucket",
+    "sourcePostgresImage": "sha256:83d2fe2f7efc2a3b52bc1edeaf845eefc8044be447564c062b12b8a55aceb9fc",
+    "targetPostgresImage": "sha256:83d2fe2f7efc2a3b52bc1edeaf845eefc8044be447564c062b12b8a55aceb9fc",
+    "sourceMinioImage": "sha256:69b2ec208575b69597784255eec6fa6a2985ee9e1a47f4411a51f7f5fdd193a9",
+    "targetMinioImage": "sha256:69b2ec208575b69597784255eec6fa6a2985ee9e1a47f4411a51f7f5fdd193a9"
+  },
+  "temporaryTargetCleaned": true
+}

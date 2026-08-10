@@ -1,0 +1,11 @@
+                         Name                                       Command                  State                                               Ports                                        
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+citeframe-v5b-20260808t170050z-3531238_api_1             uvicorn ai_pdf_api.main:ap ...   Up (healthy)   8000/tcp                                                                             
+citeframe-v5b-20260808t170050z-3531238_caddy_1           caddy run --config /etc/ca ...   Up (healthy)   2019/tcp, 127.0.0.1:45917->443/tcp, 127.0.0.1:45917->443/udp, 127.0.0.1:48119->80/tcp
+citeframe-v5b-20260808t170050z-3531238_migration_1       alembic upgrade head             Exit 0                                                                                              
+citeframe-v5b-20260808t170050z-3531238_minio_1           /usr/bin/docker-entrypoint ...   Up (healthy)   9000/tcp, 127.0.0.1:48301->9001/tcp                                                  
+citeframe-v5b-20260808t170050z-3531238_postgres_1        docker-entrypoint.sh postg ...   Up (healthy)   5432/tcp                                                                             
+citeframe-v5b-20260808t170050z-3531238_provider-stub_1   python scripts/provider_r8 ...   Up (healthy)   18082/tcp, 8000/tcp                                                                  
+citeframe-v5b-20260808t170050z-3531238_redis_1           docker-entrypoint.sh redis ...   Up (healthy)   6379/tcp                                                                             
+citeframe-v5b-20260808t170050z-3531238_web_1             docker-entrypoint.sh node  ...   Up (healthy)   3000/tcp                                                                             
+citeframe-v5b-20260808t170050z-3531238_worker_1          python -m ai_pdf_worker.main     Up             9101/tcp                                                                             

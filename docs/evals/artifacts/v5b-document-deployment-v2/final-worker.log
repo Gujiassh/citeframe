@@ -1,0 +1,5 @@
+Attaching to citeframe-v5b-20260810t023605z-185747_worker_1
+worker_1         | 2026-08-10 02:42:07,015 INFO ai_pdf_worker worker_start poll_interval_seconds=1.000 max_consecutive_errors=5 retry_initial_delay_seconds=1.000 retry_max_delay_seconds=30.000
+worker_1         | 2026-08-10 02:42:47,313 INFO ai_pdf_worker worker_job_claimed job_id=ad9ac034-3237-4e4a-915f-549959087025 lane=ingestion
+worker_1         | 2026-08-10 02:42:47,449 INFO httpx HTTP Request: POST http://provider-stub:18082/api/embed "HTTP/1.0 200 OK"
+worker_1         | 2026-08-10 02:42:47,486 INFO ai_pdf_worker worker_job_handled job_id=ad9ac034-3237-4e4a-915f-549959087025 lane=ingestion

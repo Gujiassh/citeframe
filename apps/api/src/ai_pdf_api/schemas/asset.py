@@ -55,9 +55,52 @@ class ImageAssetDetail(BaseModel):
     orientationApplied: bool
 
 
+
+
+class DocumentHeadingSummary(BaseModel):
+    blockId: str
+    level: int = Field(ge=1, le=6)
+    text: str
+    order: int = Field(ge=0)
+
+
+class DocumentAssetDetail(BaseModel):
+    kind: Literal["document"] = "document"
+    format: Literal["markdown"]
+    parserVersion: Literal["document-parser-v1"]
+    normalizationVersion: Literal["document-normalization-v1"]
+    representationId: str
+    blockCount: int = Field(ge=0)
+    headings: list[DocumentHeadingSummary] = Field(default_factory=list)
+
+
+class DocumentNormalizedBlock(BaseModel):
+    blockId: str
+    blockOrder: int = Field(ge=0)
+    blockKind: Literal["heading", "paragraph", "list_item", "code_block", "quote", "table"]
+    headingLevel: int | None = Field(default=None, ge=1, le=6)
+    headingPath: list[str]
+    charStart: int = Field(ge=0)
+    charEnd: int = Field(gt=0)
+    textSha256: str
+    text: str
+
+
+class DocumentNormalizedContentResponse(BaseModel):
+    assetId: str
+    representationId: str
+    processingGeneration: int = Field(ge=1)
+    format: Literal["markdown"]
+    parserVersion: Literal["document-parser-v1"]
+    normalizationVersion: Literal["document-normalization-v1"]
+    contentSha256: str
+    normalizedText: str
+    blocks: list[DocumentNormalizedBlock]
+
+
 class AssetDetailResponse(BaseModel):
     asset: AssetSummary
-    detail: PdfAssetDetail | ImageAssetDetail = Field(discriminator="kind")
+    detail: PdfAssetDetail | ImageAssetDetail | DocumentAssetDetail = Field(discriminator="kind")
 
 
 class UploadDescriptor(BaseModel):

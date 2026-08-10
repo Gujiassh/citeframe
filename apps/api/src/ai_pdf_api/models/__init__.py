@@ -14,6 +14,7 @@ from ai_pdf_api.models.content_unit import ContentUnit
 from ai_pdf_api.models.content_unit_embedding import ContentUnitEmbedding
 from ai_pdf_api.models.evidence_locator import (
     EvidenceLocator,
+    DocumentLocatorDetail,
     ImageLocatorDetail,
     PdfLocatorDetail,
     SpatialLocatorRegion,
@@ -24,6 +25,7 @@ from ai_pdf_api.models.evaluation import (
     ResearchEvaluationRun,
     ResearchEvaluationSuite,
 )
+from ai_pdf_api.models.document_representation import DocumentBlock, DocumentNormalizedContent
 from ai_pdf_api.models.image_representation_geometry import ImageRepresentationGeometry
 from ai_pdf_api.models.ingestion_job import IngestionJob
 from ai_pdf_api.models.message_citation import MessageCitation
@@ -83,6 +85,9 @@ __all__ = [
     "ContentUnit",
     "ContentUnitEmbedding",
     "ContentUnitType",
+    "DocumentBlock",
+    "DocumentLocatorDetail",
+    "DocumentNormalizedContent",
     "EmbeddingSpace",
     "EvidenceLocator",
     "ImageLocatorDetail",

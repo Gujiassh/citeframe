@@ -1,0 +1,142 @@
+{
+  "artifactSha256": {
+    "after": "8f3d628fbb1532db2fae5b67262f0e6ab9dc2eee7ca464dbd7cac15792f757c7",
+    "backupChecksums": "5cb5f53959588f9639fec83f03547a198f8fd8a3dade808940a00c39f237b9b1",
+    "backupManifest": "99ee0787cc4e9946db06ae485eed7167261374a4acaeca6936a2fc8454e5147f",
+    "before": "1721fa1bae89d58921d98651e15cad4552dd4bb1c2828c662f1283e8761d808a",
+    "browserAssetAfter": "eb2c3557cfe4be1681fb3384588cb44b5f8fbca878654759b2030a93289b99ec",
+    "browserAssetBefore": "75d49aede16352da3fa36edbc00210b1e2b4ee290a2473d10e6187772b6dcd39",
+    "browserAssetVerification": "0c95eb401c180dd63890cdec0837d2d7a8cd6c771d1af025bfe3614d5c47a189",
+    "composeConfig": "a93c0d9a00ea0b7801f90d2792268047b449ac73e80cd89403353e6d2337cf77",
+    "seed": "91c24063fdd9b8c7035f6bc0dd0a871ee436743d8ee0674b336a40e8109f2cd6",
+    "verification": "4aea577496feecf8a869882e19415a842d033d79a3c1a413d7a6ae502ddb10c9"
+  },
+  "browser": {
+    "afterExitCode": 0,
+    "afterPlaywrightSha256": "3c1f16f298b1898cf9eab4eafef2e1bbd52a303b861c07e6d2f186b63f5f0f89",
+    "artifactFiles": {
+      "browser-after/document-historical-citation.json": true,
+      "browser-after/document-historical-citation.png": true,
+      "browser-after/production-start-upload.json": true,
+      "browser-after/standalone-entry-check.json": true,
+      "browser-before/document-historical-citation.json": true,
+      "browser-before/document-historical-citation.png": true,
+      "browser-before/production-start-upload.json": true,
+      "browser-before/standalone-entry-check.json": true
+    },
+    "baseURL": "http://localhost:48119",
+    "beforeExitCode": 0,
+    "beforePlaywrightSha256": "4feda2e4e62ab4a288a014a82b61f38981e6cb34542a84d8158192a638aa5176",
+    "email": "v5b-browser-20260808t170050z-3531238@example.com",
+    "stateSha256": "7c4956b94396081e5d834f340ec211a98cf013e66e39e0f7a35b1c480a87eaec"
+  },
+  "builtImages": {
+    "images": [
+      {
+        "created": "2026-08-08T17:01:12.579645618Z",
+        "id": "sha256:3d6747049a4be5905d5374a2157eb16116a125e2cd8720bc3bbae1b60ca5b5ef",
+        "repoTags": [
+          "ai-pdf-workspace-api:v5b-20260808t170050z-3531238"
+        ],
+        "size": 234151375,
+        "tag": "ai-pdf-workspace-api:v5b-20260808t170050z-3531238"
+      },
+      {
+        "created": "2026-08-08T17:02:57.256651347Z",
+        "id": "sha256:1b9365f6e760d63a5a452075f624a331677629f32e89f4fa41237839fee77402",
+        "repoTags": [
+          "ai-pdf-workspace-worker:v5b-20260808t170050z-3531238"
+        ],
+        "size": 922060083,
+        "tag": "ai-pdf-workspace-worker:v5b-20260808t170050z-3531238"
+      },
+      {
+        "created": "2026-08-08T17:01:22.285891038Z",
+        "id": "sha256:b30bc45188b3568b50a8e43cdcb3cb3233f3c5cb4fb25adaf382e4009a984969",
+        "repoTags": [
+          "ai-pdf-workspace-web:v5b-20260808t170050z-3531238"
+        ],
+        "size": 264966825,
+        "tag": "ai-pdf-workspace-web:v5b-20260808t170050z-3531238"
+      }
+    ],
+    "schemaVersion": "v5b-built-image-manifest-v1"
+  },
+  "cleanup": {
+    "composeDownExitCode": 0,
+    "containersRemaining": [],
+    "envRemoved": true,
+    "imageRemoveExitCode": 0,
+    "imageResidueCheckExitCode": 0,
+    "networksRemaining": [],
+    "passed": true,
+    "volumesRemaining": []
+  },
+  "deploymentGate": "pass",
+  "engineeringChecks": {
+    "backupIncludesBothDocumentAssets": true,
+    "browserAfterPassed": true,
+    "browserArtifactsComplete": true,
+    "browserAssetIdentity": true,
+    "browserAssetRestoreVerification": true,
+    "browserAssetRestoreWasLivePostgresMinio": true,
+    "browserAssetSemanticIdentity": true,
+    "browserBeforePassed": true,
+    "builtImagesRecorded": true,
+    "deploymentBaseURL": true,
+    "documentSeedSucceeded": true,
+    "restoreVerification": true,
+    "restoreWasLivePostgresMinio": true,
+    "seedFixtureDigest": true,
+    "seedStateIdentity": true,
+    "semanticIdentity": true
+  },
+  "imageIds": {
+    "ai-pdf-workspace-api:v5b-20260808t170050z-3531238": "sha256:3d6747049a4be5905d5374a2157eb16116a125e2cd8720bc3bbae1b60ca5b5ef",
+    "ai-pdf-workspace-web:v5b-20260808t170050z-3531238": "sha256:b30bc45188b3568b50a8e43cdcb3cb3233f3c5cb4fb25adaf382e4009a984969",
+    "ai-pdf-workspace-worker:v5b-20260808t170050z-3531238": "sha256:1b9365f6e760d63a5a452075f624a331677629f32e89f4fa41237839fee77402"
+  },
+  "modelQualityGate": "not_evaluable",
+  "modelQualityReason": "scripted_provider_is_engineering_evidence_only",
+  "project": "citeframe-v5b-20260808t170050z-3531238",
+  "releaseGatePassed": true,
+  "restore": {
+    "afterSha256": "8f3d628fbb1532db2fae5b67262f0e6ab9dc2eee7ca464dbd7cac15792f757c7",
+    "beforeSha256": "1721fa1bae89d58921d98651e15cad4552dd4bb1c2828c662f1283e8761d808a",
+    "documentAssets": {
+      "browserUpload": {
+        "afterSha256": "eb2c3557cfe4be1681fb3384588cb44b5f8fbca878654759b2030a93289b99ec",
+        "allowEmptyEvidenceLinks": true,
+        "assetId": "ae16b404-bcd7-4f19-ad52-21dcbbaeb85c",
+        "beforeSha256": "75d49aede16352da3fa36edbc00210b1e2b4ee290a2473d10e6187772b6dcd39",
+        "passed": true,
+        "semanticSha256": "9ff25fb1a9fadb310aa4395798fa07012d19b249c5439ac1905e2b88e173389e",
+        "verificationSha256": "0c95eb401c180dd63890cdec0837d2d7a8cd6c771d1af025bfe3614d5c47a189"
+      },
+      "seed": {
+        "afterSha256": "8f3d628fbb1532db2fae5b67262f0e6ab9dc2eee7ca464dbd7cac15792f757c7",
+        "assetId": "e97371d8-88c2-4360-a097-88b15567a403",
+        "beforeSha256": "1721fa1bae89d58921d98651e15cad4552dd4bb1c2828c662f1283e8761d808a",
+        "passed": true,
+        "semanticSha256": "a34996f46f01d4d3e6cdb0aa8e79d1fc74db1134b455d2405c4933ffc30e1244",
+        "verificationSha256": "4aea577496feecf8a869882e19415a842d033d79a3c1a413d7a6ae502ddb10c9"
+      }
+    },
+    "passed": true,
+    "semanticSha256": "a34996f46f01d4d3e6cdb0aa8e79d1fc74db1134b455d2405c4933ffc30e1244",
+    "verificationSha256": "4aea577496feecf8a869882e19415a842d033d79a3c1a413d7a6ae502ddb10c9"
+  },
+  "runtimeKind": "isolated-compose-built-images",
+  "schemaVersion": "v5b-document-deployment-acceptance-v1",
+  "seed": {
+    "assetId": "e97371d8-88c2-4360-a097-88b15567a403",
+    "citationId": "69422434-cb20-4212-9e69-ad335a8529aa",
+    "fixtureSourceSha256": "5fca7c272fee8667c22c89205c2ddb3d1b161b85ef584b0fd471f1ddd61cd1df",
+    "jobId": "88898178-0a07-4ed8-bfb3-5b6aa9452ef9",
+    "schemaVersion": "v5b-document-deployment-seed-v1",
+    "sourceAvailable": true,
+    "sourceSha256": "5fca7c272fee8667c22c89205c2ddb3d1b161b85ef584b0fd471f1ddd61cd1df",
+    "statePath": "/tmp/v5b-output/browser-state.json",
+    "workspaceId": "2faca4d0-9767-4361-9229-0c9bfe59d175"
+  }
+}

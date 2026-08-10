@@ -122,7 +122,7 @@ class EvidenceHandle:
     representation_id: str
     parser_version: str
     locator_id: str
-    locator_kind: Literal["pdf_page", "pdf_region", "image_region"]
+    locator_kind: Literal["pdf_page", "pdf_region", "image_region", "document_anchor"]
     excerpt: str
     source_fingerprint_sha256: str
     created_by_tool_call_id: str
@@ -137,7 +137,7 @@ class LoadedEvidence:
     representation_id: str
     parser_version: str
     locator_id: str
-    locator_kind: Literal["pdf_page", "pdf_region", "image_region"]
+    locator_kind: Literal["pdf_page", "pdf_region", "image_region", "document_anchor"]
     content: str
     content_sha256: str
     source_available: bool

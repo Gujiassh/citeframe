@@ -2,15 +2,13 @@
 
 ## 1. 产品定位
 
-Citeframe 是一个面向需要反复审阅论文、技术规范、评测报告和方案文档的 AI/软件工程师与技术研究者的证据型研究工作台。
+Citeframe 是一个自托管、可扩展的多模态 AI 知识库与证据工作台。它以 `Asset/Representation/ContentUnit/EvidenceLocator` 为统一底座，逐步接入文档、图像、音频、视频及其他经过批准的资料类型，支持多模型/provider 配置、跨模态检索、可追溯引用、Research 和受控多 Agent 协作。
 
 `Citeframe` 是统一的产品、GitHub 仓库、本地目录和私有 npm scope 品牌。名称强调 citation 与 evidence framing，不绑定 PDF；内部 Python 包、`AI_PDF_*` 环境变量、数据库和对象存储 bucket 继续作为稳定运行标识，不随品牌迁移。
 
-它不是单一的 PDF Chat，而是围绕 `Workspace` 组织的文档处理与知识工作环境。每个 Workspace 都拥有独立的知识库、独立 Prompt、独立聊天历史、独立标签、独立笔记，以及独立的索引配置与后续扩展能力。
+每个 Workspace 都拥有独立的资产、检索范围、模型/Prompt profile、聊天历史、Research Run、标签、笔记和研究产物。系统首先保证资料从接入到证据定位的完整链路，再让模型和 Agent 在受控边界内完成问答、研究与知识沉淀。
 
-核心目标不是提供一次性 PDF Chat，而是帮助用户基于多份复杂 PDF 与图片形成技术判断：先得到答案或结构化结论，再核验准确页码或图像区域，并把结论与证据沉淀在同一个项目上下文中。
-
-当前版本状态：V1 可用闭环、Chat-first 工作台、V2-A Hybrid/RRF、阶段 9 可复现部署基线、V3 Phase 1-3 以及 Phase 4 M401-M403B 均已完成；21-case 工程/全栈 Evidence、7-case 真实模型、销卷恢复、500k/700k 检索容量和 PNG/JPEG/WebP 生产 Image 门禁全部通过。运行时已迁移到 Asset/Evidence 稳定内核，PDF 与 Image 均进入生产 registry；M404 真实用户价值仍为 `not_evaluable`，产品继续标记内部预览。
+当前完成基线是 PDF、扫描 PDF OCR、PNG/JPEG/WebP Image、Hybrid/RRF 检索、Evidence Viewer、Citation/NoteSource、固定 Research workflow、HITL、恢复和 Evaluation Dashboard。多模型 generation/vision/ASR provider 与更多模态是 V5 主线；R803 模型质量评估和 M404 真实用户验证后置，不阻塞功能建设，产品在证据完成前仍标记 `internal_preview`。
 
 ## 2. 目标用户
 
@@ -23,15 +21,15 @@ Citeframe 是一个面向需要反复审阅论文、技术规范、评测报告�
 
 ### 2.2 核心 JTBD
 
-当用户需要基于多份长 PDF 与图片形成判断、比较或可复用结论时，系统应帮助其快速获得有原文支持的答案，立即核验准确证据位置，并把结论与证据留在 Workspace 中，减少手工翻找、重复查证和散落笔记。
+当用户需要基于多种资料形成判断、比较或可复用结论时，系统应帮助其统一接入资料、快速获得有证据支持的答案或研究产物，回到原始页面、区域或时间段核验，并把结论沉淀在 Workspace 中。
 
 ### 2.3 核心使用场景
 
 - 为不同研究问题或技术项目创建 Workspace，例如 `RAG 评测`、`推理服务选型`、`模型安全调研`
-- 上传多份 PDF 与图片，建立该 Workspace 的专属知识库
-- 在 Workspace 内进行检索、问答、结构化抽取与笔记沉淀
-- 通过引用回跳 PDF 页/区域或图片区域，保证答案可追溯
-- 对多份资产进行比较、抽取和结论复用，而不是只进行单文档闲聊
+- 接入 PDF、图片和后续启用的文档、音频、视频等资料，建立专属知识库
+- 在 Workspace 内进行跨模态检索、问答、结构化抽取和 Research
+- 通过引用回跳页面、区域、时间段或关键帧，保证答案可追溯
+- 对多份资产进行比较、抽取、协作研究和结论复用，而不是只进行单文档闲聊
 
 ### 2.4 护城河假设
 
@@ -45,11 +43,11 @@ Chat UI、支持格式数量或接入某个模型本身不构成产品护城河�
 
 - Workspace 是顶层隔离边界，任何知识、聊天、标签、笔记都不能串库
 - 引用必须可追溯，答案不能只给结论不指向原文
-- 问答是默认主任务，PDF/图片是按需展开的证据与精读层；不能让固定 Viewer 压缩多资产问答空间
-- 问答是交互入口，不是最终价值；最终价值是形成可核验、可复用的技术结论
-- 先做确定性 RAG，再做复杂 Agent 能力
-- 先把上传、解析、索引、浏览、检索、引用、笔记闭环跑通，再扩展自动化
-- V1 优先保证体验完整，而不是功能堆叠
+- 问答是默认主任务，Evidence Viewer/播放器/结构化查看器是按需展开的核验层
+- 问答是交互入口，不是最终价值；最终价值是形成可核验、可复用的知识产物
+- 多模态接入、模型能力和受控多 Agent 协作按真实用户任务逐步交付
+- Agent 只能在 Evidence、权限、预算和工具 allowlist 边界内工作，不能直接决定系统事实
+- 功能完整度优先；模型质量评估和真实用户验证作为后置发布证据，不阻塞能力建设
 
 ## 4. 核心对象模型
 
@@ -66,7 +64,7 @@ Chat UI、支持格式数量或接入某个模型本身不构成产品护城河�
 
 ### 4.2 Asset
 
-一个 Asset 是上传到某个 Workspace 的 PDF 或图片，包含：
+一个 Asset 是上传到某个 Workspace 的资料对象，当前生产模态为 PDF 和 PNG/JPEG/WebP Image，后续按 V5 逐步扩展。它包含：
 
 - 原始源文件与类型
 - 文件元数据和生命周期
@@ -175,24 +173,34 @@ Note 是 Workspace 内的知识沉淀单元，支持：
 - 维护结构化输出模板
 - 后续支持 Prompt 版本管理
 
+### 5.10 模型与 Provider 模块
+
+功能范围：
+
+- 维护 generation、embedding、vision、ASR 等 capability profile
+- 为 Chat、摄取、检索和 Research 选择可用 provider/model
+- 记录运行使用的 profile、版本、能力和非机密配置指纹
+- 对能力缺失、配置漂移、超时和 provider 失败给出明确状态
+- 密钥、endpoint 和隐私策略只保留在服务端配置边界
+
 ## 6. 端到端主流程
 
 ### 6.1 Workspace 建立流程
 
 1. 用户创建 Workspace
-2. 填写名称、描述、可选 Prompt
+2. 填写名称、描述、可选 Prompt 和模型 profile
 3. 进入空 Workspace 首页
-4. 系统引导用户上传第一份 PDF
+4. 系统引导用户接入第一份资料
 
-### 6.2 文档入库流程
+### 6.2 资料入库流程
 
-1. 用户上传 PDF
-2. 文件存入对象存储
-3. 创建文档记录与任务记录
-4. 后台执行解析
-5. 生成 chunk 与 embedding
-6. 索引完成后将文档标记为 `ready`
-7. 文档可被浏览、检索、问答引用
+1. 用户接入资料
+2. 源对象存入对象存储并创建 Asset
+3. 根据模态 adapter 生成 Representation 和 ContentUnit
+4. 使用匹配 capability provider 执行 OCR、转写、caption、结构解析或 embedding
+5. 建立类型化 locator 和检索索引
+6. 索引完成后将 Asset 标记为 `ready`
+7. 资料可被查看、检索、问答和 Research 引用
 
 ### 6.3 浏览与检索流程
 
@@ -237,7 +245,7 @@ Note 是 Workspace 内的知识沉淀单元，支持：
 - **Evidence Viewer**：点击侧栏资产、citation 或笔记来源时按需打开，按 locator 使用 PDF 或 Image renderer；桌面端可拖拽调宽并保留 Chat 最小宽度，也可展开为全宽阅读模式。
 - **移动端证据层**：Chat 默认占满工作区，资产列表和 Evidence Viewer 分别覆盖主画布并保留明确返回动作，不允许横向溢出。
 
-默认主链为 `选择资产范围 -> 提问 -> 阅读回答 -> 点击引用 -> 核验证据 -> 返回追问或记笔记`。PDF 支持划词提问/记笔记和区域 Evidence；独立图片框选已接通 Ask AI、直接 Note、输入 Evidence 恢复与 frozen Viewer 跳转，M403B 后 PNG/JPEG/WebP 生产入口已启用。
+默认主链为 `选择资产范围 -> 提问或启动 Research -> 阅读回答/Artifact -> 点击引用 -> 核验证据 -> 返回追问或沉淀笔记`。当前 PDF/Image 已支持页、区域和图片 Evidence；后续模态沿同一主链增加页面、时间段、关键帧或结构化定位。
 
 ## 8. 版本演进
 
@@ -275,13 +283,26 @@ Note 是 Workspace 内的知识沉淀单元，支持：
 - `pdf_page/pdf_region/image_region` 类型化 citation 与 Viewer 精确高亮
 - 按文本、扫描页、表格、图表、独立图片和无答案问题分层评测
 
-### 8.5 Workspace 深化（后续）
+### 8.5 V4 受控 Research Workflow（工程基线已完成）
 
-- Prompt 版本管理
-- 会话摘要
-- 保存视图
-- 工作区首页摘要
-- 多 provider embedding 切换
+- 固定、版本化、可恢复的 Research Run
+- bounded 多 Agent fan-out/join、Verifier、Critic、Synthesizer
+- HITL、SSE replay、Artifact、Claim/Evidence provenance
+- Evaluation Dashboard 和工程运行证据
+
+### 8.6 V5 多模态、多模型与多 Agent 产品化（当前主线）
+
+- generation、embedding、vision、ASR 等 capability provider/profile
+- Markdown/HTML、后续批准的文档、Audio、Video 等模态增量接入
+- 跨模态检索、引用、查看和知识产物沉淀
+- Quick Answer 与受控 Research 协作体验
+- 多模型、多模态、多 Agent 的统一 Workspace 主链
+
+### 8.7 后置质量与用户验证
+
+- R803/后续模型质量评估
+- M404 真实用户任务和重复使用验证
+- Beta 与正式发布判断
 
 ## 9. V1 范围内必须有的功能
 
@@ -307,10 +328,10 @@ Note 是 Workspace 内的知识沉淀单元，支持：
 
 当前战略非目标还包括：
 
-- 在 V3 同时接入音频、视频和标注数据
-- 把模态扩展做成可上传任意文件的动态插件市场
-- 未经新版本审批修改已经落地的 Asset/Evidence v1 核心表、locator 含义或 Citation/NoteSource 保存语义
-- 以模型名称、Agent、GraphRAG、Milvus 或统一向量空间作为产品卖点
+- 通用 Agent 平台、无限递归委派、拖拽 Workflow 或自由插件市场
+- 在没有用户任务和成本边界时一次性承诺所有模态覆盖
+- 未经新版本审批修改已经落地的 Asset/Evidence 核心表、locator 含义或 Citation/NoteSource 保存语义
+- 以模型名称、Agent 数量、GraphRAG、Milvus 或统一向量空间作为产品卖点
 - 把 Omnilabel 标注/预测/数据集分析当作普通格式扩展；它需要独立用户研究和结构化分析架构
 
 ## 11. 成功标准
@@ -323,16 +344,23 @@ V1 成功的最低标准是：
 - 用户能点击引用跳回原文页码
 - 用户能把引用内容沉淀为笔记，并用标签管理
 
-下一阶段产品有效性还需要验证：
+V5 功能完成还需要满足：
+
+- 至少两套已配置 generation provider/model 可以在产品链路中切换
+- PDF/Image 与新增模态都能完成接入、ready、检索、引用、查看、删除和恢复
+- Quick Answer 与受控 Research 可以共享多模态 Evidence，并保留类型化 locator
+- Research 支持并行、审批、失败分支重试和 Artifact/Note 沉淀
+
+后置产品有效性证据包括：
 
 - citation 打开核验率和引用支持率
-- 页码/区域定位准确率与无证据拒答率
+- 页面、区域、时间段或关键帧定位准确率
 - 回答转笔记率和证据复用率
 - 用户完成真实研究任务所需时间相对手工流程的变化
 - Workspace 周回访和同一项目的重复使用
 
 ## 12. 当前建议
 
-当前功能闭环、可复现部署、V3 PDF/Image 纵向链路和 V4 Evidence Research 确定性工程基线已经建立。Quick Answer 保持默认与既有保存语义；Deep Research 仅在用户显式选择后创建独立 Run，并使用冻结 Workflow/Prompt/Asset scope/provider profile。
+当前功能闭环、可复现部署、V3 PDF/Image 纵向链路和 V4 Evidence Research 工程基线已经建立。V5 先推进 provider/profile、多模态适配器和受控多 Agent 协作；Quick Answer 保持默认与既有保存语义，Research 继续使用冻结 Workflow/Prompt/Asset scope/provider profile。
 
-R800 scripted provider 工程门通过不等于真实模型质量或用户价值通过。R803 真实模型成对质量与 M404 目标用户任务仍是独立门禁；未完成时保持 `internal_preview`。Audio、Video 与文档类新模态均需单独立项和价值门；Omnilabel 的业务模型继续独立设计。V4 裁决与当前状态见 `specs/v4/evidence-research-workflow/`。
+多模型 provider 选择、跨模态 locator 和新模态数据/API 合同需要单独记录影响和审批，不能通过文档先行假设已经实现。R803 模型质量评估和 M404 真实用户任务后置为发布优化证据；在它们完成前，产品保持 `internal_preview`，但不停止 V5 功能建设。V5 当前规格见 `specs/v5/multimodal-agent-product/`。

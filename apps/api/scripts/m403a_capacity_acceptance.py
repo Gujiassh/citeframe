@@ -55,9 +55,27 @@ SIGNATURES = (
     ("image-ocr", "image", "image_ocr_region", "image_ocr", "image_region", 0.12),
     ("image-caption", "image", "image_caption", "image_caption", "image_region", 0.08),
 )
+# M403A freezes a PDF/Image capacity cohort only. It must stay an exact
+# PDF/Image signature set for seed/recall/perf claims, but must not reject
+# later approved text-channel modalities such as Document.
 CONFIGURED_TYPE_SIGNATURES = {tuple(item[1:5]) for item in SIGNATURES}
-if CONFIGURED_TYPE_SIGNATURES != set(TEXT_CHANNEL.type_signatures):
-    raise RuntimeError("M403A signatures must match the production text registry")
+PRODUCTION_TEXT_TYPE_SIGNATURES = set(TEXT_CHANNEL.type_signatures)
+DOCUMENT_TYPE_SIGNATURE = (
+    "document",
+    "document_text_chunk",
+    "document_normalized",
+    "document_anchor",
+)
+if not CONFIGURED_TYPE_SIGNATURES.issubset(PRODUCTION_TEXT_TYPE_SIGNATURES):
+    raise RuntimeError(
+        "M403A PDF/Image signatures must remain a subset of the production text registry"
+    )
+if len(CONFIGURED_TYPE_SIGNATURES) != len(SIGNATURES):
+    raise RuntimeError("M403A signature cohort must stay exact and unique")
+if DOCUMENT_TYPE_SIGNATURE not in PRODUCTION_TEXT_TYPE_SIGNATURES:
+    raise RuntimeError(
+        "Production text registry must include the approved Document type signature"
+    )
 PROFILE_DUPLICATES = {"D1": 1, "D8": 8, "D64": 64}
 VECTOR_SIGNAL_DIMENSIONS = 64
 SIGNATURE_CENTROID_WEIGHT = 4.0
@@ -833,7 +851,8 @@ def seed(engine: Engine, scale: Scale) -> dict[str, Any]:
         ),
         "eightProductionSignatures": (
             len(signature_rows) == 8
-            and CONFIGURED_TYPE_SIGNATURES == set(TEXT_CHANNEL.type_signatures)
+            and CONFIGURED_TYPE_SIGNATURES.issubset(PRODUCTION_TEXT_TYPE_SIGNATURES)
+            and len(CONFIGURED_TYPE_SIGNATURES) == len(SIGNATURES)
             and actual_signature_counts == expected_signature_counts
         ),
         "duplicateProfiles": profile_counts == _expected_profile_counts(visible_total),

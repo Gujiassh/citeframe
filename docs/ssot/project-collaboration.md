@@ -61,9 +61,9 @@
 
 ## 6. 当前项目范围提醒
 
-当前实现基线是 `文本 PDF + 扫描 PDF OCR + PNG/JPEG/WebP Image + 显式 Evidence Research`；V3 Image 与 V4 R000-R800 确定性工程门禁均已完成。
+当前实现基线是 `文本 PDF + 扫描 PDF OCR + PNG/JPEG/WebP Image + 显式 Evidence Research`；V3 Image 与 V4 R000-R800 确定性工程门禁均已完成。当前主动主线是 V5 capability-first：多模型/provider profile、多模态资料扩展和受控多 Agent 协作。
 
-当前主线包括：
+当前已实现能力包括：
 
 - Workspace
 - PDF 上传
@@ -78,7 +78,7 @@
 - 扫描 PDF 的 Worker 内部 OCR fallback
 - 独立 Research Run/Event/Artifact、固定 typed executor、HITL、恢复与 Evaluation Dashboard
 
-V3 多模态 PDF/独立图片与 V4 Research 工程主线已经完成，目标设计与验收记录见 `docs/architecture/multimodal-*`、`docs/architecture/research-workflow-runtime.md`、`specs/v3/multimodal-workspace/` 和 `specs/v4/evidence-research-workflow/`。Citation、NoteSource、Quick Chat 与现有保存语义继续冻结；R803/M404 均未评估。音频、视频和 Omnilabel 不进入当前切片。
+V3 多模态 PDF/独立图片与 V4 Research 工程主线已经完成，目标设计与验收记录见 `docs/architecture/multimodal-*`、`docs/architecture/research-workflow-runtime.md`、`specs/v3/multimodal-workspace/` 和 `specs/v4/evidence-research-workflow/`。V5 当前规格见 `specs/v5/multimodal-agent-product/`：新模态按 adapter/Representation/locator/Viewer/检索/恢复逐个接入，Audio/Video 不再作为长期产品非目标，但也不一次性承诺全部覆盖。Citation、NoteSource、Quick Chat 与现有保存语义继续冻结；R803/M404 后置且仍未评估。
 
 ## 7. Git 提交约定
 

@@ -1,0 +1,23 @@
+{
+  "schemaVersion": "v5b-document-compose-service-v1",
+  "composeFile": "infra/docker/compose.yml",
+  "postgres": {
+    "container": "ai-pdf-postgres",
+    "volume": "docker_postgres_data",
+    "port": 5432,
+    "restart": "unless-stopped",
+    "head": "f9a1b2c3d4e5",
+    "workspaceCount": 1,
+    "assetCount": 4
+  },
+  "minio": {
+    "container": "ai-pdf-minio-dev",
+    "bindPath": "/home/cc/code/citeframe/infra/docker/data/minio",
+    "apiPort": 9010,
+    "consolePort": 9011,
+    "restart": "unless-stopped",
+    "healthHttp": 200
+  },
+  "restartPersistenceVerify": "docs/evals/artifacts/v5b-document-restore-v1/live-verify-after-compose.json",
+  "passed": true
+}

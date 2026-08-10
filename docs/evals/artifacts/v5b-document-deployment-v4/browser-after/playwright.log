@@ -1,0 +1,11 @@
+
+Running 4 tests using 1 worker
+
+(node:252964) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  1 e2e/v5b-document-production-start.spec.ts:329:5 › V5-B document fixture oracle is present for production-start lane (9ms)
+  ✓  2 e2e/v5b-document-production-start.spec.ts:343:5 › V5-B document production-start upload/ready smoke against live API (2.0s)
+  ✓  3 e2e/v5b-document-production-start.spec.ts:496:5 › V5-B document production-start historical citation remains addressable when state provides citationId (607ms)
+  ✓  4 e2e/v5b-document-production-start.spec.ts:602:5 › production Dockerfile.web standalone command is the required server entry (1ms)
+
+  4 passed (3.0s)

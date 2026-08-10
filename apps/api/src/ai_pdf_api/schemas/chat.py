@@ -83,6 +83,33 @@ class PdfRegionLocator(BaseModel):
     regions: list[SpatialRegion] = Field(min_length=1)
 
 
+
+
+class DocumentAnchorLocator(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    kind: Literal["document_anchor"]
+    version: Literal[1]
+    blockId: str = Field(min_length=1, max_length=64)
+    blockKind: Literal["heading", "paragraph", "list_item", "code_block", "quote", "table"]
+    headingPath: list[str] = Field(default_factory=list)
+    charStart: int = Field(ge=0)
+    charEnd: int = Field(gt=0)
+    textSha256: str = Field(min_length=64, max_length=64)
+    normalizationVersion: Literal["document-normalization-v1"]
+
+    @model_validator(mode="after")
+    def validate_range_and_path(self) -> "DocumentAnchorLocator":
+        if self.charEnd <= self.charStart:
+            raise ValueError("Document anchor charEnd must be greater than charStart")
+        if any(not isinstance(part, str) or not part for part in self.headingPath):
+            raise ValueError("Document headingPath must be an ordered array of non-empty strings")
+        if len(self.textSha256) != 64 or any(
+            ch not in "0123456789abcdef" for ch in self.textSha256
+        ):
+            raise ValueError("Document textSha256 must be a lowercase hex SHA-256 digest")
+        return self
+
 class ImageRegionLocator(BaseModel):
     kind: Literal["image_region"]
     version: Literal[1]
@@ -94,7 +121,7 @@ class ImageRegionLocator(BaseModel):
 
 
 EvidenceLocatorDto = Annotated[
-    PdfPageLocator | PdfRegionLocator | ImageRegionLocator,
+    PdfPageLocator | PdfRegionLocator | ImageRegionLocator | DocumentAnchorLocator,
     Field(discriminator="kind"),
 ]
 

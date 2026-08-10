@@ -15,7 +15,16 @@ SCRIPT_SPEC.loader.exec_module(m403a)
 
 
 def test_scale_and_signature_counts_are_exact_and_multimodal() -> None:
-    assert m403a.CONFIGURED_TYPE_SIGNATURES == set(m403a.TEXT_CHANNEL.type_signatures)
+    production_signatures = set(m403a.TEXT_CHANNEL.type_signatures)
+    # M403A freezes PDF/Image capacity only; Document may exist in production.
+    assert m403a.CONFIGURED_TYPE_SIGNATURES.issubset(production_signatures)
+    assert len(m403a.CONFIGURED_TYPE_SIGNATURES) == len(m403a.SIGNATURES)
+    assert m403a.CONFIGURED_TYPE_SIGNATURES == {
+        tuple(item[1:5]) for item in m403a.SIGNATURES
+    }
+    assert m403a.DOCUMENT_TYPE_SIGNATURE in production_signatures
+    assert m403a.DOCUMENT_TYPE_SIGNATURE not in m403a.CONFIGURED_TYPE_SIGNATURES
+    assert all(item[1] in {"pdf", "image"} for item in m403a.SIGNATURES)
     for scale, (visible, physical) in m403a.SCALES.items():
         counts = m403a._signature_counts(visible)
         assert sum(counts) == visible

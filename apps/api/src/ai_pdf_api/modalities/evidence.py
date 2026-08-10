@@ -9,14 +9,24 @@ from uuid import uuid4
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
+from ai_pdf_api.modalities.document import (
+    DOCUMENT_NORMALIZATION_VERSION,
+    DocumentIntegrityError,
+    validate_document_anchor_range,
+    validate_document_normalized_content,
+)
 from ai_pdf_api.models import (
     AssetRepresentation,
+    DocumentBlock,
+    DocumentLocatorDetail,
+    DocumentNormalizedContent,
     EvidenceLocator,
     ImageLocatorDetail,
     PdfLocatorDetail,
     SpatialLocatorRegion,
 )
 from ai_pdf_api.schemas.chat import (
+    DocumentAnchorLocator,
     EvidenceLocatorDto,
     ImageRegionLocator,
     PageGeometry,
@@ -48,8 +58,9 @@ class LocatorCodec(Protocol):
 
     def serialize_loaded(
         self,
+        db: Session,
         locator: EvidenceLocator,
-        detail: PdfLocatorDetail | ImageLocatorDetail | None,
+        detail: PdfLocatorDetail | ImageLocatorDetail | DocumentLocatorDetail | None,
         regions: list[SpatialLocatorRegion],
     ) -> EvidenceLocatorDto: ...
 
@@ -126,14 +137,16 @@ class PdfLocatorCodec:
 
     def serialize(self, db: Session, locator: EvidenceLocator) -> EvidenceLocatorDto:
         detail = db.get(PdfLocatorDetail, locator.id)
-        return self.serialize_loaded(locator, detail, _regions(db, locator.id))
+        return self.serialize_loaded(db, locator, detail, _regions(db, locator.id))
 
     def serialize_loaded(
         self,
+        db: Session,
         locator: EvidenceLocator,
-        detail: PdfLocatorDetail | ImageLocatorDetail | None,
+        detail: PdfLocatorDetail | ImageLocatorDetail | DocumentLocatorDetail | None,
         regions: list[SpatialLocatorRegion],
     ) -> EvidenceLocatorDto:
+        del db
         if not isinstance(detail, PdfLocatorDetail):
             raise EvidenceContractError(f"PDF locator {locator.id} has no typed detail")
         if locator.locator_kind == "pdf_page":
@@ -209,14 +222,16 @@ class ImageLocatorCodec:
 
     def serialize(self, db: Session, locator: EvidenceLocator) -> EvidenceLocatorDto:
         detail = db.get(ImageLocatorDetail, locator.id)
-        return self.serialize_loaded(locator, detail, _regions(db, locator.id))
+        return self.serialize_loaded(db, locator, detail, _regions(db, locator.id))
 
     def serialize_loaded(
         self,
+        db: Session,
         locator: EvidenceLocator,
-        detail: PdfLocatorDetail | ImageLocatorDetail | None,
+        detail: PdfLocatorDetail | ImageLocatorDetail | DocumentLocatorDetail | None,
         regions: list[SpatialLocatorRegion],
     ) -> EvidenceLocatorDto:
+        del db
         if not isinstance(detail, ImageLocatorDetail):
             raise EvidenceContractError(f"Image locator {locator.id} has no typed detail")
         region_dtos = _region_dtos(regions)
@@ -243,6 +258,143 @@ class ImageLocatorCodec:
         return locator.id
 
 
+
+def _load_document_anchor_context(
+    db: Session,
+    locator: EvidenceLocator,
+    detail: DocumentLocatorDetail,
+) -> tuple[DocumentNormalizedContent, DocumentBlock, str]:
+    representation = db.get(AssetRepresentation, locator.representation_id_snapshot)
+    if representation is None:
+        raise EvidenceContractError(
+            f"document_anchor {locator.id} representation is missing"
+        )
+    if (
+        representation.id != locator.representation_id_snapshot
+        or representation.workspace_id != locator.workspace_id
+        or representation.asset_id != locator.asset_id
+        or representation.processing_generation != locator.processing_generation_snapshot
+        or representation.representation_kind != "document_normalized"
+    ):
+        raise EvidenceContractError(
+            f"document_anchor {locator.id} representation snapshot is inconsistent"
+        )
+
+    normalized = db.get(DocumentNormalizedContent, representation.id)
+    if normalized is None:
+        raise EvidenceContractError(
+            f"document_anchor {locator.id} normalized content is missing"
+        )
+    try:
+        normalized_text = validate_document_normalized_content(normalized)
+    except DocumentIntegrityError as error:
+        raise EvidenceContractError(
+            f"document_anchor {locator.id} normalized content is invalid: {error}"
+        ) from error
+
+    block = db.scalar(
+        select(DocumentBlock).where(
+            DocumentBlock.representation_id == representation.id,
+            DocumentBlock.block_id == detail.block_id,
+        )
+    )
+    if block is None:
+        raise EvidenceContractError(
+            f"document_anchor {locator.id} block {detail.block_id} is missing"
+        )
+    return normalized, block, normalized_text
+
+
+def _validate_document_detail(
+    detail: DocumentLocatorDetail,
+    *,
+    block: DocumentBlock,
+    normalized_text: str,
+) -> list[str]:
+    try:
+        return validate_document_anchor_range(
+            block_id=detail.block_id,
+            block_kind=detail.block_kind,
+            heading_path=detail.heading_path,
+            char_start=detail.char_start,
+            char_end=detail.char_end,
+            text_sha256_value=detail.text_sha256,
+            normalization_version=detail.normalization_version,
+            block=block,
+            normalized_text=normalized_text,
+        )
+    except DocumentIntegrityError as error:
+        raise EvidenceContractError(str(error)) from error
+
+
+class DocumentLocatorCodec:
+    kinds = frozenset({"document_anchor"})
+    representation_kinds = frozenset({"document_normalized"})
+
+    def clone_details(self, db: Session, source: EvidenceLocator, target: EvidenceLocator) -> None:
+        detail = db.get(DocumentLocatorDetail, source.id)
+        if detail is None:
+            raise EvidenceContractError(f"Document locator {source.id} has no typed detail")
+        _normalized, block, normalized_text = _load_document_anchor_context(db, source, detail)
+        heading_path = _validate_document_detail(
+            detail, block=block, normalized_text=normalized_text
+        )
+        db.add(
+            DocumentLocatorDetail(
+                locator_id=target.id,
+                block_id=detail.block_id,
+                block_kind=detail.block_kind,
+                heading_path=heading_path,
+                char_start=detail.char_start,
+                char_end=detail.char_end,
+                text_sha256=detail.text_sha256,
+                normalization_version=detail.normalization_version,
+            )
+        )
+
+    def serialize(self, db: Session, locator: EvidenceLocator) -> EvidenceLocatorDto:
+        detail = db.get(DocumentLocatorDetail, locator.id)
+        return self.serialize_loaded(db, locator, detail, [])
+
+    def serialize_loaded(
+        self,
+        db: Session,
+        locator: EvidenceLocator,
+        detail: PdfLocatorDetail | ImageLocatorDetail | DocumentLocatorDetail | None,
+        regions: list[SpatialLocatorRegion],
+    ) -> EvidenceLocatorDto:
+        del regions
+        if not isinstance(detail, DocumentLocatorDetail):
+            raise EvidenceContractError(f"Document locator {locator.id} has no typed detail")
+        _normalized, block, normalized_text = _load_document_anchor_context(db, locator, detail)
+        heading_path = _validate_document_detail(
+            detail, block=block, normalized_text=normalized_text
+        )
+        return DocumentAnchorLocator(
+            kind="document_anchor",
+            version=locator.locator_version,
+            blockId=detail.block_id,
+            blockKind=detail.block_kind,  # type: ignore[arg-type]
+            headingPath=heading_path,
+            charStart=detail.char_start,
+            charEnd=detail.char_end,
+            textSha256=detail.text_sha256,
+            normalizationVersion=detail.normalization_version,  # type: ignore[arg-type]
+        )
+
+    def retrieval_key(
+        self,
+        locator: EvidenceLocator,
+        serialized: EvidenceLocatorDto,
+    ) -> str:
+        if isinstance(serialized, DocumentAnchorLocator):
+            return (
+                f"document_anchor:{serialized.blockId}:"
+                f"{serialized.charStart}:{serialized.charEnd}"
+            )
+        return locator.id
+
+
 class LocatorCodecRegistry:
     def __init__(self, codecs: Iterable[LocatorCodec]) -> None:
         self._by_kind: dict[str, LocatorCodec] = {}
@@ -263,7 +415,9 @@ class LocatorCodecRegistry:
             raise EvidenceContractError(f"Unsupported locator kind: {kind}") from error
 
 
-PRODUCTION_LOCATOR_CODECS = LocatorCodecRegistry((PdfLocatorCodec(), ImageLocatorCodec()))
+PRODUCTION_LOCATOR_CODECS = LocatorCodecRegistry(
+    (PdfLocatorCodec(), ImageLocatorCodec(), DocumentLocatorCodec())
+)
 
 
 @dataclass(frozen=True)
@@ -490,7 +644,12 @@ def evidence_retrieval_keys(
         for source in source_list
         if source.locator.locator_kind in ImageLocatorCodec.kinds
     ]
-    details: dict[str, PdfLocatorDetail | ImageLocatorDetail] = {}
+    document_ids = [
+        source.locator.id
+        for source in source_list
+        if source.locator.locator_kind in DocumentLocatorCodec.kinds
+    ]
+    details: dict[str, PdfLocatorDetail | ImageLocatorDetail | DocumentLocatorDetail] = {}
     if pdf_ids:
         details.update(
             (detail.locator_id, detail)
@@ -503,6 +662,15 @@ def evidence_retrieval_keys(
             (detail.locator_id, detail)
             for detail in db.scalars(
                 select(ImageLocatorDetail).where(ImageLocatorDetail.locator_id.in_(image_ids))
+            )
+        )
+    if document_ids:
+        details.update(
+            (detail.locator_id, detail)
+            for detail in db.scalars(
+                select(DocumentLocatorDetail).where(
+                    DocumentLocatorDetail.locator_id.in_(document_ids)
+                )
             )
         )
     regions_by_locator: dict[str, list[SpatialLocatorRegion]] = {
@@ -521,6 +689,7 @@ def evidence_retrieval_keys(
         codec = codecs[locator.id]
         try:
             serialized = codec.serialize_loaded(
+                db,
                 locator,
                 details.get(locator.id),
                 regions_by_locator[locator.id],

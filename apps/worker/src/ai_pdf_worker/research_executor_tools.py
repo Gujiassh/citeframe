@@ -122,7 +122,8 @@ class EvidenceToolRegistry:
                 or asset is None
                 or handle.processing_generation != asset.processing_generation
                 or handle.index_version != asset.index_version
-                or handle.locator_kind not in {"pdf_page", "pdf_region", "image_region"}
+                or handle.locator_kind
+                not in {"pdf_page", "pdf_region", "image_region", "document_anchor"}
                 or len(handle.source_fingerprint_sha256) != 64
                 or not handle.created_by_tool_call_id
             ):

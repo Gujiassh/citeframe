@@ -1,5 +1,7 @@
 # V5 多模态 AI 知识工作台与 Agent 协作实施计划
 
+当前阶段索引：V5-B/V5-C 的实现不得只依据本文件的阶段描述；字段、状态、API、locator、lane ownership 和验收以 [`README.md`](README.md)、[`open-decisions.md`](open-decisions.md)、[`v5b-detailed-spec.md`](v5b-detailed-spec.md)、[`v5c-detailed-spec.md`](v5c-detailed-spec.md)、[`implementation-lanes-v5bc.md`](implementation-lanes-v5bc.md) 和 [`verification-matrix-v5bc.md`](verification-matrix-v5bc.md) 为准。
+
 ## 1. 实施策略
 
 V5 采用 capability-first 顺序：先把多模型接入、多模态处理和多 Agent 协作做成真实可用的产品能力，再集中进行模型质量评估和真实用户验证。R803/M404 继续保留为后置证据，不作为每个功能切片的前置门。

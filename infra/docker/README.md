@@ -15,7 +15,11 @@ cd apps/api
 uv run alembic upgrade head
 ```
 
+本地 Compose 默认 PostgreSQL 暴露 `127.0.0.1:5432`，MinIO API/console 暴露 `127.0.0.1:9010/9011`，避免与本机其他 MinIO 服务占用的 `9000/9001` 冲突。PostgreSQL 和 MinIO 使用 `restart: unless-stopped`；若服务被手动停止，使用下面的 `up -d` 恢复。
+
 Postgres 使用 `pgvector/pgvector:pg17`。Alembic 会启用 `vector` 和 `pg_trgm` 扩展，并创建 `vector(1024)` HNSW、lexical FTS GIN、中文 trigram GiST 索引及业务真表。
+
+PostgreSQL 数据保存在 Compose named volume `docker_postgres_data`，MinIO 数据保存在 `infra/docker/data/minio` bind path；不要把 SolarSense 的 `9000/9001` endpoint 填入 Citeframe API/Worker env。
 
 本地 Ollama 不由 Compose 管理。需要本地 embedding 时，确保 `http://127.0.0.1:11434` 提供 `qwen3-embedding:0.6b`，并让 API 与 Worker 使用相同的 provider、model 和 version。
 

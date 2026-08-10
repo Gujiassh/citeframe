@@ -702,7 +702,14 @@ def _mark_job_failed(
     job.error_message = error_message
     job.finished_at = now
     if current_asset is not None:
-        current_asset.status = "failed"
+        # Fail closed: only preserve ready when the current generation already has
+        # a complete retrieval chain (units + locators + current embeddings).
+        # Representation existence alone is not enough; partial/initial ingest
+        # must become failed rather than chunked.
+        if _available_asset_status(db, current_asset.id) == "ready":
+            current_asset.status = "ready"
+        else:
+            current_asset.status = "failed"
         current_asset.last_error_code = error_code
         current_asset.last_error_message = error_message
         current_asset.updated_at = now

@@ -4,6 +4,19 @@ set -euo pipefail
 
 SCRIPT_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
 
+write_v2_manifest() {
+  cat > "$FIXTURE/backup/manifest.env" <<'EOF'
+FORMAT_VERSION=2
+COMPOSE_PROJECT=restore-test
+POSTGRES_DB=ai_pdf_workspace
+MINIO_BUCKET=ai-pdf-workspace
+BACKUP_CONTRACT=document-modality-v1
+DOCUMENT_TYPED_TABLES=document_normalized_contents,document_blocks,document_locator_details
+DOCUMENT_CATALOG_TABLES=asset_types,representation_types,content_unit_types,locator_types
+DOCUMENT_OBJECT_LAYOUT=workspaces/{workspace_id}/assets/{asset_id}/
+EOF
+}
+
 make_fixture() {
   FIXTURE=$(mktemp -d)
   mkdir -p "$FIXTURE/bin" "$FIXTURE/backup/minio"
@@ -15,12 +28,7 @@ MINIO_ROOT_PASSWORD=minio-password
 MINIO_BUCKET=ai-pdf-workspace
 EOF
   printf 'not-a-real-dump' > "$FIXTURE/backup/postgres.dump"
-  cat > "$FIXTURE/backup/manifest.env" <<'EOF'
-FORMAT_VERSION=1
-COMPOSE_PROJECT=restore-test
-POSTGRES_DB=ai_pdf_workspace
-MINIO_BUCKET=ai-pdf-workspace
-EOF
+  write_v2_manifest
   printf 'pdf-bytes' > "$FIXTURE/backup/minio/document.pdf"
   (
     cd "$FIXTURE/backup"
@@ -136,9 +144,52 @@ test_manifest_project_and_version() {
   cleanup_fixture
 
   make_fixture
-  sed -i 's/FORMAT_VERSION=1/FORMAT_VERSION=2/' "$FIXTURE/backup/manifest.env"
-  run_restore_expect_preflight_failure backup_format_unsupported
+  sed -i 's/FORMAT_VERSION=2/FORMAT_VERSION=1/' "$FIXTURE/backup/manifest.env"
+  run_restore_expect_preflight_failure 'backup_format_unsupported version=1 required=2 message=create_a_new_format_2_backup'
   cleanup_fixture
+
+  make_fixture
+  sed -i 's/FORMAT_VERSION=2/FORMAT_VERSION=99/' "$FIXTURE/backup/manifest.env"
+  run_restore_expect_preflight_failure 'backup_format_unsupported version=99 required=2'
+  cleanup_fixture
+}
+
+test_manifest_contract_keys() {
+  make_fixture
+  sed -i '/^BACKUP_CONTRACT=/d' "$FIXTURE/backup/manifest.env"
+  run_restore_expect_preflight_failure 'strict_value_count_invalid file=.* key=BACKUP_CONTRACT'
+  cleanup_fixture
+
+  make_fixture
+  sed -i 's|BACKUP_CONTRACT=document-modality-v1|BACKUP_CONTRACT=legacy-v0|' "$FIXTURE/backup/manifest.env"
+  run_restore_expect_preflight_failure 'backup_contract_mismatch key=BACKUP_CONTRACT expected=document-modality-v1'
+  cleanup_fixture
+
+  make_fixture
+  sed -i 's|DOCUMENT_TYPED_TABLES=document_normalized_contents,document_blocks,document_locator_details|DOCUMENT_TYPED_TABLES=wrong|' "$FIXTURE/backup/manifest.env"
+  run_restore_expect_preflight_failure 'backup_contract_mismatch key=DOCUMENT_TYPED_TABLES'
+  cleanup_fixture
+
+  make_fixture
+  sed -i 's|DOCUMENT_CATALOG_TABLES=asset_types,representation_types,content_unit_types,locator_types|DOCUMENT_CATALOG_TABLES=wrong|' "$FIXTURE/backup/manifest.env"
+  run_restore_expect_preflight_failure 'backup_contract_mismatch key=DOCUMENT_CATALOG_TABLES'
+  cleanup_fixture
+
+  make_fixture
+  sed -i 's|DOCUMENT_OBJECT_LAYOUT=workspaces/{workspace_id}/assets/{asset_id}/|DOCUMENT_OBJECT_LAYOUT=bucket-root/|' "$FIXTURE/backup/manifest.env"
+  run_restore_expect_preflight_failure 'backup_contract_mismatch key=DOCUMENT_OBJECT_LAYOUT'
+  cleanup_fixture
+}
+
+test_scripts_declare_document_contract() {
+  grep -q 'FORMAT_VERSION=2' "$SCRIPT_DIR/backup-deployment.sh"
+  grep -q 'BACKUP_CONTRACT=document-modality-v1' "$SCRIPT_DIR/backup-deployment.sh"
+  grep -q 'DOCUMENT_TYPED_TABLES=document_normalized_contents,document_blocks,document_locator_details' "$SCRIPT_DIR/backup-deployment.sh"
+  grep -q 'DOCUMENT_CATALOG_TABLES=asset_types,representation_types,content_unit_types,locator_types' "$SCRIPT_DIR/backup-deployment.sh"
+  grep -q 'DOCUMENT_OBJECT_LAYOUT=workspaces/{workspace_id}/assets/{asset_id}/' "$SCRIPT_DIR/backup-deployment.sh"
+  grep -q 'document_normalized_contents' "$SCRIPT_DIR/restore-deployment.sh"
+  grep -q 'DOCUMENT_OBJECT_LAYOUT' "$SCRIPT_DIR/restore-deployment.sh"
+  grep -q 'create_a_new_format_2_backup' "$SCRIPT_DIR/restore-deployment.sh"
 }
 
 test_invalid_archive_before_docker() {
@@ -250,10 +301,12 @@ test_minio_find_failure_rejected_before_restore() {
   cleanup_fixture
 }
 
+test_scripts_declare_document_contract
 test_confirmation_gate
 test_closed_checksum_set
 test_symlink_rejected
 test_manifest_project_and_version
+test_manifest_contract_keys
 test_invalid_archive_before_docker
 test_readonly_backup_preflight
 test_nonempty_database_rejected_before_restore
