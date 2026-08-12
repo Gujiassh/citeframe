@@ -1,0 +1,41 @@
+{
+  "schemaVersion": "v5d-mixed-workspace-playwright-v1",
+  "productionStart": true,
+  "mockedBff": false,
+  "standaloneServer": true,
+  "viewport": {
+    "name": "mobile",
+    "width": 390,
+    "height": 844
+  },
+  "workspaceId": "a2ebcdc3-98ed-4f71-ac96-25dc46c52053",
+  "assets": [
+    {
+      "id": "2979ba31-7826-4714-857a-1f094f8b10e1",
+      "kind": "pdf",
+      "mimeType": "application/pdf",
+      "sourceFilename": "pdf-coordinate-fixture.pdf"
+    },
+    {
+      "id": "8f5abe48-e5fa-4312-b6ea-60bf6ae8474e",
+      "kind": "image",
+      "mimeType": "image/png",
+      "sourceFilename": "image-coordinate-fixture.png"
+    },
+    {
+      "id": "22d5def5-3f50-438c-849f-b85d167ba69d",
+      "kind": "document",
+      "mimeType": "text/markdown",
+      "sourceFilename": "markdown-note.md"
+    }
+  ],
+  "citations": {
+    "pdf": "b40a77cd-4616-44e1-8cfa-18bd2ecdf90c",
+    "image": "631bf073-2560-44e9-aa74-e0ad05fb9f97",
+    "document": "2bff79e1-ced9-4a5c-b1a2-9dd72c333cdb",
+    "imageRegionVisible": true
+  },
+  "selectedScopeCount": 3,
+  "screenshotPath": "docs/evals/artifacts/v5d-mixed-compose-20260812-01/browser-before/v5d-mixed-production-mobile.png",
+  "passed": true
+}

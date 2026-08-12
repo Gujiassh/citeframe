@@ -1,0 +1,32 @@
+{
+  "schemaVersion": "v5d-runtime-container-manifest-v1",
+  "containers": [
+    {
+      "service": "api",
+      "containerId": "4c0f521064c9f9533f10cdba8499d12de4f673c1572cbf5c452672075a325adf",
+      "expectedImageTag": "ai-pdf-workspace-api:v5d-20260812t124232z-1035321",
+      "configuredImage": "ai-pdf-workspace-api:v5d-20260812t124232z-1035321",
+      "resolvedImageId": "sha256:092334605d0fe72273fe9259e2215467661682d6e6552f8b09130cd62243aa86",
+      "status": "running",
+      "health": "healthy"
+    },
+    {
+      "service": "worker",
+      "containerId": "ecbcf37dd9efa783734aeb89c3401b639c81be8954d3be1ab73a3918b1f1946b",
+      "expectedImageTag": "ai-pdf-workspace-worker:v5d-20260812t124232z-1035321",
+      "configuredImage": "ai-pdf-workspace-worker:v5d-20260812t124232z-1035321",
+      "resolvedImageId": "sha256:e3dbfc18f716dedf721546ed73c72d45ae36353b88f46b4e1a09e149428a4722",
+      "status": "running",
+      "health": null
+    },
+    {
+      "service": "web",
+      "containerId": "e08fcf06261966de36230d59a8b174863416acbc86e840ba4edcfc72c61687b9",
+      "expectedImageTag": "ai-pdf-workspace-web:v5d-20260812t124232z-1035321",
+      "configuredImage": "ai-pdf-workspace-web:v5d-20260812t124232z-1035321",
+      "resolvedImageId": "sha256:12edceb9f4982a77e13ff03e13785c6c3b6901ba3007434f855f5b60a15db1b1",
+      "status": "running",
+      "health": "healthy"
+    }
+  ]
+}

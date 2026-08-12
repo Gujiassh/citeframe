@@ -268,3 +268,16 @@ Evidence: `docs/evals/artifacts/v5d-20260811-01/d-g7/` and
 
 Overall Critical verdict for V5-D engineering slice: **ACCEPT** with residuals.
 Product remains `internal_preview`. Do not claim Beta/release or model quality.
+
+
+## D-G6 empty-target closeout (2026-08-12)
+
+Status: **pass** for mixed PDF/Image/Markdown empty-target Compose backup/restore.
+
+- Runner: `infra/scripts/run-v5d-mixed-compose-acceptance.sh`
+- Artifact: `docs/evals/artifacts/v5d-mixed-compose-20260812-01/`
+- semanticSha256 match, browser before/after exit 0, cleanup zero residue
+- `deploymentGate=pass`, `releaseGatePassed=true`
+- Still `realModelQualityPassed=false`, `userValuePassed=false`
+
+Previous residual "optional full empty-target Compose restore" is closed.

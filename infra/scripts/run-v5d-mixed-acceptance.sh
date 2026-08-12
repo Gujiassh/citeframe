@@ -30,6 +30,7 @@ Modes:
   research      Run isolated R800 Research deployment acceptance into <out>/research
   both          Run document then research sequentially into subdirectories
   mixed-live    Validate mixed seed/restore CLI presence + optional live state/snapshots
+  mixed-compose Run empty-target Compose backup/restore mixed PDF+Image+Markdown acceptance
   skeleton      Write artifact/report skeleton only (no child runners, no static suite)
 
 Does not modify backup/restore contracts. mixed-live uses worker CLIs:
@@ -66,9 +67,9 @@ while [[ $# -gt 0 ]]; do
 done
 
 case "$MODE" in
-  static-only|document|research|both|mixed-live|skeleton) ;;
+  static-only|document|research|both|mixed-live|mixed-compose|skeleton) ;;
   *)
-    printf 'v5d_mixed_invalid_mode mode=%s expected=static-only|document|research|both|mixed-live|skeleton\n' "$MODE" >&2
+    printf 'v5d_mixed_invalid_mode mode=%s expected=static-only|document|research|both|mixed-live|mixed-compose|skeleton\n' "$MODE" >&2
     exit 2
     ;;
 esac
@@ -97,6 +98,7 @@ SCRIPTS=(
   run-v5b-document-acceptance.sh
   run-r800-acceptance.sh
   run-v5d-mixed-acceptance.sh
+  run-v5d-mixed-compose-acceptance.sh
 )
 
 COMPOSE_FILES=(
@@ -420,16 +422,25 @@ report = {
             "scope": "Research engineering restore; scripted provider only",
         },
         "mixedPdfImageDocumentLive": {
-            "status": mixed_live,
+            "status": (
+                "pass"
+                if mode == "mixed-compose" and overall in {"mixed-compose-pass", "mixed-compose-pass-static-fail"}
+                else mixed_live
+            ),
             "reason": (
-                "mixed_live_evidence_recorded"
-                if mixed_live == "pass"
+                "mixed_empty_target_compose_restore_recorded"
+                if mode == "mixed-compose" and overall in {"mixed-compose-pass", "mixed-compose-pass-static-fail"}
                 else (
-                    "mixed_seed_snapshot_cli_ready_awaiting_full_compose_or_evidence"
-                    if mixed_live == "partial-cli-ready"
-                    else "no_mixed_seed_snapshot_verify_cli"
+                    "mixed_live_evidence_recorded"
+                    if mixed_live == "pass"
+                    else (
+                        "mixed_seed_snapshot_cli_ready_awaiting_full_compose_or_evidence"
+                        if mixed_live == "partial-cli-ready"
+                        else "no_mixed_seed_snapshot_verify_cli"
+                    )
                 )
             ),
+            "artifactDir": "mixed-compose" if mode == "mixed-compose" else None,
         },
     },
     "gates": {
@@ -438,8 +449,16 @@ report = {
             "note": "infra provides backup window stop/start only; restart/reclaim/delete oracles remain API/Worker tests",
         },
         "D-G6": {
-            "status": "partial" if document_lane == "pass" or research_lane == "pass" else "blocked",
-            "note": "document and research isolated restore may pass individually; mixed three-modality identity remains blocked",
+            "status": (
+                "pass"
+                if mode == "mixed-compose" and overall in {"mixed-compose-pass", "mixed-compose-pass-static-fail"}
+                else ("partial" if document_lane == "pass" or research_lane == "pass" or mixed_live == "pass" else "blocked")
+            ),
+            "note": (
+                "mixed PDF/Image/Markdown empty-target Compose backup/restore closed"
+                if mode == "mixed-compose" and overall in {"mixed-compose-pass", "mixed-compose-pass-static-fail"}
+                else "document and research isolated restore may pass individually; mixed three-modality empty-target compose remains open unless mixed-compose mode passes"
+            ),
         },
     },
     "engineeringGate": overall,
@@ -567,6 +586,32 @@ case "$MODE" in
     printf 'v5d_mixed_both_complete report=%s mixed_live=blocked\n' "$OUTPUT_DIR/report.json"
     exit 0
     ;;
+  mixed-compose)
+    run_static_checks || true
+    MIXED_COMPOSE_OUT="$OUTPUT_DIR/mixed-compose"
+    set +e
+    "$SCRIPT_DIR/run-v5d-mixed-compose-acceptance.sh" --output-dir "$MIXED_COMPOSE_OUT" \
+      >"$OUTPUT_DIR/mixed-compose-runner.log" 2>&1
+    MIXED_COMPOSE_STATUS=$?
+    set -e
+    printf '%s\n' "$MIXED_COMPOSE_STATUS" >"$OUTPUT_DIR/mixed-compose-exit-code"
+    if [[ "$MIXED_COMPOSE_STATUS" -ne 0 ]]; then
+      OVERALL="mixed-compose-fail"
+      write_report "$MODE" "$STATIC_STATUS" "$DOCUMENT_STATUS" "$RESEARCH_STATUS" "$OVERALL"
+      exit 1
+    fi
+    if [[ "$STATIC_STATUS" -eq 0 ]]; then
+      OVERALL="mixed-compose-pass"
+    else
+      OVERALL="mixed-compose-pass-static-fail"
+    fi
+    write_report "$MODE" "$STATIC_STATUS" "$DOCUMENT_STATUS" "$RESEARCH_STATUS" "$OVERALL"
+    printf 'v5d_mixed_compose_complete report=%s overall=%s child=%s\n' \
+      "$OUTPUT_DIR/report.json" "$OVERALL" "$MIXED_COMPOSE_OUT/report.json"
+    [[ "$STATIC_STATUS" -eq 0 ]]
+    exit 0
+    ;;
+
   mixed-live)
     run_static_checks || true
     set +e

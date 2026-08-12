@@ -1,0 +1,35 @@
+{
+  "afterSemanticSha256": "d8563074fd66eddbc70efcd7695cafcd41ef16b614ddad09b60ed2530fa9f3f3",
+  "beforeSemanticSha256": "d8563074fd66eddbc70efcd7695cafcd41ef16b614ddad09b60ed2530fa9f3f3",
+  "browserAfterExitCode": "0",
+  "browserBeforeExitCode": "0",
+  "browserRoundtripPassed": true,
+  "cleanup": {
+    "composeDownExitCode": 0,
+    "containersRemaining": [],
+    "envRemoved": true,
+    "imageRemoveExitCode": 0,
+    "imageResidueCheckExitCode": 0,
+    "networksRemaining": [],
+    "passed": true,
+    "volumesRemaining": []
+  },
+  "composeProject": "citeframe-v5d-20260812t124232z-1035321",
+  "deploymentGate": "pass",
+  "emptyTargetAfterDown": true,
+  "engineeringGate": "pass",
+  "modalities": [
+    "pdf",
+    "image",
+    "document"
+  ],
+  "productStage": "internal_preview",
+  "realModelQualityPassed": false,
+  "releaseGatePassed": true,
+  "restoreVerificationPassed": true,
+  "schemaVersion": "v5d-mixed-compose-acceptance-v1",
+  "seedModalitiesOk": true,
+  "sourceSha": "07b8833907034441874fb59f157609962ff04980",
+  "userValuePassed": false,
+  "workspaceId": "a2ebcdc3-98ed-4f71-ac96-25dc46c52053"
+}

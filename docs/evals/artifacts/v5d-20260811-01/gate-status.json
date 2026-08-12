@@ -1,6 +1,6 @@
 {
   "schemaVersion": "v5d-gate-status-v1",
-  "updatedAt": "2026-08-12T11:02:42.934303+00:00",
+  "updatedAt": "2026-08-12T12:50:33.803828+00:00",
   "sourceSha": "4f2129cdfc5ba0c73cf854c83add7809c5966b0a",
   "gates": {
     "D-G0": {
@@ -30,14 +30,12 @@
       "status": "partial-existing-unit"
     },
     "D-G6": {
-      "status": "pass-focused-live-seed-snapshot",
-      "note": "mixed seed + live snapshot/self-verify + harness mixed-live-pass; full empty-target backup/restore compose still optional next",
+      "status": "pass-empty-target-compose",
+      "note": "mixed PDF/Image/Markdown empty-target Compose backup/restore + browser roundtrip; artifact v5d-mixed-compose-20260812-01",
       "evidence": [
-        "mixed-browser-state.redacted.json",
-        "mixed-restore-snapshot-before.json",
-        "mixed-restore-verification-self.json",
-        "mixed-live-report.json",
-        "mixed-live-lane.json"
+        "docs/evals/artifacts/v5d-mixed-compose-20260812-01/report.json",
+        "docs/evals/artifacts/v5d-mixed-compose-20260812-01/verification.json",
+        "docs/evals/artifacts/v5d-mixed-compose-20260812-01/cleanup.json"
       ]
     },
     "D-G7": {

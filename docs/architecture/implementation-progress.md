@@ -56,7 +56,7 @@ M403A 的逐次优化假设、实验手段、通过/否决结果、指标和 art
 | V5-A | Provider 与模型能力层 | 已完成 | A002-A007 已交付并通过独立复审 | generation 已支持 OpenAI/DeepSeek adapter；registry/fingerprint/Research-ingestion drift gate 与 embedding index contract 已接入；vision/ASR/provider secret fail-closed 已完成；Web 分离 current Settings profile 与 frozen Research run/revision snapshot；A007 完成 Quick Chat/Citation/NoteSource/Research/ingestion/reindex/Worker/Web 回归 |
 | V5-B | 多模态资料扩展 | Markdown-only v1 已实现 | isolated/canonical、live scoped restore、online migration、standalone browser 与 B008 formal isolated deployment/Critical closure 已通过；accepted artifact 为 `v5b-document-deployment-v4` | Document registry/catalog、Markdown adapter、typed `document_anchor`、retrieval、Citation/NoteSource、Viewer、delete/recovery/restore 已完成；HTML/Office/Audio/Video 不在本切片，需独立决策与 gate |
 | V5-C | 多 Agent 协作产品化 | 工程 `ACCEPT`，Medium residual follow-up | C-API-WORKER、C-BOUNDARY 与 R800 v6 已通过 | 固定 Research DAG 已完成计划、并行、审批、重试、恢复和 Artifact 体验；生产 Agent I/O 已严格版本化，不建设通用 Agent 平台 |
-| V5-D | 端到端整合与工程稳定 | 工程 `ACCEPT`（internal-preview） | D-G0–D-G7 工程门通过（D-G3/D-G5 partial-existing；D-G6 focused live） | 全量 API 562 / Worker 296 / Web 131 + lint/tsc/build；D-G4 production-start 与 D-G6 mixed live seed 已有证据；R803/M404 仍 not_evaluable；empty-target Compose restore 为 residual |
+| V5-D | 端到端整合与工程稳定 | 工程 `ACCEPT`（internal-preview） | D-G0–D-G7 工程门通过（D-G3/D-G5 partial-existing；D-G6 focused live） | 全量 API 562 / Worker 296 / Web 131 + lint/tsc/build；D-G4 production-start 与 D-G6 mixed live seed 已有证据；R803/M404 仍 not_evaluable；D-G6 empty-target mixed Compose 已通过 |
 | V5-E | 模型质量与用户价值 | 后置 | R803/M404 未评估 | 按模态、任务、provider/model 运行质量评估和真实用户验证，决定 Beta/发布 |
 
 ## 4. 已完成的设计文档
@@ -82,8 +82,15 @@ V1、V2-A、阶段 9、V3 M401-M403B 与 V4 R000-R800 工程基线已完成。�
 
 ## 6. 当前正在做什么
 
-当前：`V5-A/B/C 与 V5-D 工程门已完成（internal-preview）。2026-08-12 跑通 D-G7 全量回归：API 562 passed、Worker 296 passed、Web 131 passed，lint/tsc/build/compileall/diff-check 通过；Critical closeout ACCEPT with residuals。artifact：docs/evals/artifacts/v5d-20260811-01/d-g7/。R803/M404 仍 not_evaluable（V5-E）。下一步可选：empty-target Compose restore residual、或进入 V5-E / commit 决策。未 commit/push。`
+当前：`V5-A/B/C 与 V5-D 工程门已完成（internal-preview）。2026-08-12 跑通 D-G7 全量回归：API 562 passed、Worker 296 passed、Web 131 passed，lint/tsc/build/compileall/diff-check 通过；Critical closeout ACCEPT with residuals。artifact：docs/evals/artifacts/v5d-20260811-01/d-g7/。R803/M404 仍 not_evaluable（V5-E）。D-G6 empty-target mixed Compose residual 已关闭（artifact v5d-mixed-compose-20260812-01）。下一步主线为 V5-E（R803/M404）或产品决策。`
 
+
+## 2026-08-12：V5-D D-G6 empty-target mixed Compose restore
+
+- 新增 `infra/scripts/run-v5d-mixed-compose-acceptance.sh`；harness mode `mixed-compose`。
+- 隔离 Compose 构建/迁移/seed 三模态 → production-start 浏览器 → backup → empty down → restore → semantic verify → 浏览器回放 → zero-residue cleanup。
+- artifact `docs/evals/artifacts/v5d-mixed-compose-20260812-01/`：`deploymentGate=pass`，`releaseGatePassed=true`，semantic SHA 一致，browser roundtrip 通过。
+- 不宣称 R803/M404；产品仍 internal_preview。
 
 ## 2026-08-12：V5-D D-G7 full regression + Critical closeout
 
@@ -287,7 +294,7 @@ V1、V2-A、阶段 9、V3 M401-M403B 与 V4 R000-R800 工程基线已完成。�
 
 ## 7. 下一步
 
-下一步：`V5-D 工程门已 ACCEPT（internal-preview）。可选 residual：D-G6 empty-target Compose backup/restore。主线可选进入 V5-E（R803/M404），或由主人明确要求后 commit/push 脏工作树中的 V5-C/V5-D 交付。不得无批准引入新 registry version、provider selector 或 API/save/replay 合同变化。`
+下一步：`V5-D 工程门与 D-G6 empty-target mixed Compose 已通过（internal-preview）。主线进入 V5-E：R803 模型质量与 M404 用户价值（均仍 not_evaluable 直至有真实证据）。不得无批准引入新 registry version、provider selector 或 API/save/replay 合同变化。`
 
 ## 2026-08-10：V5-C C-API-WORKER implementation slice
 

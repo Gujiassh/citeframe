@@ -1,0 +1,33 @@
+Attaching to citeframe-v5d-20260812t124232z-1035321_api_1
+api_1            | INFO:     Started server process [1]
+api_1            | INFO:     Waiting for application startup.
+api_1            | INFO:     Application startup complete.
+api_1            | INFO:     Uvicorn running on http://0.0.0.0:8000 (Press CTRL+C to quit)
+api_1            | INFO:     127.0.0.1:59780 - "GET /health/ready HTTP/1.1" 200 OK
+api_1            | INFO:     127.0.0.1:59910 - "GET /health/ready HTTP/1.1" 200 OK
+api_1            | INFO:     127.0.0.1:37772 - "GET /health/ready HTTP/1.1" 200 OK
+api_1            | INFO:     172.24.0.8:51536 - "POST /v1/auth/login HTTP/1.1" 200 OK
+api_1            | INFO:     172.24.0.8:51536 - "GET /v1/workspaces HTTP/1.1" 200 OK
+api_1            | INFO:     172.24.0.8:51536 - "GET /v1/workspaces/a2ebcdc3-98ed-4f71-ac96-25dc46c52053/research-runs HTTP/1.1" 200 OK
+api_1            | INFO:     172.24.0.8:51554 - "GET /v1/workspaces/a2ebcdc3-98ed-4f71-ac96-25dc46c52053/tags HTTP/1.1" 200 OK
+api_1            | INFO:     172.24.0.8:51538 - "GET /v1/workspaces/a2ebcdc3-98ed-4f71-ac96-25dc46c52053/assets HTTP/1.1" 200 OK
+api_1            | INFO:     172.24.0.8:51570 - "GET /v1/workspaces/a2ebcdc3-98ed-4f71-ac96-25dc46c52053/threads HTTP/1.1" 200 OK
+api_1            | INFO:     172.24.0.8:51558 - "GET /v1/workspaces/a2ebcdc3-98ed-4f71-ac96-25dc46c52053/notes HTTP/1.1" 200 OK
+api_1            | INFO:     172.24.0.8:51536 - "GET /v1/workspaces/a2ebcdc3-98ed-4f71-ac96-25dc46c52053/threads/3f34c32f-8e12-47c4-868e-a6eaabc44167/messages HTTP/1.1" 200 OK
+api_1            | INFO:     172.24.0.8:51536 - "GET /v1/workspaces/a2ebcdc3-98ed-4f71-ac96-25dc46c52053/assets/2979ba31-7826-4714-857a-1f094f8b10e1?pageNumber=2 HTTP/1.1" 200 OK
+api_1            | INFO:     172.24.0.8:51536 - "GET /v1/workspaces/a2ebcdc3-98ed-4f71-ac96-25dc46c52053/assets/2979ba31-7826-4714-857a-1f094f8b10e1/file HTTP/1.1" 200 OK
+api_1            | INFO:     172.24.0.8:51536 - "GET /v1/workspaces/a2ebcdc3-98ed-4f71-ac96-25dc46c52053/assets/8f5abe48-e5fa-4312-b6ea-60bf6ae8474e/representations/image-oriented/file?processingGeneration=1&evidenceRepresentationId=fe28956c-1ecc-400d-ae98-905d10d207db HTTP/1.1" 200 OK
+api_1            | INFO:     172.24.0.8:51536 - "GET /v1/workspaces/a2ebcdc3-98ed-4f71-ac96-25dc46c52053/assets/22d5def5-3f50-438c-849f-b85d167ba69d/representations/685ca0e3-afd4-4b7f-921e-1425f4205863/content HTTP/1.1" 200 OK
+api_1            | INFO:     172.24.0.8:51536 - "POST /v1/auth/login HTTP/1.1" 200 OK
+api_1            | INFO:     172.24.0.8:51536 - "GET /v1/workspaces HTTP/1.1" 200 OK
+api_1            | INFO:     172.24.0.8:51536 - "GET /v1/workspaces/a2ebcdc3-98ed-4f71-ac96-25dc46c52053/assets HTTP/1.1" 200 OK
+api_1            | INFO:     172.24.0.8:51558 - "GET /v1/workspaces/a2ebcdc3-98ed-4f71-ac96-25dc46c52053/tags HTTP/1.1" 200 OK
+api_1            | INFO:     172.24.0.8:51570 - "GET /v1/workspaces/a2ebcdc3-98ed-4f71-ac96-25dc46c52053/threads HTTP/1.1" 200 OK
+api_1            | INFO:     172.24.0.8:51554 - "GET /v1/workspaces/a2ebcdc3-98ed-4f71-ac96-25dc46c52053/research-runs HTTP/1.1" 200 OK
+api_1            | INFO:     172.24.0.8:51538 - "GET /v1/workspaces/a2ebcdc3-98ed-4f71-ac96-25dc46c52053/notes HTTP/1.1" 200 OK
+api_1            | INFO:     172.24.0.8:51536 - "GET /v1/workspaces/a2ebcdc3-98ed-4f71-ac96-25dc46c52053/threads/3f34c32f-8e12-47c4-868e-a6eaabc44167/messages HTTP/1.1" 200 OK
+api_1            | INFO:     172.24.0.8:51536 - "GET /v1/workspaces/a2ebcdc3-98ed-4f71-ac96-25dc46c52053/assets/2979ba31-7826-4714-857a-1f094f8b10e1?pageNumber=2 HTTP/1.1" 200 OK
+api_1            | INFO:     172.24.0.8:51536 - "GET /v1/workspaces/a2ebcdc3-98ed-4f71-ac96-25dc46c52053/assets/2979ba31-7826-4714-857a-1f094f8b10e1/file HTTP/1.1" 200 OK
+api_1            | INFO:     172.24.0.8:51536 - "GET /v1/workspaces/a2ebcdc3-98ed-4f71-ac96-25dc46c52053/assets/8f5abe48-e5fa-4312-b6ea-60bf6ae8474e/representations/image-oriented/file?processingGeneration=1&evidenceRepresentationId=fe28956c-1ecc-400d-ae98-905d10d207db HTTP/1.1" 200 OK
+api_1            | INFO:     172.24.0.8:51536 - "GET /v1/workspaces/a2ebcdc3-98ed-4f71-ac96-25dc46c52053/assets/22d5def5-3f50-438c-849f-b85d167ba69d/representations/685ca0e3-afd4-4b7f-921e-1425f4205863/content HTTP/1.1" 200 OK
+api_1            | INFO:     127.0.0.1:42812 - "GET /health/ready HTTP/1.1" 200 OK

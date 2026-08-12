@@ -1,0 +1,9 @@
+
+Running 2 tests using 1 worker
+
+(node:1048916) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  1 e2e/v5d-mixed-production-start.spec.ts:280:5 › V5-D mixed production-start on desktop 1440x1000 (1.7s)
+  ✓  2 e2e/v5d-mixed-production-start.spec.ts:290:5 › V5-D mixed production-start on mobile 390x844 (1.2s)
+
+  2 passed (3.3s)

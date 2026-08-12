@@ -1,0 +1,2 @@
+Attaching to citeframe-v5d-20260812t124232z-1035321_worker_1
+worker_1         | 2026-08-12 12:48:57,661 INFO ai_pdf_worker worker_start poll_interval_seconds=1.000 max_consecutive_errors=5 retry_initial_delay_seconds=1.000 retry_max_delay_seconds=30.000

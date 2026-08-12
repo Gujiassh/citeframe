@@ -1,0 +1,13 @@
+{
+  "afterSemanticSha256": "d8563074fd66eddbc70efcd7695cafcd41ef16b614ddad09b60ed2530fa9f3f3",
+  "beforeSemanticSha256": "d8563074fd66eddbc70efcd7695cafcd41ef16b614ddad09b60ed2530fa9f3f3",
+  "mismatches": [],
+  "passed": true,
+  "requiredKinds": [
+    "pdf",
+    "image",
+    "document"
+  ],
+  "schemaVersion": "v5d-mixed-restore-verification-v1",
+  "workspaceId": "a2ebcdc3-98ed-4f71-ac96-25dc46c52053"
+}

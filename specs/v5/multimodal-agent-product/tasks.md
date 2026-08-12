@@ -125,7 +125,7 @@ V5-C implementation status (2026-08-10): `C-API-WORKER`, `C-BOUNDARY` and Web us
 
 - [x] D001 完成混合模态资产范围和统一检索入口
 - [x] D002 完成多模型、多模态、多 Agent 的桌面/移动端主路径（D-G4 production-start mixed desktop/mobile）
-- [x] D003 完成 API/Worker/Web 重启、删除、备份恢复和部署 profile（D-G5 partial-existing unit + D-G6 focused live；empty-target Compose residual）
+- [x] D003 完成 API/Worker/Web 重启、删除、备份恢复和部署 profile（D-G5 partial-existing unit + D-G6 empty-target mixed Compose pass）
 - [x] D004 完成开发者文档、运行手册和故障诊断
 - [x] D005 完成全链路静态、单元、集成和 Playwright 回归（D-G7 2026-08-12）
 
@@ -137,10 +137,10 @@ V5-C implementation status (2026-08-10): `C-API-WORKER`, `C-BOUNDARY` and Web us
 - [x] D-G3 Research integration：固定 executor、frozen snapshot、branch/retry/cancel/recovery 和 Artifact 回归（partial-existing-v5c production-start + unit suites retained for D-G7）
 - [x] D-G4 desktop/mobile：production-start `1440x1000` 与 `390x844` Playwright、截图和 DOM/state evidence（live standalone 2 passed 2026-08-11）
 - [x] D-G5 restart/delete/recovery：API/Worker/Web 重启、lease reclaim、delete retry、no-resurrection 和幂等（partial-existing-unit suites; no dedicated new mixed campaign in D-G7）
-- [x] D-G6 live deployment/restore：mixed seed/snapshot/verify CLI + harness mixed-live-pass（focused 2026-08-11；full empty-target Compose restore optional residual）
+- [x] D-G6 live deployment/restore：mixed seed/snapshot/verify + empty-target Compose backup/restore（`v5d-mixed-compose-20260812-01`，deploymentGate=pass）
 - [x] D-G7 full regression/review：API 562 / Worker 296 / Web 131 + lint/tsc/build/compileall/diff-check；Critical `ACCEPT` with residuals（2026-08-12）
 
-评审状态（2026-08-12）：[`docs/evals/v5d-critical-review-20260811.md`](../../../docs/evals/v5d-critical-review-20260811.md) 初始 `REWORK_REQUIRED`（F1/F2）已关闭；D-G4/D-G6 focused live 已通过；D-G7 全量回归 `ACCEPT` with residuals（API 562 / Worker 296 / Web 131）。产品仍为 `internal_preview`；R803/M404 后置；empty-target Compose restore 为 residual；未 commit/push。
+评审状态（2026-08-12）：[`docs/evals/v5d-critical-review-20260811.md`](../../../docs/evals/v5d-critical-review-20260811.md) 初始 `REWORK_REQUIRED`（F1/F2）已关闭；D-G4/D-G6 focused live 已通过；D-G7 全量回归 `ACCEPT` with residuals（API 562 / Worker 296 / Web 131）。产品仍为 `internal_preview`；R803/M404 后置；D-G6 empty-target mixed Compose 已关闭；产品仍 internal_preview。
 
 详细字段、lane 和命令见 [`decision-2026-08-11-v5d-scope.md`](decision-2026-08-11-v5d-scope.md)、[`v5d-detailed-spec.md`](v5d-detailed-spec.md)、[`implementation-lanes-v5d.md`](implementation-lanes-v5d.md)、[`verification-matrix-v5d.md`](verification-matrix-v5d.md) 和 [`grok-handoff-v5d.md`](grok-handoff-v5d.md)。
 
