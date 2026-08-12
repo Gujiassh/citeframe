@@ -57,7 +57,7 @@ M403A 的逐次优化假设、实验手段、通过/否决结果、指标和 art
 | V5-B | 多模态资料扩展 | Markdown-only v1 已实现 | isolated/canonical、live scoped restore、online migration、standalone browser 与 B008 formal isolated deployment/Critical closure 已通过；accepted artifact 为 `v5b-document-deployment-v4` | Document registry/catalog、Markdown adapter、typed `document_anchor`、retrieval、Citation/NoteSource、Viewer、delete/recovery/restore 已完成；HTML/Office/Audio/Video 不在本切片，需独立决策与 gate |
 | V5-C | 多 Agent 协作产品化 | 工程 `ACCEPT`，Medium residual follow-up | C-API-WORKER、C-BOUNDARY 与 R800 v6 已通过 | 固定 Research DAG 已完成计划、并行、审批、重试、恢复和 Artifact 体验；生产 Agent I/O 已严格版本化，不建设通用 Agent 平台 |
 | V5-D | 端到端整合与工程稳定 | 工程 `ACCEPT`（internal-preview） | D-G0–D-G7 工程门通过（D-G3/D-G5 partial-existing；D-G6 focused live） | 全量 API 562 / Worker 296 / Web 131 + lint/tsc/build；D-G4 production-start 与 D-G6 mixed live seed 已有证据；R803/M404 仍 not_evaluable；D-G6 empty-target mixed Compose 已通过 |
-| V5-E | 模型质量与用户价值 | 后置 | R803/M404 未评估 | 按模态、任务、provider/model 运行质量评估和真实用户验证，决定 Beta/发布 |
+| V5-E | 模型质量与用户价值 | E001 计划包已完成 | R803/M404 仍 `not_evaluable` | E001 规格/矩阵/不可变策略已落地；正式 campaign 与 M404 待主人授权与协议 |
 
 ## 4. 已完成的设计文档
 
@@ -82,8 +82,15 @@ V1、V2-A、阶段 9、V3 M401-M403B 与 V4 R000-R800 工程基线已完成。�
 
 ## 6. 当前正在做什么
 
-当前：`V5-A/B/C 与 V5-D 工程门已完成（internal-preview）。2026-08-12 跑通 D-G7 全量回归：API 562 passed、Worker 296 passed、Web 131 passed，lint/tsc/build/compileall/diff-check 通过；Critical closeout ACCEPT with residuals。artifact：docs/evals/artifacts/v5d-20260811-01/d-g7/。R803/M404 仍 not_evaluable（V5-E）。D-G6 empty-target mixed Compose residual 已关闭（artifact v5d-mixed-compose-20260812-01）。下一步主线为 V5-E（R803/M404）或产品决策。`
+当前：`V5-A/B/C 与 V5-D 工程门已完成（internal-preview）。2026-08-12 跑通 D-G7 全量回归：API 562 passed、Worker 296 passed、Web 131 passed，lint/tsc/build/compileall/diff-check 通过；Critical closeout ACCEPT with residuals。artifact：docs/evals/artifacts/v5d-20260811-01/d-g7/。R803/M404 仍 not_evaluable（V5-E）。D-G6 empty-target mixed Compose residual 已关闭。V5-E E001 计划包已落地；正式 R803/M404 待授权。`
 
+
+## 2026-08-12：V5-E E001 plan package
+
+- 新增 `decision-2026-08-12-v5e-scope.md`、`v5e-detailed-spec.md`、`verification-matrix-v5e.md`、`grok-handoff-v5e.md`。
+- 冻结：不覆盖/不续跑 `r803-campaign-20260730-v1` 与 r803-v1..v4；新 campaign 必须新目录；工程绿 ≠ 模型质量。
+- 未发起付费 provider campaign；未宣称 model quality / user value。
+- 下一步：主人授权正式 R803（成本上限 + profile）或批准 M404 协议。
 
 ## 2026-08-12：V5-D D-G6 empty-target mixed Compose restore
 
@@ -294,7 +301,7 @@ V1、V2-A、阶段 9、V3 M401-M403B 与 V4 R000-R800 工程基线已完成。�
 
 ## 7. 下一步
 
-下一步：`V5-D 工程门与 D-G6 empty-target mixed Compose 已通过（internal-preview）。主线进入 V5-E：R803 模型质量与 M404 用户价值（均仍 not_evaluable 直至有真实证据）。不得无批准引入新 registry version、provider selector 或 API/save/replay 合同变化。`
+下一步：`V5-E E001 计划包已完成。等待主人明确授权正式 R803 campaign（成本上限 + provider/model）或提供 M404 协议要素。在此之前不发起付费模型评估、不宣称质量/用户价值通过。`
 
 ## 2026-08-10：V5-C C-API-WORKER implementation slice
 

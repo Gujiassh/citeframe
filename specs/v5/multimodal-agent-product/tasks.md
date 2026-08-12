@@ -8,7 +8,7 @@
 - [x] V5-B 多模态资料扩展（Markdown-only `document` v1：isolated/canonical implementation、前序 Critical review、online migration、live scoped PostgreSQL/MinIO restore、standalone browser `4 passed` 与 B008 formal isolated deployment Critical closure 已通过；accepted deployment artifact=`docs/evals/artifacts/v5b-document-deployment-v4/`；HTML/Audio/Video 仍受 OD-B5/B6/B7 独立 gate 阻塞）
 - [x] V5-C 多 Agent 协作产品化（2026-08-10 工程/发布门 `ACCEPT`；严格版本化 production Agent I/O、usage/context、Web projection、production-start Research、online migration 与 R800 v6 已通过；F1/F5 为 Medium 后续风险）
 - [x] V5-D 端到端整合与工程稳定（2026-08-12 D-G7 全量回归通过：API 562 / Worker 296 / Web 131；Critical `ACCEPT` with residuals；internal-preview；R803/M404 仍后置；未 commit/push）
-- [ ] V5-E 模型质量与用户价值
+- [ ] V5-E 模型质量与用户价值（E001 计划包已于 2026-08-12 落地；正式 campaign / M404 仍待主人授权）
 
 ### V5-B/C 详细规格状态
 
@@ -146,7 +146,16 @@ V5-C implementation status (2026-08-10): `C-API-WORKER`, `C-BOUNDARY` and Web us
 
 ## V5-E 模型质量与用户价值
 
-- [ ] E001 重新规划 R803 或后续模型质量套件，按模态、任务和 provider/model 分层
-- [ ] E002 保留历史 R803 artifact，不覆盖或续跑冻结的 v1 campaign
-- [ ] E003 完成 M404 真实用户任务、重复使用和结论采用验证
+- [x] E001 重新规划 R803 或后续模型质量套件，按模态、任务和 provider/model 分层（见 `decision-2026-08-12-v5e-scope.md`、`v5e-detailed-spec.md`、`verification-matrix-v5e.md`、`grok-handoff-v5e.md`）
+- [ ] E002 保留历史 R803 artifact，不覆盖或续跑冻结的 v1 campaign（策略已写入 E001；执行时强制新目录）
+- [ ] E003 完成 M404 真实用户任务、重复使用和结论采用验证（blocked：缺协议与目标用户）
 - [ ] E004 根据功能、工程、模型质量和用户价值四类证据决定 Beta/公开发布
+
+### V5-E gates
+
+- [x] E-G0 package freeze / inventory / non-resume policy documented (2026-08-12)
+- [ ] E-G1 formal R803 campaign execution (requires explicit owner authorization)
+- [ ] E-G2 quality judgment against frozen threshold
+- [ ] E-G3 M404 protocol approval
+- [ ] E-G4 M404 execution
+- [ ] E-G5 four-class release review

@@ -1,6 +1,6 @@
 # V5 多模态 AI 知识工作台与 Agent 协作实施计划
 
-当前阶段索引：V5-D 规格已就绪、生产实现尚未开始。V5-B/V5-C/V5-D 的实现不得只依据本文件的阶段描述；字段、状态、API、locator、lane ownership 和验收以 [`README.md`](README.md)、[`open-decisions.md`](open-decisions.md)、[`decision-2026-08-11-v5d-scope.md`](decision-2026-08-11-v5d-scope.md)、[`v5b-detailed-spec.md`](v5b-detailed-spec.md)、[`v5c-detailed-spec.md`](v5c-detailed-spec.md)、[`v5d-detailed-spec.md`](v5d-detailed-spec.md)、[`implementation-lanes-v5bc.md`](implementation-lanes-v5bc.md)、[`implementation-lanes-v5d.md`](implementation-lanes-v5d.md)、[`verification-matrix-v5bc.md`](verification-matrix-v5bc.md) 和 [`verification-matrix-v5d.md`](verification-matrix-v5d.md) 为准。
+当前阶段索引：V5-A–D 工程门已完成（internal-preview）；主动主线为 V5-E 计划与授权后的 R803/M404。V5-B/V5-C/V5-D 的实现不得只依据本文件的阶段描述；字段、状态、API、locator、lane ownership 和验收以 [`README.md`](README.md)、[`open-decisions.md`](open-decisions.md)、[`decision-2026-08-11-v5d-scope.md`](decision-2026-08-11-v5d-scope.md)、[`v5b-detailed-spec.md`](v5b-detailed-spec.md)、[`v5c-detailed-spec.md`](v5c-detailed-spec.md)、[`v5d-detailed-spec.md`](v5d-detailed-spec.md)、[`implementation-lanes-v5bc.md`](implementation-lanes-v5bc.md)、[`implementation-lanes-v5d.md`](implementation-lanes-v5d.md)、[`verification-matrix-v5bc.md`](verification-matrix-v5bc.md) 和 [`verification-matrix-v5d.md`](verification-matrix-v5d.md) 为准。
 
 ## 1. 实施策略
 
@@ -77,7 +77,9 @@ internal-preview engineering gate，不替代 R803/M404。
 
 ### V5-E：模型质量与用户价值
 
-V5-D 完成后再推进，不阻塞前四个阶段：
+详细规格以 [`decision-2026-08-12-v5e-scope.md`](decision-2026-08-12-v5e-scope.md)、[`v5e-detailed-spec.md`](v5e-detailed-spec.md)、[`verification-matrix-v5e.md`](verification-matrix-v5e.md) 为准。
+
+V5-D 工程门已完成后推进；不阻塞前四个阶段的已完成结论：
 
 - R803 或新版质量套件按模态、任务和 provider/model 分层运行
 - 保留旧失败证据，不覆盖历史 campaign
