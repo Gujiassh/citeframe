@@ -49,10 +49,10 @@ class GenerationProvider(Protocol):
     model: str
     config_fingerprint: str
 
-    def generate(self, messages: list[GenerationMessage]) -> str:
+    def generate(self, messages: list[GenerationMessage], *, max_output_tokens: int | None = None) -> str:
         ...
 
-    def stream(self, messages: list[GenerationMessage]) -> Iterator[str]:
+    def stream(self, messages: list[GenerationMessage], *, max_output_tokens: int | None = None) -> Iterator[str]:
         ...
 
 
@@ -237,7 +237,10 @@ class OpenAIGenerationProvider:
         self._client = client
         self.config_fingerprint = ""
 
-    def generate(self, messages: list[GenerationMessage]) -> str:
+    def generate(self, messages: list[GenerationMessage], *, max_output_tokens: int | None = None) -> str:
+        output_limit = self._max_output_tokens if max_output_tokens is None else max_output_tokens
+        if output_limit < 1:
+            raise ValueError("max_output_tokens must be >= 1")
         with observe_provider_request(self.provider, "generation"):
             # Fail closed before HTTP; blank/whitespace keys normalize to missing.
             if _normalize_api_key(self._api_key) is None:
@@ -250,9 +253,19 @@ class OpenAIGenerationProvider:
                 {
                     "model": self.model,
                     "input": messages,
-                    "max_output_tokens": self._max_output_tokens,
+                    "max_output_tokens": output_limit,
                 },
             )
+            incomplete_details = response.get("incomplete_details")
+            status = response.get("status")
+            if status != "completed" or (
+                isinstance(incomplete_details, dict)
+                and incomplete_details.get("reason") in {"max_output_tokens", "max_tokens"}
+            ):
+                raise ModelProviderError(
+                    "research_provider_output_incomplete",
+                    "Generation provider did not prove that the response completed.",
+                )
             output_text = response.get("output_text")
             if isinstance(output_text, str) and output_text.strip():
                 return output_text.strip()
@@ -274,7 +287,10 @@ class OpenAIGenerationProvider:
                     return "".join(parts).strip()
             raise ModelProviderError("generation_invalid_response", "Generation provider returned no answer text.")
 
-    def stream(self, messages: list[GenerationMessage]) -> Iterator[str]:
+    def stream(self, messages: list[GenerationMessage], *, max_output_tokens: int | None = None) -> Iterator[str]:
+        output_limit = self._max_output_tokens if max_output_tokens is None else max_output_tokens
+        if output_limit < 1:
+            raise ValueError("max_output_tokens must be >= 1")
         with observe_provider_request(self.provider, "generation_stream"):
             if _normalize_api_key(self._api_key) is None:
                 raise ModelProviderError(
@@ -284,7 +300,7 @@ class OpenAIGenerationProvider:
             payload = {
                 "model": self.model,
                 "input": messages,
-                "max_output_tokens": self._max_output_tokens,
+                "max_output_tokens": output_limit,
                 "stream": True,
             }
             headers = {"Content-Type": "application/json", "Authorization": f"Bearer {self._api_key}"}
@@ -390,7 +406,10 @@ class DeepSeekGenerationProvider:
         self._client = client
         self.config_fingerprint = ""
 
-    def generate(self, messages: list[GenerationMessage]) -> str:
+    def generate(self, messages: list[GenerationMessage], *, max_output_tokens: int | None = None) -> str:
+        output_limit = self._max_output_tokens if max_output_tokens is None else max_output_tokens
+        if output_limit < 1:
+            raise ValueError("max_output_tokens must be >= 1")
         with observe_provider_request(self.provider, "generation"):
             if _normalize_api_key(self._api_key) is None:
                 raise ModelProviderError(
@@ -399,8 +418,14 @@ class DeepSeekGenerationProvider:
                 )
             response = self._post(
                 f"{self._api_base}/messages",
-                self._build_payload(messages),
+                self._build_payload(messages, max_output_tokens=output_limit),
             )
+            stop_reason = response.get("stop_reason")
+            if stop_reason not in {"end_turn", "stop_sequence"}:
+                raise ModelProviderError(
+                    "research_provider_output_incomplete",
+                    "Generation provider did not prove that the response completed.",
+                )
             content = response.get("content")
             if not isinstance(content, list) or not content:
                 raise ModelProviderError("generation_invalid_response", "Generation provider returned no content blocks.")
@@ -409,14 +434,17 @@ class DeepSeekGenerationProvider:
                 raise ModelProviderError("generation_invalid_response", "Generation provider returned no answer text.")
             return text
 
-    def stream(self, messages: list[GenerationMessage]) -> Iterator[str]:
+    def stream(self, messages: list[GenerationMessage], *, max_output_tokens: int | None = None) -> Iterator[str]:
+        output_limit = self._max_output_tokens if max_output_tokens is None else max_output_tokens
+        if output_limit < 1:
+            raise ValueError("max_output_tokens must be >= 1")
         with observe_provider_request(self.provider, "generation_stream"):
             if _normalize_api_key(self._api_key) is None:
                 raise ModelProviderError(
                     "generation_provider_not_configured",
                     "DeepSeek generation API key is not configured.",
                 )
-            payload = self._build_payload(messages)
+            payload = self._build_payload(messages, max_output_tokens=output_limit)
             payload["stream"] = True
             headers = {
                 "Content-Type": "application/json",
@@ -451,12 +479,12 @@ class DeepSeekGenerationProvider:
                 logger.error("model_provider_request_failed provider=deepseek kind=generation_stream error_type=%s", type(error).__name__)
                 raise ModelProviderError("generation_provider_unreachable", "Generation provider is unreachable.") from error
 
-    def _build_payload(self, messages: list[GenerationMessage]) -> dict:
+    def _build_payload(self, messages: list[GenerationMessage], *, max_output_tokens: int | None = None) -> dict:
         system_text, conversation = _split_deepseek_system_and_messages(messages)
         payload: dict[str, object] = {
             "model": self.model,
             "messages": _map_messages_for_deepseek_anthropic(conversation),
-            "max_tokens": self._max_output_tokens,
+            "max_tokens": self._max_output_tokens if max_output_tokens is None else max_output_tokens,
         }
         if system_text:
             payload["system"] = system_text
@@ -562,12 +590,13 @@ def _normalize_openai_base(api_base: str) -> str:
 
 
 def _read_response_stream(response: httpx.Response) -> Iterator[str]:
+    completed = False
     for line in response.iter_lines():
         if not line or not line.startswith("data:"):
             continue
         raw_data = line[5:].strip()
         if raw_data == "[DONE]":
-            return
+            break
         try:
             event = json.loads(raw_data)
         except json.JSONDecodeError as error:
@@ -577,10 +606,29 @@ def _read_response_stream(response: httpx.Response) -> Iterator[str]:
         event_type = event.get("type")
         if event_type in {"response.failed", "error"}:
             raise ModelProviderError("generation_provider_error", "Generation provider reported a streaming error.")
+        if event_type == "response.incomplete":
+            raise ModelProviderError(
+                "research_provider_output_incomplete",
+                "Generation provider reported an incomplete streaming response.",
+            )
+        if event_type == "response.completed":
+            response_data = event.get("response")
+            if isinstance(response_data, dict) and response_data.get("status") not in {None, "completed"}:
+                raise ModelProviderError(
+                    "research_provider_output_incomplete",
+                    "Generation provider did not prove that the response completed.",
+                )
+            completed = True
+            continue
         if event_type == "response.output_text.delta":
             delta = event.get("delta")
             if isinstance(delta, str) and delta:
                 yield delta
+    if not completed:
+        raise ModelProviderError(
+            "research_provider_output_incomplete",
+            "Generation provider did not prove that the response completed.",
+        )
 
 
 def _normalize_deepseek_base(api_base: str) -> str:
@@ -799,12 +847,13 @@ def _extract_anthropic_text(content_blocks: list[object]) -> str:
 
 
 def _read_anthropic_response_stream(response: httpx.Response) -> Iterator[str]:
+    completed = False
     for line in response.iter_lines():
         if not line or not line.startswith("data:"):
             continue
         raw_data = line[5:].strip()
         if raw_data == "[DONE]":
-            return
+            break
         try:
             event = json.loads(raw_data)
         except json.JSONDecodeError as error:
@@ -814,9 +863,23 @@ def _read_anthropic_response_stream(response: httpx.Response) -> Iterator[str]:
         event_type = event.get("type")
         if event_type in {"error"}:
             raise ModelProviderError("generation_provider_error", "Generation provider reported a streaming error.")
+        if event_type == "message_stop":
+            stop_reason = event.get("stop_reason")
+            if stop_reason not in {"end_turn", "stop_sequence"}:
+                raise ModelProviderError(
+                    "research_provider_output_incomplete",
+                    "Generation provider did not prove that the response completed.",
+                )
+            completed = True
+            continue
         if event_type == "content_block_delta":
             delta = event.get("delta")
             if isinstance(delta, dict) and delta.get("type") == "text_delta":
                 text = delta.get("text")
                 if isinstance(text, str) and text:
                     yield text
+    if not completed:
+        raise ModelProviderError(
+            "research_provider_output_incomplete",
+            "Generation provider did not prove that the response completed.",
+        )

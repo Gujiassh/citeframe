@@ -30,6 +30,7 @@ from ai_pdf_api.core.research_observability import (
 from ai_pdf_api.services.providers import (
     GenerationMessage,
 )
+from ai_pdf_api.services.research_agent_io_registry import resolve_registry
 
 from ai_pdf_worker.research_executor import (
     ApprovedResearchExecution,
@@ -429,6 +430,26 @@ def _planning_runtime_payload(payload: Any, *, run_id: str) -> dict[str, object]
     planner_prompt = _frozen_prompt(_field(payload, "planner_prompt"), expected_node="planner")
     if planner_prompt.prompt_version_id != str(_field(planning, "planner_prompt_version_id")):
         raise ResearchPortError("research_prompt_contract_invalid")
+    max_cost = (
+        int(_field(_field(limits, "max_cost"), "amount_micros"))
+        if isinstance(limits, Mapping) and ("max_cost" in limits or "maxCost" in limits)
+        else 0
+    )
+    agent_result_schema_version = (
+        planning.get("agentResultSchemaVersion") or planning.get("agent_result_schema_version")
+        if isinstance(planning, Mapping)
+        else None
+    )
+    context_policy_version = (
+        planning.get("contextPolicyVersion") or planning.get("context_policy_version")
+        if isinstance(planning, Mapping)
+        else None
+    )
+    compact_policy_version = (
+        planning.get("compactPolicyVersion") or planning.get("compact_policy_version")
+        if isinstance(planning, Mapping)
+        else None
+    )
     return {
         "workspace_id": _field(payload, "workspace_id"),
         "run_id": run_id,
@@ -447,7 +468,10 @@ def _planning_runtime_payload(payload: Any, *, run_id: str) -> dict[str, object]
         "max_tool_calls": 1,
         "max_input_tokens": _field(limits, "max_input_tokens"),
         "max_output_tokens": _field(limits, "max_output_tokens"),
-        "max_cost_microunits": _field(_field(limits, "max_cost"), "amount_micros"),
+        "max_cost_microunits": max_cost,
+        "agent_result_schema_version": str(agent_result_schema_version or "research-agent-results-legacy-v0"),
+        "context_policy_version": str(context_policy_version or "research-context-policy-legacy-v0"),
+        "compact_policy_version": str(compact_policy_version or "research-compact-policy-legacy-v0"),
         "frozen_assets": tuple(
             FrozenAsset(str(_field(item, "asset_id")), int(_field(item, "processing_generation")), int(_field(item, "index_version")))
             for item in assets
@@ -469,6 +493,11 @@ def as_approved_execution(payload: Any, *, expected_run_id: str | None = None) -
     prompt_version_ids = tuple(str(item) for item in _field(payload, "prompt_version_ids"))
     if prompt_version_ids != tuple(prompt.prompt_version_id for prompt in prompts):
         raise ResearchPortError("research_prompt_contract_invalid")
+    max_cost = (
+        int(_field(_field(limits, "max_cost"), "amount_micros"))
+        if isinstance(limits, Mapping) and ("max_cost" in limits or "maxCost" in limits)
+        else 0
+    )
     execution = ApprovedResearchExecution(
         workspace_id=str(_field(payload, "workspace_id")),
         run_id=run_id,
@@ -488,9 +517,34 @@ def as_approved_execution(payload: Any, *, expected_run_id: str | None = None) -
         plan_revision_id=(str(_field(payload, "plan_revision_id")) if isinstance(payload, Mapping) and ("plan_revision_id" in payload or "planRevisionId" in payload) else None),
         max_input_tokens=int(_field(limits, "max_input_tokens")),
         max_output_tokens=int(_field(limits, "max_output_tokens")),
-        max_cost_microunits=int(_field(_field(limits, "max_cost"), "amount_micros")),
+        max_cost_microunits=max_cost,
+        retrieval_top_k=int(_field(provider, "retrieval_top_k")),
+        agent_result_schema_version=str(
+            execution_config.get("agentResultSchemaVersion")
+            or execution_config.get("agent_result_schema_version")
+            or "research-agent-results-legacy-v0"
+        ) if isinstance(execution_config, Mapping) else "research-agent-results-legacy-v0",
+        context_policy_version=str(
+            execution_config.get("contextPolicyVersion")
+            or execution_config.get("context_policy_version")
+            or "research-context-policy-legacy-v0"
+        ) if isinstance(execution_config, Mapping) else "research-context-policy-legacy-v0",
+        compact_policy_version=str(
+            execution_config.get("compactPolicyVersion")
+            or execution_config.get("compact_policy_version")
+            or "research-compact-policy-legacy-v0"
+        ) if isinstance(execution_config, Mapping) else "research-compact-policy-legacy-v0",
         prompts=prompts,
     )
+    try:
+        resolve_registry(
+            agent_result_schema_version=execution.agent_result_schema_version,
+            context_policy_version=execution.context_policy_version,
+            compact_policy_version=execution.compact_policy_version,
+            for_new_run=False,
+        )
+    except ValueError as error:
+        raise ResearchPortError("research_agent_io_version_unavailable") from error
     if not execution.workspace_id or not execution.execution_snapshot_id or len(execution.snapshot_sha256) != 64:
         raise ResearchPortError("execution_scope_invalid")
     return execution

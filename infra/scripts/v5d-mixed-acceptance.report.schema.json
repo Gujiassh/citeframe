@@ -1,0 +1,122 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "citeframe://infra/scripts/v5d-mixed-acceptance.report.schema.json",
+  "title": "V5-D mixed deployment acceptance report",
+  "type": "object",
+  "required": [
+    "schemaVersion",
+    "runId",
+    "mode",
+    "sourceSha",
+    "reuse",
+    "lanes",
+    "gates",
+    "engineeringGate",
+    "modelQualityGate",
+    "userValueGate",
+    "contractImpact",
+    "gapAnalysis",
+    "nextSteps"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "const": "v5d-mixed-deployment-acceptance-v1"
+    },
+    "runId": { "type": "string", "minLength": 1 },
+    "mode": {
+      "type": "string",
+      "enum": ["static-only", "document", "research", "both", "skeleton"]
+    },
+    "sourceSha": { "type": "string", "minLength": 1 },
+    "reuse": {
+      "type": "object",
+      "required": [
+        "documentRunner",
+        "researchRunner",
+        "backup",
+        "restore",
+        "composeBase",
+        "composeDocumentOverride",
+        "composeResearchOverride",
+        "mixedFixtureManifest"
+      ],
+      "properties": {
+        "documentRunner": { "type": "string" },
+        "researchRunner": { "type": "string" },
+        "backup": { "type": "string" },
+        "restore": { "type": "string" },
+        "composeBase": { "type": "string" },
+        "composeDocumentOverride": { "type": "string" },
+        "composeResearchOverride": { "type": "string" },
+        "mixedFixtureManifest": { "type": "string" }
+      },
+      "additionalProperties": false
+    },
+    "lanes": {
+      "type": "object",
+      "required": ["static", "document", "research", "mixedPdfImageDocumentLive"],
+      "properties": {
+        "static": { "type": "object" },
+        "document": { "type": "object" },
+        "research": { "type": "object" },
+        "mixedPdfImageDocumentLive": {
+          "type": "object",
+          "required": ["status"],
+          "properties": {
+            "status": {
+              "type": "string",
+              "enum": ["blocked", "pass", "fail", "skipped"]
+            },
+            "reason": { "type": "string" }
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "gates": {
+      "type": "object",
+      "required": ["D-G5", "D-G6"],
+      "properties": {
+        "D-G5": { "type": "object" },
+        "D-G6": { "type": "object" }
+      }
+    },
+    "engineeringGate": { "type": "string" },
+    "modelQualityGate": {
+      "const": "not_evaluable"
+    },
+    "modelQualityReason": { "type": "string" },
+    "userValueGate": {
+      "const": "not_evaluable"
+    },
+    "userValueReason": { "type": "string" },
+    "contractImpact": {
+      "const": "none"
+    },
+    "gapAnalysis": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "severity", "summary", "status"],
+        "properties": {
+          "id": { "type": "string" },
+          "severity": {
+            "type": "string",
+            "enum": ["high", "medium", "low", "info"]
+          },
+          "summary": { "type": "string" },
+          "evidence": { "type": "array", "items": { "type": "string" } },
+          "blockerFor": { "type": "array", "items": { "type": "string" } },
+          "owner": { "type": "string" },
+          "status": { "type": "string" },
+          "decision": { "type": "string" }
+        }
+      }
+    },
+    "nextSteps": {
+      "type": "array",
+      "items": { "type": "string" }
+    }
+  },
+  "additionalProperties": true
+}

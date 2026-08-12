@@ -2,9 +2,9 @@
 
 ## 状态与边界
 
-状态：`draft-for-approval`。
+状态：`approved-for-implementation`（2026-08-10 owner approval）。
 
-本文是 V4 delta 的字段级和验收级冻结候选。除已明确的 V5-A 和 V4 基线外，涉及 timeline 是否独立投影、artifact visibility、budget detail、pricing、top-k 和 R800 scope 的内容都是 proposed，必须在 `open-decisions.md` 取得批准后才可成为 worker contract。
+本文是 V4 delta 的字段级和验收级冻结候选。除已明确的 V5-A 和 V4 基线外，timeline、artifact visibility、usage-only presentation、top-k、context compact、strict role-I/O 和 R800 scope 已由 OD-C1/C2/C3/C4/C5/C8 于 2026-08-10 批准；字段级合同以 [`decision-2026-08-10-v5c-product-contract.md`](decision-2026-08-10-v5c-product-contract.md) 为准。
 
 ## 1. 产品目标
 
@@ -26,11 +26,11 @@
 | Run/Step/Attempt ledger | 已有闭集状态和 DB truth | 只增加产品投影/缺口测试；不重命名状态 |
 | Fixed DAG | planner → approval → researcher* → join → verifier → critic → conflict? → synthesizer → publisher | 展示拓扑和 branch grouping；不开放动态 graph |
 | Evidence tools | `evidence.search`, `evidence.load` | 展示调用产生的 Evidence bundle；不新增任意工具 |
-| Agent I/O | Current V4 production uses `GenerationResearchAgents.DEFAULT_AGENT_RESULT_SCHEMAS` plus runtime mapping; `research-agent-results-v1` strict schema is evaluator/contract material, not an approved production binding | V5-C must inventory current production shape first; any strict schema promotion requires OD-C8 and a versioned runtime change |
+| Agent I/O | V4 has loose runtime schemas plus a strict evaluator schema | V5-C promotes the strict role contract to production v1 and freezes a versioned registry, prompt binding, validator, runtime adapter, API mapping, Web fixtures and historical-read path together |
 | HITL | plan approval / conflict resolution | 完整化控制可见性、disabled reason、optimistic concurrency |
 | Retry/cancel/recovery | 单步重试、cancel_requested、lease reclaim | 把现有行为变成可理解的 Web flow 和回归矩阵 |
 | Provider snapshot | V5-A 已冻结 proposed/execution precedence | 消除展示缺口；不加 selector |
-| Cost/budget | planning/execution ledgers、reserve/reconcile | 展示 limits/consumed/estimated；pricing 缺失 fail-closed |
+| Usage/context | planning/execution ledgers、reserve/reconcile | 展示 provider/tool calls、input/output tokens、limits/remaining；Token 为单次 context/output gate，累计只记 usage；pricing 不阻塞启动 |
 | SSE | event allowlist + cursor replay | timeline projection 和 reconnect acceptance；不改变事件语义 |
 | Artifact | plan/evidence/verification/conflict/final kinds | visible/internal policy、drill-down；不改变 artifact bytes |
 
@@ -73,13 +73,13 @@ Attempt: running | succeeded | failed | timed_out | abandoned | cancelled
 
 ## 4. Typed role I/O
 
-权威基线分两层：当前 production runtime 是 `apps/worker/src/ai_pdf_worker/research_runtime_agents.py` 的 `DEFAULT_AGENT_RESULT_SCHEMAS`、prompt variable binding 和 runtime mapping；`apps/worker/src/ai_pdf_worker/research_agent_schemas.py` 的 `research-agent-results-v1` 是严格 evaluator/contract schema，当前不是已批准的 production binding。OD-C8 关闭前，本节只冻结 current production shape，不声称 strict V1 已上线。
+权威基线为批准的 production role-I/O v1：由 `research_agent_schemas.py` 的严格结构、`research_runtime_agents.py` 的 prompt binding/runtime mapping、API persistence mapping、Web fixtures 和 snapshot contract 共同冻结。不得再维持 evaluator-only 与 production-loose 两套新 Run 语义。
 
 ### Planner
 
-输入：当前 production prompt contract 的 `question`、`frozenAssetScope`、`planningLimits` 和 `planOutputSchema`。`planning/execution policy`、provider/profile 和 retrieval policy 只有在现有 prompt binding 已包含或 OD-C8 批准新版本后才能加入，不得由 product spec 先行扩充。
+输入：production prompt contract 的 `question`、`frozenAssetScope`、`planningLimits` 和 `planOutputSchema`。Provider/profile、retrieval policy 与 context policy 作为冻结 execution snapshot 的受控输入，必须由同一 contract version 的 prompt binding 和 validator 共同定义，不能由单个调用方临时拼接。
 
-当前 production output 的 canonical minimum shape 是：
+批准的 production contract v1 canonical minimum shape 是：
 
 ```json
 {
@@ -96,17 +96,17 @@ Attempt: running | succeeded | failed | timed_out | abandoned | cancelled
 }
 ```
 
-`estimatedProviderCalls >= 1`；1–16 subproblems；运行时/API 从返回顺序 materialize subproblem identity/order。strict `additionalProperties=false`、token/cost estimates 是否进入 production，需要 OD-C8；在批准前不能把 evaluator strictness 当成当前 production behavior。
+`estimatedProviderCalls >= 1`；1–16 subproblems；运行时/API 从返回顺序 materialize subproblem identity/order。production v1 对 role payload 使用 strict `additionalProperties=false`；Token estimates 仅作为单次 context/output policy 输入，不是累计 Run budget；cost 不进入 Research UI 或启动门禁。
 
 ### Researcher
 
-当前 production output 的 canonical minimum shape 是：
+批准的 production contract v1 canonical minimum shape 是：
 
 ```json
 {"claims":[{"text":"...","evidenceHandleIds":["handle-..."]}]}
 ```
 
-运行时用 server-generated UUID 创建 canonical `DraftClaim`，模型不输出 claim ID。每个 claim 至少一个 evidence handle；`evidenceHandleIds` 必须来自该 branch 的 `evidence.search/load` tool call。没有任何 search handle 时，现有 runtime 在模型调用前以 `no_evidence_found` 失败；这不是通过空 claims 静默成功的产品路径。若 OD-C8 批准 strict V1，必须再冻结 extra-field rejection、版本化 validator 和 prompt binding。
+运行时用 server-generated UUID 创建 canonical `DraftClaim`，模型不输出 claim ID。每个 claim 至少一个 evidence handle；`evidenceHandleIds` 必须来自该 branch 的 `evidence.search/load` tool call。没有任何 search handle 时，现有 runtime 在模型调用前以 `no_evidence_found` 失败；这不是通过空 claims 静默成功的产品路径。Strict v1 同时冻结 extra-field rejection、版本化 validator、prompt binding 和 provenance adapter。
 
 ### Verifier
 
@@ -143,7 +143,7 @@ Attempt: running | succeeded | failed | timed_out | abandoned | cancelled
 
 ### Schema synchronization rule
 
-`research_runtime_agents.py`、`research_executor_contracts.py`、API completion validation、Web fixtures 和本节必须以 current production V2 contract 为准，除非 OD-C8 批准 strict schema promotion。任何字段变更必须新建 schema version，更新 prompt binding、validator、runtime adapter、API persistence mapping、fixtures 和 focused tests，不能只改文档示例。
+`research_runtime_agents.py`、`research_executor_contracts.py`、API completion validation、Web fixtures、snapshot fields 和本节必须以 versioned production registry 为准。新 Run 固定使用 approved v1；任何字段、约束、prompt、adapter 或跨角色语义变更都必须新建 schema version，并同步更新 prompt binding、validator、runtime adapter、API persistence mapping、fixtures、recovery reader 和 focused tests，不能只改文档示例。Schema 保持 strict `additionalProperties=false`；可扩展性来自显式版本演进和 registry，而不是运行时放宽字段或 new-run fallback。
 
 ### Artifact Publisher
 
@@ -199,7 +199,7 @@ Join 是固定 control step，不是自由 Agent。它必须：
 
 ## 6. Provider/profile 与 budget
 
-### 6.1 Frozen profile
+### 6.1 Frozen profile and contract version
 
 - create/planning revision 冻结 proposed planning/execution profile；
 - approve 时重新校验 frozen asset/generation/index、workflow/prompt、profile fingerprint；
@@ -207,20 +207,24 @@ Join 是固定 control step，不是自由 Agent。它必须：
 - Web approved run 只读 execution snapshot；无 execution 且 plan proposed 时才读 proposed revision；不回退 current Settings；
 - worker reserve/send 前检查实际 profile fingerprint；漂移返回 `research_provider_config_drift`，不调用 provider。该 code 必须在 Research safe-failure map 中保留 machine code、标记 non-retryable，并在 API/Worker/Web fixture 中验证；不能被未知-code fallback 改写为泛化失败后丢失 operator meaning。
 - 一个 execution 仍是一组 server-resolved generation + embedding profile；不允许一个 branch 自选 provider。
+- `agentResultSchemaVersion`、`contextPolicyVersion` 和 `compactPolicyVersion` 随 planning/execution snapshot 冻结；新 Run 不得在运行中切换。
 
-### 6.2 Budget invariants
+### 6.2 Usage and context invariants
 
 Planning 与 execution 使用独立 ledger。每次 provider/tool call 必须：
 
-1. 使用 frozen limits；
+1. 使用 frozen calls/tools/time/parallelism/attempt policy；
 2. reserve before send；
-3. 超限在 send 前 fail-closed；
+3. calls/tools/time/parallelism/attempt 超限在 send 前 fail-closed；
 4. 成功/失败/timeout/unknown outcome reconcile；
-5. retry 复用同一 run budget，不增加隐藏预算；
-6. `max_parallel_researchers` 是硬上限；
-7. pricing 缺失时不能估算为零或复用其他 provider 价格。
+5. retry 复用同一 Run 的调用/时间/并发/尝试限制；
+6. `maxInputTokens` 只约束本次 assembled context，`maxOutputTokens` 只约束本次 response；
+7. 进入 soft compact threshold 时执行 typed deterministic compaction/batching；mandatory provenance、Claim ID、Evidence handle、branch scope 和 schema fields 不得丢失；
+8. compact 后仍超过 hard context limit 时，在 provider send 前返回稳定 context-limit failure；
+9. 累计 input/output Token 只进入 usage telemetry，不因累计值终止 Run；
+10. pricing 缺失不阻止 Research，未知 cost 保持 unknown/null，不写假零。
 
-Web 至少展示 estimated/consumed cost、provider/tool calls、usage final 和 budget exceeded/failure reason。金额使用现有 `MoneyMicrounits`，不把 floating point cost 写入持久化。
+Web 只展示 provider/model、provider/tool calls、input/output tokens、branches、retries、limits、remaining 和 safe failure reason；不展示 money、unit price 或 billing。
 
 ## 7. Permissions 与控制动作
 
@@ -229,8 +233,8 @@ Web 至少展示 estimated/consumed cost、provider/tool calls、usage final 和
 | create | Workspace member | ready scope、concurrency、valid question | `planning` run |
 | plan approve/revise | run creator | pending decision、hash/state version match | approve materializes fixed DAG；revise creates next revision |
 | conflict decision | run creator | bound conflict artifact/hash/state match | exclude or unresolved; unsupported cannot become supported |
-| retry branch/step | run creator | awaiting_retry、retryable code、budget left | only selected failed branch requeued |
-| cancel | creator; owner can emergency cancel cost/security | non-terminal + state version | `cancel_requested` then `cancelled` |
+| retry branch/step | run creator | awaiting_retry、retryable code、run limits left | only selected failed branch requeued |
+| cancel | creator; owner can emergency cancel security/operations | non-terminal + state version | `cancel_requested` then `cancelled` |
 | read | Workspace member | workspace/run membership | DTO filtered by authorization |
 
 HumanDecision action、inputArtifactSha256、inputSnapshotSha256、request number 和 expected state version 必须一起校验。重复提交必须返回同一决定结果或明确 idempotent conflict，不得创建第二个 branch/decision。
@@ -290,9 +294,9 @@ Final report 的每个 fact/conclusion/unresolved/conflict section 必须能定�
 | Gate | 必须完成 | 禁止事项 |
 |---|---|---|
 | C-G0 | V4 baseline inventory、A006/A007 residual map、dirty docs disposition | 重做 V4 executor |
-| C-G1 | pure-productization delta、OD-C1/C2/C3/C4/C5/C8 approved | 默默改变 ledger/schema、top-k、pricing 或 R800 scope |
+| C-G1 | pure-productization delta + approved versioned role-I/O/context/usage contract | 默默改变 ledger/schema、top-k、context policy 或 recovery scope |
 | C-G2 | Quick/Research entry、status/control projection freeze | 统一两套 save model |
-| C-G3 | current production role I/O/join/Evidence/Claim/Artifact rules、OD-C3/C4/C8 approved | worker 自行扩展 output/schema 或把 evaluator schema 当 production binding |
+| C-G3 | strict production role I/O v1、join/Evidence/Claim/Artifact、context compact rules | unknown/extra output、跨 branch evidence、overflow before send 或 evaluator-only binding |
 | C-G4 | timeline/branch/control/retry/cancel/approval Web path | 只测静态 rendering |
 | C-G5 | desktop/mobile, SSE replay, conflict/artifact comprehension | 用本地猜测替代 server seq |
 | C-G6 | permission/budget/tool/provider Critical review | 把 provider secret/fingerprint preimage 放 UI/log |
@@ -301,10 +305,10 @@ Final report 的每个 fact/conclusion/unresolved/conflict section 必须能定�
 ## 11. C001-C008 实现任务
 
 - **C001 Entry/status**：冻结 mode boundary、run status projection、control matrix；验证 Quick SSE 与 Research DTO 不串链。
-- **C002 Typed I/O**：把 worker schema、artifact payload、Web display type 逐项对齐；禁止 `dict[str, Any]` 绕过。
-- **C003 Provider snapshot**：补齐 execution/proposed source fixture、profile labels、pricing/fingerprint drift；不加 selector。
+- **C002 Typed I/O**：将 strict production role-I/O v1 注册到 versioned contract registry，逐项对齐 worker schema、artifact payload、Web display type；禁止 `dict[str, Any]` 绕过。
+- **C003 Provider/context snapshot**：补齐 execution/proposed source fixture、profile labels、agent contract/context/compact policy versions 和 fingerprint drift；不加 selector。
 - **C004 Evidence/Claim/join**：补齐 branch handle scope、join set、claim provenance、artifact visibility；验证 no cross-branch evidence。
 - **C005 Control flows**：approve/revise/conflict/retry/cancel/recover 的 state/permission/idempotency UI and API tests。
 - **C006 Presentation**：timeline、branch grouping、failure、artifact and evidence drill-down；desktop/mobile smoke。
-- **C007 Boundary audit**：workspace, membership, allowlist, budget, provider drift, secret/log boundary；Critical review。
+- **C007 Boundary audit**：workspace, membership, allowlist, usage/context budget, provider drift, secret/log boundary；Critical review。
 - **C008 Regression**：Quick Chat、Citation、NoteSource、Research save/restore、A007 contract 和 production-start E2E 全绿。

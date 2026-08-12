@@ -1,0 +1,9 @@
+588b29d7aca8 citeframe-r800-v5c-20260810-v3_worker_1
+84947e0bd34a citeframe-r800-v5c-20260810-v3_postgres_1
+8f3cfc05fc5a citeframe-r800-v5c-20260810-v3_web_1
+a2269255eaeb citeframe-r800-v5c-20260810-v3_redis_1
+b3cd6019cafa citeframe-r800-v5c-20260810-v3_api_1
+c602d27d8e01 citeframe-r800-v5c-20260810-v3_provider-stub_1
+d30f81b285ac citeframe-r800-v5c-20260810-v3_minio_1
+daa32cfca4f2 citeframe-r800-v5c-20260810-v3_caddy_1
+ebcdd86fb6de citeframe-r800-v5c-20260810-v3_migration_1

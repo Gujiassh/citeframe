@@ -429,6 +429,7 @@ class R800ProviderHandler(BaseHTTPRequestHandler):
             output, ensure_ascii=True, sort_keys=True, separators=(",", ":")
         )
         return {
+            "status": "completed",
             "output_text": output_text,
             "usage": {
                 "input_tokens": 64,

@@ -309,7 +309,6 @@ def test_publish_plan_commits_artifact_approval_gate_and_events_without_executio
         estimated_provider_calls=4,
         estimated_input_tokens=500,
         estimated_output_tokens=250,
-        estimated_cost_microunits=2_500,
         store_bytes=lambda key, content, content_type: stored.__setitem__(
             key, (content, content_type)
         ),

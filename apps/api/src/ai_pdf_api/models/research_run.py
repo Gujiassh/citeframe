@@ -155,6 +155,9 @@ class ResearchPlanRevision(Base):
     proposed_max_run_timeout_seconds: Mapped[int] = mapped_column(Integer)
     proposed_max_step_timeout_seconds: Mapped[int] = mapped_column(Integer)
     proposed_max_provider_timeout_seconds: Mapped[int] = mapped_column(Integer)
+    agent_result_schema_version: Mapped[str] = mapped_column(String(64), default="research-agent-results-v1")
+    context_policy_version: Mapped[str] = mapped_column(String(64), default="research-context-policy-v1")
+    compact_policy_version: Mapped[str] = mapped_column(String(64), default="research-compact-policy-v1")
     planning_snapshot_sha256: Mapped[str] = mapped_column(String(64))
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
 
@@ -231,6 +234,9 @@ class ResearchExecutionSnapshot(Base):
     max_run_timeout_seconds: Mapped[int] = mapped_column(Integer)
     max_step_timeout_seconds: Mapped[int] = mapped_column(Integer)
     max_provider_timeout_seconds: Mapped[int] = mapped_column(Integer)
+    agent_result_schema_version: Mapped[str] = mapped_column(String(64), default="research-agent-results-v1")
+    context_policy_version: Mapped[str] = mapped_column(String(64), default="research-context-policy-v1")
+    compact_policy_version: Mapped[str] = mapped_column(String(64), default="research-compact-policy-v1")
     execution_snapshot_sha256: Mapped[str] = mapped_column(String(64))
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
 

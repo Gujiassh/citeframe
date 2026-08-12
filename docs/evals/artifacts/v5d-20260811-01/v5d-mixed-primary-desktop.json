@@ -1,0 +1,57 @@
+{
+  "schemaVersion": "v5d-mixed-workspace-playwright-v1",
+  "productionStart": false,
+  "mockedBff": true,
+  "viewport": {
+    "name": "desktop",
+    "width": 1440,
+    "height": 1000
+  },
+  "assets": [
+    {
+      "id": "e2e-mixed-pdf",
+      "kind": "pdf",
+      "mimeType": "application/pdf"
+    },
+    {
+      "id": "e2e-mixed-image",
+      "kind": "image",
+      "mimeType": "image/png"
+    },
+    {
+      "id": "e2e-mixed-document",
+      "kind": "document",
+      "mimeType": "text/markdown"
+    }
+  ],
+  "quickChat": {
+    "requestCount": 1,
+    "assetScope": {
+      "mode": "selected",
+      "assetIds": [
+        "e2e-mixed-pdf",
+        "e2e-mixed-image",
+        "e2e-mixed-document"
+      ]
+    }
+  },
+  "research": {
+    "requestCount": 1,
+    "assetScope": {
+      "mode": "selected",
+      "assetIds": [
+        "e2e-mixed-pdf",
+        "e2e-mixed-image",
+        "e2e-mixed-document"
+      ]
+    }
+  },
+  "citations": {
+    "pdf": "cit-mixed-pdf",
+    "image": "cit-mixed-image",
+    "document": "cit-mixed-document",
+    "unavailableDisabled": true
+  },
+  "screenshotPath": "docs/evals/artifacts/v5d-20260811-01/v5d-mixed-primary-desktop.png",
+  "passed": true
+}

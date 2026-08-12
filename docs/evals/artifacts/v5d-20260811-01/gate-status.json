@@ -1,0 +1,59 @@
+{
+  "schemaVersion": "v5d-gate-status-v1",
+  "updatedAt": "2026-08-12T11:02:42.934303+00:00",
+  "sourceSha": "4f2129cdfc5ba0c73cf854c83add7809c5966b0a",
+  "gates": {
+    "D-G0": {
+      "status": "pass"
+    },
+    "D-G1": {
+      "status": "pass-focused"
+    },
+    "D-G2": {
+      "status": "pass-focused",
+      "note": "use-chat 7 passed after F1 rework"
+    },
+    "D-G3": {
+      "status": "partial-existing-v5c"
+    },
+    "D-G4": {
+      "status": "pass-production-start",
+      "note": "standalone web + live API/Worker mixed e2e 2 passed; productionStart=true",
+      "evidence": [
+        "v5d-mixed-production-desktop.json",
+        "v5d-mixed-production-mobile.json",
+        "v5d-mixed-production-desktop.png",
+        "v5d-mixed-production-mobile.png"
+      ]
+    },
+    "D-G5": {
+      "status": "partial-existing-unit"
+    },
+    "D-G6": {
+      "status": "pass-focused-live-seed-snapshot",
+      "note": "mixed seed + live snapshot/self-verify + harness mixed-live-pass; full empty-target backup/restore compose still optional next",
+      "evidence": [
+        "mixed-browser-state.redacted.json",
+        "mixed-restore-snapshot-before.json",
+        "mixed-restore-verification-self.json",
+        "mixed-live-report.json",
+        "mixed-live-lane.json"
+      ]
+    },
+    "D-G7": {
+      "status": "pass-engineering",
+      "note": "Full API 562 / Worker 296 / Web 131 + lint/tsc/build/compileall/diff-check; Critical closeout ACCEPT with residuals",
+      "evidence": [
+        "d-g7/report.json",
+        "d-g7/api-full.txt",
+        "d-g7/worker-full.txt",
+        "d-g7/web-test.txt"
+      ]
+    }
+  },
+  "commitPush": false,
+  "engineeringGate": "pass",
+  "releaseGatePassed": true,
+  "realModelQualityPassed": false,
+  "userValuePassed": false
+}

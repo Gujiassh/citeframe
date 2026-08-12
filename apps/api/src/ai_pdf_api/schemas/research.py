@@ -81,19 +81,14 @@ class FrozenAssetScope(ResearchModel):
     assets: list[FrozenAsset]
 
 
-class MoneyMicrounits(ResearchModel):
-    currency: str = Field(min_length=3, max_length=3, pattern=r"^[A-Z]{3}$")
-    amount_micros: int = Field(ge=0)
-
-
 class BudgetUsage(ResearchModel):
     provider_calls: int = Field(ge=0)
     tool_calls: int = Field(ge=0)
     input_tokens: int = Field(ge=0)
     output_tokens: int = Field(ge=0)
-    cost: MoneyMicrounits
     usage_final: bool
     measured_at: datetime
+    usage_source: Literal["actual", "estimated", "mixed"] | None = None
 
 
 class ProviderSnapshot(ResearchModel):
@@ -114,7 +109,6 @@ class BudgetLimits(ResearchModel):
     max_tool_calls: int = Field(ge=1)
     max_input_tokens: int = Field(ge=1)
     max_output_tokens: int = Field(ge=1)
-    max_cost: MoneyMicrounits
     max_parallel_researchers: int = Field(ge=1)
     run_timeout_seconds: int = Field(ge=1)
     step_timeout_seconds: int = Field(ge=1)
@@ -126,7 +120,6 @@ class PlanningBudgetLimits(ResearchModel):
     max_provider_calls: int = Field(ge=1)
     max_input_tokens: int = Field(ge=1)
     max_output_tokens: int = Field(ge=1)
-    max_cost: MoneyMicrounits
     planner_timeout_seconds: int = Field(ge=1)
     provider_timeout_seconds: int = Field(ge=1)
     max_planner_attempts: int = Field(ge=1)
@@ -144,6 +137,9 @@ class ExecutionConfigSnapshot(ResearchModel):
     budget_policy_version: str
     retry_policy_version: str
     limits: BudgetLimits
+    agent_result_schema_version: str | None = None
+    context_policy_version: str | None = None
+    compact_policy_version: str | None = None
 
 
 class PlanningExecutionSnapshot(ResearchModel):
@@ -153,6 +149,9 @@ class PlanningExecutionSnapshot(ResearchModel):
     budget_policy_version: str
     retry_policy_version: str
     limits: PlanningBudgetLimits
+    agent_result_schema_version: str | None = None
+    context_policy_version: str | None = None
+    compact_policy_version: str | None = None
 
 
 class PlanningInputSnapshot(ResearchModel):
@@ -210,10 +209,9 @@ class ResearchPlanArtifactPayload(ResearchModel):
     summary: str = Field(min_length=1, max_length=4000)
     subproblems: list[ResearchPlanSubproblem] = Field(min_length=1, max_length=16)
     known_gaps: list[str] = Field(max_length=20)
-    estimated_provider_calls: int = Field(ge=0)
+    estimated_provider_calls: int = Field(ge=1)
     estimated_input_tokens: int | None = Field(default=None, ge=0)
     estimated_output_tokens: int | None = Field(default=None, ge=0)
-    estimated_cost: MoneyMicrounits | None = None
 
     @model_validator(mode="after")
     def validate_plan_payload(self) -> "ResearchPlanArtifactPayload":
@@ -230,6 +228,12 @@ class ResearchPlanArtifactPayload(ResearchModel):
         return self
 
 
+class LegacyResearchPlanArtifactPayload(ResearchPlanArtifactPayload):
+    """Schema-v1 recovery reader for the historical optional cost field."""
+
+    estimated_cost: dict[str, object] | None = None
+
+
 class ResearchPlan(ResearchModel):
     version: int = Field(ge=1)
     status: Literal["proposed", "approved", "superseded"]
@@ -237,10 +241,9 @@ class ResearchPlan(ResearchModel):
     summary: str = Field(min_length=1, max_length=4000)
     subproblems: list[ResearchPlanSubproblem] = Field(min_length=1, max_length=16)
     known_gaps: list[str] = Field(max_length=20)
-    estimated_provider_calls: int = Field(ge=0)
+    estimated_provider_calls: int = Field(ge=1)
     estimated_input_tokens: int | None = Field(default=None, ge=0)
     estimated_output_tokens: int | None = Field(default=None, ge=0)
-    estimated_cost: MoneyMicrounits | None = None
     planning_usage: BudgetUsage
     created_at: datetime
     approved_at: datetime | None
@@ -299,11 +302,8 @@ class ResearchRunSummary(ResearchModel):
     state_version: int
     requested_asset_scope: AssetScopeRequest
     frozen_asset_count: int
-    cost_currency: str
     current_plan_revision_number: int | None
     current_event_seq: int
-    estimated_cost: MoneyMicrounits | None
-    consumed_cost: MoneyMicrounits
     created_at: datetime
     updated_at: datetime
     finished_at: datetime | None

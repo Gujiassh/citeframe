@@ -7,7 +7,7 @@
 - 基线：V1/V2、V3 PDF/Image、V4 R000-R800 工程合同已经完成；V3/V4 的历史证据和保存语义继续有效
 - 后置门：R803 真实模型质量评估和 M404 真实用户价值验证不再阻塞 V5 功能开发，但仍是后续 Beta/发布判断依据
 
-V5-B Markdown-only `document` v1 的字段级合同已批准并实现，B008 formal isolated deployment gate 已通过，当前仅待最终独立 Critical review 完成 release closure；V5-C 仍是 `draft-for-approval`。V5-C 未批准的 locator/schema/provider/product 决策不得由实现 worker 猜测。
+V5-B Markdown-only `document` v1 的字段级合同已批准并实现，B008 formal isolated deployment gate 已通过；V5-C 已于 2026-08-10 完成 owner approval、实现和独立 Critical engineering/release acceptance。V5-C 的 locator/schema/provider/product 决策以冻结合同和 [`v5c-implementation-acceptance-2026-08-10.md`](v5c-implementation-acceptance-2026-08-10.md) 为准，不得由实现 worker 猜测；F1/F5 Medium 后续风险不阻塞冻结 v1。V5-D 的 contract-preserving 详细规格、lane 分工、验收矩阵和 agent handoff 已于 2026-08-11 就绪；生产实现尚未开始，入口为 [`decision-2026-08-11-v5d-scope.md`](decision-2026-08-11-v5d-scope.md)、[`v5d-detailed-spec.md`](v5d-detailed-spec.md)、[`implementation-lanes-v5d.md`](implementation-lanes-v5d.md)、[`verification-matrix-v5d.md`](verification-matrix-v5d.md) 和 [`grok-handoff-v5d.md`](grok-handoff-v5d.md)。
 
 ## 1. 产品目标
 
@@ -43,7 +43,7 @@ V5 的模态顺序如下：
 - Agent 只能使用注册的 Evidence 工具和 capability provider，不得直接访问 ORM、对象存储、Shell、任意网络或未批准插件。
 - 协作过程需要展示可理解的阶段、进度、等待和失败分支；不把 Agent 数量或框架名称作为产品卖点。
 - 共享内容以冻结的 Evidence、Claim、Artifact 和运行快照为准；不持久化隐藏推理。
-- 支持分支并行、单分支重试、人工审批、取消、重启恢复和成本上限。
+- 支持分支并行、单分支重试、人工审批、取消、重启恢复和明确的调用/工具/时间/并发/尝试限制。
 
 ## 3. 功能完成定义
 

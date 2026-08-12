@@ -59,6 +59,38 @@ test("chat asset scope is explicit and preserves selected asset order", () => {
   );
 });
 
+
+test("mixed PDF+Image+Markdown selected scope stays exact without dedupe reordering", () => {
+  // D-WEB/D-G2: Quick Chat selected scope must preserve the three mixed modality
+  // asset ids the sidebar checkbox order produced; evidence targets only add
+  // missing ids and never invent or reshuffle unrelated ids.
+  const mixedSelected = ["asset-pdf", "asset-image", "asset-document"];
+  assert.deepEqual(buildAssetScope(mixedSelected), {
+    mode: "selected",
+    assetIds: mixedSelected,
+  });
+  assert.deepEqual(
+    buildAssetScope(mixedSelected, [{
+      kind: "image_region",
+      assetId: "asset-image",
+      processingGeneration: 1,
+      coordinateSpace: "image_normalized_top_left_v1",
+      regions: [{ x: 0.1, y: 0.2, width: 0.3, height: 0.4 }],
+    }]),
+    { mode: "selected", assetIds: mixedSelected },
+  );
+  assert.deepEqual(
+    buildAssetScope(["asset-pdf", "asset-document"], [{
+      kind: "image_region",
+      assetId: "asset-image",
+      processingGeneration: 1,
+      coordinateSpace: "image_normalized_top_left_v1",
+      regions: [{ x: 0.1, y: 0.2, width: 0.3, height: 0.4 }],
+    }]),
+    { mode: "selected", assetIds: ["asset-pdf", "asset-document", "asset-image"] },
+  );
+});
+
 test("chat parent selection preserves branch editing semantics", () => {
   assert.equal(getMessageParentId(threads[0], "message-2"), "message-1");
   assert.equal(getMessageParentId(threads[0]), "message-2");

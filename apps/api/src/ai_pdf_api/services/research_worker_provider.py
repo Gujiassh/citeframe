@@ -23,7 +23,11 @@ from ai_pdf_api.services.research_worker_lease import (
     _locked_attempt_chain,
 )
 from ai_pdf_api.services.research_worker_membership import ensure_creator_membership
-from ai_pdf_api.services.research_worker_policy import estimate_provider_cost
+from ai_pdf_api.services.research_worker_policy import (
+    add_optional_cost,
+    estimate_provider_cost,
+    subtract_optional_cost,
+)
 from ai_pdf_api.services.research_worker_types import ProviderReservation
 
 
@@ -124,24 +128,28 @@ def reserve_provider_call(
             "Actual provider capability profile does not match the frozen Research fingerprint.",
             409,
         )
-    try:
-        reserved_cost_microunits = estimate_provider_cost(
-            provider=provider,
-            model=model,
-            pricing_version=pricing_version,
-            input_tokens=reserved_input_tokens,
-            output_tokens=reserved_output_tokens,
-        )
-    except ValueError as error:
-        raise ResearchError("research_pricing_unavailable", "Frozen Research pricing is unavailable.", 503) from error
-    ledger, max_calls, _max_tools, max_input, max_output, max_cost = _ledger_and_limits(db, step)
-    if (
-        ledger.actual_provider_calls + ledger.reserved_provider_calls + 1 > max_calls
-        or ledger.actual_input_tokens + ledger.reserved_input_tokens + reserved_input_tokens > max_input
-        or ledger.actual_output_tokens + ledger.reserved_output_tokens + reserved_output_tokens > max_output
-        or ledger.actual_cost_microunits + ledger.reserved_cost_microunits + reserved_cost_microunits > max_cost
-    ):
+    # Pricing is optional accounting metadata. Unknown cost stays null/unavailable.
+    estimated_cost = estimate_provider_cost(
+        provider=provider,
+        model=model,
+        pricing_version=pricing_version,
+        input_tokens=reserved_input_tokens,
+        output_tokens=reserved_output_tokens,
+    )
+    reserved_cost_microunits = estimated_cost
+    ledger, max_calls, _max_tools, max_input, max_output, _max_cost = _ledger_and_limits(db, step)
+    # Hard start/reserve gates: provider calls only. Input/output tokens are
+    # per-call context limits enforced at provider send, not cumulative budgets.
+    # Cost is never a reservation gate in V5-C.
+    if ledger.actual_provider_calls + ledger.reserved_provider_calls + 1 > max_calls:
         raise ResearchError("research_budget_limit", "Research provider budget is exhausted.", 429)
+    # Per-call context/output ceilings still bound a single reservation size.
+    if reserved_input_tokens > max_input or reserved_output_tokens > max_output:
+        raise ResearchError(
+            "research_context_limit_exceeded",
+            "Reserved provider tokens exceed the frozen per-call context/output limits.",
+            422,
+        )
     send_attempt = (
         db.scalar(
             select(func.coalesce(func.max(ResearchProviderCall.send_attempt), 0)).where(
@@ -175,7 +183,10 @@ def reserve_provider_call(
     ledger.reserved_provider_calls += 1
     ledger.reserved_input_tokens += reserved_input_tokens
     ledger.reserved_output_tokens += reserved_output_tokens
-    ledger.reserved_cost_microunits += reserved_cost_microunits
+    ledger.reserved_cost_microunits = add_optional_cost(
+        ledger.reserved_cost_microunits,
+        reserved_cost_microunits,
+    )
     ledger.state_version += 1
     ledger.updated_at = reserved_at
     db.commit()
@@ -268,7 +279,10 @@ def cancel_provider_reservation(
     ledger.reserved_provider_calls -= 1
     ledger.reserved_input_tokens -= call.reserved_input_tokens
     ledger.reserved_output_tokens -= call.reserved_output_tokens
-    ledger.reserved_cost_microunits -= call.reserved_cost_microunits
+    ledger.reserved_cost_microunits = subtract_optional_cost(
+        ledger.reserved_cost_microunits,
+        call.reserved_cost_microunits,
+    )
     ledger.state_version += 1
     ledger.updated_at = cancelled_at
     db.commit()
@@ -308,16 +322,15 @@ def reconcile_provider_call(
         pricing_version = snapshot.pricing_version if snapshot else None
     charged_input_tokens = max(actual_input_tokens, call.reserved_input_tokens) if status == "outcome_unknown" else actual_input_tokens
     charged_output_tokens = max(actual_output_tokens, call.reserved_output_tokens) if status == "outcome_unknown" else actual_output_tokens
-    try:
-        actual_cost_microunits = estimate_provider_cost(
-            provider=call.provider,
-            model=call.model,
-            pricing_version=pricing_version,
-            input_tokens=charged_input_tokens,
-            output_tokens=charged_output_tokens,
-        )
-    except ValueError as error:
-        raise ResearchError("research_pricing_unavailable", "Frozen Research pricing is unavailable.", 503) from error
+    estimated_cost = estimate_provider_cost(
+        provider=call.provider,
+        model=call.model,
+        pricing_version=pricing_version,
+        input_tokens=charged_input_tokens,
+        output_tokens=charged_output_tokens,
+    )
+    # Persist unknown cost as null and propagate unknown through aggregates.
+    actual_cost_microunits = estimated_cost
     call.status = status
     call.actual_input_tokens = charged_input_tokens
     call.actual_output_tokens = charged_output_tokens
@@ -329,15 +342,21 @@ def reconcile_provider_call(
     call.finished_at = now or datetime.now(UTC)
     ledger.reserved_input_tokens -= call.reserved_input_tokens
     ledger.reserved_output_tokens -= call.reserved_output_tokens
-    ledger.reserved_cost_microunits -= call.reserved_cost_microunits
+    ledger.reserved_cost_microunits = subtract_optional_cost(
+        ledger.reserved_cost_microunits,
+        call.reserved_cost_microunits,
+    )
     ledger.actual_input_tokens += charged_input_tokens
     ledger.actual_output_tokens += charged_output_tokens
-    ledger.actual_cost_microunits += actual_cost_microunits
+    ledger.actual_cost_microunits = add_optional_cost(
+        ledger.actual_cost_microunits,
+        actual_cost_microunits,
+    )
     ledger.usage_final = ledger.usage_final and usage_final
     ledger.state_version += 1
     ledger.updated_at = call.finished_at
     attempt.provider_call_count += 1
     attempt.input_tokens += charged_input_tokens
     attempt.output_tokens += charged_output_tokens
-    attempt.cost_microunits += actual_cost_microunits
+    attempt.cost_microunits = add_optional_cost(attempt.cost_microunits, actual_cost_microunits)
     db.commit()

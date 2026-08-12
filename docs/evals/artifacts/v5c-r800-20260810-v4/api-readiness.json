@@ -1,0 +1,1 @@
+{"status":"ok","service":"api","checks":{"database":"ok","modalityCatalog":"ok","objectStorage":"ok","embeddingProvider":"ok","generationProvider":"ok","imageCaptionConfiguration":"ok"}}

@@ -1,0 +1,13 @@
+{
+  "checks": {
+    "backupRestoreContractUnchanged": true,
+    "backupRestoreUnit": true,
+    "bashSyntax": true,
+    "composeProfilesPresent": true,
+    "fixturesPresent": true,
+    "noPrematureLiveMixedClaim": true
+  },
+  "details": [],
+  "passed": true,
+  "schemaVersion": "v5d-mixed-static-checks-v1"
+}

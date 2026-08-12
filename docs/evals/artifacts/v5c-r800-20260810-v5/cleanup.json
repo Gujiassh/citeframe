@@ -1,0 +1,14 @@
+{
+  "composeDownExitCode": 0,
+  "containersRemaining": [],
+  "envRemoveExitCode": 0,
+  "envRemoved": true,
+  "inspectionExitCodes": {
+    "containers": 0,
+    "networks": 0,
+    "volumes": 0
+  },
+  "networksRemaining": [],
+  "passed": true,
+  "volumesRemaining": []
+}

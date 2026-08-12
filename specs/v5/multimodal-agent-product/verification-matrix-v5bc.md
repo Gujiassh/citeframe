@@ -125,11 +125,26 @@ bash infra/scripts/run-r800-acceptance.sh \
 | C-G0 | V4 baseline/delta map | delta doc, A006/A007 residual list | no V4 reimplementation scope |
 | C-G1 | productization contract | open decisions + non-goals + API/save impact | pure delta or approved additive change |
 | C-G2 | entry/status/control projection | DTO fixtures and control matrix | Quick and Research truth remain separate |
-| C-G3 | typed I/O/join/evidence contract | schema fixture, malformed output tests, branch scope tests | strict schema and join rules pass |
+| C-G3 | versioned strict production role-I/O, join/evidence/claim provenance and per-call context contract | registry/snapshot fixtures, malformed/extra/duplicate output tests, cross-role set and branch-scope tests, compact/overflow tests | every new Run binds one approved contract version; schema/context invariants fail closed before provider send |
 | C-G4 | control product path | Web unit + focused API action tests | approve/revise/conflict/retry/cancel states correct |
 | C-G5 | timeline and comprehension | production-start desktop/mobile E2E, SSE replay fixture | seq/order/reconnect/branch/artifact display correct |
 | C-G6 | boundary review | permission/budget/provider/tool/recovery tests + Critical review | no secret leak, cross-workspace access, budget bypass or non-retryable retry |
 | C-G7 | full regression | API/Worker/Web full, Quick/Citation/NoteSource, Research production E2E | all existing contracts green; independent `ACCEPT` |
+
+### V5-C acceptance snapshot (2026-08-10)
+
+| Gate | Result | Evidence |
+|---|---|---|
+| C-G1/C-G2/C-G3 | `pass` | Approved product contract; strict current/explicit legacy registry; role, join, provenance, per-call limit, compact and frozen-top-k focused suites: API `84 passed, 1 warning`, Worker `34 passed`; exact retrieval limit rerun `27 passed, 1 warning` |
+| C-G4 | `pass` | Web usage/control projection suite `130 passed`; TypeScript and production build passed |
+| C-G5 | `pass` | Production-start Research Playwright `5 passed`; R800 v6 SSE replay and artifact projection scenario passed |
+| C-G6 | `pass` | Provider completion/cap, permission, workspace scope, retry, lease reclaim, cancel and idempotency checks passed; independent Critical review is `ACCEPT` |
+| C-G7 | `pass` | API `561 passed, 1 warning`; Worker `295 passed`; online migration round-trip passed; R800 v6 `engineeringGate=pass`, `releaseGatePassed=true`, `10/10` scenarios, restore identity and zero-residue cleanup passed |
+
+F1 registry-version executable mapping and F5 historical-row bytes/hash proof
+remain Medium follow-up risks. They do not block the frozen v1 engineering/release
+gate. R803 model quality and M404 user value remain separate post-gate evidence
+and are not inferred from R800.
 
 ### C-G3 role/branch matrix
 
@@ -142,15 +157,24 @@ bash infra/scripts/run-r800-acceptance.sh \
 7. Synthesizer cannot publish unsupported or conflicted fact.
 8. Publisher creates at most one final report per execution and is idempotent.
 9. Unknown/extra schema fields fail closed; raw provider output is not persisted as business truth.
+10. `maxInputTokens` and `maxOutputTokens` gate one provider call's context and response only; cumulative totals are usage telemetry and cannot terminate a Run.
+11. Soft compact/batch preserves Claim IDs, Evidence handles, provenance, branch ownership, order and schema fields; mandatory overflow fails before send with a stable code.
+12. Missing pricing never blocks Research; unknown pricing remains `null`/unknown and no money field is rendered in the Research UI.
+13. A provider request contains the frozen `maxOutputTokens`; a fake provider records the exact cap.
+14. `research_context_limit_exceeded` occurs before provider send;
+    `research_provider_output_incomplete` never creates a successful role result.
+15. Frozen execution `retrievalTopK` is the actual argument on every Researcher search; no local literal remains.
+16. Historical snapshots resolve an explicit legacy registry entry; a new Run is rejected when its approved current version is unavailable.
+17. Full R800 covers all of the above plus retry, lease reclaim, cancel and recovery; a focused role-I/O test alone is insufficient.
 
 ### C-G4 control matrix
 
 | State | Creator | Member | Owner emergency |
 |---|---|---|---|
-| `awaiting_plan_approval` | approve/revise/cancel | read only | cancel cost/security |
-| `running` | cancel | read only | cancel cost/security |
-| `awaiting_human_decision` conflict | submit allowed decision/cancel | read only | cancel cost/security |
-| `awaiting_retry` | retry eligible failed branch/cancel | read only | cancel cost/security |
+| `awaiting_plan_approval` | approve/revise/cancel | read only | cancel security/operations |
+| `running` | cancel | read only | cancel security/operations |
+| `awaiting_human_decision` conflict | submit allowed decision/cancel | read only | cancel security/operations |
+| `awaiting_retry` | retry eligible failed branch/cancel | read only | cancel security/operations |
 | `cancel_requested` | no duplicate cancel | read only | no duplicate cancel |
 | terminal | read artifact/history | read artifact/history | no mutation |
 

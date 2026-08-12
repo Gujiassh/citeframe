@@ -1,0 +1,4 @@
+
+> @citeframe/web@0.1.0 lint /home/cc/code/citeframe/apps/web
+> eslint
+

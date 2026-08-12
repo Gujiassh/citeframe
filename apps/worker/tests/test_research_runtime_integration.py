@@ -197,15 +197,23 @@ def test_real_ledger_lease_and_provider_reconcile(runtime_db) -> None:
     class Provider:
         provider = settings.generation_provider
         model = settings.generation_model
+        max_output_tokens: int | None = None
 
-        def generate(self, _messages: list[dict[str, object]]) -> str:
+        def generate(
+            self,
+            _messages: list[dict[str, object]],
+            *,
+            max_output_tokens: int,
+        ) -> str:
+            self.max_output_tokens = max_output_tokens
             return '{"claims":[]}'
 
+    provider = Provider()
     result = LedgeredGeneration(
         sessions,
         research_worker,
         execution(workspace_id, run_id, snapshot_id, step_id, asset_id),
-        Provider(),
+        provider,
     ).generate(lease, node_key="researcher", messages=[{"role": "user", "content": "Question"}])
 
     with sessions() as db:
@@ -215,6 +223,40 @@ def test_real_ledger_lease_and_provider_reconcile(runtime_db) -> None:
         assert provider_call.usage_source == "estimated" and provider_call.usage_final is False
         assert attempt is not None and attempt.provider_call_count == 1
     assert result == '{"claims":[]}'
+    assert provider.max_output_tokens == 10_000
+
+
+def test_legacy_provider_without_output_cap_is_not_retried(runtime_db) -> None:
+    sessions, workspace_id, run_id, snapshot_id, step_id, asset_id = runtime_db
+    adapter = SqlResearchLedgerAdapter(sessions, research_worker, worker_instance_id="worker-1")
+    lease = adapter.claim_step(
+        execution(workspace_id, run_id, snapshot_id, step_id, asset_id),
+        step_key="researcher:branch-1",
+        branch_key="branch-1",
+    )
+    calls = 0
+
+    class LegacyProvider:
+        provider = settings.generation_provider
+        model = settings.generation_model
+
+        def generate(self, _messages: list[dict[str, object]]) -> str:
+            nonlocal calls
+            calls += 1
+            return '{"claims":[]}'
+
+    with pytest.raises(TypeError):
+        LedgeredGeneration(
+            sessions,
+            research_worker,
+            execution(workspace_id, run_id, snapshot_id, step_id, asset_id),
+            LegacyProvider(),
+        ).generate(lease, node_key="researcher", messages=[{"role": "user", "content": "Question"}])
+
+    assert calls == 0
+    with sessions() as db:
+        provider_call = db.scalar(select(ResearchProviderCall))
+        assert provider_call is not None and provider_call.status == "outcome_unknown"
 
 
 def test_real_send_rejection_cancels_reservation_without_calling_provider(runtime_db) -> None:
@@ -244,7 +286,13 @@ def test_real_send_rejection_cancels_reservation_without_calling_provider(runtim
         provider = settings.generation_provider
         model = settings.generation_model
 
-        def generate(self, _messages: list[dict[str, object]]) -> str:
+        def generate(
+            self,
+            _messages: list[dict[str, object]],
+            *,
+            max_output_tokens: int,
+        ) -> str:
+            del max_output_tokens
             raise AssertionError("provider must not be called")
 
     with pytest.raises(Exception, match="Provider reservation cannot be sent"):

@@ -1,0 +1,79 @@
+ M apps/api/scripts/provider_r800_stub.py
+ M apps/api/src/ai_pdf_api/models/research_execution.py
+ M apps/api/src/ai_pdf_api/models/research_run.py
+ M apps/api/src/ai_pdf_api/schemas/research.py
+ M apps/api/src/ai_pdf_api/services/providers.py
+ M apps/api/src/ai_pdf_api/services/research_constants.py
+ M apps/api/src/ai_pdf_api/services/research_plan_approval.py
+ M apps/api/src/ai_pdf_api/services/research_recovery.py
+ M apps/api/src/ai_pdf_api/services/research_runs.py
+ M apps/api/src/ai_pdf_api/services/research_views.py
+ M apps/api/src/ai_pdf_api/services/research_worker_evidence.py
+ M apps/api/src/ai_pdf_api/services/research_worker_plan.py
+ M apps/api/src/ai_pdf_api/services/research_worker_policy.py
+ M apps/api/src/ai_pdf_api/services/research_worker_provider.py
+ M apps/api/src/ai_pdf_api/services/research_worker_state.py
+ M apps/api/tests/research_router_test_support.py
+ M apps/api/tests/research_worker_test_support.py
+ M apps/api/tests/test_capabilities.py
+ M apps/api/tests/test_provider_r800_stub.py
+ M apps/api/tests/test_providers.py
+ M apps/api/tests/test_research_migration.py
+ M apps/api/tests/test_research_router_recovery.py
+ M apps/api/tests/test_research_worker_budget_recovery.py
+ M apps/api/tests/test_research_worker_evidence_publication.py
+ M apps/api/tests/test_research_worker_lease_plan.py
+ M apps/api/tests/test_v5a_a007_regression.py
+ M apps/web/e2e/research-run.spec.ts
+ M apps/web/src/components/research-run-panel.tsx
+ M apps/web/src/lib/i18n-context.tsx
+ M apps/web/src/lib/research/presentation.test.ts
+ M apps/web/src/lib/research/types.ts
+ M apps/worker/src/ai_pdf_worker/r803_evaluation_runtime.py
+ M apps/worker/src/ai_pdf_worker/research_agent_schemas.py
+ M apps/worker/src/ai_pdf_worker/research_executor_contracts.py
+ M apps/worker/src/ai_pdf_worker/research_executor_tools.py
+ M apps/worker/src/ai_pdf_worker/research_runtime_agents.py
+ M apps/worker/src/ai_pdf_worker/research_runtime_core.py
+ M apps/worker/src/ai_pdf_worker/research_runtime_ports.py
+ M apps/worker/src/ai_pdf_worker/research_runtime_processor.py
+ M apps/worker/tests/test_r803_campaign_v5.py
+ M apps/worker/tests/test_research_executor.py
+ M apps/worker/tests/test_research_runtime.py
+ M apps/worker/tests/test_research_runtime_integration.py
+ M docs/architecture/implementation-progress.md
+ M docs/architecture/research-workflow-runtime.md
+ M docs/evals/artifacts/r500-v1/r500-web-desktop.png
+ M docs/evals/artifacts/r500-v1/r500-web-mobile.png
+ M specs/v5/multimodal-agent-product/README.md
+ M specs/v5/multimodal-agent-product/implementation-lanes-v5bc.md
+ M specs/v5/multimodal-agent-product/open-decisions.md
+ M specs/v5/multimodal-agent-product/plan.md
+ M specs/v5/multimodal-agent-product/spec.md
+ M specs/v5/multimodal-agent-product/tasks.md
+ M specs/v5/multimodal-agent-product/v5c-detailed-spec.md
+ M specs/v5/multimodal-agent-product/verification-matrix-v5bc.md
+?? apps/api/alembic/versions/g1a2b3c4d5e6_add_research_agent_io_versions.py
+?? apps/api/alembic/versions/h2b3c4d5e6f7_nullable_research_cost_aggregates.py
+?? apps/api/src/ai_pdf_api/services/research_agent_io_registry.py
+?? apps/api/src/ai_pdf_api/services/research_context_policy.py
+?? apps/api/tests/test_research_v5c_contract.py
+?? apps/web/test-results/
+?? apps/worker/tests/test_research_v5c_agent_io.py
+?? docs/evals/artifacts/v5c-migration-roundtrip-20260810/
+?? docs/evals/artifacts/v5c-r800-20260810-v2/
+?? docs/evals/artifacts/v5c-r800-20260810-v3/
+?? docs/evals/artifacts/v5c-r800-20260810-v4/
+?? docs/evals/artifacts/v5c-r800-20260810-v5/
+?? docs/evals/artifacts/v5c-r800-20260810-v6/
+?? docs/evals/artifacts/v5c-r800-20260810/
+?? docs/evals/artifacts/v5d-20260811-01/
+?? docs/evals/v5c-critical-review-20260810.md
+?? specs/v5/multimodal-agent-product/decision-2026-08-10-v5c-product-contract.md
+?? specs/v5/multimodal-agent-product/decision-2026-08-11-v5d-scope.md
+?? specs/v5/multimodal-agent-product/grok-handoff-v5c.md
+?? specs/v5/multimodal-agent-product/grok-handoff-v5d.md
+?? specs/v5/multimodal-agent-product/implementation-lanes-v5d.md
+?? specs/v5/multimodal-agent-product/v5c-implementation-acceptance-2026-08-10.md
+?? specs/v5/multimodal-agent-product/v5d-detailed-spec.md
+?? specs/v5/multimodal-agent-product/verification-matrix-v5d.md

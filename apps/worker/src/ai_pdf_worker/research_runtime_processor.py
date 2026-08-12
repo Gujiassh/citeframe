@@ -268,6 +268,9 @@ class ResearchWorkProcessor(_ApiPort):
             max_input_tokens=int(payload["max_input_tokens"]),
             max_output_tokens=int(payload["max_output_tokens"]),
             max_cost_microunits=int(payload["max_cost_microunits"]),
+            agent_result_schema_version=str(payload["agent_result_schema_version"]),
+            context_policy_version=str(payload["context_policy_version"]),
+            compact_policy_version=str(payload["compact_policy_version"]),
             prompts=tuple(payload["prompts"]),
         )
         generation = LedgeredGeneration(self._sessions, self._service, execution, self._provider, ledger)
@@ -339,7 +342,6 @@ class ResearchWorkProcessor(_ApiPort):
         published_subproblems = _field(published, "subproblems")
         expected_bytes = json.dumps(
             {
-                "estimatedCost": None,
                 "estimatedInputTokens": None,
                 "estimatedOutputTokens": None,
                 "estimatedProviderCalls": agents.plan_estimated_provider_calls,

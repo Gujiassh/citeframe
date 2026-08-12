@@ -61,8 +61,9 @@ def _run_campaign(
     )
 
 
-def test_researcher_schema_accepts_empty_claims() -> None:
-    validate_agent_result("researcher", {"claims": []})
+def test_production_researcher_rejects_empty_claims_but_r803_diagnostic_allows_refusal() -> None:
+    with pytest.raises(ValueError, match="researcher schema mismatch"):
+        validate_agent_result("researcher", {"claims": []})
     validate_agent_result_with_diagnostics("researcher", {"claims": []})
 
 
@@ -328,6 +329,7 @@ def test_production_agents_malformed_json_keeps_generic_error() -> None:
         variable_names = ()
         # prompt.node_key is the frozen prompt node, not the generation node.
         node_key = "researchers"
+        prompt_key = "research.researcher"
 
     class _Generation:
         def prompt(self, node_key: str):

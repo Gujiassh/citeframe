@@ -336,7 +336,7 @@ def make_executor(
             handles = tuple(tools.handles_by_step[subproblem.step_id].values())
             registry.load(evidence_handles=(handles[0].id,))
         else:
-            handles = registry.search(query=subproblem.question, asset_ids=subproblem.asset_ids, top_k=8)
+            handles = registry.search(query=subproblem.question, asset_ids=subproblem.asset_ids, top_k=6)
         sleep(0.01)
         with lock:
             active -= 1
@@ -479,7 +479,7 @@ def test_tool_results_cannot_cross_scope_or_replace_locator_identity() -> None:
     original_load = tools.load
 
     def researcher_with_load(subproblem, registry, _lease=None):
-        handles = registry.search(query=subproblem.question, asset_ids=subproblem.asset_ids)
+        handles = registry.search(query=subproblem.question, asset_ids=subproblem.asset_ids, top_k=6)
         registry.load(evidence_handles=(handles[0].id,))
         return BranchResult(
             subproblem.branch_key,
@@ -570,7 +570,7 @@ def test_tool_inputs_reject_unknown_assets_and_duplicate_handles() -> None:
 
     registry = EvidenceToolRegistry(port, context)
     with pytest.raises(ToolPolicyError, match="tool_scope_violation"):
-        registry.search(query="query", asset_ids=("asset-2",))
-    handles = registry.search(query="query", asset_ids=("asset-1",))
+        registry.search(query="query", asset_ids=("asset-2",), top_k=6)
+    handles = registry.search(query="query", asset_ids=("asset-1",), top_k=6)
     with pytest.raises(ToolPolicyError, match="tool_input_invalid"):
         registry.load(evidence_handles=(handles[0].id, handles[0].id))

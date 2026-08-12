@@ -1,0 +1,41 @@
+{
+  "schemaVersion": "v5d-mixed-workspace-playwright-v1",
+  "productionStart": true,
+  "mockedBff": false,
+  "standaloneServer": true,
+  "viewport": {
+    "name": "desktop",
+    "width": 1440,
+    "height": 1000
+  },
+  "workspaceId": "b6d645b7-55aa-4cb0-907d-66b4bfd29be4",
+  "assets": [
+    {
+      "id": "3fcd8d10-e781-457b-808b-0e311d305c98",
+      "kind": "pdf",
+      "mimeType": "application/pdf",
+      "sourceFilename": "pdf-coordinate-fixture.pdf"
+    },
+    {
+      "id": "97d33ddf-f810-4982-bc35-ff099d9f5fb3",
+      "kind": "image",
+      "mimeType": "image/png",
+      "sourceFilename": "image-coordinate-fixture.png"
+    },
+    {
+      "id": "b2a3f1cb-fb03-470b-ac20-3397dd51daa5",
+      "kind": "document",
+      "mimeType": "text/markdown",
+      "sourceFilename": "markdown-note.md"
+    }
+  ],
+  "citations": {
+    "pdf": "64c5207f-f184-49a3-ade5-fb01a305668c",
+    "image": "0a5f2507-7683-4959-a5e1-16c850f9dadf",
+    "document": "08290b4e-31fc-4cf8-ba7d-68c05c4d9cac",
+    "imageRegionVisible": false
+  },
+  "selectedScopeCount": 3,
+  "screenshotPath": "docs/evals/artifacts/v5d-20260811-01/v5d-mixed-production-desktop.png",
+  "passed": true
+}

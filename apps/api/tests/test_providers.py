@@ -123,7 +123,7 @@ def test_openai_generation_provider_reads_responses_output_text() -> None:
 
     def handler(request: httpx.Request) -> httpx.Response:
         requests.append(request.read())
-        return httpx.Response(200, json={"output_text": "answer from provider"})
+        return httpx.Response(200, json={"status": "completed", "output_text": "answer from provider"})
 
     provider = OpenAIGenerationProvider(
         model="gpt-5.5",
@@ -134,10 +134,12 @@ def test_openai_generation_provider_reads_responses_output_text() -> None:
         client=httpx.Client(transport=httpx.MockTransport(handler)),
     )
 
-    assert provider.generate([{"role": "user", "content": "question"}]) == "answer from provider"
+    assert provider.generate(
+        [{"role": "user", "content": "question"}], max_output_tokens=77
+    ) == "answer from provider"
     assert requests[0].decode() == (
         '{"model":"gpt-5.5","input":[{"role":"user","content":"question"}],'
-        '"max_output_tokens":100}'
+        '"max_output_tokens":77}'
     )
 
 
@@ -146,7 +148,7 @@ def test_openai_generation_provider_preserves_multimodal_message_parts() -> None
 
     def handler(request: httpx.Request) -> httpx.Response:
         requests.append(request.read())
-        return httpx.Response(200, json={"output_text": "visual answer"})
+        return httpx.Response(200, json={"status": "completed", "output_text": "visual answer"})
 
     provider = OpenAIGenerationProvider(
         model="gpt-5.5",
@@ -240,7 +242,7 @@ def test_openai_generation_provider_streams_response_text_deltas() -> None:
                 'event: response.output_text.delta\n'
                 'data: {"type":"response.output_text.delta","delta":"first"}\n\n'
                 'data: {"type":"response.output_text.delta","delta":" second"}\n\n'
-                'data: {"type":"response.completed"}\n\n'
+                'data: {"type":"response.completed","response":{"status":"completed"}}\n\n'
             ).encode(),
         )
 
@@ -253,8 +255,14 @@ def test_openai_generation_provider_streams_response_text_deltas() -> None:
         client=httpx.Client(transport=httpx.MockTransport(handler)),
     )
 
-    assert list(provider.stream([{"role": "user", "content": "question"}])) == ["first", " second"]
-    assert '"stream":true' in requests[0].decode()
+    assert list(
+        provider.stream(
+            [{"role": "user", "content": "question"}], max_output_tokens=77
+        )
+    ) == ["first", " second"]
+    stream_payload = httpx.Response(200, content=requests[0]).json()
+    assert stream_payload["max_output_tokens"] == 77
+    assert stream_payload["stream"] is True
 
 
 def test_openai_generation_provider_records_cancelled_stream() -> None:
@@ -294,9 +302,31 @@ def test_openai_generation_provider_records_cancelled_stream() -> None:
     assert success._value.get() == before_success
 
 
+def test_openai_generation_stream_requires_completion_event() -> None:
+    provider = OpenAIGenerationProvider(
+        model="gpt-5.5",
+        api_key="test-key",
+        api_base="https://example.test/v1",
+        timeout_seconds=2,
+        max_output_tokens=100,
+        client=httpx.Client(
+            transport=httpx.MockTransport(
+                lambda _request: httpx.Response(
+                    200,
+                    headers={"content-type": "text/event-stream"},
+                    content=b'data: {"type":"response.output_text.delta","delta":"partial"}\n\n',
+                )
+            )
+        ),
+    )
+    with pytest.raises(ModelProviderError) as error:
+        list(provider.stream([{"role": "user", "content": "question"}]))
+    assert error.value.code == "research_provider_output_incomplete"
+
+
 def test_openai_generation_provider_rejects_null_content_items() -> None:
     def handler(_request: httpx.Request) -> httpx.Response:
-        return httpx.Response(200, json={"output": [{"content": None}]})
+        return httpx.Response(200, json={"status": "completed", "output": [{"content": None}]})
 
     provider = OpenAIGenerationProvider(
         model="gpt-5.5",
@@ -311,9 +341,41 @@ def test_openai_generation_provider_rejects_null_content_items() -> None:
         provider.generate([{"role": "user", "content": "question"}])
 
 
+def test_openai_generation_provider_requires_completion_metadata() -> None:
+    provider = OpenAIGenerationProvider(
+        model="gpt-5.5",
+        api_key="test-key",
+        api_base="https://example.test/v1",
+        timeout_seconds=2,
+        max_output_tokens=100,
+        client=httpx.Client(transport=httpx.MockTransport(
+            lambda _request: httpx.Response(200, json={"output_text": "answer"})
+        )),
+    )
+    with pytest.raises(ModelProviderError) as error:
+        provider.generate([{"role": "user", "content": "question"}])
+    assert error.value.code == "research_provider_output_incomplete"
+
+
+def test_deepseek_generation_provider_requires_completion_metadata() -> None:
+    provider = DeepSeekGenerationProvider(
+        model="deepseek-chat",
+        api_key="sk-test-key",
+        api_base="https://api.deepseek.com/v1",
+        timeout_seconds=2,
+        max_output_tokens=100,
+        client=httpx.Client(transport=httpx.MockTransport(
+            lambda _request: httpx.Response(200, json={"content": [{"type": "text", "text": "answer"}]})
+        )),
+    )
+    with pytest.raises(ModelProviderError) as error:
+        provider.generate([{"role": "user", "content": "question"}])
+    assert error.value.code == "research_provider_output_incomplete"
+
+
 def test_provider_metrics_record_business_success_and_error() -> None:
     def handler(_request: httpx.Request) -> httpx.Response:
-        return httpx.Response(200, json={"output_text": "answer"})
+        return httpx.Response(200, json={"status": "completed", "output_text": "answer"})
 
     provider = OpenAIGenerationProvider(
         model="gpt-5.5",
@@ -383,7 +445,7 @@ def test_deepseek_generation_provider_sends_correct_headers_and_payload() -> Non
         )
         return httpx.Response(
             200,
-            json={"content": [{"type": "text", "text": "DeepSeek answer"}]},
+            json={"stop_reason": "end_turn", "content": [{"type": "text", "text": "DeepSeek answer"}]},
         )
 
     provider = DeepSeekGenerationProvider(
@@ -395,7 +457,9 @@ def test_deepseek_generation_provider_sends_correct_headers_and_payload() -> Non
         client=httpx.Client(transport=httpx.MockTransport(handler)),
     )
 
-    assert provider.generate([{"role": "user", "content": "hello"}]) == "DeepSeek answer"
+    assert provider.generate(
+        [{"role": "user", "content": "hello"}], max_output_tokens=77
+    ) == "DeepSeek answer"
 
     assert len(requests) == 1
     assert requests[0]["url"] == "https://api.deepseek.com/anthropic/v1/messages"
@@ -404,7 +468,7 @@ def test_deepseek_generation_provider_sends_correct_headers_and_payload() -> Non
     payload = httpx.Response(200, content=requests[0]["body"]).json()
     assert payload["model"] == "deepseek-chat"
     assert payload["messages"] == [{"role": "user", "content": "hello"}]
-    assert payload["max_tokens"] == 200
+    assert payload["max_tokens"] == 77
     assert "stream" not in payload
 
 
@@ -415,7 +479,7 @@ def test_deepseek_generation_provider_preserves_multimodal_message_parts() -> No
         requests.append(request.read())
         return httpx.Response(
             200,
-            json={"content": [{"type": "text", "text": "visual answer"}]},
+            json={"stop_reason": "end_turn", "content": [{"type": "text", "text": "visual answer"}]},
         )
 
     provider = DeepSeekGenerationProvider(
@@ -461,7 +525,7 @@ def test_deepseek_generation_provider_extracts_chat_system_messages() -> None:
         requests.append(request.read())
         return httpx.Response(
             200,
-            json={"content": [{"type": "text", "text": "chat answer"}]},
+            json={"stop_reason": "end_turn", "content": [{"type": "text", "text": "chat answer"}]},
         )
 
     provider = DeepSeekGenerationProvider(
@@ -546,7 +610,7 @@ def test_deepseek_generation_provider_maps_openai_image_parts() -> None:
         requests.append(request.read())
         return httpx.Response(
             200,
-            json={"content": [{"type": "text", "text": "mapped"}]},
+            json={"stop_reason": "end_turn", "content": [{"type": "text", "text": "mapped"}]},
         )
 
     provider = DeepSeekGenerationProvider(
@@ -616,7 +680,7 @@ def test_deepseek_generation_provider_streams_text_deltas() -> None:
             content=(
                 'data: {"type":"content_block_delta","delta":{"type":"text_delta","text":"Hello"}}\n\n'
                 'data: {"type":"content_block_delta","delta":{"type":"text_delta","text":" world"}}\n\n'
-                'data: {"type":"message_stop"}\n\n'
+                'data: {"type":"message_stop","stop_reason":"end_turn"}\n\n'
             ).encode(),
         )
 
@@ -629,13 +693,43 @@ def test_deepseek_generation_provider_streams_text_deltas() -> None:
         client=httpx.Client(transport=httpx.MockTransport(handler)),
     )
 
-    assert list(provider.stream([{"role": "user", "content": "hello"}])) == ["Hello", " world"]
-    assert '"stream":true' in requests[0].decode()
+    assert list(
+        provider.stream(
+            [{"role": "user", "content": "hello"}], max_output_tokens=77
+        )
+    ) == ["Hello", " world"]
+    stream_payload = httpx.Response(200, content=requests[0]).json()
+    assert stream_payload["max_tokens"] == 77
+    assert stream_payload["stream"] is True
+
+
+def test_deepseek_generation_stream_requires_message_stop() -> None:
+    provider = DeepSeekGenerationProvider(
+        model="deepseek-chat",
+        api_key="sk-test-key",
+        api_base="https://api.deepseek.com/v1",
+        timeout_seconds=2,
+        max_output_tokens=100,
+        client=httpx.Client(
+            transport=httpx.MockTransport(
+                lambda _request: httpx.Response(
+                    200,
+                    headers={"content-type": "text/event-stream"},
+                    content=(
+                        b'data: {"type":"content_block_delta","delta":{"type":"text_delta","text":"partial"}}\n\n'
+                    ),
+                )
+            )
+        ),
+    )
+    with pytest.raises(ModelProviderError) as error:
+        list(provider.stream([{"role": "user", "content": "hello"}]))
+    assert error.value.code == "research_provider_output_incomplete"
 
 
 def test_deepseek_generation_provider_rejects_empty_content() -> None:
     def handler(_request: httpx.Request) -> httpx.Response:
-        return httpx.Response(200, json={"content": []})
+        return httpx.Response(200, json={"stop_reason": "end_turn", "content": []})
 
     provider = DeepSeekGenerationProvider(
         model="deepseek-chat",
@@ -652,7 +746,7 @@ def test_deepseek_generation_provider_rejects_empty_content() -> None:
 
 def test_deepseek_generation_provider_rejects_missing_content_key() -> None:
     def handler(_request: httpx.Request) -> httpx.Response:
-        return httpx.Response(200, json={"id": "msg_123"})
+        return httpx.Response(200, json={"id": "msg_123", "stop_reason": "end_turn"})
 
     provider = DeepSeekGenerationProvider(
         model="deepseek-chat",
@@ -796,7 +890,7 @@ def test_deepseek_generation_provider_handles_stream_error() -> None:
 
 def test_deepseek_provider_metrics_record_success_and_error() -> None:
     def handler(_request: httpx.Request) -> httpx.Response:
-        return httpx.Response(200, json={"content": [{"type": "text", "text": "answer"}]})
+        return httpx.Response(200, json={"stop_reason": "end_turn", "content": [{"type": "text", "text": "answer"}]})
 
     provider = DeepSeekGenerationProvider(
         model="deepseek-chat",

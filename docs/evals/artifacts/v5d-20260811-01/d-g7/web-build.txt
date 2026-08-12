@@ -1,0 +1,65 @@
+
+> @citeframe/web@0.1.0 prebuild /home/cc/code/citeframe/apps/web
+> node scripts/copy-pdfjs.mjs
+
+
+> @citeframe/web@0.1.0 build /home/cc/code/citeframe/apps/web
+> next build
+
+▲ Next.js 16.2.10 (Turbopack)
+- Environments: .env.local
+
+  Creating an optimized production build ...
+✓ Compiled successfully in 7.2s
+  Running TypeScript ...
+  Finished TypeScript in 3.3s ...
+  Collecting page data using 19 workers ...
+  Generating static pages using 19 workers (0/10) ...
+  Generating static pages using 19 workers (2/10) 
+  Generating static pages using 19 workers (4/10) 
+  Generating static pages using 19 workers (7/10) 
+✓ Generating static pages using 19 workers (10/10) in 154ms
+  Finalizing page optimization ...
+
+Route (app)
+┌ ○ /
+├ ○ /_not-found
+├ ƒ /api/auth/login
+├ ƒ /api/auth/logout
+├ ƒ /api/auth/register
+├ ƒ /api/auth/session
+├ ƒ /api/workspaces
+├ ƒ /api/workspaces/[workspaceId]
+├ ƒ /api/workspaces/[workspaceId]/assets
+├ ƒ /api/workspaces/[workspaceId]/assets/[assetId]
+├ ƒ /api/workspaces/[workspaceId]/assets/[assetId]/delete-retry
+├ ƒ /api/workspaces/[workspaceId]/assets/[assetId]/file
+├ ƒ /api/workspaces/[workspaceId]/assets/[assetId]/finalize-upload
+├ ƒ /api/workspaces/[workspaceId]/assets/[assetId]/representations/[representationId]/content
+├ ƒ /api/workspaces/[workspaceId]/assets/[assetId]/representations/current-image-oriented/file
+├ ƒ /api/workspaces/[workspaceId]/assets/[assetId]/representations/image-oriented/file
+├ ƒ /api/workspaces/[workspaceId]/assets/[assetId]/retry
+├ ƒ /api/workspaces/[workspaceId]/assets/[assetId]/tags
+├ ƒ /api/workspaces/[workspaceId]/assets/[assetId]/upload
+├ ƒ /api/workspaces/[workspaceId]/assets/upload-session
+├ ƒ /api/workspaces/[workspaceId]/chat/stream
+├ ƒ /api/workspaces/[workspaceId]/evaluation-suites/[[...segments]]
+├ ƒ /api/workspaces/[workspaceId]/evaluations/[[...segments]]
+├ ƒ /api/workspaces/[workspaceId]/jobs/[jobId]
+├ ƒ /api/workspaces/[workspaceId]/notes
+├ ƒ /api/workspaces/[workspaceId]/notes/[noteId]
+├ ƒ /api/workspaces/[workspaceId]/notes/[noteId]/tags
+├ ƒ /api/workspaces/[workspaceId]/research-runs/[[...segments]]
+├ ƒ /api/workspaces/[workspaceId]/settings
+├ ƒ /api/workspaces/[workspaceId]/tags
+├ ƒ /api/workspaces/[workspaceId]/tags/[tagId]
+├ ƒ /api/workspaces/[workspaceId]/threads
+├ ƒ /api/workspaces/[workspaceId]/threads/[threadId]
+├ ƒ /api/workspaces/[workspaceId]/threads/[threadId]/messages
+├ ○ /workspaces
+└ ƒ /workspaces/[workspaceId]
+
+
+○  (Static)   prerendered as static content
+ƒ  (Dynamic)  server-rendered on demand
+

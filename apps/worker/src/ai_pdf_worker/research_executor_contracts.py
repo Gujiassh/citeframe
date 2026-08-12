@@ -85,6 +85,10 @@ class ApprovedResearchExecution:
     max_input_tokens: int = 0
     max_output_tokens: int = 0
     max_cost_microunits: int = 0
+    retrieval_top_k: int = 0
+    agent_result_schema_version: str = "research-agent-results-v1"
+    context_policy_version: str = "research-context-policy-v1"
+    compact_policy_version: str = "research-compact-policy-v1"
     prompts: tuple[FrozenPrompt, ...] = ()
 
 

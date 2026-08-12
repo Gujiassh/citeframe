@@ -77,8 +77,8 @@ def retry_research_step(
         if snapshot is None or ledger is None or (
             ledger.actual_provider_calls + ledger.reserved_provider_calls >= snapshot.max_provider_calls
             or ledger.actual_tool_calls + ledger.reserved_tool_calls >= snapshot.max_tool_calls
-            or ledger.actual_cost_microunits + ledger.reserved_cost_microunits >= snapshot.max_cost_microunits
         ):
+            # Cost and cumulative tokens are usage-only; they never block retry.
             raise ResearchError("research_budget_limit", "The frozen Research budget is exhausted.", 422)
         now = datetime.now(UTC)
         retry = ResearchStepRetryRequest(

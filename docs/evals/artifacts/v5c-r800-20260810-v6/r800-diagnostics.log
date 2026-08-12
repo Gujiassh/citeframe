@@ -1,0 +1,6 @@
+Creating citeframe-r800-v5c-20260810-v6_worker_run ... 
+Creating citeframe-r800-v5c-20260810-v6_worker_run ... done
+provider_request_failed provider=openai kind=generation error_type=ModelProviderError
+tag=research_provider status=error run_id=9f44eba5-c220-439e-9567-d71990ba7480 workspace_id=f54c7366-4a49-5eda-8373-dcd80bd5df6d step_id=7a1bd477-ae14-449c-a12d-0680bf2e447e attempt_id=593b4f74-9d1c-4275-a244-3393ddff5de5 node=researcher attempt_number=1 reason_code=ModelProviderError duration_ms=207.923
+tag=research_step status=error run_id=9f44eba5-c220-439e-9567-d71990ba7480 workspace_id=f54c7366-4a49-5eda-8373-dcd80bd5df6d step_id=7a1bd477-ae14-449c-a12d-0680bf2e447e attempt_id=593b4f74-9d1c-4275-a244-3393ddff5de5 step_kind=researcher attempt_number=1 reason_code=ResearchStepAutoRequeued duration_ms=973.839
+tag=research_run status=error run_id=9f44eba5-c220-439e-9567-d71990ba7480 workspace_id=f54c7366-4a49-5eda-8373-dcd80bd5df6d step_id=5f0cf092-14bb-44f8-b1ef-fe673e59ea34 attempt_id=8dfd57d0-f45f-4f2c-a38e-33ed965e060e step_kind=researcher attempt_number=1 reason_code=ResearchStepAutoRequeued

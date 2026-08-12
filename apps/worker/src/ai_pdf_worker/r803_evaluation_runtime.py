@@ -160,8 +160,17 @@ def build_execution(package: EvaluationPackage, case: dict[str, object]) -> Appr
         max_input_tokens=100_000,
         max_output_tokens=32_000,
         max_cost_microunits=5_000_000,
+        retrieval_top_k=6,
         prompts=prompts,
     )
+
+
+def _validate_evaluation_agent_result(node_key: str, value: dict[str, object]) -> None:
+    """Keep R803 refusal semantics separate from production role-I/O v1."""
+
+    if node_key == "researcher" and value == {"claims": []}:
+        return
+    validate_agent_result(node_key, value)
 
 
 def _lease(case_key: str, node_key: str, index: int = 0) -> StepLease:
@@ -529,7 +538,7 @@ def run_research_case_with_diagnostics(
     validator = (
         validate_agent_result_with_diagnostics
         if diagnostic_capture is not None
-        else validate_agent_result
+        else _validate_evaluation_agent_result
     )
     agents = GenerationResearchAgents(
         generation,
@@ -537,6 +546,7 @@ def run_research_case_with_diagnostics(
         result_validator=validator,
         output_observer=_observer if diagnostic_capture is not None else None,
         diagnostic_mode=diagnostic_capture is not None,
+        allow_empty_researcher_claims=True,
     )
     evidence_port = FrozenEvidencePort(package)
     try:

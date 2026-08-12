@@ -53,6 +53,27 @@ arbitrary tools, or model-authored graph changes. Reconsidering an external grap
 engine requires a separate architecture review and must preserve PostgreSQL as the
 only business truth source.
 
+## V5-C Production Contract Rules
+
+V5-C keeps the fixed topology but upgrades Agent I/O to a versioned production
+registry. A registry entry binds the strict role schema, prompt/template hash,
+validator, runtime adapter, cross-role provenance checks, API/Web mapping and
+historical recovery reader. `agentResultSchemaVersion`, `contextPolicyVersion`
+and `compactPolicyVersion` are frozen on each planning/execution snapshot.
+Historical rows are mapped to a named legacy entry; new Runs never fall back to
+an old or loose contract.
+
+`maxInputTokens` and `maxOutputTokens` are per-provider-call gates. Before send,
+the worker performs deterministic typed packing, soft compact or batching, and
+rejects mandatory overflow with `research_context_limit_exceeded`. The provider
+request receives the exact output cap; truncated or incomplete output fails with
+`research_provider_output_incomplete`. Cumulative input/output totals are
+telemetry only. Provider/tool/time/parallelism/attempt limits remain the hard
+Run limits.
+
+Pricing is optional metadata. Missing pricing never blocks Research, unknown
+pricing remains null/unavailable, and V5-C usage DTOs do not expose money.
+
 ## Concurrency And Locking
 
 Provider/tool reservation and completion serialize shared ledger updates through a

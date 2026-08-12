@@ -147,7 +147,7 @@ def test_search_frozen_evidence_fail_closes_on_real_execution_fingerprint_drift(
             tool_call_key="search-provider-drift",
             query="facts",
             asset_ids=(fixture.asset.id,),
-            top_k=3,
+            top_k=6,
             # Production path: no injected embedding_provider.
             now=fixture.now + timedelta(seconds=1),
         )
@@ -204,7 +204,7 @@ def test_search_frozen_evidence_embedding_index_mismatch_mapping_remains_non_ret
             tool_call_key="search-embedding-index-mismatch-a007",
             query="facts",
             asset_ids=(fixture.asset.id,),
-            top_k=3,
+            top_k=6,
             embedding_provider=FakeEmbeddingProvider(),
             now=fixture.now + timedelta(seconds=1),
         )

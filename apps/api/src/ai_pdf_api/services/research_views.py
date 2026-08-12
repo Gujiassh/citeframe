@@ -23,13 +23,14 @@ from ai_pdf_api.models import (
     ResearchExecutionSnapshot,
     ResearchPlanRevision,
     ResearchPlanRevisionAsset,
+    ResearchProviderCall,
     ResearchStep,
     ResearchStepAttempt,
     ResearchStepDependency,
     ResearchRun,
     PromptVersion,
 )
-from ai_pdf_api.schemas.research import ResearchPlanArtifactPayload
+from ai_pdf_api.schemas.research import LegacyResearchPlanArtifactPayload, ResearchPlanArtifactPayload
 from ai_pdf_api.services.research_evidence_provenance import (
     validate_evidence_source_fingerprint,
 )
@@ -48,10 +49,6 @@ def iso(value: datetime | None) -> str | None:
     if value.tzinfo is None:
         value = value.replace(tzinfo=UTC)
     return value.astimezone(UTC).isoformat()
-
-
-def money(currency: str, amount: int) -> dict[str, object]:
-    return {"currency": currency, "amountMicros": amount}
 
 
 def provider_snapshot(revision: ResearchPlanRevision) -> dict[str, object]:
@@ -89,7 +86,6 @@ def planning_limits(revision: ResearchPlanRevision) -> dict[str, object]:
         "maxProviderCalls": revision.planning_max_provider_calls,
         "maxInputTokens": revision.planning_max_input_tokens,
         "maxOutputTokens": revision.planning_max_output_tokens,
-        "maxCost": money(revision.planning_cost_currency, revision.planning_max_cost_microunits),
         "plannerTimeoutSeconds": revision.planning_max_step_timeout_seconds,
         "providerTimeoutSeconds": revision.planning_max_provider_timeout_seconds,
         "maxPlannerAttempts": revision.planning_max_step_attempts,
@@ -102,7 +98,6 @@ def execution_limits_from_revision(revision: ResearchPlanRevision) -> dict[str, 
         "maxToolCalls": revision.proposed_max_tool_calls,
         "maxInputTokens": revision.proposed_max_input_tokens,
         "maxOutputTokens": revision.proposed_max_output_tokens,
-        "maxCost": money(revision.proposed_cost_currency, revision.proposed_max_cost_microunits),
         "maxParallelResearchers": revision.proposed_max_parallel_researchers,
         "runTimeoutSeconds": revision.proposed_max_run_timeout_seconds,
         "stepTimeoutSeconds": revision.proposed_max_step_timeout_seconds,
@@ -117,7 +112,6 @@ def execution_limits(snapshot: ResearchExecutionSnapshot) -> dict[str, object]:
         "maxToolCalls": snapshot.max_tool_calls,
         "maxInputTokens": snapshot.max_input_tokens,
         "maxOutputTokens": snapshot.max_output_tokens,
-        "maxCost": money(snapshot.cost_currency, snapshot.max_cost_microunits),
         "maxParallelResearchers": snapshot.max_parallel_researchers,
         "runTimeoutSeconds": snapshot.max_run_timeout_seconds,
         "stepTimeoutSeconds": snapshot.max_step_timeout_seconds,
@@ -204,6 +198,9 @@ def planning_input_snapshot(db: Session, revision: ResearchPlanRevision) -> dict
             "budgetPolicyVersion": revision.planning_budget_policy_version,
             "retryPolicyVersion": revision.planning_retry_policy_version,
             "limits": planning_limits(revision),
+            "agentResultSchemaVersion": getattr(revision, "agent_result_schema_version", None),
+            "contextPolicyVersion": getattr(revision, "context_policy_version", None),
+            "compactPolicyVersion": getattr(revision, "compact_policy_version", None),
         },
         "proposedResearchExecution": {
             "workflowVersionId": revision.proposed_workflow_version_id,
@@ -214,21 +211,44 @@ def planning_input_snapshot(db: Session, revision: ResearchPlanRevision) -> dict
             "budgetPolicyVersion": revision.proposed_budget_policy_version,
             "retryPolicyVersion": revision.proposed_retry_policy_version,
             "limits": execution_limits_from_revision(revision),
+            "agentResultSchemaVersion": getattr(revision, "agent_result_schema_version", None),
+            "contextPolicyVersion": getattr(revision, "context_policy_version", None),
+            "compactPolicyVersion": getattr(revision, "compact_policy_version", None),
         },
         "snapshotSha256": revision.planning_snapshot_sha256,
         "frozenAt": iso(revision.created_at),
     }
 
 
-def _usage(rows: list[ResearchBudgetLedger], currency: str, measured_at: datetime) -> dict[str, object]:
+def _usage(db: Session, rows: list[ResearchBudgetLedger], measured_at: datetime) -> dict[str, object]:
+    ledger_ids = [row.id for row in rows]
+    sources = set(
+        db.scalars(
+            select(ResearchProviderCall.usage_source).where(
+                ResearchProviderCall.budget_ledger_id.in_(ledger_ids),
+                ResearchProviderCall.usage_source.in_(("actual", "estimated")),
+            )
+        ).all()
+        if ledger_ids
+        else []
+    )
+    usage_source = (
+        "actual"
+        if sources == {"actual"}
+        else "estimated"
+        if sources == {"estimated"}
+        else "mixed"
+        if sources == {"actual", "estimated"}
+        else None
+    )
     return {
         "providerCalls": sum(row.actual_provider_calls for row in rows),
         "toolCalls": sum(row.actual_tool_calls for row in rows),
         "inputTokens": sum(row.actual_input_tokens for row in rows),
         "outputTokens": sum(row.actual_output_tokens for row in rows),
-        "cost": money(currency, sum(row.actual_cost_microunits for row in rows)),
-        "usageFinal": all(row.usage_final for row in rows),
+        "usageFinal": all(row.usage_final for row in rows) if rows else True,
         "measuredAt": iso(max((row.updated_at for row in rows), default=measured_at)),
+        "usageSource": usage_source,
     }
 
 
@@ -241,7 +261,7 @@ def planning_usage(db: Session, run: ResearchRun) -> dict[str, object]:
             )
         ).all()
     )
-    return _usage(rows, run.cost_currency, run.updated_at)
+    return _usage(db, rows, run.updated_at)
 
 
 def research_usage(db: Session, run: ResearchRun) -> dict[str, object] | None:
@@ -252,7 +272,7 @@ def research_usage(db: Session, run: ResearchRun) -> dict[str, object] | None:
             ResearchBudgetLedger.execution_snapshot_id == run.approved_execution_snapshot_id
         )
     )
-    return _usage([ledger] if ledger else [], run.cost_currency, run.updated_at)
+    return _usage(db, [ledger] if ledger else [], run.updated_at)
 
 
 def _decision_dto(decision: HumanDecision) -> dict[str, object]:
@@ -349,6 +369,9 @@ def execution_snapshot_dto(db: Session, snapshot: ResearchExecutionSnapshot) -> 
             "budgetPolicyVersion": snapshot.budget_policy_version,
             "retryPolicyVersion": snapshot.retry_policy_version,
             "limits": execution_limits(snapshot),
+            "agentResultSchemaVersion": getattr(snapshot, "agent_result_schema_version", None),
+            "contextPolicyVersion": getattr(snapshot, "context_policy_version", None),
+            "compactPolicyVersion": getattr(snapshot, "compact_policy_version", None),
         },
         "snapshotSha256": snapshot.execution_snapshot_sha256,
         "createdAt": iso(snapshot.created_at),
@@ -384,7 +407,7 @@ def _plan_dto(db: Session, run: ResearchRun, revision: ResearchPlanRevision) -> 
     ledger = db.scalar(
         select(ResearchBudgetLedger).where(ResearchBudgetLedger.plan_revision_id == revision.id)
     )
-    usage = _usage([ledger] if ledger else [], run.cost_currency, revision.created_at)
+    usage = _usage(db, [ledger] if ledger else [], revision.created_at)
     return {
         "version": revision.revision_number,
         "status": status,
@@ -395,9 +418,6 @@ def _plan_dto(db: Session, run: ResearchRun, revision: ResearchPlanRevision) -> 
         "estimatedProviderCalls": payload.estimated_provider_calls,
         "estimatedInputTokens": payload.estimated_input_tokens,
         "estimatedOutputTokens": payload.estimated_output_tokens,
-        "estimatedCost": (
-            payload.estimated_cost.model_dump(mode="json", by_alias=True) if payload.estimated_cost else None
-        ),
         "planningUsage": usage,
         "createdAt": iso(artifact.created_at),
         "approvedAt": approved_at,
@@ -407,10 +427,6 @@ def _plan_dto(db: Session, run: ResearchRun, revision: ResearchPlanRevision) -> 
 def run_summary(db: Session, run: ResearchRun) -> dict[str, object]:
     revision = db.get(ResearchPlanRevision, run.current_plan_revision_id) if run.current_plan_revision_id else None
     assets = _plan_assets(db, revision.id) if revision else []
-    consumed = planning_usage(db, run)["cost"]["amountMicros"]
-    execution_use = research_usage(db, run)
-    if execution_use:
-        consumed += execution_use["cost"]["amountMicros"]
     plan = _plan_dto(db, run, revision) if revision else None
     return {
         "id": run.id,
@@ -421,11 +437,8 @@ def run_summary(db: Session, run: ResearchRun) -> dict[str, object]:
         "stateVersion": run.state_version,
         "requestedAssetScope": _requested_scope(revision, assets) if revision else {"mode": "all_ready"},
         "frozenAssetCount": len(assets),
-        "costCurrency": run.cost_currency,
         "currentPlanRevisionNumber": revision.revision_number if revision else None,
         "currentEventSeq": run.next_event_seq - 1,
-        "estimatedCost": plan["estimatedCost"] if plan else None,
-        "consumedCost": money(run.cost_currency, consumed),
         "createdAt": iso(run.created_at),
         "updatedAt": iso(run.updated_at),
         "finishedAt": iso(run.finished_at),
@@ -788,6 +801,12 @@ def load_research_plan_artifact(artifact: ResearchArtifact) -> ResearchPlanArtif
         raise ValueError("research_plan_artifact_contract_mismatch")
     try:
         decoded = json.loads(verified_artifact_bytes(artifact))
-        return ResearchPlanArtifactPayload.model_validate(decoded)
+        # Artifact schema version 1 has an explicit recovery reader. It accepts
+        # the historical optional cost field, then projects it out of the V5-C
+        # user DTO without guessing from arbitrary field names.
+        legacy = LegacyResearchPlanArtifactPayload.model_validate(decoded)
+        return ResearchPlanArtifactPayload.model_validate(
+            legacy.model_dump(exclude={"estimated_cost"})
+        )
     except (json.JSONDecodeError, UnicodeDecodeError) as error:
         raise ValueError("research_plan_artifact_invalid_json") from error

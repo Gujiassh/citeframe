@@ -91,41 +91,37 @@ Audio 不能因为 B004 已列在 tasks 就进入 registry。必须先完成 ASR
 
 ## OD-C1：V5-C 是否纯产品化 delta
 
-状态：`open`
+状态：`approved`
 
-推荐：`pure productization delta`。V4 fixed Research executor、ledger、Evidence-only tools、HITL、SSE、budget、retry/recovery 是基线；V5-C 只补用户入口、timeline、branch comprehension、control state、artifact/evidence drill-down 和 V5-A profile display residual。
+批准：2026-08-10。采用 `pure productization delta`，但同时批准一次有界的生产 Agent I/O 合同升级和 usage-first context/budget 合同升级；不重做 V4 executor。
 
-不默认新增 step kind、动态 DAG、通用 Agent runtime、Research schema 重构或新的持久化事实。
+V4 fixed Research executor、ledger、Evidence-only tools、HITL、SSE、retry/recovery 是基线。V5-C 补用户入口、timeline、branch comprehension、control state、artifact/evidence drill-down、V5-A profile display、版本化严格 role-I/O 和单次上下文 compact 门禁。
+
+不新增动态 DAG、通用 Agent runtime、自由插件、provider selector、模型生成 graph、任意网络/Shell/ORM 工具或隐式长期记忆。
 
 ## OD-C2：V5-C 第一轮用户可见缺口
 
-状态：`open`
+状态：`approved`
 
-实现前需要用当前 production-start Web fixture 逐项确认：
-
-- timeline 是否需要独立投影，还是现有 events/steps 足够；
-- researcher branches 是否需要专门分组展示；
-- evidence bundle、verification result、conflict report 是否需要新 UI 入口；
-- budget/cost 是否需要明细而非当前汇总；
-- mobile viewport 的最小可用控制集合。
+批准：2026-08-10。第一版使用现有 Events/Steps 的只读 server-seq projection，不新增另一套业务事实；Researcher branches 按 plan order 分组；展示 plan、evidence bundle、conflict report（有冲突时）和 final report；verification result 保持 internal；移动端支持状态查看、审批/修改、冲突处理、重试、取消和恢复；页面只显示 provider/model 与 usage，不显示任何 money/billing 字段。
 
 ## OD-C3：Researcher retrieval top-k 语义
 
-状态：`open`
+状态：`approved`
 
-必须明确 `researchExecution.execution.provider.retrievalTopK` 是否就是所有 researcher evidence search 的上限。当前 worker 有局部 `top_k=8` 代码事实；在未裁决前不能在产品文档声称所有节点严格使用快照 top-k，也不能随意改 production behavior。
+批准：2026-08-10。`researchExecution.execution.provider.retrievalTopK` 是该 execution 中每次 Researcher evidence search 的冻结最大结果数；不是整个 Run 的证据总数。Worker 不得保留局部 `top_k=8` 常量，实际 result count 只进入 usage/telemetry。
 
 ## OD-C4：非 OpenAI provider 的 Research pricing
 
-状态：`open`
+状态：`approved`
 
-V5-A 已支持 DeepSeek generation，但 Research pricing book 的支持范围需要逐 provider/model 冻结。推荐：没有价格条目时在 reserve 前 fail-closed 为明确 `provider_pricing_not_configured`，不估算为零、不偷偷复用 OpenAI 价格。
+批准：2026-08-10。Research 启动和执行不依赖 pricing book；价格不属于本阶段用户界面，也不作为 Research budget gate。硬门禁使用 provider/tool calls、wall time、parallelism、attempt/retry 和单次模型 context/output limit。累计 input/output Token 只记录 usage，不终止 Run。未知价格必须保持 unknown/null，不写假零；R803/evaluation 的独立 cost contract 不变。
 
 ## OD-C5：V5-C 的 R800 复验范围
 
-状态：`open`
+状态：`approved`
 
-推荐：若只改 Web presentation 且不改 runtime/save/recovery contract，执行 focused Research E2E + full API/Worker/Web；若改 budget、permission、lease、event replay、artifact publication 或 recovery，重新执行对应 R800 scenario，必要时运行完整 R800 acceptance。
+批准：2026-08-10。Web-only presentation 仍执行 focused Research production-start E2E + full API/Worker/Web；本轮因升级 role-I/O、context compact 和 usage-first budget，必须执行对应 R800 role-I/O/retry/recovery 场景；若验收发现持久化/recovery contract 改动，升级为完整 R800 acceptance。
 
 ## OD-C6：Provider selector
 
@@ -145,11 +141,8 @@ V5-A/V5-C 不开放用户或 Workspace provider selector。只有新增 decision
 
 ## OD-C8：Research role-I/O contract version
 
-状态：`open`
+状态：`approved`
 
-当前 production runtime 使用 `GenerationResearchAgents.DEFAULT_AGENT_RESULT_SCHEMAS` 和现有 runtime adapter；`research-agent-results-v1` 的 strict validator/schema 在当前评估/contract code 中不是已批准的 production binding。V5-C 必须二选一：
+批准：2026-08-10。将严格 role schemas 提升为单一版本化 production contract；新 Run 只能使用批准版本。冻结 prompt variable binding、strict validator、runtime adapter、server-generated Claim IDs、API persistence mapping、Web fixtures 和 recovery/R800 impact。未知字段、重复字段、错误类型、跨 branch evidence 或 Claim set 不一致均 fail-closed。
 
-- 推荐纯 productization 路径：保持当前 production role-I/O 和 prompt variables 不变，文档/fixtures 以当前 runtime contract 为准；
-- 新 schema 路径：批准新的 production schema version，冻结 prompt variable binding、validator、runtime adapter、server-generated IDs、API persistence mapping、Web fixtures 和 migration/save impact。
-
-在 OD-C8 批准前，C-G3 只能做现有 production contract inventory，不能声称 strict V1 已进入 Research production。
+该升级不新增 role kind、不改变 Citation/NoteSource/Quick Chat、不改 finished artifact bytes；历史 Run 通过 versioned contract registry 保持可读/可恢复，新 Run 不走旧合同 fallback。详细合同见 [`decision-2026-08-10-v5c-product-contract.md`](decision-2026-08-10-v5c-product-contract.md)。

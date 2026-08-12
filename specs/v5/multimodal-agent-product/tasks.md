@@ -6,8 +6,8 @@
 - [x] 创建 V5 主规格、实施计划和任务清单
 - [x] V5-A Provider 与模型能力层（A002-A007 已完成；A007 跨层回归已验收）
 - [x] V5-B 多模态资料扩展（Markdown-only `document` v1：isolated/canonical implementation、前序 Critical review、online migration、live scoped PostgreSQL/MinIO restore、standalone browser `4 passed` 与 B008 formal isolated deployment Critical closure 已通过；accepted deployment artifact=`docs/evals/artifacts/v5b-document-deployment-v4/`；HTML/Audio/Video 仍受 OD-B5/B6/B7 独立 gate 阻塞）
-- [ ] V5-C 多 Agent 协作产品化（V4 delta 冻结候选：[`v5c-detailed-spec.md`](v5c-detailed-spec.md)；当前阻塞 OD-C1/C2/C3/C4/C5/C8）
-- [ ] V5-D 端到端整合与工程稳定
+- [x] V5-C 多 Agent 协作产品化（2026-08-10 工程/发布门 `ACCEPT`；严格版本化 production Agent I/O、usage/context、Web projection、production-start Research、online migration 与 R800 v6 已通过；F1/F5 为 Medium 后续风险）
+- [x] V5-D 端到端整合与工程稳定（2026-08-12 D-G7 全量回归通过：API 562 / Worker 296 / Web 131；Critical `ACCEPT` with residuals；internal-preview；R803/M404 仍后置；未 commit/push）
 - [ ] V5-E 模型质量与用户价值
 
 ### V5-B/C 详细规格状态
@@ -15,10 +15,12 @@
 - [x] B-G1 first modality brief and priority approval
 - [x] B-G2 shared PDF/Image entry audit
 - [x] B-G3 document locator/API/catalog contract approval
-- [ ] C-G1 V4 productization delta approval
-- [ ] C-G2 Quick/Research status and control projection approval
-- [ ] C-G3 role I/O, join, Evidence/Claim/Artifact contract approval
-- [x] B/C implementation lanes and verification matrix drafted; Markdown-only V5-B gates are frozen and implemented. V5-C production work remains blocked on its owner decisions.
+- [x] C-G1 V4 productization delta + usage-first/context contract approval
+- [x] C-G2 Quick/Research status and control projection approval
+- [x] C-G3 strict production role-I/O v1, join, Evidence/Claim/Artifact contract approval
+- [x] B/C implementation lanes and verification matrix drafted; Markdown-only V5-B gates are frozen and implemented. V5-C C-G1/C-G2/C-G3 are approved; implementation spans and acceptance are frozen in [`decision-2026-08-10-v5c-product-contract.md`](decision-2026-08-10-v5c-product-contract.md).
+
+V5-C implementation status (2026-08-10): `C-API-WORKER`, `C-BOUNDARY` and Web usage projection are implemented in the canonical worktree. API `561 passed, 1 warning`, Worker `295 passed`, Web `130 passed`, production-start Research `5 passed`, online migration and R800 v6 `engineeringGate=pass`/`releaseGatePassed=true` are recorded in [`v5c-implementation-acceptance-2026-08-10.md`](v5c-implementation-acceptance-2026-08-10.md) and [`v5c-critical-review-20260810.md`](../../../docs/evals/v5c-critical-review-20260810.md). Independent Critical review is `ACCEPT`; F1 registry mapping and F5 historical-row bytes/hash remain Medium follow-up risks. No commit or push has been performed.
 
 ## V5-A Provider 与模型能力层
 
@@ -110,22 +112,37 @@
 
 ## V5-C 多 Agent 协作产品化
 
-- [ ] C001 明确 Quick/Research 用户入口和运行状态模型
-- [ ] C002 冻结 Planner、Researcher、Verifier、Critic、Synthesizer 的 typed input/output
-- [ ] C003 将 provider capability/profile 快照接入每个 Research Run
-- [ ] C004 实现共享 Evidence bundle、Claim provenance 和分支 join 语义
-- [ ] C005 实现有界并行、单分支重试、取消、审批和恢复的 Web 状态
-- [ ] C006 展示 timeline、Evidence、冲突、失败原因和最终 Artifact
-- [ ] C007 验证所有 Agent 分支的 Workspace、预算、工具和 provider 权限边界
-- [ ] C008 保持 Quick Chat 独立并完成 Research/Chat 回归
+- [x] C001 明确 Quick/Research 用户入口和运行状态模型
+- [x] C002 冻结 Planner、Researcher、Verifier、Critic、Synthesizer 的 typed input/output
+- [x] C003 将 provider capability/profile 快照接入每个 Research Run
+- [x] C004 实现共享 Evidence bundle、Claim provenance 和分支 join 语义
+- [x] C005 实现有界并行、单分支重试、取消、审批和恢复的 Web 状态
+- [x] C006 展示 timeline、Evidence、冲突、失败原因和最终 Artifact
+- [x] C007 验证所有 Agent 分支的 Workspace、预算、工具和 provider 权限边界
+- [x] C008 保持 Quick Chat 独立并完成 Research/Chat 回归
 
 ## V5-D 端到端整合与工程稳定
 
-- [ ] D001 完成混合模态资产范围和统一检索入口
-- [ ] D002 完成多模型、多模态、多 Agent 的桌面/移动端主路径
-- [ ] D003 完成 API/Worker/Web 重启、删除、备份恢复和部署 profile
-- [ ] D004 完成开发者文档、运行手册和故障诊断
-- [ ] D005 完成全链路静态、单元、集成和 Playwright 回归
+- [x] D001 完成混合模态资产范围和统一检索入口
+- [x] D002 完成多模型、多模态、多 Agent 的桌面/移动端主路径（D-G4 production-start mixed desktop/mobile）
+- [x] D003 完成 API/Worker/Web 重启、删除、备份恢复和部署 profile（D-G5 partial-existing unit + D-G6 focused live；empty-target Compose residual）
+- [x] D004 完成开发者文档、运行手册和故障诊断
+- [x] D005 完成全链路静态、单元、集成和 Playwright 回归（D-G7 2026-08-12）
+
+### V5-D implementation gates
+
+- [x] D-G0 baseline/contract gate：记录源 SHA、dirty disposition、F1/F5、lane ownership 和 artifact 根目录（2026-08-11, artifact v5d-20260811-01）
+- [x] D-G1 mixed asset/scope/retrieval：PDF/Image/Markdown 混合范围、当前代际、index、typed locator 和权限边界（focused API/Worker green 2026-08-11）
+- [x] D-G2 Quick Chat/Citation/NoteSource：旧 SSE、public error、保存和历史 snapshot 语义回归（use-chat 7 passed after F1 rework 2026-08-11）
+- [x] D-G3 Research integration：固定 executor、frozen snapshot、branch/retry/cancel/recovery 和 Artifact 回归（partial-existing-v5c production-start + unit suites retained for D-G7）
+- [x] D-G4 desktop/mobile：production-start `1440x1000` 与 `390x844` Playwright、截图和 DOM/state evidence（live standalone 2 passed 2026-08-11）
+- [x] D-G5 restart/delete/recovery：API/Worker/Web 重启、lease reclaim、delete retry、no-resurrection 和幂等（partial-existing-unit suites; no dedicated new mixed campaign in D-G7）
+- [x] D-G6 live deployment/restore：mixed seed/snapshot/verify CLI + harness mixed-live-pass（focused 2026-08-11；full empty-target Compose restore optional residual）
+- [x] D-G7 full regression/review：API 562 / Worker 296 / Web 131 + lint/tsc/build/compileall/diff-check；Critical `ACCEPT` with residuals（2026-08-12）
+
+评审状态（2026-08-12）：[`docs/evals/v5d-critical-review-20260811.md`](../../../docs/evals/v5d-critical-review-20260811.md) 初始 `REWORK_REQUIRED`（F1/F2）已关闭；D-G4/D-G6 focused live 已通过；D-G7 全量回归 `ACCEPT` with residuals（API 562 / Worker 296 / Web 131）。产品仍为 `internal_preview`；R803/M404 后置；empty-target Compose restore 为 residual；未 commit/push。
+
+详细字段、lane 和命令见 [`decision-2026-08-11-v5d-scope.md`](decision-2026-08-11-v5d-scope.md)、[`v5d-detailed-spec.md`](v5d-detailed-spec.md)、[`implementation-lanes-v5d.md`](implementation-lanes-v5d.md)、[`verification-matrix-v5d.md`](verification-matrix-v5d.md) 和 [`grok-handoff-v5d.md`](grok-handoff-v5d.md)。
 
 ## V5-E 模型质量与用户价值
 

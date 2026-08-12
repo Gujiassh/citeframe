@@ -4,7 +4,6 @@ import json
 from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass
 from threading import Barrier, Lock
-from uuid import UUID
 
 import ai_pdf_worker.main as worker_main
 import pytest
@@ -13,12 +12,18 @@ from ai_pdf_api.services.research_prompt_provenance import (
     V2_PROMPT_SPECS,
     V2_PROMPT_VERSION_IDS,
 )
+from ai_pdf_api.services.research_agent_io_registry import (
+    AGENT_RESULT_SCHEMA_VERSION,
+    COMPACT_POLICY_VERSION,
+    CONTEXT_POLICY_VERSION,
+)
 from ai_pdf_worker.research_executor import (
     EvidenceHandle,
     FailureDisposition,
     FrozenAsset,
     FrozenPrompt,
     LoadedEvidence,
+    ResearchExecutionError,
     ResearchStepAutoRequeued,
     ResearchSubproblem,
     StepLease,
@@ -232,8 +237,10 @@ def test_generation_agents_require_a_ledger_lease() -> None:
         agents.planner("question", (FrozenAsset("asset-1", 1, 1),))
 
 
-def test_researcher_ignores_model_supplied_claim_identifier() -> None:
+def test_researcher_rejects_model_supplied_claim_identifier() -> None:
     class Generation:
+        execution = type("Execution", (), {"retrieval_top_k": 1})()
+
         def __init__(self) -> None:
             self.messages: list[dict[str, object]] | None = None
 
@@ -264,21 +271,20 @@ def test_researcher_ignores_model_supplied_claim_identifier() -> None:
             )
 
     generation = Generation()
-    result = GenerationResearchAgents(generation).researcher(
-        ResearchSubproblem("step-1", "branch-1", "question", ("asset-1",)),
-        Tools(),
-        StepLease("step-1", "attempt-1", 1, "lease-token"),
-    )
-
-    assert str(UUID(result.claims[0].id)) == result.claims[0].id
-    assert result.claims[0].id != "../../not-a-uuid"
+    with pytest.raises(ResearchExecutionError, match="researcher_invalid_output"):
+        GenerationResearchAgents(generation).researcher(
+            ResearchSubproblem("step-1", "branch-1", "question", ("asset-1",)),
+            Tools(),
+            StepLease("step-1", "attempt-1", 1, "lease-token"),
+        )
     assert generation.messages is not None
     assert generation.messages[0] == {
         "role": "system",
         "content": V2_PROMPT_SPECS["researchers"].template_text,
     }
     variables = json.loads(str(generation.messages[1]["content"]))
-    assert variables["resultSchema"] == {"type": "object", "required": ["claims"]}
+    assert variables["resultSchema"]["required"] == ["claims"]
+    assert variables["resultSchema"]["additionalProperties"] is False
     assert "FrozenAssetScope" not in str(generation.messages[0])
 
 
@@ -308,7 +314,10 @@ def approved_execution_payload() -> dict[str, object]:
         "snapshot": {
             "snapshotSha256": "a" * 64,
             "execution": {
-                "provider": {"providerConfigFingerprint": "b" * 64},
+                "provider": {
+                    "providerConfigFingerprint": "b" * 64,
+                    "retrievalTopK": 6,
+                },
                 "limits": {
                     "maxParallelResearchers": 3,
                     "maxProviderCalls": 32,
@@ -317,6 +326,9 @@ def approved_execution_payload() -> dict[str, object]:
                     "maxOutputTokens": 4000,
                     "maxCost": {"amountMicros": 5000000},
                 },
+                "agentResultSchemaVersion": "research-agent-results-v1",
+                "contextPolicyVersion": "research-context-policy-v1",
+                "compactPolicyVersion": "research-compact-policy-v1",
             },
         },
     }
@@ -343,6 +355,9 @@ def planning_input_payload() -> dict[str, object]:
             "planningExecution": {
                 "workflowVersionId": "workflow-1",
                 "plannerPromptVersionId": V2_PROMPT_VERSION_IDS["planner"],
+                "agentResultSchemaVersion": AGENT_RESULT_SCHEMA_VERSION,
+                "contextPolicyVersion": CONTEXT_POLICY_VERSION,
+                "compactPolicyVersion": COMPACT_POLICY_VERSION,
                 "provider": {"providerConfigFingerprint": "b" * 64},
                 "budgetPolicyVersion": "planning-budget-v1",
                 "retryPolicyVersion": "planning-retry-v1",
@@ -372,6 +387,9 @@ def test_planning_adapter_separates_planner_usage_from_proposed_research_budget(
     assert payload["max_provider_calls"] == 2
     assert payload["proposed_max_provider_calls"] == 32
     assert payload["max_parallel_researchers"] == 3
+    assert payload["agent_result_schema_version"] == AGENT_RESULT_SCHEMA_VERSION
+    assert payload["context_policy_version"] == CONTEXT_POLICY_VERSION
+    assert payload["compact_policy_version"] == COMPACT_POLICY_VERSION
 
 
 def test_approved_execution_adapter_reads_the_frozen_api_dto() -> None:
@@ -393,6 +411,20 @@ def test_approved_execution_rejects_frozen_prompt_hash_drift() -> None:
     payload["prompts"] = prompts
 
     with pytest.raises(ResearchPortError, match="research_prompt_contract_invalid"):
+        as_approved_execution(payload, expected_run_id="run-1")
+
+
+def test_approved_execution_rejects_unknown_agent_io_registry_version() -> None:
+    payload = approved_execution_payload()
+    payload["snapshot"] = {
+        **payload["snapshot"],
+        "execution": {
+            **payload["snapshot"]["execution"],
+            "agentResultSchemaVersion": "research-agent-results-unknown",
+        },
+    }
+
+    with pytest.raises(ResearchPortError, match="research_agent_io_version_unavailable"):
         as_approved_execution(payload, expected_run_id="run-1")
 
 
@@ -425,8 +457,15 @@ def test_provider_call_reserve_send_reconcile_use_separate_sessions() -> None:
     class Provider:
         provider = "openai"
         model = "model-1"
+        max_output_tokens: int | None = None
 
-        def generate(self, _messages: list[dict[str, object]]) -> str:
+        def generate(
+            self,
+            _messages: list[dict[str, object]],
+            *,
+            max_output_tokens: int,
+        ) -> str:
+            self.max_output_tokens = max_output_tokens
             return '{"ok":true}'
 
     from ai_pdf_worker.research_executor import ApprovedResearchExecution
@@ -446,6 +485,7 @@ def test_provider_call_reserve_send_reconcile_use_separate_sessions() -> None:
     )
 
     assert result == '{"ok":true}'
+    assert generation._provider.max_output_tokens == 100
     assert service.reserved is not None
     assert "reserved_cost_microunits" not in service.reserved
     assert service.reconciled is not None and service.reconciled["status"] == "succeeded"
@@ -478,7 +518,13 @@ def test_provider_mark_sent_failure_releases_the_reservation() -> None:
         provider = "openai"
         model = "model-1"
 
-        def generate(self, _messages: list[dict[str, object]]) -> str:
+        def generate(
+            self,
+            _messages: list[dict[str, object]],
+            *,
+            max_output_tokens: int,
+        ) -> str:
+            del max_output_tokens
             raise AssertionError("provider must not be called")
 
     from ai_pdf_worker.research_executor import ApprovedResearchExecution

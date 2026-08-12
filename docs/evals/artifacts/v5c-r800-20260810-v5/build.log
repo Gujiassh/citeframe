@@ -1,0 +1,186 @@
+Sending build context to Docker daemon  39.12MB
+Step 1/26 : FROM python:3.12-slim@sha256:c3d81d25b3154142b0b42eb1e61300024426268edeb5b5a26dd7ddf64d9daf28 AS python-base
+ ---> 25c5b8011a34
+Step 2/26 : ENV PYTHONUNBUFFERED=1     PYTHONDONTWRITEBYTECODE=1
+ ---> Using cache
+ ---> b562b3ee3d08
+Step 3/26 : RUN groupadd --system --gid 10001 app     && useradd --system --uid 10001 --gid app --home-dir /app app
+ ---> Using cache
+ ---> ccb2693c4666
+Step 4/26 : WORKDIR /app
+ ---> Using cache
+ ---> 82f8289b3b6c
+Step 5/26 : FROM python-base AS api
+ ---> 82f8289b3b6c
+Step 6/26 : COPY apps/api/requirements.deploy.txt /app/apps/api/requirements.deploy.txt
+ ---> Using cache
+ ---> c30635b1831b
+Step 7/26 : RUN pip install --no-cache-dir --require-hashes -r /app/apps/api/requirements.deploy.txt
+ ---> Using cache
+ ---> c89a25bb624e
+Step 8/26 : COPY apps/api /app/apps/api
+ ---> Using cache
+ ---> 29ab6048ec6b
+Step 9/26 : RUN chown -R app:app /app
+ ---> Using cache
+ ---> 5916bfe0058a
+Step 10/26 : USER app
+ ---> Using cache
+ ---> a70ccb969c23
+Step 11/26 : WORKDIR /app/apps/api
+ ---> Using cache
+ ---> fcd3db3f9a44
+Step 12/26 : ENV PYTHONPATH=/app/apps/api/src
+ ---> Using cache
+ ---> 2ca02128bad1
+Step 13/26 : EXPOSE 8000
+ ---> Using cache
+ ---> 7c1aa112df63
+Step 14/26 : CMD ["uvicorn", "ai_pdf_api.main:app", "--host", "0.0.0.0", "--port", "8000"]
+ ---> Using cache
+ ---> e245cc80af0e
+Step 15/26 : FROM python-base AS worker
+ ---> 82f8289b3b6c
+Step 16/26 : RUN apt-get update     && apt-get install --yes --no-install-recommends libgl1 libglib2.0-0 libgomp1     && rm -rf /var/lib/apt/lists/*
+ ---> Using cache
+ ---> efe388b548a3
+Step 17/26 : COPY apps/api/pyproject.toml /app/apps/api/pyproject.toml
+ ---> Using cache
+ ---> e6952b546811
+Step 18/26 : COPY apps/api/src /app/apps/api/src
+ ---> Using cache
+ ---> e2538a0dfc72
+Step 19/26 : COPY apps/worker/requirements.deploy.txt /app/apps/worker/requirements.deploy.txt
+ ---> Using cache
+ ---> 82201c3aeada
+Step 20/26 : RUN pip install --no-cache-dir --require-hashes -r /app/apps/worker/requirements.deploy.txt
+ ---> Using cache
+ ---> 9abfad9588c3
+Step 21/26 : COPY apps/worker /app/apps/worker
+ ---> 58033a52054e
+Step 22/26 : RUN chown -R app:app /app
+ ---> Running in 8f6984495b0e
+ ---> Removed intermediate container 8f6984495b0e
+ ---> 151f6c537a1c
+Step 23/26 : USER app
+ ---> Running in ebbf0df87cee
+ ---> Removed intermediate container ebbf0df87cee
+ ---> 2f8845b90ff7
+Step 24/26 : WORKDIR /app/apps/worker
+ ---> Running in dca6b5e33efb
+ ---> Removed intermediate container dca6b5e33efb
+ ---> 90c0414a4746
+Step 25/26 : ENV PYTHONPATH=/app/apps/api/src:/app/apps/worker/src
+ ---> Running in 00d83e27c5c3
+ ---> Removed intermediate container 00d83e27c5c3
+ ---> 713083ea7eff
+Step 26/26 : CMD ["python", "-m", "ai_pdf_worker.main"]
+ ---> Running in 278917232f44
+ ---> Removed intermediate container 278917232f44
+ ---> 01fa038bbd61
+Successfully built 01fa038bbd61
+Successfully tagged ai-pdf-workspace-worker:r800-20260810t123500z-862548
+Sending build context to Docker daemon  39.12MB
+Step 1/14 : FROM python:3.12-slim@sha256:c3d81d25b3154142b0b42eb1e61300024426268edeb5b5a26dd7ddf64d9daf28 AS python-base
+ ---> 25c5b8011a34
+Step 2/14 : ENV PYTHONUNBUFFERED=1     PYTHONDONTWRITEBYTECODE=1
+ ---> Using cache
+ ---> b562b3ee3d08
+Step 3/14 : RUN groupadd --system --gid 10001 app     && useradd --system --uid 10001 --gid app --home-dir /app app
+ ---> Using cache
+ ---> ccb2693c4666
+Step 4/14 : WORKDIR /app
+ ---> Using cache
+ ---> 82f8289b3b6c
+Step 5/14 : FROM python-base AS api
+ ---> 82f8289b3b6c
+Step 6/14 : COPY apps/api/requirements.deploy.txt /app/apps/api/requirements.deploy.txt
+ ---> Using cache
+ ---> c30635b1831b
+Step 7/14 : RUN pip install --no-cache-dir --require-hashes -r /app/apps/api/requirements.deploy.txt
+ ---> Using cache
+ ---> c89a25bb624e
+Step 8/14 : COPY apps/api /app/apps/api
+ ---> Using cache
+ ---> 29ab6048ec6b
+Step 9/14 : RUN chown -R app:app /app
+ ---> Using cache
+ ---> 5916bfe0058a
+Step 10/14 : USER app
+ ---> Using cache
+ ---> a70ccb969c23
+Step 11/14 : WORKDIR /app/apps/api
+ ---> Using cache
+ ---> fcd3db3f9a44
+Step 12/14 : ENV PYTHONPATH=/app/apps/api/src
+ ---> Using cache
+ ---> 2ca02128bad1
+Step 13/14 : EXPOSE 8000
+ ---> Using cache
+ ---> 7c1aa112df63
+Step 14/14 : CMD ["uvicorn", "ai_pdf_api.main:app", "--host", "0.0.0.0", "--port", "8000"]
+ ---> Using cache
+ ---> e245cc80af0e
+Successfully built e245cc80af0e
+Successfully tagged ai-pdf-workspace-api:r800-20260810t123500z-862548
+Sending build context to Docker daemon  39.12MB
+Step 1/20 : FROM public.ecr.aws/docker/library/node:22-bookworm-slim@sha256:f86be15afa9a8277608e141ce2a8aa55d3d9c40845921b8511f4fb7897be2554 AS build
+ ---> ccc5ff136faf
+Step 2/20 : ENV PNPM_HOME=/pnpm
+ ---> Using cache
+ ---> 2f4fee1934fb
+Step 3/20 : ENV PATH="$PNPM_HOME:$PATH"
+ ---> Using cache
+ ---> e132384408c6
+Step 4/20 : RUN corepack enable && corepack prepare pnpm@10.33.4 --activate
+ ---> Using cache
+ ---> fb49e247f8cf
+Step 5/20 : WORKDIR /app
+ ---> Using cache
+ ---> e62e04ef3479
+Step 6/20 : COPY package.json pnpm-lock.yaml pnpm-workspace.yaml /app/
+ ---> Using cache
+ ---> 782ddaaf2b4f
+Step 7/20 : COPY apps/web/package.json /app/apps/web/package.json
+ ---> Using cache
+ ---> e57766f9b091
+Step 8/20 : RUN pnpm install --frozen-lockfile
+ ---> Using cache
+ ---> 94ffda7c5fea
+Step 9/20 : COPY apps/web /app/apps/web
+ ---> Using cache
+ ---> e6178e75fa74
+Step 10/20 : RUN pnpm --dir apps/web build
+ ---> Using cache
+ ---> f44d296137f4
+Step 11/20 : FROM public.ecr.aws/docker/library/node:22-bookworm-slim@sha256:f86be15afa9a8277608e141ce2a8aa55d3d9c40845921b8511f4fb7897be2554 AS runtime
+ ---> ccc5ff136faf
+Step 12/20 : ENV NODE_ENV=production     HOSTNAME=0.0.0.0     PORT=3000
+ ---> Using cache
+ ---> ba8a0f84e1d0
+Step 13/20 : RUN groupadd --system --gid 10001 app     && useradd --system --uid 10001 --gid app --home-dir /app app
+ ---> Using cache
+ ---> 4bd067418cea
+Step 14/20 : WORKDIR /app
+ ---> Using cache
+ ---> f0956ec43099
+Step 15/20 : COPY --from=build --chown=app:app /app/apps/web/.next/standalone ./
+ ---> Using cache
+ ---> 271a2badc679
+Step 16/20 : COPY --from=build --chown=app:app /app/apps/web/.next/static ./apps/web/.next/static
+ ---> Using cache
+ ---> 12cbc1abd5ce
+Step 17/20 : COPY --from=build --chown=app:app /app/apps/web/public ./apps/web/public
+ ---> Using cache
+ ---> e23de1638d7c
+Step 18/20 : USER app
+ ---> Using cache
+ ---> 4ef321f312f6
+Step 19/20 : EXPOSE 3000
+ ---> Using cache
+ ---> aa41f55449c7
+Step 20/20 : CMD ["node", "apps/web/server.js"]
+ ---> Using cache
+ ---> 315dbcdb9a1d
+Successfully built 315dbcdb9a1d
+Successfully tagged ai-pdf-workspace-web:r800-20260810t123500z-862548

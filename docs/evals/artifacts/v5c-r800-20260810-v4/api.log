@@ -1,0 +1,23 @@
+Attaching to citeframe-r800-v5c-20260810-v4_api_1
+api_1            | INFO:     Started server process [1]
+api_1            | INFO:     Waiting for application startup.
+api_1            | INFO:     Application startup complete.
+api_1            | INFO:     Uvicorn running on http://0.0.0.0:8000 (Press CTRL+C to quit)
+api_1            | INFO:     127.0.0.1:48116 - "GET /health/ready HTTP/1.1" 200 OK
+api_1            | INFO:     127.0.0.1:40058 - "GET /health/ready HTTP/1.1" 200 OK
+api_1            | INFO:     127.0.0.1:43236 - "GET /health/ready HTTP/1.1" 200 OK
+api_1            | INFO:     127.0.0.1:39522 - "GET /health/ready HTTP/1.1" 200 OK
+api_1            | INFO:     127.0.0.1:39538 - "GET /health/ready HTTP/1.1" 200 OK
+api_1            | INFO:     172.24.0.9:51866 - "POST /v1/workspaces/f54c7366-4a49-5eda-8373-dcd80bd5df6d/research-runs HTTP/1.1" 201 Created
+api_1            | INFO:     172.24.0.9:51866 - "GET /v1/workspaces/f54c7366-4a49-5eda-8373-dcd80bd5df6d/research-runs/a47c762c-d37d-418a-a431-701be0a05456 HTTP/1.1" 200 OK
+api_1            | INFO:     172.24.0.9:51866 - "GET /v1/workspaces/f54c7366-4a49-5eda-8373-dcd80bd5df6d/research-runs/a47c762c-d37d-418a-a431-701be0a05456 HTTP/1.1" 200 OK
+api_1            | INFO:     172.24.0.9:51866 - "GET /v1/workspaces/f54c7366-4a49-5eda-8373-dcd80bd5df6d/research-runs/a47c762c-d37d-418a-a431-701be0a05456/artifacts HTTP/1.1" 200 OK
+api_1            | INFO:     172.24.0.9:51866 - "GET /v1/workspaces/f54c7366-4a49-5eda-8373-dcd80bd5df6d/research-runs/a47c762c-d37d-418a-a431-701be0a05456/events HTTP/1.1" 200 OK
+api_1            | INFO:     172.24.0.9:51866 - "GET /v1/workspaces/f54c7366-4a49-5eda-8373-dcd80bd5df6d/research-runs/a47c762c-d37d-418a-a431-701be0a05456/events HTTP/1.1" 200 OK
+api_1            | INFO:     172.24.0.9:51866 - "POST /v1/workspaces/f54c7366-4a49-5eda-8373-dcd80bd5df6d/research-runs HTTP/1.1" 201 Created
+api_1            | INFO:     172.24.0.9:51866 - "GET /v1/workspaces/f54c7366-4a49-5eda-8373-dcd80bd5df6d/research-runs/300beebf-7770-44da-b1b1-e8f99e6f057c HTTP/1.1" 200 OK
+api_1            | INFO:     172.24.0.9:51866 - "GET /v1/workspaces/f54c7366-4a49-5eda-8373-dcd80bd5df6d/research-runs/300beebf-7770-44da-b1b1-e8f99e6f057c HTTP/1.1" 200 OK
+api_1            | INFO:     172.24.0.9:51866 - "POST /v1/workspaces/f54c7366-4a49-5eda-8373-dcd80bd5df6d/research-runs HTTP/1.1" 201 Created
+api_1            | INFO:     172.24.0.9:51866 - "POST /v1/workspaces/f54c7366-4a49-5eda-8373-dcd80bd5df6d/research-runs/aaf8190b-53f4-4b6b-8edc-4dd812820207/cancel HTTP/1.1" 202 Accepted
+api_1            | INFO:     172.24.0.9:51866 - "POST /v1/workspaces/f54c7366-4a49-5eda-8373-dcd80bd5df6d/research-runs HTTP/1.1" 201 Created
+api_1            | INFO:     172.24.0.9:51866 - "GET /v1/workspaces/f54c7366-4a49-5eda-8373-dcd80bd5df6d/research-runs/5da22374-a0b8-4ec3-a77b-8af95ba69129 HTTP/1.1" 200 OK

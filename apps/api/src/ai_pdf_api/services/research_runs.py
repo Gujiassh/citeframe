@@ -28,6 +28,7 @@ from ai_pdf_api.services.research_constants import (
     RETRY_POLICY_VERSION,
     TERMINAL_RUN_STATUSES,
 )
+from ai_pdf_api.services.research_agent_io_registry import require_current_production_registry, registry_snapshot_fields
 from ai_pdf_api.services.research_events import append_research_event
 from ai_pdf_api.services.research_idempotency import (
     ResearchError,
@@ -145,14 +146,13 @@ def build_plan_snapshot_hash_payload(
                 "maxProviderCalls": revision.planning_max_provider_calls,
                 "maxInputTokens": revision.planning_max_input_tokens,
                 "maxOutputTokens": revision.planning_max_output_tokens,
-                "maxCost": {
-                    "currency": revision.planning_cost_currency,
-                    "amountMicros": revision.planning_max_cost_microunits,
-                },
                 "plannerTimeoutSeconds": revision.planning_max_step_timeout_seconds,
                 "providerTimeoutSeconds": revision.planning_max_provider_timeout_seconds,
                 "maxPlannerAttempts": revision.planning_max_step_attempts,
             },
+            "agentResultSchemaVersion": getattr(revision, "agent_result_schema_version", None),
+            "contextPolicyVersion": getattr(revision, "context_policy_version", None),
+            "compactPolicyVersion": getattr(revision, "compact_policy_version", None),
         },
         "proposedResearchExecution": {
             "workflowVersionId": revision.proposed_workflow_version_id,
@@ -165,16 +165,15 @@ def build_plan_snapshot_hash_payload(
                 "maxToolCalls": revision.proposed_max_tool_calls,
                 "maxInputTokens": revision.proposed_max_input_tokens,
                 "maxOutputTokens": revision.proposed_max_output_tokens,
-                "maxCost": {
-                    "currency": revision.proposed_cost_currency,
-                    "amountMicros": revision.proposed_max_cost_microunits,
-                },
                 "maxParallelResearchers": revision.proposed_max_parallel_researchers,
                 "runTimeoutSeconds": revision.proposed_max_run_timeout_seconds,
                 "stepTimeoutSeconds": revision.proposed_max_step_timeout_seconds,
                 "providerTimeoutSeconds": revision.proposed_max_provider_timeout_seconds,
                 "maxAttemptsPerStep": revision.proposed_max_step_attempts,
             },
+            "agentResultSchemaVersion": getattr(revision, "agent_result_schema_version", None),
+            "contextPolicyVersion": getattr(revision, "context_policy_version", None),
+            "compactPolicyVersion": getattr(revision, "compact_policy_version", None),
         },
     }
 
@@ -266,6 +265,9 @@ def _add_revision(
         proposed_max_run_timeout_seconds=1800,
         proposed_max_step_timeout_seconds=300,
         proposed_max_provider_timeout_seconds=120,
+        agent_result_schema_version=registry_snapshot_fields(require_current_production_registry())["agentResultSchemaVersion"],
+        context_policy_version=registry_snapshot_fields(require_current_production_registry())["contextPolicyVersion"],
+        compact_policy_version=registry_snapshot_fields(require_current_production_registry())["compactPolicyVersion"],
         planning_snapshot_sha256="0" * 64,
         created_at=now,
     )

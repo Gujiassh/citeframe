@@ -1,0 +1,800 @@
+
+> @citeframe/web@0.1.0 test /home/cc/code/citeframe/apps/web
+> tsx --test "src/**/*.test.ts"
+
+TAP version 13
+# Subtest: failed assistant messages render as a failure state instead of a normal answer
+ok 1 - failed assistant messages render as a failure state instead of a normal answer
+  ---
+  duration_ms: 4.943333
+  type: 'test'
+  ...
+# Subtest: user messages expose frozen input Evidence as a Viewer target
+ok 2 - user messages expose frozen input Evidence as a Viewer target
+  ---
+  duration_ms: 1.066906
+  type: 'test'
+  ...
+# Subtest: accepted region questions show locked input Evidence before stream hydration
+ok 3 - accepted region questions show locked input Evidence before stream hydration
+  ---
+  duration_ms: 0.647015
+  type: 'test'
+  ...
+# Subtest: assistant markdown renders common structure and GFM content
+ok 4 - assistant markdown renders common structure and GFM content
+  ---
+  duration_ms: 14.2712
+  type: 'test'
+  ...
+# Subtest: soft line breaks render as explicit breaks for question options
+ok 5 - soft line breaks render as explicit breaks for question options
+  ---
+  duration_ms: 2.20112
+  type: 'test'
+  ...
+# Subtest: only known plain-text references become citation buttons
+ok 6 - only known plain-text references become citation buttons
+  ---
+  duration_ms: 4.3156
+  type: 'test'
+  ...
+# Subtest: external markdown links are restricted to http and https
+ok 7 - external markdown links are restricted to http and https
+  ---
+  duration_ms: 1.967675
+  type: 'test'
+  ...
+# Subtest: document viewer executable contracts stay fail-closed and generation-bound
+ok 8 - document viewer executable contracts stay fail-closed and generation-bound
+  ---
+  duration_ms: 21.710153
+  type: 'test'
+  ...
+# Subtest: document block renderer highlights exact non-BMP code-point ranges
+ok 9 - document block renderer highlights exact non-BMP code-point ranges
+  ---
+  duration_ms: 7.083051
+  type: 'test'
+  ...
+# Subtest: document block renderer is a semantic button without first-block fallback data
+ok 10 - document block renderer is a semantic button without first-block fallback data
+  ---
+  duration_ms: 0.359527
+  type: 'test'
+  ...
+# Subtest: document heading renderer uses headingLevel instead of headingPath length
+ok 11 - document heading renderer uses headingLevel instead of headingPath length
+  ---
+  duration_ms: 0.449192
+  type: 'test'
+  ...
+# Subtest: image region actions preserve selection on failure and expose bounded feedback
+ok 12 - image region actions preserve selection on failure and expose bounded feedback
+  ---
+  duration_ms: 0.463745
+  type: 'test'
+  ...
+# Subtest: image evidence snapshot requires canonical oriented geometry and frozen generation
+ok 13 - image evidence snapshot requires canonical oriented geometry and frozen generation
+  ---
+  duration_ms: 0.546682
+  type: 'test'
+  ...
+# Subtest: oriented image URL contains the Evidence representation and frozen generation
+ok 14 - oriented image URL contains the Evidence representation and frozen generation
+  ---
+  duration_ms: 0.33248
+  type: 'test'
+  ...
+# Subtest: current oriented image URL contains only the server-selected Asset generation
+ok 15 - current oriented image URL contains only the server-selected Asset generation
+  ---
+  duration_ms: 0.150736
+  type: 'test'
+  ...
+# Subtest: current viewer source trusts refreshed detail generation instead of a stale list snapshot
+ok 16 - current viewer source trusts refreshed detail generation instead of a stale list snapshot
+  ---
+  duration_ms: 0.235221
+  type: 'test'
+  ...
+# Subtest: frozen viewer source never falls back to current geometry
+ok 17 - frozen viewer source never falls back to current geometry
+  ---
+  duration_ms: 0.389643
+  type: 'test'
+  ...
+# Subtest: image geometry rejects display bytes with dimensions outside the frozen locator
+ok 18 - image geometry rejects display bytes with dimensions outside the frozen locator
+  ---
+  duration_ms: 0.111601
+  type: 'test'
+  ...
+# Subtest: image selection normalizes reverse drags and rejects accidental clicks
+ok 19 - image selection normalizes reverse drags and rejects accidental clicks
+  ---
+  duration_ms: 0.18945
+  type: 'test'
+  ...
+# Subtest: touch zoom and keyboard cursor movement stay within viewer bounds
+ok 20 - touch zoom and keyboard cursor movement stay within viewer bounds
+  ---
+  duration_ms: 0.102079
+  type: 'test'
+  ...
+# Subtest: image viewer retry refetches current detail and mobile controls expose 44px targets
+ok 21 - image viewer retry refetches current detail and mobile controls expose 44px targets
+  ---
+  duration_ms: 0.574067
+  type: 'test'
+  ...
+# Subtest: image viewer wires touch pan, pinch zoom, keyboard pan, and keyboard selection
+ok 22 - image viewer wires touch pan, pinch zoom, keyboard pan, and keyboard selection
+  ---
+  duration_ms: 0.124738
+  type: 'test'
+  ...
+# Subtest: image region actions submit only current generation canonical targets
+ok 23 - image region actions submit only current generation canonical targets
+  ---
+  duration_ms: 0.068151
+  type: 'test'
+  ...
+# Subtest: editing note cards use a stable high-contrast surface without card hover colors
+ok 24 - editing note cards use a stable high-contrast surface without card hover colors
+  ---
+  duration_ms: 0.505417
+  type: 'test'
+  ...
+# Subtest: read-only note cards define hover surfaces for both themes
+ok 25 - read-only note cards define hover surfaces for both themes
+  ---
+  duration_ms: 0.091025
+  type: 'test'
+  ...
+# Subtest: PDF region geometry accepts bounded floating-point drift
+ok 26 - PDF region geometry accepts bounded floating-point drift
+  ---
+  duration_ms: 0.436474
+  type: 'test'
+  ...
+# Subtest: PDF region geometry rejects rotation and CropBox mismatches
+ok 27 - PDF region geometry rejects rotation and CropBox mismatches
+  ---
+  duration_ms: 0.080791
+  type: 'test'
+  ...
+# Subtest: PDF region selection normalizes and clamps pointer coordinates
+ok 28 - PDF region selection normalizes and clamps pointer coordinates
+  ---
+  duration_ms: 0.441956
+  type: 'test'
+  ...
+# Subtest: PDF region selection supports reverse drag and rejects accidental clicks
+ok 29 - PDF region selection supports reverse drag and rejects accidental clicks
+  ---
+  duration_ms: 0.131041
+  type: 'test'
+  ...
+# Subtest: PDF link service navigates named destinations and page actions
+ok 30 - PDF link service navigates named destinations and page actions
+  ---
+  duration_ms: 1.318019
+  type: 'test'
+  ...
+# Subtest: PDF link service ignores invalid pages and malformed destinations
+ok 31 - PDF link service ignores invalid pages and malformed destinations
+  ---
+  duration_ms: 0.151167
+  type: 'test'
+  ...
+# Subtest: PDF link service only permits safe external protocols
+ok 32 - PDF link service only permits safe external protocols
+  ---
+  duration_ms: 0.12145
+  type: 'test'
+  ...
+# Subtest: page input resolves exact pages and clamps out-of-range values
+ok 33 - page input resolves exact pages and clamps out-of-range values
+  ---
+  duration_ms: 0.077797
+  type: 'test'
+  ...
+# Subtest: production upload contract exposes PDF, PNG, JPEG, WebP, and Markdown
+ok 34 - production upload contract exposes PDF, PNG, JPEG, WebP, and Markdown
+  ---
+  duration_ms: 0.930746
+  type: 'test'
+  ...
+# Subtest: production upload descriptor canonicalizes supported filenames and MIME types
+ok 35 - production upload descriptor canonicalizes supported filenames and MIME types
+  ---
+  duration_ms: 0.124309
+  type: 'test'
+  ...
+# Subtest: production upload descriptor rejects unsupported and mismatched declarations
+ok 36 - production upload descriptor rejects unsupported and mismatched declarations
+  ---
+  duration_ms: 0.084294
+  type: 'test'
+  ...
+# Subtest: normalizeAuthUser maps backend user payload to session user
+ok 37 - normalizeAuthUser maps backend user payload to session user
+  ---
+  duration_ms: 0.84875
+  type: 'test'
+  ...
+# Subtest: getAuthErrorMessage prefers nested error message then detail then fallback
+ok 38 - getAuthErrorMessage prefers nested error message then detail then fallback
+  ---
+  duration_ms: 0.124667
+  type: 'test'
+  ...
+# Subtest: chat scroll treats the viewport at or near the bottom as following output
+ok 39 - chat scroll treats the viewport at or near the bottom as following output
+  ---
+  duration_ms: 0.59527
+  type: 'test'
+  ...
+# Subtest: chat scroll stops following after the user moves away from the bottom
+ok 40 - chat scroll stops following after the user moves away from the bottom
+  ---
+  duration_ms: 0.101253
+  type: 'test'
+  ...
+# Subtest: chat DTO mapping preserves the immutable evidence envelope
+ok 41 - chat DTO mapping preserves the immutable evidence envelope
+  ---
+  duration_ms: 0.812522
+  type: 'test'
+  ...
+# Subtest: chat message mapping preserves frozen user input Evidence
+ok 42 - chat message mapping preserves frozen user input Evidence
+  ---
+  duration_ms: 0.172334
+  type: 'test'
+  ...
+# Subtest: chat message and thread DTOs map server summaries to UI state
+ok 43 - chat message and thread DTOs map server summaries to UI state
+  ---
+  duration_ms: 0.105469
+  type: 'test'
+  ...
+# Subtest: thread summary refresh preserves hydrated messages until a fresh payload arrives
+ok 44 - thread summary refresh preserves hydrated messages until a fresh payload arrives
+  ---
+  duration_ms: 0.161781
+  type: 'test'
+  ...
+# Subtest: SSE parser retains incomplete frames across chunks
+ok 45 - SSE parser retains incomplete frames across chunks
+  ---
+  duration_ms: 1.762152
+  type: 'test'
+  ...
+# Subtest: chat stream dispatch ignores unknown events and handles split response chunks
+ok 46 - chat stream dispatch ignores unknown events and handles split response chunks
+  ---
+  duration_ms: 24.096124
+  type: 'test'
+  ...
+# Subtest: SSE parser dispatches provider errors
+ok 47 - SSE parser dispatches provider errors
+  ---
+  duration_ms: 0.238435
+  type: 'test'
+  ...
+# Subtest: chat stream rejects malformed terminal events
+ok 48 - chat stream rejects malformed terminal events
+  ---
+  duration_ms: 0.448732
+  type: 'test'
+  ...
+# Subtest: citation stream rejects an invalid evidence locator instead of filtering it
+ok 49 - citation stream rejects an invalid evidence locator instead of filtering it
+  ---
+  duration_ms: 0.460322
+  type: 'test'
+  ...
+# Subtest: citation stream rejects an incomplete evidence source version envelope
+ok 50 - citation stream rejects an incomplete evidence source version envelope
+  ---
+  duration_ms: 0.753337
+  type: 'test'
+  ...
+# Subtest: citation stream rejects an unsupported evidence locator version
+ok 51 - citation stream rejects an unsupported evidence locator version
+  ---
+  duration_ms: 0.220293
+  type: 'test'
+  ...
+# Subtest: citation stream rejects inconsistent PDF region geometry
+ok 52 - citation stream rejects inconsistent PDF region geometry
+  ---
+  duration_ms: 0.262532
+  type: 'test'
+  ...
+# Subtest: citation stream rejects unsupported evidence coordinate spaces
+ok 53 - citation stream rejects unsupported evidence coordinate spaces
+  ---
+  duration_ms: 0.49566
+  type: 'test'
+  ...
+# Subtest: citation stream rejects image evidence outside canonical geometry
+ok 54 - citation stream rejects image evidence outside canonical geometry
+  ---
+  duration_ms: 0.644449
+  type: 'test'
+  ...
+# Subtest: citation stream rejects a malformed citations event
+ok 55 - citation stream rejects a malformed citations event
+  ---
+  duration_ms: 0.187409
+  type: 'test'
+  ...
+# Subtest: chat stream surfaces a transport interruption after partial output
+ok 56 - chat stream surfaces a transport interruption after partial output
+  ---
+  duration_ms: 0.17362
+  type: 'test'
+  ...
+# Subtest: citation stream accepts document_anchor evidence locators
+ok 57 - citation stream accepts document_anchor evidence locators
+  ---
+  duration_ms: 0.21648
+  type: 'test'
+  ...
+# Subtest: Evaluation selection uses explicit timestamps and pairing keys
+ok 58 - Evaluation selection uses explicit timestamps and pairing keys
+  ---
+  duration_ms: 4.747716
+  type: 'test'
+  ...
+# Subtest: Evaluation ratios preserve not-evaluable instead of coercing it to zero
+ok 59 - Evaluation ratios preserve not-evaluable instead of coercing it to zero
+  ---
+  duration_ms: 0.110972
+  type: 'test'
+  ...
+# Subtest: document content BFF helper preserves auth session gate and upstream URL contract
+ok 60 - document content BFF helper preserves auth session gate and upstream URL contract
+  ---
+  duration_ms: 3265.958032
+  type: 'test'
+  ...
+# Subtest: document DTO parsers accept canonical document detail and normalized content
+ok 61 - document DTO parsers accept canonical document detail and normalized content
+  ---
+  duration_ms: 46.949986
+  type: 'test'
+  ...
+# Subtest: document DTO parser requires headingLevel 1..6 for headings and null otherwise
+ok 62 - document DTO parser requires headingLevel 1..6 for headings and null otherwise
+  ---
+  duration_ms: 1.558711
+  type: 'test'
+  ...
+# Subtest: document DTO parsers reject unknown versions and missing representation identity
+ok 63 - document DTO parsers reject unknown versions and missing representation identity
+  ---
+  duration_ms: 0.157968
+  type: 'test'
+  ...
+# Subtest: cryptographic integrity rejects fake mutually consistent hashes
+ok 64 - cryptographic integrity rejects fake mutually consistent hashes
+  ---
+  duration_ms: 1.773013
+  type: 'test'
+  ...
+# Subtest: ownership binding rejects content that does not match asset/representation/generation
+ok 65 - ownership binding rejects content that does not match asset/representation/generation
+  ---
+  duration_ms: 0.616129
+  type: 'test'
+  ...
+# Subtest: code-point slicing handles non-BMP emoji without UTF-16 index corruption
+ok 66 - code-point slicing handles non-BMP emoji without UTF-16 index corruption
+  ---
+  duration_ms: 1.353668
+  type: 'test'
+  ...
+# Subtest: document highlight jumps to exact verified range and never falls back to first block
+ok 67 - document highlight jumps to exact verified range and never falls back to first block
+  ---
+  duration_ms: 1.823079
+  type: 'test'
+  ...
+# Subtest: current browsing binds generation and rejects stale responses
+ok 68 - current browsing binds generation and rejects stale responses
+  ---
+  duration_ms: 17.061614
+  type: 'test'
+  ...
+# Subtest: frozen browsing uses only frozen representation snapshot
+ok 69 - frozen browsing uses only frozen representation snapshot
+  ---
+  duration_ms: 1.279216
+  type: 'test'
+  ...
+# Subtest: document content BFF path encodes workspace, asset, and representation ids
+ok 70 - document content BFF path encodes workspace, asset, and representation ids
+  ---
+  duration_ms: 0.383061
+  type: 'test'
+  ...
+# Subtest: image stream BFF keeps current and frozen upstream contracts separate
+ok 71 - image stream BFF keeps current and frozen upstream contracts separate
+  ---
+  duration_ms: 0.91274
+  type: 'test'
+  ...
+# Subtest: image stream BFF preserves drift errors and safe image headers
+ok 72 - image stream BFF preserves drift errors and safe image headers
+  ---
+  duration_ms: 15.657183
+  type: 'test'
+  ...
+# Subtest: test-only modality registers without changing the evidence shell contract
+ok 73 - test-only modality registers without changing the evidence shell contract
+  ---
+  duration_ms: 0.43026
+  type: 'test'
+  ...
+# Subtest: registry rejects unknown asset and cross-modality locator dispatch
+ok 74 - registry rejects unknown asset and cross-modality locator dispatch
+  ---
+  duration_ms: 0.287601
+  type: 'test'
+  ...
+# Subtest: production registry registers exact document modality without changing PDF/Image owners
+ok 75 - production registry registers exact document modality without changing PDF/Image owners
+  ---
+  duration_ms: 0.429672
+  type: 'test'
+  ...
+# Subtest: maps persisted note source snapshots and tag ids to the UI shape
+ok 76 - maps persisted note source snapshots and tag ids to the UI shape
+  ---
+  duration_ms: 0.747685
+  type: 'test'
+  ...
+# Subtest: applies asset tag bindings from the server snapshot
+ok 77 - applies asset tag bindings from the server snapshot
+  ---
+  duration_ms: 0.111511
+  type: 'test'
+  ...
+# Subtest: Research Artifact accepts a canonical existing Evidence locator
+ok 78 - Research Artifact accepts a canonical existing Evidence locator
+  ---
+  duration_ms: 11.97493
+  type: 'test'
+  ...
+# Subtest: Research Artifact rejects unknown candidate locator kinds before opening the Viewer
+ok 79 - Research Artifact rejects unknown candidate locator kinds before opening the Viewer
+  ---
+  duration_ms: 0.479842
+  type: 'test'
+  ...
+# Subtest: Quick questions still require a chat thread
+ok 80 - Quick questions still require a chat thread
+  ---
+  duration_ms: 0.529999
+  type: 'test'
+  ...
+# Subtest: Research questions do not require a chat thread
+ok 81 - Research questions do not require a chat thread
+  ---
+  duration_ms: 0.076952
+  type: 'test'
+  ...
+# Subtest: Neither mode submits without ready assets or a question
+ok 82 - Neither mode submits without ready assets or a question
+  ---
+  duration_ms: 0.060369
+  type: 'test'
+  ...
+# Subtest: Research history chooses the latest run by createdAt and id, not response order
+ok 83 - Research history chooses the latest run by createdAt and id, not response order
+  ---
+  duration_ms: 5.636294
+  type: 'test'
+  ...
+# Subtest: Only the Research run creator can manage creator-only actions
+ok 84 - Only the Research run creator can manage creator-only actions
+  ---
+  duration_ms: 0.119526
+  type: 'test'
+  ...
+# Subtest: Approved execution snapshot wins over a complete proposed revision
+ok 85 - Approved execution snapshot wins over a complete proposed revision
+  ---
+  duration_ms: 0.193598
+  type: 'test'
+  ...
+# Subtest: A proposed plan uses its frozen proposed research execution snapshot
+ok 86 - A proposed plan uses its frozen proposed research execution snapshot
+  ---
+  duration_ms: 0.12829
+  type: 'test'
+  ...
+# Subtest: An incomplete execution snapshot never falls through to a proposed revision
+ok 87 - An incomplete execution snapshot never falls through to a proposed revision
+  ---
+  duration_ms: 0.083705
+  type: 'test'
+  ...
+# Subtest: An incomplete proposed revision snapshot is unavailable
+ok 88 - An incomplete proposed revision snapshot is unavailable
+  ---
+  duration_ms: 0.222034
+  type: 'test'
+  ...
+# Subtest: Approved or legacy runs without execution snapshots stay unavailable
+ok 89 - Approved or legacy runs without execution snapshots stay unavailable
+  ---
+  duration_ms: 0.25064
+  type: 'test'
+  ...
+# Subtest: Research SSE forwards only stream cursor headers
+ok 90 - Research SSE forwards only stream cursor headers
+  ---
+  duration_ms: 1.282157
+  type: 'test'
+  ...
+# Subtest: Research mutations forward JSON and idempotency headers without browser auth or cursor headers
+ok 91 - Research mutations forward JSON and idempotency headers without browser auth or cursor headers
+  ---
+  duration_ms: 0.130881
+  type: 'test'
+  ...
+# Subtest: Research artifact content preserves immutable response metadata
+ok 92 - Research artifact content preserves immutable response metadata
+  ---
+  duration_ms: 0.088148
+  type: 'test'
+  ...
+# Subtest: Research SSE exposes the exact 15-event allowlist
+ok 93 - Research SSE exposes the exact 15-event allowlist
+  ---
+  duration_ms: 0.561407
+  type: 'test'
+  ...
+# Subtest: Research SSE retains partial frames and validates decimal seq ids
+ok 94 - Research SSE retains partial frames and validates decimal seq ids
+  ---
+  duration_ms: 0.436998
+  type: 'test'
+  ...
+# Subtest: Research SSE rejects the obsolete compound cursor shape
+ok 95 - Research SSE rejects the obsolete compound cursor shape
+  ---
+  duration_ms: 0.25973
+  type: 'test'
+  ...
+# Subtest: Research SSE rejects an obsolete event envelope field
+ok 96 - Research SSE rejects an obsolete event envelope field
+  ---
+  duration_ms: 0.100922
+  type: 'test'
+  ...
+# Subtest: Research stream rejects sequence gaps
+ok 97 - Research stream rejects sequence gaps
+  ---
+  duration_ms: 10.52126
+  type: 'test'
+  ...
+# Subtest: Research SSE rejects unknown events
+ok 98 - Research SSE rejects unknown events
+  ---
+  duration_ms: 0.220526
+  type: 'test'
+  ...
+# Subtest: Research SSE rejects extra envelope and event data fields
+ok 99 - Research SSE rejects extra envelope and event data fields
+  ---
+  duration_ms: 0.311486
+  type: 'test'
+  ...
+# Subtest: Research stream rejects an event from another run
+ok 100 - Research stream rejects an event from another run
+  ---
+  duration_ms: 0.327992
+  type: 'test'
+  ...
+# Subtest: Research stream loop reconnects from the last continuous seq and ignores duplicate delivery
+ok 101 - Research stream loop reconnects from the last continuous seq and ignores duplicate delivery
+  ---
+  duration_ms: 6.972936
+  type: 'test'
+  ...
+# Subtest: Research stream loop resumes future events from a current snapshot on 410
+ok 102 - Research stream loop resumes future events from a current snapshot on 410
+  ---
+  duration_ms: 1.918885
+  type: 'test'
+  ...
+# Subtest: Research stream loop rereads the run and replaces a cursor rejected with 409
+ok 103 - Research stream loop rereads the run and replaces a cursor rejected with 409
+  ---
+  duration_ms: 1.782253
+  type: 'test'
+  ...
+# Subtest: resolveTheme accepts only persisted light and dark values
+ok 104 - resolveTheme accepts only persisted light and dark values
+  ---
+  duration_ms: 0.521197
+  type: 'test'
+  ...
+# Subtest: getInitialTheme restores a valid persisted theme
+ok 105 - getInitialTheme restores a valid persisted theme
+  ---
+  duration_ms: 0.126873
+  type: 'test'
+  ...
+# Subtest: getInitialTheme falls back to dark for invalid or unavailable storage
+ok 106 - getInitialTheme falls back to dark for invalid or unavailable storage
+  ---
+  duration_ms: 0.113838
+  type: 'test'
+  ...
+# Subtest: syncTheme updates the document root class and persists both themes
+ok 107 - syncTheme updates the document root class and persists both themes
+  ---
+  duration_ms: 0.638695
+  type: 'test'
+  ...
+# Subtest: theme helpers are safe without browser globals
+ok 108 - theme helpers are safe without browser globals
+  ---
+  duration_ms: 0.162707
+  type: 'test'
+  ...
+# Subtest: asset status mapping keeps progress semantics stable
+ok 109 - asset status mapping keeps progress semantics stable
+  ---
+  duration_ms: 0.424421
+  type: 'test'
+  ...
+# Subtest: asset hydrate replacement changes only the requested workspace
+ok 110 - asset hydrate replacement changes only the requested workspace
+  ---
+  duration_ms: 0.701045
+  type: 'test'
+  ...
+# Subtest: asset polling reuses unchanged snapshots and array references
+ok 111 - asset polling reuses unchanged snapshots and array references
+  ---
+  duration_ms: 0.190884
+  type: 'test'
+  ...
+# Subtest: chat hydration keeps the active thread when it remains in the workspace
+ok 112 - chat hydration keeps the active thread when it remains in the workspace
+  ---
+  duration_ms: 0.529821
+  type: 'test'
+  ...
+# Subtest: chat asset scope is explicit and preserves selected asset order
+ok 113 - chat asset scope is explicit and preserves selected asset order
+  ---
+  duration_ms: 0.489336
+  type: 'test'
+  ...
+# Subtest: mixed PDF+Image+Markdown selected scope stays exact without dedupe reordering
+ok 114 - mixed PDF+Image+Markdown selected scope stays exact without dedupe reordering
+  ---
+  duration_ms: 0.178601
+  type: 'test'
+  ...
+# Subtest: chat parent selection preserves branch editing semantics
+ok 115 - chat parent selection preserves branch editing semantics
+  ---
+  duration_ms: 0.09638
+  type: 'test'
+  ...
+# Subtest: replacing hydrated chat threads preserves sibling messages and workspace isolation
+ok 116 - replacing hydrated chat threads preserves sibling messages and workspace isolation
+  ---
+  duration_ms: 0.139635
+  type: 'test'
+  ...
+# Subtest: accepted chat fallback preserves the user and locked Evidence when stream recovery fails
+ok 117 - accepted chat fallback preserves the user and locked Evidence when stream recovery fails
+  ---
+  duration_ms: 0.270574
+  type: 'test'
+  ...
+# Subtest: rejected chat fallback removes the unpersisted optimistic user
+ok 118 - rejected chat fallback removes the unpersisted optimistic user
+  ---
+  duration_ms: 0.108439
+  type: 'test'
+  ...
+# Subtest: tag toggles add and remove one binding without duplicates
+ok 119 - tag toggles add and remove one binding without duplicates
+  ---
+  duration_ms: 0.754037
+  type: 'test'
+  ...
+# Subtest: workspace deletion chooses the first remaining workspace only when deleting the active one
+ok 120 - workspace deletion chooses the first remaining workspace only when deleting the active one
+  ---
+  duration_ms: 0.395758
+  type: 'test'
+  ...
+# Subtest: workspace selection does not reset view state when selecting the current workspace again
+ok 121 - workspace selection does not reset view state when selecting the current workspace again
+  ---
+  duration_ms: 0.07791
+  type: 'test'
+  ...
+# Subtest: workspace view state opens the first viewable asset only
+ok 122 - workspace view state opens the first viewable asset only
+  ---
+  duration_ms: 0.808588
+  type: 'test'
+  ...
+# Subtest: chat parent resolution uses the edited question parent
+ok 123 - chat parent resolution uses the edited question parent
+  ---
+  duration_ms: 0.158602
+  type: 'test'
+  ...
+# Subtest: tag relation helpers preserve workspace isolation
+ok 124 - tag relation helpers preserve workspace isolation
+  ---
+  duration_ms: 0.173296
+  type: 'test'
+  ...
+# Subtest: view-state preselects the first asset without opening the evidence panel
+ok 125 - view-state preselects the first asset without opening the evidence panel
+  ---
+  duration_ms: 0.705806
+  type: 'test'
+  ...
+# Subtest: view-state clears asset selection when a workspace has no viewable assets
+ok 126 - view-state clears asset selection when a workspace has no viewable assets
+  ---
+  duration_ms: 0.077736
+  type: 'test'
+  ...
+# Subtest: evidence panel resizing preserves both evidence and chat minimum widths
+ok 127 - evidence panel resizing preserves both evidence and chat minimum widths
+  ---
+  duration_ms: 0.082611
+  type: 'test'
+  ...
+# Subtest: normalizeWorkspaceSummary adds default localized prompt
+ok 128 - normalizeWorkspaceSummary adds default localized prompt
+  ---
+  duration_ms: 0.4142
+  type: 'test'
+  ...
+# Subtest: normalizeWorkspaceSummary keeps the persisted prompt
+ok 129 - normalizeWorkspaceSummary keeps the persisted prompt
+  ---
+  duration_ms: 0.102447
+  type: 'test'
+  ...
+# Subtest: pickAccessibleWorkspaceId keeps current selection when still accessible
+ok 130 - pickAccessibleWorkspaceId keeps current selection when still accessible
+  ---
+  duration_ms: 0.076212
+  type: 'test'
+  ...
+# Subtest: pickAccessibleWorkspaceId falls back to first accessible workspace
+ok 131 - pickAccessibleWorkspaceId falls back to first accessible workspace
+  ---
+  duration_ms: 0.046598
+  type: 'test'
+  ...
+1..131
+# tests 131
+# suites 0
+# pass 131
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 6275.631348

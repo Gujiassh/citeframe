@@ -577,28 +577,46 @@ def test_provider_reservation_cancel_and_expired_lease_reclaim(research_worker_d
     ) is not None
 
 
-def test_provider_reservation_fails_closed_without_frozen_pricing(research_worker_db) -> None:
+def test_provider_reservation_allows_unknown_pricing_and_records_null_cost(research_worker_db) -> None:
     fixture = research_worker_db
     fixture.snapshot.pricing_version = "unknown-pricing-version"
     fixture.db.commit()
     lease = lease_default_step(fixture)
 
-    with pytest.raises(ResearchError) as pricing_error:
-        reserve_provider_call(
-            fixture.db,
-            attempt_id=lease.attempt_id,
-            logical_call_key="missing-pricing",
-            request_sha256=sha256("missing-pricing"),
-            provider=fixture.snapshot.generation_provider,
-            model=fixture.snapshot.generation_model,
-            provider_config_fingerprint=fixture.snapshot.provider_config_fingerprint,
-            reserved_input_tokens=10,
-            reserved_output_tokens=10,
-            now=fixture.now + timedelta(seconds=1),
-        )
-    assert_research_error(pricing_error, "research_pricing_unavailable", 503)
-    fixture.db.rollback()
-    assert fixture.db.scalar(select(ResearchProviderCall)) is None
+    reservation = reserve_provider_call(
+        fixture.db,
+        attempt_id=lease.attempt_id,
+        logical_call_key="missing-pricing",
+        request_sha256=sha256("missing-pricing"),
+        provider=fixture.snapshot.generation_provider,
+        model=fixture.snapshot.generation_model,
+        provider_config_fingerprint=fixture.snapshot.provider_config_fingerprint,
+        reserved_input_tokens=10,
+        reserved_output_tokens=10,
+        now=fixture.now + timedelta(seconds=1),
+    )
+    call = fixture.db.get(ResearchProviderCall, reservation.provider_call_id)
+    assert call is not None
+    assert call.reserved_cost_microunits is None
+    fixture.db.refresh(fixture.ledger)
+    assert fixture.ledger.reserved_cost_microunits is None
+    mark_provider_call_sent(fixture.db, reservation.provider_call_id, now=fixture.now + timedelta(seconds=2))
+    reconcile_provider_call(
+        fixture.db,
+        provider_call_id=reservation.provider_call_id,
+        status="succeeded",
+        actual_input_tokens=10,
+        actual_output_tokens=10,
+        usage_source="actual",
+        usage_final=True,
+        now=fixture.now + timedelta(seconds=3),
+    )
+    fixture.db.refresh(call)
+    assert call.actual_cost_microunits is None
+    fixture.db.refresh(fixture.ledger)
+    attempt = fixture.db.get(ResearchStepAttempt, lease.attempt_id)
+    assert fixture.ledger.actual_cost_microunits is None
+    assert attempt is not None and attempt.cost_microunits is None
 
 
 def test_creator_membership_loss_cancels_idle_run_and_blocks_active_attempt(research_worker_db) -> None:
@@ -887,3 +905,51 @@ def test_embedding_index_mismatch_is_non_retryable_failure_code() -> None:
     assert is_transient_failure(reason) is False
     # Generic unmapped codes remain non-retryable execution failures.
     assert is_transient_failure(normalize_failure_code("some_unknown_code")) is False
+
+
+def test_cumulative_token_usage_is_not_a_reservation_gate(research_worker_db) -> None:
+    fixture = research_worker_db
+    # Raise call limit so only token/cost cumulative gates could have blocked previously.
+    fixture.snapshot.max_provider_calls = 10
+    fixture.snapshot.max_input_tokens = 100
+    fixture.snapshot.max_output_tokens = 100
+    fixture.db.commit()
+    lease = lease_default_step(fixture)
+
+    first = reserve_provider_call(
+        fixture.db,
+        attempt_id=lease.attempt_id,
+        logical_call_key="token-usage-1",
+        request_sha256=sha256("token-usage-1"),
+        provider=fixture.snapshot.generation_provider,
+        model=fixture.snapshot.generation_model,
+        provider_config_fingerprint=fixture.snapshot.provider_config_fingerprint,
+        reserved_input_tokens=90,
+        reserved_output_tokens=90,
+        now=fixture.now + timedelta(seconds=1),
+    )
+    mark_provider_call_sent(fixture.db, first.provider_call_id, now=fixture.now + timedelta(seconds=2))
+    reconcile_provider_call(
+        fixture.db,
+        provider_call_id=first.provider_call_id,
+        status="succeeded",
+        actual_input_tokens=90,
+        actual_output_tokens=90,
+        usage_source="actual",
+        usage_final=True,
+        now=fixture.now + timedelta(seconds=3),
+    )
+    # Cumulative tokens already equal the frozen max, but a second per-call reserve still succeeds.
+    second = reserve_provider_call(
+        fixture.db,
+        attempt_id=lease.attempt_id,
+        logical_call_key="token-usage-2",
+        request_sha256=sha256("token-usage-2"),
+        provider=fixture.snapshot.generation_provider,
+        model=fixture.snapshot.generation_model,
+        provider_config_fingerprint=fixture.snapshot.provider_config_fingerprint,
+        reserved_input_tokens=90,
+        reserved_output_tokens=90,
+        now=fixture.now + timedelta(seconds=4),
+    )
+    assert second.provider_call_id

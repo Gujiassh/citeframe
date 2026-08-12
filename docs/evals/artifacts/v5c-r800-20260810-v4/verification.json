@@ -1,0 +1,10 @@
+{
+  "passed": true,
+  "schemaVersion": "citeframe-r800-research-verification-v1",
+  "verification": {
+    "afterSemanticSha256": "9053c4e6e28e7bae03b19e9cd8c2ae56d986caca679cff2e058212bd55784450",
+    "beforeSemanticSha256": "9053c4e6e28e7bae03b19e9cd8c2ae56d986caca679cff2e058212bd55784450",
+    "mismatches": [],
+    "passed": true
+  }
+}

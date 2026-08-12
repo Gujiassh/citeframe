@@ -13,11 +13,7 @@ from ai_pdf_api.models import (
     ResearchPlanRevisionAsset,
     ResearchStep,
 )
-from ai_pdf_api.schemas.research import (
-    MoneyMicrounits,
-    ResearchPlanArtifactPayload,
-    ResearchPlanSubproblem,
-)
+from ai_pdf_api.schemas.research import ResearchPlanArtifactPayload, ResearchPlanSubproblem
 from ai_pdf_api.services.research import (
     ResearchError,
     append_research_event,
@@ -41,7 +37,6 @@ def publish_research_plan(
     estimated_provider_calls: int,
     estimated_input_tokens: int | None = None,
     estimated_output_tokens: int | None = None,
-    estimated_cost_microunits: int | None = None,
     store_bytes: Callable[[str, bytes, str], None] = upload_bytes,
     cleanup_bytes: Callable[[str], None] = delete_object_if_exists,
     now: datetime | None = None,
@@ -78,11 +73,6 @@ def publish_research_plan(
     ]
     if any(not set(item.asset_ids).issubset(frozen_asset_ids) for item in plan_subproblems):
         raise ResearchError("tool_scope_violation", "Research plan exceeds its frozen Asset scope.", 409)
-    estimated_cost = (
-        MoneyMicrounits(currency=revision.planning_cost_currency, amount_micros=estimated_cost_microunits)
-        if estimated_cost_microunits is not None
-        else None
-    )
     payload = ResearchPlanArtifactPayload(
         summary=summary.strip(),
         subproblems=plan_subproblems,
@@ -90,7 +80,6 @@ def publish_research_plan(
         estimated_provider_calls=estimated_provider_calls,
         estimated_input_tokens=estimated_input_tokens,
         estimated_output_tokens=estimated_output_tokens,
-        estimated_cost=estimated_cost,
     )
     artifact_bytes = canonical_json(payload.model_dump(mode="json", by_alias=True))
     artifact_sha256 = hashlib.sha256(artifact_bytes).hexdigest()

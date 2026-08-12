@@ -1,0 +1,131 @@
+{
+  "contractImpact": "none",
+  "engineeringGate": "static-pass",
+  "gapAnalysis": [
+    {
+      "blockerFor": [
+        "D-G6 mixed live restore identity"
+      ],
+      "evidence": [
+        "infra/scripts has run-v5b-document-acceptance.sh (Document only)",
+        "infra/scripts has run-r800-acceptance.sh (Research engineering)",
+        "docs/fixtures/document-modality/mixed-workspace.manifest.json is shape-only"
+      ],
+      "id": "G-MIXED-LIVE-SEED",
+      "owner": "D-API-WORKER for seed/snapshot; D-OPS to wire after CLI exists",
+      "severity": "high",
+      "status": "open",
+      "summary": "No live mixed PDF/Image/Document deployment seed/snapshot/verify CLI"
+    },
+    {
+      "blockerFor": [
+        "D-G4/D-G6 browser after restore"
+      ],
+      "evidence": [
+        "v5b runner uses e2e/v5b-document-production-start.spec.ts",
+        "m403 runner uses e2e/m403-restore.spec.ts (PDF/Image historical)"
+      ],
+      "id": "G-MIXED-BROWSER",
+      "owner": "D-WEB for e2e; D-OPS for harness wiring",
+      "severity": "medium",
+      "status": "open",
+      "summary": "No production-start Playwright mixed PDF/Image/Document restore replay in infra"
+    },
+    {
+      "blockerFor": [
+        "D-G5 live restart evidence if unit tests insufficient"
+      ],
+      "evidence": [
+        "D-G5 restart/reclaim/delete covered primarily by API/Worker unit/integration tests",
+        "backup-deployment.sh stops writers only for backup window, not restart oracle"
+      ],
+      "id": "G-RESTART-LIVE",
+      "owner": "D-API-WORKER tests first; D-OPS only if live compose restart required",
+      "severity": "medium",
+      "status": "open",
+      "summary": "No dedicated live Compose API/Worker/Web restart harness under infra"
+    },
+    {
+      "blockerFor": [],
+      "decision": "Reuse existing overrides; do not fork deploy contracts for V5-D",
+      "evidence": [
+        "infra/docker/compose.v5b.yml",
+        "infra/docker/compose.r800.yml"
+      ],
+      "id": "G-COMPOSE-V5D",
+      "owner": "D-OPS",
+      "severity": "low",
+      "status": "accepted-reuse",
+      "summary": "No compose.v5d.yml; v5b and r800 overrides are sufficient provider-stub overlays"
+    },
+    {
+      "blockerFor": [],
+      "evidence": [
+        "infra/scripts/backup-deployment.sh BACKUP_CONTRACT=document-modality-v1",
+        "infra/scripts/restore-deployment.sh strict key checks"
+      ],
+      "id": "G-BACKUP-CONTRACT",
+      "owner": "D-OPS",
+      "severity": "info",
+      "status": "pass-no-change",
+      "summary": "Backup contract remains document-modality-v1; full pg_dump covers PDF/Image core tables"
+    }
+  ],
+  "gates": {
+    "D-G5": {
+      "note": "infra provides backup window stop/start only; restart/reclaim/delete oracles remain API/Worker tests",
+      "status": "partial"
+    },
+    "D-G6": {
+      "note": "document and research isolated restore may pass individually; mixed three-modality identity remains blocked",
+      "status": "blocked"
+    }
+  },
+  "lanes": {
+    "document": {
+      "artifactDir": null,
+      "exitCode": null,
+      "scope": "Markdown Document only; not mixed PDF/Image/Document",
+      "status": "skipped"
+    },
+    "mixedPdfImageDocumentLive": {
+      "reason": "no_mixed_seed_snapshot_verify_cli",
+      "status": "blocked"
+    },
+    "research": {
+      "artifactDir": null,
+      "exitCode": null,
+      "scope": "Research engineering restore; scripted provider only",
+      "status": "skipped"
+    },
+    "static": {
+      "artifact": "static-checks.json",
+      "exitCode": 0,
+      "status": "pass"
+    }
+  },
+  "mode": "static-only",
+  "modelQualityGate": "not_evaluable",
+  "modelQualityReason": "scripted_provider_is_engineering_evidence_only",
+  "nextSteps": [
+    "Keep using this wrapper for static D-OPS readiness",
+    "When D-API-WORKER lands mixed seed/snapshot/verify CLI, add a thin live mode that seeds PDF+Image+Document once and reuses backup-deployment.sh/restore-deployment.sh",
+    "Do not invent fallback seed logic or weaken restore preflight",
+    "D-ACCEPT must not mark D-G6 mixed live pass until mixed identity evidence exists"
+  ],
+  "reuse": {
+    "backup": "infra/scripts/backup-deployment.sh",
+    "composeBase": "infra/docker/compose.deploy.yml",
+    "composeDocumentOverride": "infra/docker/compose.v5b.yml",
+    "composeResearchOverride": "infra/docker/compose.r800.yml",
+    "documentRunner": "infra/scripts/run-v5b-document-acceptance.sh",
+    "mixedFixtureManifest": "docs/fixtures/document-modality/mixed-workspace.manifest.json",
+    "researchRunner": "infra/scripts/run-r800-acceptance.sh",
+    "restore": "infra/scripts/restore-deployment.sh"
+  },
+  "runId": "20260811T071718Z",
+  "schemaVersion": "v5d-mixed-deployment-acceptance-v1",
+  "sourceSha": "4f2129cdfc5ba0c73cf854c83add7809c5966b0a",
+  "userValueGate": "not_evaluable",
+  "userValueReason": "no_real_target_user_evidence"
+}

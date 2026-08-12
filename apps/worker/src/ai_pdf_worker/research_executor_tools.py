@@ -30,7 +30,7 @@ class EvidenceToolRegistry:
         *,
         query: str,
         asset_ids: Sequence[str] = (),
-        top_k: int = 8,
+        top_k: int,
     ) -> tuple[EvidenceHandle, ...]:
         normalized_query = query.strip()
         requested_assets = tuple(asset_ids)

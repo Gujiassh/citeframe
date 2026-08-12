@@ -1,0 +1,11 @@
+                     Name                                   Command                  State                                            Ports                                     
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+citeframe-r800-v5c-20260810-v5_api_1             uvicorn ai_pdf_api.main:ap ...   Up (healthy)   8000/tcp                                                                       
+citeframe-r800-v5c-20260810-v5_caddy_1           caddy run --config /etc/ca ...   Up (healthy)   2019/tcp, 0.0.0.0:46075->443/tcp, 0.0.0.0:46075->443/udp, 0.0.0.0:46441->80/tcp
+citeframe-r800-v5c-20260810-v5_migration_1       alembic upgrade head             Exit 0                                                                                        
+citeframe-r800-v5c-20260810-v5_minio_1           /usr/bin/docker-entrypoint ...   Up (healthy)   9000/tcp, 127.0.0.1:45503->9001/tcp                                            
+citeframe-r800-v5c-20260810-v5_postgres_1        docker-entrypoint.sh postg ...   Up (healthy)   5432/tcp                                                                       
+citeframe-r800-v5c-20260810-v5_provider-stub_1   python scripts/provider_r8 ...   Up (healthy)   18082/tcp, 8000/tcp                                                            
+citeframe-r800-v5c-20260810-v5_redis_1           docker-entrypoint.sh redis ...   Up (healthy)   6379/tcp                                                                       
+citeframe-r800-v5c-20260810-v5_web_1             docker-entrypoint.sh node  ...   Up (healthy)   3000/tcp                                                                       
+citeframe-r800-v5c-20260810-v5_worker_1          python -m ai_pdf_worker.main     Up             9101/tcp                                                                       

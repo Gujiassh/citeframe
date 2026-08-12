@@ -54,6 +54,17 @@ type Props = {
 
 const terminal = new Set(["completed", "failed", "cancelled"]);
 
+function formatElapsed(milliseconds: number | null): string {
+  if (milliseconds === null || !Number.isFinite(milliseconds) || milliseconds < 0) return "-";
+  const totalSeconds = Math.floor(milliseconds / 1000);
+  const hours = Math.floor(totalSeconds / 3600);
+  const minutes = Math.floor((totalSeconds % 3600) / 60);
+  const seconds = totalSeconds % 60;
+  if (hours > 0) return `${hours}h ${minutes}m`;
+  if (minutes > 0) return `${minutes}m ${seconds}s`;
+  return `${seconds}s`;
+}
+
 function StepIcon({ status }: { status: string }) {
   if (status === "succeeded") return <Check className="h-3.5 w-3.5" />;
   if (status === "running") return <LoaderCircle className="h-3.5 w-3.5 animate-spin motion-reduce:animate-none" />;
@@ -68,10 +79,6 @@ function streamStatusKey(state: ResearchStreamState): TranslationKey | null {
   if (state === "history_unavailable") return "research.streamHistoryUnavailable";
   if (state === "contract_error") return "research.streamContractError";
   return null;
-}
-
-function formatCost(currency: string, amountMicros: number): string {
-  return `${currency} ${(amountMicros / 1_000_000).toFixed(2)}`;
 }
 
 export function ResearchRunPanel({
@@ -117,6 +124,15 @@ export function ResearchRunPanel({
   );
   const streamKey = streamStatusKey(streamState);
   const frozenProfile = getFrozenResearchProfile(run);
+  const usage = run.researchUsage ?? run.planningUsage;
+  const limits = run.researchExecution?.execution.limits ?? run.plan?.inputSnapshot?.proposedResearchExecution.limits;
+  const researcherBranches = run.steps.filter((step) => step.kind === "researcher").length;
+  const retries = run.steps.reduce((total, step) => total + Math.max(0, step.currentAttemptNumber - 1), 0);
+  const startedAt = run.startedAt ? Date.parse(run.startedAt) : NaN;
+  const endAt = run.finishedAt ? Date.parse(run.finishedAt) : Date.parse(run.updatedAt);
+  const elapsedMilliseconds = Number.isFinite(startedAt) && Number.isFinite(endAt) ? Math.max(0, endAt - startedAt) : null;
+  const remainingProviderCalls = limits ? Math.max(0, limits.maxProviderCalls - usage.providerCalls) : null;
+  const remainingToolCalls = limits ? Math.max(0, limits.maxToolCalls - usage.toolCalls) : null;
   const submitRevision = () => {
     if (!revisionQuestion.trim() || !revisionComment.trim()) return;
     onRevisePlan(revisionQuestion.trim(), revisionComment.trim());
@@ -194,6 +210,26 @@ export function ResearchRunPanel({
         ) : <p className="mt-2 text-xs text-zinc-500">{t("research.frozenProfileUnavailable")}</p>}
       </section>
 
+      <section className="border-b border-border py-4">
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <h4 className="text-xs font-semibold text-zinc-950 dark:text-white">{t("research.usage")}</h4>
+          <span className="text-[10px] text-zinc-500">{usage.usageFinal ? t("research.usageFinal") : t("research.usageUpdating")}</span>
+        </div>
+        <dl className="mt-3 grid grid-cols-2 gap-x-5 gap-y-3 text-xs sm:grid-cols-4">
+          <div><dt className="text-[10px] font-semibold text-zinc-500">{t("research.providerCalls")}</dt><dd className="mt-1 text-zinc-800 dark:text-zinc-200">{usage.providerCalls}{limits ? ` / ${limits.maxProviderCalls}` : ""}</dd></div>
+          <div><dt className="text-[10px] font-semibold text-zinc-500">{t("research.toolCalls")}</dt><dd className="mt-1 text-zinc-800 dark:text-zinc-200">{usage.toolCalls}{limits ? ` / ${limits.maxToolCalls}` : ""}</dd></div>
+          <div><dt className="text-[10px] font-semibold text-zinc-500">{t("research.inputTokens")}</dt><dd className="mt-1 text-zinc-800 dark:text-zinc-200">{usage.inputTokens}</dd></div>
+          <div><dt className="text-[10px] font-semibold text-zinc-500">{t("research.outputTokens")}</dt><dd className="mt-1 text-zinc-800 dark:text-zinc-200">{usage.outputTokens}</dd></div>
+          <div><dt className="text-[10px] font-semibold text-zinc-500">{t("research.branches")}</dt><dd className="mt-1 text-zinc-800 dark:text-zinc-200">{researcherBranches}</dd></div>
+          <div><dt className="text-[10px] font-semibold text-zinc-500">{t("research.retries")}</dt><dd className="mt-1 text-zinc-800 dark:text-zinc-200">{retries}</dd></div>
+          <div><dt className="text-[10px] font-semibold text-zinc-500">{t("research.elapsed")}</dt><dd className="mt-1 text-zinc-800 dark:text-zinc-200">{formatElapsed(elapsedMilliseconds)}</dd></div>
+          {remainingProviderCalls !== null ? <div><dt className="text-[10px] font-semibold text-zinc-500">{t("research.remainingProviderCalls")}</dt><dd className="mt-1 text-zinc-800 dark:text-zinc-200">{remainingProviderCalls}</dd></div> : null}
+          {remainingToolCalls !== null ? <div><dt className="text-[10px] font-semibold text-zinc-500">{t("research.remainingToolCalls")}</dt><dd className="mt-1 text-zinc-800 dark:text-zinc-200">{remainingToolCalls}</dd></div> : null}
+          {limits ? <div><dt className="text-[10px] font-semibold text-zinc-500">{t("research.inputLimit")}</dt><dd className="mt-1 text-zinc-800 dark:text-zinc-200">{limits.maxInputTokens}</dd></div> : null}
+          {limits ? <div><dt className="text-[10px] font-semibold text-zinc-500">{t("research.outputLimit")}</dt><dd className="mt-1 text-zinc-800 dark:text-zinc-200">{limits.maxOutputTokens}</dd></div> : null}
+        </dl>
+      </section>
+
       {run.plan ? (
         <section className="py-5">
           <div className="flex flex-wrap items-center justify-between gap-3">
@@ -243,14 +279,6 @@ export function ResearchRunPanel({
                 <div>
                   <dt className="text-[10px] font-semibold text-zinc-500">{t("research.estimatedCalls")}</dt>
                   <dd className="mt-1 text-zinc-800 dark:text-zinc-200">{run.plan.estimatedProviderCalls}</dd>
-                </div>
-                <div>
-                  <dt className="text-[10px] font-semibold text-zinc-500">{t("research.estimatedCost")}</dt>
-                  <dd className="mt-1 text-zinc-800 dark:text-zinc-200">
-                    {run.plan.estimatedCost
-                      ? formatCost(run.plan.estimatedCost.currency, run.plan.estimatedCost.amountMicros)
-                      : t("research.costUnavailable")}
-                  </dd>
                 </div>
               </dl>
               <div className="mt-3 text-xs">

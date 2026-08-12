@@ -1,0 +1,84 @@
+{
+  "schemaVersion": "v5d-mixed-browser-state-v1",
+  "email": "v5d-mixed-1786439068@example.com",
+  "password": "***redacted***",
+  "userId": "61abcc76-82ef-470d-8a21-c493d39943f0",
+  "workspaceId": "b6d645b7-55aa-4cb0-907d-66b4bfd29be4",
+  "threadId": "0885b0c9-ade5-49fd-b3bb-9f59b4591760",
+  "messageId": "9d803bf5-05de-44fc-b210-b1f78d5a2f62",
+  "assets": {
+    "pdf": {
+      "assetId": "3fcd8d10-e781-457b-808b-0e311d305c98",
+      "kind": "pdf",
+      "mimeType": "application/pdf",
+      "sourceFilename": "pdf-coordinate-fixture.pdf",
+      "title": "Mixed PDF Fixture",
+      "sourceSha256": "142c86f9ae04aba21fc00e983469b3e686e458c6dc038e90598fd6fa6bb3e0bf",
+      "jobId": "e2f3aaf0-48d7-46a0-a9df-4e93df419b7a"
+    },
+    "image": {
+      "assetId": "97d33ddf-f810-4982-bc35-ff099d9f5fb3",
+      "kind": "image",
+      "mimeType": "image/png",
+      "sourceFilename": "image-coordinate-fixture.png",
+      "title": "Mixed Image Fixture",
+      "sourceSha256": "585b2489a7e6288d71636258b84e56610b345a1fc74ffd42967ee434678d8955",
+      "jobId": "8f51a933-2fe3-4541-90d0-b3a175306339"
+    },
+    "document": {
+      "assetId": "b2a3f1cb-fb03-470b-ac20-3397dd51daa5",
+      "kind": "document",
+      "mimeType": "text/markdown",
+      "sourceFilename": "markdown-note.md",
+      "title": "Mixed Markdown Fixture",
+      "sourceSha256": "5fca7c272fee8667c22c89205c2ddb3d1b161b85ef584b0fd471f1ddd61cd1df",
+      "jobId": "a51fed66-6cc5-4a04-b427-3337e3886e49"
+    }
+  },
+  "citationIds": {
+    "pdf": "64c5207f-f184-49a3-ade5-fb01a305668c",
+    "image": "0a5f2507-7683-4959-a5e1-16c850f9dadf",
+    "document": "08290b4e-31fc-4cf8-ba7d-68c05c4d9cac"
+  },
+  "noteSourceIds": {
+    "pdf": "6853a64b-cf5c-4579-ac93-028b3b8ad6a4",
+    "image": "e94f281e-065a-44d7-ad18-d5bfae8a48bb",
+    "document": "c19780c0-b88c-4d27-aed7-0fcbc93de531"
+  },
+  "evidence": {
+    "pdf": {
+      "assetId": "3fcd8d10-e781-457b-808b-0e311d305c98",
+      "citationId": "64c5207f-f184-49a3-ade5-fb01a305668c",
+      "noteSourceId": "6853a64b-cf5c-4579-ac93-028b3b8ad6a4",
+      "expectedProcessingGeneration": 1,
+      "representationId": "235c7e7d-9696-4504-8372-88b33e978025",
+      "locatorKind": "pdf_page",
+      "unitKind": "pdf_text_chunk",
+      "excerpt": "Rotation fixture 0\nrotation=0\nPrimary evidence region\nStable text for locator verification."
+    },
+    "image": {
+      "assetId": "97d33ddf-f810-4982-bc35-ff099d9f5fb3",
+      "citationId": "0a5f2507-7683-4959-a5e1-16c850f9dadf",
+      "noteSourceId": "e94f281e-065a-44d7-ad18-d5bfae8a48bb",
+      "expectedProcessingGeneration": 1,
+      "representationId": "d20c1259-ee26-407b-b64a-08efd98dc816",
+      "locatorKind": "image_region",
+      "unitKind": "image_ocr_region",
+      "excerpt": "Image Evidence Fixture"
+    },
+    "document": {
+      "assetId": "b2a3f1cb-fb03-470b-ac20-3397dd51daa5",
+      "citationId": "08290b4e-31fc-4cf8-ba7d-68c05c4d9cac",
+      "noteSourceId": "c19780c0-b88c-4d27-aed7-0fcbc93de531",
+      "expectedProcessingGeneration": 1,
+      "representationId": "c88b5099-83bb-4c56-aa55-1301adb5c205",
+      "locatorKind": "document_anchor",
+      "unitKind": "document_text_chunk",
+      "excerpt": "Intro",
+      "expectedBlockId": "docblk_976f35b9f80ae838b040884ef8ee30ba",
+      "expectedCharStart": 0,
+      "expectedCharEnd": 5,
+      "expectedTextSha256": "24601bcaae6e170b381367ec4f4475786c6dbef5e8332f8903779c76d298d304"
+    }
+  }
+}

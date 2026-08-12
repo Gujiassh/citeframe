@@ -1,0 +1,380 @@
+Sending build context to Docker daemon  39.11MB
+Step 1/14 : FROM python:3.12-slim@sha256:c3d81d25b3154142b0b42eb1e61300024426268edeb5b5a26dd7ddf64d9daf28 AS python-base
+ ---> 25c5b8011a34
+Step 2/14 : ENV PYTHONUNBUFFERED=1     PYTHONDONTWRITEBYTECODE=1
+ ---> Using cache
+ ---> b562b3ee3d08
+Step 3/14 : RUN groupadd --system --gid 10001 app     && useradd --system --uid 10001 --gid app --home-dir /app app
+ ---> Using cache
+ ---> ccb2693c4666
+Step 4/14 : WORKDIR /app
+ ---> Using cache
+ ---> 82f8289b3b6c
+Step 5/14 : FROM python-base AS api
+ ---> 82f8289b3b6c
+Step 6/14 : COPY apps/api/requirements.deploy.txt /app/apps/api/requirements.deploy.txt
+ ---> Using cache
+ ---> c30635b1831b
+Step 7/14 : RUN pip install --no-cache-dir --require-hashes -r /app/apps/api/requirements.deploy.txt
+ ---> Using cache
+ ---> c89a25bb624e
+Step 8/14 : COPY apps/api /app/apps/api
+ ---> 29ab6048ec6b
+Step 9/14 : RUN chown -R app:app /app
+ ---> Running in 132535eb043e
+ ---> Removed intermediate container 132535eb043e
+ ---> 5916bfe0058a
+Step 10/14 : USER app
+ ---> Running in fd8af3db691d
+ ---> Removed intermediate container fd8af3db691d
+ ---> a70ccb969c23
+Step 11/14 : WORKDIR /app/apps/api
+ ---> Running in b7f2cb06a663
+ ---> Removed intermediate container b7f2cb06a663
+ ---> fcd3db3f9a44
+Step 12/14 : ENV PYTHONPATH=/app/apps/api/src
+ ---> Running in 62b39f2119cb
+ ---> Removed intermediate container 62b39f2119cb
+ ---> 2ca02128bad1
+Step 13/14 : EXPOSE 8000
+ ---> Running in 7e03888fe37d
+ ---> Removed intermediate container 7e03888fe37d
+ ---> 7c1aa112df63
+Step 14/14 : CMD ["uvicorn", "ai_pdf_api.main:app", "--host", "0.0.0.0", "--port", "8000"]
+ ---> Running in bb00441097f5
+ ---> Removed intermediate container bb00441097f5
+ ---> e245cc80af0e
+Successfully built e245cc80af0e
+Successfully tagged ai-pdf-workspace-api:r800-20260810t121041z-814624
+Sending build context to Docker daemon  39.11MB
+Step 1/20 : FROM public.ecr.aws/docker/library/node:22-bookworm-slim@sha256:f86be15afa9a8277608e141ce2a8aa55d3d9c40845921b8511f4fb7897be2554 AS build
+ ---> ccc5ff136faf
+Step 2/20 : ENV PNPM_HOME=/pnpm
+ ---> Using cache
+ ---> 2f4fee1934fb
+Step 3/20 : ENV PATH="$PNPM_HOME:$PATH"
+ ---> Using cache
+ ---> e132384408c6
+Step 4/20 : RUN corepack enable && corepack prepare pnpm@10.33.4 --activate
+ ---> Using cache
+ ---> fb49e247f8cf
+Step 5/20 : WORKDIR /app
+ ---> Using cache
+ ---> e62e04ef3479
+Step 6/20 : COPY package.json pnpm-lock.yaml pnpm-workspace.yaml /app/
+ ---> Using cache
+ ---> 782ddaaf2b4f
+Step 7/20 : COPY apps/web/package.json /app/apps/web/package.json
+ ---> Using cache
+ ---> e57766f9b091
+Step 8/20 : RUN pnpm install --frozen-lockfile
+ ---> Using cache
+ ---> 94ffda7c5fea
+Step 9/20 : COPY apps/web /app/apps/web
+ ---> Using cache
+ ---> e6178e75fa74
+Step 10/20 : RUN pnpm --dir apps/web build
+ ---> Using cache
+ ---> f44d296137f4
+Step 11/20 : FROM public.ecr.aws/docker/library/node:22-bookworm-slim@sha256:f86be15afa9a8277608e141ce2a8aa55d3d9c40845921b8511f4fb7897be2554 AS runtime
+ ---> ccc5ff136faf
+Step 12/20 : ENV NODE_ENV=production     HOSTNAME=0.0.0.0     PORT=3000
+ ---> Using cache
+ ---> ba8a0f84e1d0
+Step 13/20 : RUN groupadd --system --gid 10001 app     && useradd --system --uid 10001 --gid app --home-dir /app app
+ ---> Using cache
+ ---> 4bd067418cea
+Step 14/20 : WORKDIR /app
+ ---> Using cache
+ ---> f0956ec43099
+Step 15/20 : COPY --from=build --chown=app:app /app/apps/web/.next/standalone ./
+ ---> Using cache
+ ---> 271a2badc679
+Step 16/20 : COPY --from=build --chown=app:app /app/apps/web/.next/static ./apps/web/.next/static
+ ---> Using cache
+ ---> 12cbc1abd5ce
+Step 17/20 : COPY --from=build --chown=app:app /app/apps/web/public ./apps/web/public
+ ---> Using cache
+ ---> e23de1638d7c
+Step 18/20 : USER app
+ ---> Using cache
+ ---> 4ef321f312f6
+Step 19/20 : EXPOSE 3000
+ ---> Using cache
+ ---> aa41f55449c7
+Step 20/20 : CMD ["node", "apps/web/server.js"]
+ ---> Using cache
+ ---> 315dbcdb9a1d
+Successfully built 315dbcdb9a1d
+Successfully tagged ai-pdf-workspace-web:r800-20260810t121041z-814624
+Sending build context to Docker daemon  39.11MB
+Step 1/26 : FROM python:3.12-slim@sha256:c3d81d25b3154142b0b42eb1e61300024426268edeb5b5a26dd7ddf64d9daf28 AS python-base
+ ---> 25c5b8011a34
+Step 2/26 : ENV PYTHONUNBUFFERED=1     PYTHONDONTWRITEBYTECODE=1
+ ---> Using cache
+ ---> b562b3ee3d08
+Step 3/26 : RUN groupadd --system --gid 10001 app     && useradd --system --uid 10001 --gid app --home-dir /app app
+ ---> Using cache
+ ---> ccb2693c4666
+Step 4/26 : WORKDIR /app
+ ---> Using cache
+ ---> 82f8289b3b6c
+Step 5/26 : FROM python-base AS api
+ ---> 82f8289b3b6c
+Step 6/26 : COPY apps/api/requirements.deploy.txt /app/apps/api/requirements.deploy.txt
+ ---> Using cache
+ ---> c30635b1831b
+Step 7/26 : RUN pip install --no-cache-dir --require-hashes -r /app/apps/api/requirements.deploy.txt
+ ---> Using cache
+ ---> c89a25bb624e
+Step 8/26 : COPY apps/api /app/apps/api
+ ---> Using cache
+ ---> 29ab6048ec6b
+Step 9/26 : RUN chown -R app:app /app
+ ---> Using cache
+ ---> 5916bfe0058a
+Step 10/26 : USER app
+ ---> Using cache
+ ---> a70ccb969c23
+Step 11/26 : WORKDIR /app/apps/api
+ ---> Using cache
+ ---> fcd3db3f9a44
+Step 12/26 : ENV PYTHONPATH=/app/apps/api/src
+ ---> Using cache
+ ---> 2ca02128bad1
+Step 13/26 : EXPOSE 8000
+ ---> Using cache
+ ---> 7c1aa112df63
+Step 14/26 : CMD ["uvicorn", "ai_pdf_api.main:app", "--host", "0.0.0.0", "--port", "8000"]
+ ---> Using cache
+ ---> e245cc80af0e
+Step 15/26 : FROM python-base AS worker
+ ---> 82f8289b3b6c
+Step 16/26 : RUN apt-get update     && apt-get install --yes --no-install-recommends libgl1 libglib2.0-0 libgomp1     && rm -rf /var/lib/apt/lists/*
+ ---> Using cache
+ ---> efe388b548a3
+Step 17/26 : COPY apps/api/pyproject.toml /app/apps/api/pyproject.toml
+ ---> Using cache
+ ---> e6952b546811
+Step 18/26 : COPY apps/api/src /app/apps/api/src
+ ---> e2538a0dfc72
+Step 19/26 : COPY apps/worker/requirements.deploy.txt /app/apps/worker/requirements.deploy.txt
+ ---> 82201c3aeada
+Step 20/26 : RUN pip install --no-cache-dir --require-hashes -r /app/apps/worker/requirements.deploy.txt
+ ---> Running in 8c8a27e628fc
+Ignoring colorama: markers 'sys_platform == "win32"' don't match your environment
+Ignoring tzdata: markers 'sys_platform == "win32"' don't match your environment
+Collecting alembic==1.18.5 (from -r /app/apps/worker/requirements.deploy.txt (line 3))
+  Downloading alembic-1.18.5-py3-none-any.whl (264 kB)
+Collecting annotated-doc==0.0.4 (from -r /app/apps/worker/requirements.deploy.txt (line 7))
+  Downloading annotated_doc-0.0.4-py3-none-any.whl (5.3 kB)
+Collecting annotated-types==0.7.0 (from -r /app/apps/worker/requirements.deploy.txt (line 11))
+  Downloading annotated_types-0.7.0-py3-none-any.whl (13 kB)
+Collecting anyio==4.14.2 (from -r /app/apps/worker/requirements.deploy.txt (line 15))
+  Downloading anyio-4.14.2-py3-none-any.whl (125 kB)
+Collecting argon2-cffi==25.1.0 (from -r /app/apps/worker/requirements.deploy.txt (line 22))
+  Downloading argon2_cffi-25.1.0-py3-none-any.whl (14 kB)
+Collecting argon2-cffi-bindings==25.1.0 (from -r /app/apps/worker/requirements.deploy.txt (line 28))
+  Downloading argon2_cffi_bindings-25.1.0-cp39-abi3-manylinux_2_26_x86_64.manylinux_2_28_x86_64.whl (87 kB)
+Collecting certifi==2026.6.17 (from -r /app/apps/worker/requirements.deploy.txt (line 51))
+  Downloading certifi-2026.6.17-py3-none-any.whl (133 kB)
+Collecting cffi==2.1.0 (from -r /app/apps/worker/requirements.deploy.txt (line 59))
+  Downloading cffi-2.1.0-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.whl (221 kB)
+Collecting charset-normalizer==3.4.9 (from -r /app/apps/worker/requirements.deploy.txt (line 136))
+  Downloading charset_normalizer-3.4.9-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl (224 kB)
+Collecting click==8.4.2 (from -r /app/apps/worker/requirements.deploy.txt (line 192))
+  Downloading click-8.4.2-py3-none-any.whl (119 kB)
+Collecting distro==1.9.0 (from -r /app/apps/worker/requirements.deploy.txt (line 202))
+  Downloading distro-1.9.0-py3-none-any.whl (20 kB)
+Collecting dnspython==2.8.0 (from -r /app/apps/worker/requirements.deploy.txt (line 206))
+  Downloading dnspython-2.8.0-py3-none-any.whl (331 kB)
+Collecting email-validator==2.3.0 (from -r /app/apps/worker/requirements.deploy.txt (line 210))
+  Downloading email_validator-2.3.0-py3-none-any.whl (35 kB)
+Collecting fastapi==0.139.0 (from -r /app/apps/worker/requirements.deploy.txt (line 214))
+  Downloading fastapi-0.139.0-py3-none-any.whl (130 kB)
+Collecting flatbuffers==25.12.19 (from -r /app/apps/worker/requirements.deploy.txt (line 218))
+  Downloading flatbuffers-25.12.19-py2.py3-none-any.whl (26 kB)
+Collecting googleapis-common-protos==1.75.0 (from -r /app/apps/worker/requirements.deploy.txt (line 221))
+  Downloading googleapis_common_protos-1.75.0-py3-none-any.whl (300 kB)
+Collecting greenlet==3.5.3 (from -r /app/apps/worker/requirements.deploy.txt (line 225))
+  Downloading greenlet-3.5.3-cp312-cp312-manylinux_2_24_x86_64.manylinux_2_28_x86_64.whl (614 kB)
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 614.2/614.2 kB 4.9 MB/s eta 0:00:00
+Collecting h11==0.16.0 (from -r /app/apps/worker/requirements.deploy.txt (line 275))
+  Downloading h11-0.16.0-py3-none-any.whl (37 kB)
+Collecting httpcore==1.0.9 (from -r /app/apps/worker/requirements.deploy.txt (line 281))
+  Downloading httpcore-1.0.9-py3-none-any.whl (78 kB)
+Collecting httpx==0.28.1 (from -r /app/apps/worker/requirements.deploy.txt (line 285))
+  Downloading httpx-0.28.1-py3-none-any.whl (73 kB)
+Collecting idna==3.18 (from -r /app/apps/worker/requirements.deploy.txt (line 292))
+  Downloading idna-3.18-py3-none-any.whl (65 kB)
+Collecting jsonpatch==1.33 (from -r /app/apps/worker/requirements.deploy.txt (line 300))
+  Downloading jsonpatch-1.33-py2.py3-none-any.whl (12 kB)
+Collecting jsonpointer==3.1.1 (from -r /app/apps/worker/requirements.deploy.txt (line 304))
+  Downloading jsonpointer-3.1.1-py3-none-any.whl (7.7 kB)
+Collecting langchain-core==1.5.1 (from -r /app/apps/worker/requirements.deploy.txt (line 308))
+  Downloading langchain_core-1.5.1-py3-none-any.whl (561 kB)
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 561.6/561.6 kB 5.4 MB/s eta 0:00:00
+Collecting langchain-protocol==0.0.18 (from -r /app/apps/worker/requirements.deploy.txt (line 316))
+  Downloading langchain_protocol-0.0.18-py3-none-any.whl (7.2 kB)
+Collecting langgraph==1.2.9 (from -r /app/apps/worker/requirements.deploy.txt (line 322))
+  Downloading langgraph-1.2.9-py3-none-any.whl (247 kB)
+Collecting langgraph-checkpoint==4.1.1 (from -r /app/apps/worker/requirements.deploy.txt (line 326))
+  Downloading langgraph_checkpoint-4.1.1-py3-none-any.whl (56 kB)
+Collecting langgraph-prebuilt==1.1.0 (from -r /app/apps/worker/requirements.deploy.txt (line 332))
+  Downloading langgraph_prebuilt-1.1.0-py3-none-any.whl (41 kB)
+Collecting langgraph-sdk==0.4.2 (from -r /app/apps/worker/requirements.deploy.txt (line 336))
+  Downloading langgraph_sdk-0.4.2-py3-none-any.whl (160 kB)
+Collecting langsmith==0.10.10 (from -r /app/apps/worker/requirements.deploy.txt (line 340))
+  Downloading langsmith-0.10.10-py3-none-any.whl (675 kB)
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 675.2/675.2 kB 5.5 MB/s eta 0:00:00
+Collecting mako==1.3.12 (from -r /app/apps/worker/requirements.deploy.txt (line 344))
+  Downloading mako-1.3.12-py3-none-any.whl (78 kB)
+Collecting markdown-it-py==4.2.0 (from -r /app/apps/worker/requirements.deploy.txt (line 348))
+  Downloading markdown_it_py-4.2.0-py3-none-any.whl (91 kB)
+Collecting markupsafe==3.0.3 (from -r /app/apps/worker/requirements.deploy.txt (line 352))
+  Downloading markupsafe-3.0.3-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl (22 kB)
+Collecting mdurl==0.1.2 (from -r /app/apps/worker/requirements.deploy.txt (line 410))
+  Downloading mdurl-0.1.2-py3-none-any.whl (10.0 kB)
+Collecting minio==7.2.20 (from -r /app/apps/worker/requirements.deploy.txt (line 414))
+  Downloading minio-7.2.20-py3-none-any.whl (93 kB)
+Collecting numpy==2.3.5 (from -r /app/apps/worker/requirements.deploy.txt (line 418))
+  Downloading numpy-2.3.5-cp312-cp312-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl (16.6 MB)
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 16.6/16.6 MB 5.9 MB/s eta 0:00:00
+Collecting onnxruntime==1.26.0 (from -r /app/apps/worker/requirements.deploy.txt (line 481))
+  Downloading onnxruntime-1.26.0-cp312-cp312-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl (18.2 MB)
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 18.2/18.2 MB 6.6 MB/s eta 0:00:00
+Collecting opencv-python==5.0.0.93 (from -r /app/apps/worker/requirements.deploy.txt (line 502))
+  Downloading opencv_python-5.0.0.93-cp37-abi3-manylinux_2_28_x86_64.whl (73.8 MB)
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 73.8/73.8 MB 12.6 MB/s eta 0:00:00
+Collecting opentelemetry-api==1.44.0 (from -r /app/apps/worker/requirements.deploy.txt (line 513))
+  Downloading opentelemetry_api-1.44.0-py3-none-any.whl (60 kB)
+Collecting opentelemetry-exporter-otlp-proto-common==1.44.0 (from -r /app/apps/worker/requirements.deploy.txt (line 521))
+  Downloading opentelemetry_exporter_otlp_proto_common-1.44.0-py3-none-any.whl (17 kB)
+Collecting opentelemetry-exporter-otlp-proto-http==1.44.0 (from -r /app/apps/worker/requirements.deploy.txt (line 525))
+  Downloading opentelemetry_exporter_otlp_proto_http-1.44.0-py3-none-any.whl (21 kB)
+Collecting opentelemetry-proto==1.44.0 (from -r /app/apps/worker/requirements.deploy.txt (line 529))
+  Downloading opentelemetry_proto-1.44.0-py3-none-any.whl (72 kB)
+Collecting opentelemetry-sdk==1.44.0 (from -r /app/apps/worker/requirements.deploy.txt (line 535))
+  Downloading opentelemetry_sdk-1.44.0-py3-none-any.whl (137 kB)
+Collecting opentelemetry-semantic-conventions==0.65b0 (from -r /app/apps/worker/requirements.deploy.txt (line 541))
+  Downloading opentelemetry_semantic_conventions-0.65b0-py3-none-any.whl (204 kB)
+Collecting orjson==3.11.9 (from -r /app/apps/worker/requirements.deploy.txt (line 545))
+  Downloading orjson-3.11.9-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (134 kB)
+Collecting ormsgpack==1.12.2 (from -r /app/apps/worker/requirements.deploy.txt (line 595))
+  Downloading ormsgpack-1.12.2-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (212 kB)
+Collecting packaging==26.2 (from -r /app/apps/worker/requirements.deploy.txt (line 629))
+  Downloading packaging-26.2-py3-none-any.whl (100 kB)
+Collecting pgvector==0.5.0 (from -r /app/apps/worker/requirements.deploy.txt (line 636))
+  Downloading pgvector-0.5.0-py3-none-any.whl (30 kB)
+Collecting pillow==12.3.0 (from -r /app/apps/worker/requirements.deploy.txt (line 640))
+  Downloading pillow-12.3.0-cp312-cp312-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl (6.9 MB)
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 6.9/6.9 MB 20.1 MB/s eta 0:00:00
+Collecting prometheus-client==0.25.0 (from -r /app/apps/worker/requirements.deploy.txt (line 709))
+  Downloading prometheus_client-0.25.0-py3-none-any.whl (64 kB)
+Collecting protobuf==7.35.1 (from -r /app/apps/worker/requirements.deploy.txt (line 713))
+  Downloading protobuf-7.35.1-cp310-abi3-manylinux2014_x86_64.whl (327 kB)
+Collecting psycopg==3.3.4 (from -r /app/apps/worker/requirements.deploy.txt (line 726))
+  Downloading psycopg-3.3.4-py3-none-any.whl (213 kB)
+Collecting psycopg-binary==3.3.4 (from -r /app/apps/worker/requirements.deploy.txt (line 730))
+  Downloading psycopg_binary-3.3.4-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.whl (5.2 MB)
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 5.2/5.2 MB 24.3 MB/s eta 0:00:00
+Collecting pwdlib==0.3.0 (from -r /app/apps/worker/requirements.deploy.txt (line 765))
+  Downloading pwdlib-0.3.0-py3-none-any.whl (8.6 kB)
+Collecting pyclipper==1.4.0 (from -r /app/apps/worker/requirements.deploy.txt (line 769))
+  Downloading pyclipper-1.4.0-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.whl (978 kB)
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 978.2/978.2 kB 30.0 MB/s eta 0:00:00
+Collecting pycparser==3.0 (from -r /app/apps/worker/requirements.deploy.txt (line 794))
+  Downloading pycparser-3.0-py3-none-any.whl (48 kB)
+Collecting pycryptodome==3.23.0 (from -r /app/apps/worker/requirements.deploy.txt (line 798))
+  Downloading pycryptodome-3.23.0-cp37-abi3-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (2.3 MB)
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 2.3/2.3 MB 25.3 MB/s eta 0:00:00
+Collecting pydantic==2.13.4 (from -r /app/apps/worker/requirements.deploy.txt (line 823))
+  Downloading pydantic-2.13.4-py3-none-any.whl (472 kB)
+Collecting pydantic-core==2.46.4 (from -r /app/apps/worker/requirements.deploy.txt (line 832))
+  Downloading pydantic_core-2.46.4-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (2.1 MB)
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 2.1/2.1 MB 25.9 MB/s eta 0:00:00
+Collecting pydantic-settings==2.14.2 (from -r /app/apps/worker/requirements.deploy.txt (line 899))
+  Downloading pydantic_settings-2.14.2-py3-none-any.whl (61 kB)
+Collecting pymupdf==1.28.0 (from -r /app/apps/worker/requirements.deploy.txt (line 903))
+  Downloading pymupdf-1.28.0-cp310-abi3-manylinux_2_28_x86_64.whl (25.7 MB)
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 25.7/25.7 MB 26.4 MB/s eta 0:00:00
+Collecting pypdf==6.14.2 (from -r /app/apps/worker/requirements.deploy.txt (line 915))
+  Downloading pypdf-6.14.2-py3-none-any.whl (349 kB)
+Collecting python-dotenv==1.2.2 (from -r /app/apps/worker/requirements.deploy.txt (line 919))
+  Downloading python_dotenv-1.2.2-py3-none-any.whl (22 kB)
+Collecting pyyaml==6.0.2 (from -r /app/apps/worker/requirements.deploy.txt (line 923))
+  Downloading PyYAML-6.0.2-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (767 kB)
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 767.5/767.5 kB 33.5 MB/s eta 0:00:00
+Collecting rapidocr-onnxruntime==1.4.4 (from -r /app/apps/worker/requirements.deploy.txt (line 946))
+  Downloading rapidocr_onnxruntime-1.4.4-py3-none-any.whl (14.9 MB)
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 14.9/14.9 MB 17.8 MB/s eta 0:00:00
+Collecting requests==2.34.2 (from -r /app/apps/worker/requirements.deploy.txt (line 949))
+  Downloading requests-2.34.2-py3-none-any.whl (73 kB)
+Collecting requests-toolbelt==1.0.0 (from -r /app/apps/worker/requirements.deploy.txt (line 956))
+  Downloading requests_toolbelt-1.0.0-py2.py3-none-any.whl (54 kB)
+Collecting shapely==2.1.2 (from -r /app/apps/worker/requirements.deploy.txt (line 960))
+  Downloading shapely-2.1.2-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.whl (3.1 MB)
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 3.1/3.1 MB 35.0 MB/s eta 0:00:00
+Collecting six==1.17.0 (from -r /app/apps/worker/requirements.deploy.txt (line 1003))
+  Downloading six-1.17.0-py2.py3-none-any.whl (11 kB)
+Collecting sniffio==1.3.1 (from -r /app/apps/worker/requirements.deploy.txt (line 1007))
+  Downloading sniffio-1.3.1-py3-none-any.whl (10 kB)
+Collecting sqlalchemy==2.0.51 (from -r /app/apps/worker/requirements.deploy.txt (line 1011))
+  Downloading sqlalchemy-2.0.51-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl (3.4 MB)
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 3.4/3.4 MB 37.0 MB/s eta 0:00:00
+Collecting starlette==1.3.1 (from -r /app/apps/worker/requirements.deploy.txt (line 1045))
+  Downloading starlette-1.3.1-py3-none-any.whl (73 kB)
+Collecting tenacity==9.1.4 (from -r /app/apps/worker/requirements.deploy.txt (line 1049))
+  Downloading tenacity-9.1.4-py3-none-any.whl (28 kB)
+Collecting tqdm==4.68.4 (from -r /app/apps/worker/requirements.deploy.txt (line 1053))
+  Downloading tqdm-4.68.4-py3-none-any.whl (676 kB)
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 676.6/676.6 kB 42.1 MB/s eta 0:00:00
+Collecting typing-extensions==4.16.0 (from -r /app/apps/worker/requirements.deploy.txt (line 1057))
+  Downloading typing_extensions-4.16.0-py3-none-any.whl (45 kB)
+Collecting typing-inspection==0.4.2 (from -r /app/apps/worker/requirements.deploy.txt (line 1078))
+  Downloading typing_inspection-0.4.2-py3-none-any.whl (14 kB)
+Collecting urllib3==2.7.0 (from -r /app/apps/worker/requirements.deploy.txt (line 1089))
+  Downloading urllib3-2.7.0-py3-none-any.whl (131 kB)
+Collecting uuid-utils==0.17.0 (from -r /app/apps/worker/requirements.deploy.txt (line 1095))
+  Downloading uuid_utils-0.17.0-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (320 kB)
+Collecting uvicorn==0.51.0 (from -r /app/apps/worker/requirements.deploy.txt (line 1158))
+  Downloading uvicorn-0.51.0-py3-none-any.whl (73 kB)
+Collecting websockets==15.0.1 (from -r /app/apps/worker/requirements.deploy.txt (line 1162))
+  Downloading websockets-15.0.1-cp312-cp312-manylinux_2_5_x86_64.manylinux1_x86_64.manylinux_2_17_x86_64.manylinux2014_x86_64.whl (182 kB)
+Collecting xxhash==3.8.1 (from -r /app/apps/worker/requirements.deploy.txt (line 1190))
+  Downloading xxhash-3.8.1-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl (220 kB)
+Collecting zstandard==0.25.0 (from -r /app/apps/worker/requirements.deploy.txt (line 1300))
+  Downloading zstandard-0.25.0-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.whl (5.5 MB)
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 5.5/5.5 MB 33.8 MB/s eta 0:00:00
+Installing collected packages: flatbuffers, zstandard, xxhash, websockets, uuid-utils, urllib3, typing-extensions, tqdm, tenacity, sniffio, six, pyyaml, python-dotenv, pypdf, pymupdf, pycryptodome, pycparser, pyclipper, pwdlib, psycopg-binary, protobuf, prometheus-client, pillow, pgvector, packaging, ormsgpack, orjson, numpy, mdurl, markupsafe, jsonpointer, idna, h11, greenlet, dnspython, distro, click, charset-normalizer, certifi, annotated-types, annotated-doc, uvicorn, typing-inspection, sqlalchemy, shapely, requests, pydantic-core, psycopg, opentelemetry-proto, opentelemetry-api, opencv-python, onnxruntime, markdown-it-py, mako, langchain-protocol, jsonpatch, httpcore, googleapis-common-protos, email-validator, cffi, anyio, starlette, requests-toolbelt, rapidocr-onnxruntime, pydantic, opentelemetry-semantic-conventions, opentelemetry-exporter-otlp-proto-common, httpx, argon2-cffi-bindings, alembic, pydantic-settings, opentelemetry-sdk, langsmith, fastapi, argon2-cffi, opentelemetry-exporter-otlp-proto-http, minio, langchain-core, langgraph-sdk, langgraph-checkpoint, langgraph-prebuilt, langgraph
+Successfully installed alembic-1.18.5 annotated-doc-0.0.4 annotated-types-0.7.0 anyio-4.14.2 argon2-cffi-25.1.0 argon2-cffi-bindings-25.1.0 certifi-2026.6.17 cffi-2.1.0 charset-normalizer-3.4.9 click-8.4.2 distro-1.9.0 dnspython-2.8.0 email-validator-2.3.0 fastapi-0.139.0 flatbuffers-25.12.19 googleapis-common-protos-1.75.0 greenlet-3.5.3 h11-0.16.0 httpcore-1.0.9 httpx-0.28.1 idna-3.18 jsonpatch-1.33 jsonpointer-3.1.1 langchain-core-1.5.1 langchain-protocol-0.0.18 langgraph-1.2.9 langgraph-checkpoint-4.1.1 langgraph-prebuilt-1.1.0 langgraph-sdk-0.4.2 langsmith-0.10.10 mako-1.3.12 markdown-it-py-4.2.0 markupsafe-3.0.3 mdurl-0.1.2 minio-7.2.20 numpy-2.3.5 onnxruntime-1.26.0 opencv-python-5.0.0.93 opentelemetry-api-1.44.0 opentelemetry-exporter-otlp-proto-common-1.44.0 opentelemetry-exporter-otlp-proto-http-1.44.0 opentelemetry-proto-1.44.0 opentelemetry-sdk-1.44.0 opentelemetry-semantic-conventions-0.65b0 orjson-3.11.9 ormsgpack-1.12.2 packaging-26.2 pgvector-0.5.0 pillow-12.3.0 prometheus-client-0.25.0 protobuf-7.35.1 psycopg-3.3.4 psycopg-binary-3.3.4 pwdlib-0.3.0 pyclipper-1.4.0 pycparser-3.0 pycryptodome-3.23.0 pydantic-2.13.4 pydantic-core-2.46.4 pydantic-settings-2.14.2 pymupdf-1.28.0 pypdf-6.14.2 python-dotenv-1.2.2 pyyaml-6.0.2 rapidocr-onnxruntime-1.4.4 requests-2.34.2 requests-toolbelt-1.0.0 shapely-2.1.2 six-1.17.0 sniffio-1.3.1 sqlalchemy-2.0.51 starlette-1.3.1 tenacity-9.1.4 tqdm-4.68.4 typing-extensions-4.16.0 typing-inspection-0.4.2 urllib3-2.7.0 uuid-utils-0.17.0 uvicorn-0.51.0 websockets-15.0.1 xxhash-3.8.1 zstandard-0.25.0
+[91mWARNING: Running pip as the 'root' user can result in broken permissions and conflicting behaviour with the system package manager, possibly rendering your system unusable. It is recommended to use a virtual environment instead: https://pip.pypa.io/warnings/venv. Use the --root-user-action option if you know what you are doing and want to suppress this warning.
+[0m[91m
+[notice] A new release of pip is available: 25.0.1 -> 26.2.1
+[notice] To update, run: pip install --upgrade pip
+[0m ---> Removed intermediate container 8c8a27e628fc
+ ---> 9abfad9588c3
+Step 21/26 : COPY apps/worker /app/apps/worker
+ ---> 83cc12f78318
+Step 22/26 : RUN chown -R app:app /app
+ ---> Running in afb0fb720516
+ ---> Removed intermediate container afb0fb720516
+ ---> 8ad28fe211f1
+Step 23/26 : USER app
+ ---> Running in d8cee06bd379
+ ---> Removed intermediate container d8cee06bd379
+ ---> 7462baead6d2
+Step 24/26 : WORKDIR /app/apps/worker
+ ---> Running in 6e02b2657432
+ ---> Removed intermediate container 6e02b2657432
+ ---> af7693fbfded
+Step 25/26 : ENV PYTHONPATH=/app/apps/api/src:/app/apps/worker/src
+ ---> Running in 693134d89227
+ ---> Removed intermediate container 693134d89227
+ ---> 8e94d05d7bc4
+Step 26/26 : CMD ["python", "-m", "ai_pdf_worker.main"]
+ ---> Running in a317f64f30e2
+ ---> Removed intermediate container a317f64f30e2
+ ---> e42952cfe5e3
+Successfully built e42952cfe5e3
+Successfully tagged ai-pdf-workspace-worker:r800-20260810t121041z-814624

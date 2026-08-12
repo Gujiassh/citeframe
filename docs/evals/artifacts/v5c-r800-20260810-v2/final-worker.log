@@ -1,0 +1,2 @@
+Attaching to citeframe-r800-v5c-20260810-v2_worker_1
+worker_1         | 2026-08-10 12:04:43,885 INFO ai_pdf_worker worker_start poll_interval_seconds=1.000 max_consecutive_errors=5 retry_initial_delay_seconds=1.000 retry_max_delay_seconds=30.000

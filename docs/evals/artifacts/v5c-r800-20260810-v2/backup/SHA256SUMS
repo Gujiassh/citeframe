@@ -1,0 +1,4 @@
+664f6904fa7cfe10d1f61a90173ddc3e734ce66e05b6adfe1fbfc95fc181abec  manifest.env
+f8ff9be366578d43a585342f9969e8ff9a9e742fca4748addbd661815e01fe00  minio/workspaces/f54c7366-4a49-5eda-8373-dcd80bd5df6d/assets/2f00e613-c792-589d-af16-be30cba6b847/representations/1/pdf_page_layout.json
+b4990c5a2e8f232eb594f72cd3293b1a9f89e53015fa253ccc3f9cb6d8ba3918  minio/workspaces/f54c7366-4a49-5eda-8373-dcd80bd5df6d/assets/2f00e613-c792-589d-af16-be30cba6b847/source/r800-research.pdf
+70c19a843a476044ac8f72fa1d660d1902b93e9d5a7743c8ea615ae18ae9d9a2  postgres.dump

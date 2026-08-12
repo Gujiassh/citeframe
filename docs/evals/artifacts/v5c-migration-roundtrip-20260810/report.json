@@ -1,0 +1,18 @@
+{
+  "artifact": "v5c-migration-roundtrip-20260810",
+  "database": "PostgreSQL 17 local ai_pdf_workspace",
+  "startingHead": "h2b3c4d5e6f7",
+  "roundTripTarget": "f9a1b2c3d4e5",
+  "commands": [
+    "uv run --project apps/api alembic -c apps/api/alembic.ini downgrade f9a1b2c3d4e5",
+    "uv run --project apps/api alembic -c apps/api/alembic.ini upgrade head"
+  ],
+  "downgrade": "passed",
+  "upgrade": "passed",
+  "finalHead": "h2b3c4d5e6f7",
+  "agentIoColumns": 6,
+  "researchPlanRevisionRows": 0,
+  "researchExecutionSnapshotRows": 0,
+  "unknownCostRowsBeforeRoundTrip": 0,
+  "notes": "Round-trip ran against the local PostgreSQL research schema with no Research business rows; no production data was rewritten."
+}

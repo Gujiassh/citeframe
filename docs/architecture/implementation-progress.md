@@ -55,8 +55,8 @@ M403A 的逐次优化假设、实验手段、通过/否决结果、指标和 art
 | V4 | Evidence Research Workflow | R000-R800 已完成；R803 后置 | 确定性工程门通过；v5 formal v1 在 round-01 前冻结失败 | Research ledger、固定 executor、HITL/SSE/retry/recovery、Web、observability、Evaluation 与 R800 PostgreSQL/MinIO 恢复全部通过；R803 v1 失败证据不可变，v2 不阻塞功能主线 |
 | V5-A | Provider 与模型能力层 | 已完成 | A002-A007 已交付并通过独立复审 | generation 已支持 OpenAI/DeepSeek adapter；registry/fingerprint/Research-ingestion drift gate 与 embedding index contract 已接入；vision/ASR/provider secret fail-closed 已完成；Web 分离 current Settings profile 与 frozen Research run/revision snapshot；A007 完成 Quick Chat/Citation/NoteSource/Research/ingestion/reindex/Worker/Web 回归 |
 | V5-B | 多模态资料扩展 | Markdown-only v1 已实现 | isolated/canonical、live scoped restore、online migration、standalone browser 与 B008 formal isolated deployment/Critical closure 已通过；accepted artifact 为 `v5b-document-deployment-v4` | Document registry/catalog、Markdown adapter、typed `document_anchor`、retrieval、Citation/NoteSource、Viewer、delete/recovery/restore 已完成；HTML/Office/Audio/Video 不在本切片，需独立决策与 gate |
-| V5-C | 多 Agent 协作产品化 | 规划中 | V4 executor 已有工程基线 | 将固定 Research DAG 做成用户可理解的计划、并行、审批、重试、恢复和 Artifact 体验，不建设通用 Agent 平台 |
-| V5-D | 端到端整合与工程稳定 | 规划中 | 尚未开始 | 混合模态 Workspace、多模型 profile、跨层错误展示、部署和回归 |
+| V5-C | 多 Agent 协作产品化 | 工程 `ACCEPT`，Medium residual follow-up | C-API-WORKER、C-BOUNDARY 与 R800 v6 已通过 | 固定 Research DAG 已完成计划、并行、审批、重试、恢复和 Artifact 体验；生产 Agent I/O 已严格版本化，不建设通用 Agent 平台 |
+| V5-D | 端到端整合与工程稳定 | 工程 `ACCEPT`（internal-preview） | D-G0–D-G7 工程门通过（D-G3/D-G5 partial-existing；D-G6 focused live） | 全量 API 562 / Worker 296 / Web 131 + lint/tsc/build；D-G4 production-start 与 D-G6 mixed live seed 已有证据；R803/M404 仍 not_evaluable；empty-target Compose restore 为 residual |
 | V5-E | 模型质量与用户价值 | 后置 | R803/M404 未评估 | 按模态、任务、provider/model 运行质量评估和真实用户验证，决定 Beta/发布 |
 
 ## 4. 已完成的设计文档
@@ -82,7 +82,49 @@ V1、V2-A、阶段 9、V3 M401-M403B 与 V4 R000-R800 工程基线已完成。�
 
 ## 6. 当前正在做什么
 
-当前：`V5-A A002-A007 已完成并通过独立复审；V5-B Markdown-only document v1 已完成 API/Worker/Web/canonical integration、reprocess fail-closed 修正、live restore/browser evidence 与 B008 formal isolated deployment Critical closure。accepted B008 artifact 为 `docs/evals/artifacts/v5b-document-deployment-v4/`（`deploymentGate=pass`、`releaseGatePassed=true`）；v1 为旧 runner 证据、v2 为 Worker health predicate 失败证据、v3 为中断 partial 证据，均保留且不可改写。V5-C 继续停留在 spec/owner-decision 阶段，OD-C1/C2/C3/C4/C5/C8 未批准，不启动 production implementation。R803 formal v1 失败证据继续冻结，R803 v2 与 M404 暂不阻塞功能主线。`
+当前：`V5-A/B/C 与 V5-D 工程门已完成（internal-preview）。2026-08-12 跑通 D-G7 全量回归：API 562 passed、Worker 296 passed、Web 131 passed，lint/tsc/build/compileall/diff-check 通过；Critical closeout ACCEPT with residuals。artifact：docs/evals/artifacts/v5d-20260811-01/d-g7/。R803/M404 仍 not_evaluable（V5-E）。下一步可选：empty-target Compose restore residual、或进入 V5-E / commit 决策。未 commit/push。`
+
+
+## 2026-08-12：V5-D D-G7 full regression + Critical closeout
+
+- 全量矩阵：API `562 passed, 1 warning`；Worker `296 passed`；Web unit `131 passed`；lint/tsc/build/compileall/`git diff --check` 通过；V5-D 文档相对链接 0 broken。
+- Critical：`docs/evals/v5d-critical-review-20260811.md` 追加 D-G7 closeout，工程 verdict `ACCEPT` with residuals；`engineeringGate=pass`，`releaseGatePassed=true`（internal_preview），`realModelQualityPassed=false`，`userValuePassed=false`。
+- 证据：`docs/evals/artifacts/v5d-20260811-01/d-g7/`、`d-g7-full-regression-report.md`、更新后的 `gate-status.json`。
+- Residual：D-G6 empty-target Compose restore 可选；F5 historical-row deferred；R803/M404 not_evaluable；脏工作树未 commit/push。
+- 无 schema/API/save 变更；无 commit/push。
+
+## 2026-08-11：V5-D D-G4 / D-G6 focused live continuation
+
+- D-G4：新增 `apps/web/e2e/v5d-mixed-production-start.spec.ts`，在 standalone Web + 本地 API/Worker 上跑通 mixed PDF/Image/Markdown production-start；桌面 `1440x1000` 与移动 `390x844` 各 1 条，`productionStart=true` / `mockedBff=false`，artifact 在 `docs/evals/artifacts/v5d-20260811-01/v5d-mixed-production-*`。
+- D-G6：新增 `apps/worker/scripts/v5d_mixed_deployment_seed.py` 与 `v5d_mixed_restore_acceptance.py`；真实 upload/finalize/job 灌入三模态并挂历史 Citation；live snapshot + semantic self-verify 通过；`run-v5d-mixed-acceptance.sh --mode mixed-live` 记为 `mixed-live-pass`。
+- F1/F2 返工保持关闭；D-G7 全量矩阵与独立 Critical closeout 仍未做；未 commit/push。
+- 诚实边界：D-G6 本切片证明 mixed seed/snapshot/verify 与 harness 接线，不宣称完整 empty-target Compose backup/restore 循环已跑通（合同未改，可后续复用 v5b 路径）。
+
+## 2026-08-11：V5-D Critical rework F1/F2
+
+- Independent review `docs/evals/v5d-critical-review-20260811.md` 判定 D-G7 仍为 `REWORK_REQUIRED`，但 F1/F2 已按要求返工。
+- F1：恢复 `use-chat.test.ts` 的 sibling/workspace isolation、accepted locked Evidence、rejected optimistic cleanup 基线，并保留混合 selected-scope；`7 passed`。
+- F2：API 测试改名为 metadata freeze；Worker 新增 `test_f1_executable_registry_runtime_bindings`（schema/validator 真解析、legacy empty researcher、mutated binding fail-closed）；`api_projection_key` 明确为 metadata。
+- 未宣称 D-G4 production-start 或 D-G6 live mixed restore；无 commit/push。
+
+## 2026-08-11：V5-D D-WEB/D-OPS 并行切片
+
+- D-WEB：新增 `apps/web/e2e/v5d-mixed-workspace-primary.spec.ts`（mock BFF 双视口混合主路径）与 `use-chat` 三资产 selected-scope 单元断言；**不能**单独作为 D-G4 production-start 通过证据。
+- D-OPS：新增 `infra/scripts/run-v5d-mixed-acceptance.sh`（static-only 默认）与 report schema；`bash -n` 与 static-only 运行 `engineeringGate=static-pass`，`mixedPdfImageDocumentLive=blocked`（缺 live mixed seed）。
+- D-DOCS：`docs/architecture/v5d-integration-runbook.md` 已落地。
+
+## 2026-08-11：V5-D first-slice Critical review
+
+- Controller verification：Web `use-chat` `6 passed`；mocked dual-viewport Playwright `2 passed`；API mixed/F1 focused `38 passed, 1 warning`；Worker focused `13 passed`；API/Worker compileall、D-OPS static wrapper 和 `git diff --check` 通过。
+- Review verdict：`docs/evals/v5d-critical-review-20260811.md` 为 `REWORK_REQUIRED`。F1：`use-chat.test.ts` 删除 accepted/rejected Chat failure、locked Evidence 和 same-ID cross-workspace replacement 断言；F2：registry test 只验证 metadata/key constants，未完整解析 concrete schema/validator/adapter/prompt/projection；F3：tasks/progress status 已同步。
+- Gate state：D-G0 `pass`；D-G1 `pass-focused`；D-G2 因 F1 需返工；D-G3 `partial-existing-v5c`；D-G4 仅 mocked engineering evidence；D-G5 `partial-existing-unit`；D-G6 `blocked-no-mixed-live-seed`；D-G7 `pending`。
+
+## 2026-08-11：V5-D D-G0 与 D-API-WORKER 混合回归
+
+- D-G0：记录源 SHA `4f2129c`、V5-C dirty disposition（保留）、F1/F5 不启用新 registry 的延期理由、lane ownership 与 artifact 根目录 `docs/evals/artifacts/v5d-20260811-01/`。
+- D-API-WORKER：`test_multimodal_retrieval` 混合 fixture 扩展为 PDF + Image + Markdown Document；hybrid/selected scope、Chat citation freeze、PostgreSQL unique-location oracle 覆盖 `document_anchor`；F1 role-binding metadata baseline 写入 `test_research_v5c_contract`，concrete runtime mapping 仍按 Critical review 待补。
+- 验证：API focused multimodal+F1 `12 passed`；Worker `test_v5b_mixed_workspace` `5 passed`；compileall API/Worker 通过。无 schema/API/save 变更；无 commit/push。
+- 同步新增 `docs/architecture/v5d-integration-runbook.md` 作为 D004 运行/诊断骨架。
 
 ## 2026-08-05：V5-A A007 cross-layer regression
 
@@ -245,7 +287,19 @@ V1、V2-A、阶段 9、V3 M401-M403B 与 V4 R000-R800 工程基线已完成。�
 
 ## 7. 下一步
 
-下一步：`先进入 V5-A Provider 与模型能力层，完成多模型 profile/capability contract 的设计评审；随后进入 V5-B 多模态资料扩展和 V5-C 多 Agent 协作产品化。R803/M404 作为 V5-E 后置验证保留。`
+下一步：`V5-D 工程门已 ACCEPT（internal-preview）。可选 residual：D-G6 empty-target Compose backup/restore。主线可选进入 V5-E（R803/M404），或由主人明确要求后 commit/push 脏工作树中的 V5-C/V5-D 交付。不得无批准引入新 registry version、provider selector 或 API/save/replay 合同变化。`
+
+## 2026-08-10：V5-C C-API-WORKER implementation slice
+
+- 生产 Research Run 现在冻结 `agentResultSchemaVersion`、`contextPolicyVersion`、`compactPolicyVersion`；新 Run 只接受 current v1，历史快照通过显式 legacy registry 读取，未知版本在 Worker 绑定前 fail closed。
+- `maxInputTokens` 与 `maxOutputTokens` 只控制单次 provider 请求的 context/output；累计 input/output 仅写 usage telemetry。Provider adapter 收到精确的调用级 output cap，截断输出映射为 `research_provider_output_incomplete`。
+- Context packing 在 soft threshold 前执行确定性 typed compact/batch，保留 Claim、Evidence handle、branch/provenance、顺序和 schema 字段；hard overflow 在 provider send 前返回 `research_context_limit_exceeded`。Researcher 使用冻结的 `retrievalTopK`，pricing 缺失不阻塞启动，未知成本保持 NULL 且不进入 Web money DTO。
+- Web Research run detail 展示 provider/model、usage、调用次数、Token、并行分支、重试、elapsed、剩余调用和 per-call limits；第一版不展示逐次账单或金额。
+- 验收证据（terr repair 后重跑）：API `561 passed, 1 warning`；Worker `295 passed`；Web `130 passed`；TypeScript、production build、compileall、`git diff --check` 通过；API V5-C/provider/recovery/evidence focused `84 passed, 1 warning`、Worker Agent I/O/runtime focused `34 passed`、R803 campaign regression focused `55 passed`。
+- 冻结检索 exact-limit 修复后，`research_worker_evidence` 直接把 `snapshot.retrieval_top_k` 传给 retrieval；evidence/V5-A/capability focused rerun `27 passed, 1 warning`，API 全量再次 `561 passed, 1 warning`。
+- 验收补充：在本地 PostgreSQL 17 上完成 `f9a1b2c3d4e5 -> h2b3c4d5e6f7 -> f9a1b2c3d4e5 -> h2b3c4d5e6f7` online migration round-trip，最终 head 与 6 个 Agent I/O 版本字段均正确；证据为 `docs/evals/artifacts/v5c-migration-roundtrip-20260810/report.json`。
+- 验收补充：production-start Research Playwright `5 passed`；独立 R800 v6 artifact `docs/evals/artifacts/v5c-r800-20260810-v6/report.json` 为 `engineeringGate=pass`、`releaseGatePassed=true`，10/10 场景通过，恢复前后 identity SHA 相同，provider timeline、backup/restore 与 zero-residue cleanup 通过。
+- 结论：`docs/evals/v5c-critical-review-20260810.md` 独立 Critical review 为 `ACCEPT`。F1 registry mapping 与 F5 historical-row bytes/hash 为 Medium 后续风险；`alembic upgrade head --sql` 仍受既有 `e6a7b8c9d0f1` offline 不兼容迁移影响，但 online migration 通过，均不阻塞冻结 v1。未 commit/push。
 
 具体实施原则：
 
@@ -254,6 +308,14 @@ V1、V2-A、阶段 9、V3 M401-M403B 与 V4 R000-R800 工程基线已完成。�
 3. 多 Agent 复用 V4 fixed typed executor，不建设通用 Agent 平台；Quick Chat、Citation、NoteSource 和历史保存语义继续回归。
 4. 工程测试、contract test 和每个切片的 fixture 持续执行，但不把尚未完成的模型质量分数写成功能开发阻塞。
 5. R803 v1 不覆盖、不续跑、不替换；M404 阈值和协议不降低。
+
+## 2026-08-11：V5-D implementation-ready spec package
+
+- 已补齐 V5-D contract-preserving 规格包：`decision-2026-08-11-v5d-scope.md`、`v5d-detailed-spec.md`、`implementation-lanes-v5d.md`、`verification-matrix-v5d.md`、`grok-handoff-v5d.md`。
+- D001-D005 已拆成 D-G0-D-G7 可核验门：混合 Asset scope/retrieval、Quick Chat/Citation/NoteSource、Research、桌面/移动生产启动、重启/删除/备份恢复、部署 profile、runbook 和全量回归。
+- V5-D 默认不改数据库/API/OpenAPI/SSE/save/replay/permission/cost/locator 合同；任何触发变化的 lane 必须停工，填写 `save-contract-checklist.md` 并交 main controller 裁决。
+- lane ownership 已固定为 D-API-WORKER、D-WEB、D-OPS、D-DOCS；D-ACCEPT 由 main controller 和独立 reviewer 完成，同一文件不得有多个 writer。
+- 当时状态（规格包冻结时）：规格已就绪，生产实现尚未开始；D-G0 必须先记录 canonical SHA、现有 V5-C dirty changes、F1/F5 处置和 artifact 根目录。后续首轮实现与评审状态见上方 2026-08-11 记录。无 commit/push。
 
 ## 8. 当前不进入主线
 

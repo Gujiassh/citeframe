@@ -143,7 +143,7 @@ docs/fixtures/document-modality/*
 
 ### C-SPEC：V4 delta and product freeze
 
-状态：`blocked-on-OD-C1/C2/C3/C4/C5/C8`
+状态：`approved; implementation-ready@2026-08-10`
 
 专属路径：
 
@@ -151,21 +151,21 @@ docs/fixtures/document-modality/*
 specs/v5/multimodal-agent-product/v5c-*
 ```
 
-`open-decisions.md` 由 main controller 串行维护；C-SPEC 只能提交 OD-C proposal，不与 B-SPEC 并行写同一文件。
+`open-decisions.md` 已由 main controller 串行维护并批准 OD-C1/C2/C3/C4/C5/C8；后续合同变更仍由 main controller 串行维护。
 
 职责：把 C001-C008 改写成现有 V4 delta，冻结 status/control/timeline/branch/artifact/role I/O/permission/budget acceptance。不得重写 V4 runtime。
 
-### C-API-CONTRACT：Only proven API gaps
+### C-API-WORKER：Research contract, usage and context
 
-状态：`blocked-on-C-G1/C-G3`
+状态：`implemented; focused/full gates and live PostgreSQL round-trip passed; independent Critical review ACCEPT`
 
-专属路径：由 main controller 针对真实缺口逐文件分配 `apps/api/.../research*`；默认不启动。
+专属路径：由 main controller 针对真实缺口逐文件分配 `apps/api/src/ai_pdf_api/models/research_*.py、apps/api/src/ai_pdf_api/schemas/research.py、apps/api/src/ai_pdf_api/services/research_worker_*.py；以及由 main controller 串行合并的 migration。Worker ownership 为 apps/worker/src/ai_pdf_worker/research_agent_schemas.py、research_runtime_agents.py、research_runtime_ports.py 及对应 focused tests。
 
-职责：只有当现有 DTO/event/action 无法表达批准的产品需求时，做最小 additive API change。必须先提交 contract/migration/save impact；无缺口时只补 regression tests。
+职责：实现批准的 strict production role-I/O registry、snapshot version fields、legacy reader、usage-only DTO、optional pricing/unknown state、per-call context/output gates、typed compact/batch contract 和 stable failure mapping。所有 migration/save impact 由 main controller 串行审核并合并；不得写 money UI。
 
 ### C-WEB-PRODUCT：Research product surface
 
-状态：`blocked-on-C-G2/C-G3`
+状态：`implemented in canonical worktree; production-start gate passed; independent Critical review ACCEPT`
 
 专属路径：
 
@@ -179,9 +179,9 @@ apps/web/e2e/v5c-research-product.spec.ts
 
 与 B-WEB-DOC 的边界：B 只拥有 evidence/document module；C 只拥有 research surfaces；共享 i18n 由 main controller 串行处理。
 
-### C-BOUNDARY：Research security/budget/recovery audit
+### C-BOUNDARY：Research security/usage/context/recovery audit
 
-状态：`blocked-on-C-G1/C-G3`
+状态：`focused boundary coverage and R800 v6 present; independent Critical review ACCEPT; F1/F5 Medium follow-up remains`
 
 专属路径：
 
@@ -191,23 +191,23 @@ apps/worker/tests/test_v5c_boundary_*.py
 specs/v5/multimodal-agent-product/v5c-boundary-review.md
 ```
 
-职责：workspace/membership/creator-only decisions/tool allowlist/evidence handle scope/provider fingerprint/budget/lease/cancel/recovery/log secret checks，使用 API/Worker boundary test files；不拥有 C-WEB-PRODUCT 的 Web files。
+职责：workspace/membership/creator-only decisions/tool allowlist/evidence handle scope/provider fingerprint/usage limits/context compact/lease/cancel/recovery/log secret checks，使用 API/Worker boundary test files；不拥有 C-WEB-PRODUCT 的 Web files。
 
 ### C-REGRESS：Cross-layer acceptance
 
-状态：`blocked-on-C-G4/C-G5/C-G6`
+状态：`focused, production-start and isolated R800 v6 gates passed; full independent C acceptance ACCEPT`
 
 专属路径：tests/fixtures/docs only, limited to the exact C regression files assigned by main controller；不得写 B-INT-MIXED fixture paths 或 review artifacts。
 
-职责：C008 Quick Chat、Citation、NoteSource、Research old save semantics、A007 Chat HTTP shape、production-start E2E、R800 scenario selection。
+职责：C008 Quick Chat、Citation、NoteSource、Research old save semantics、A007 Chat HTTP shape、production-start E2E，以及本轮强制的隔离 full R800 acceptance。
 
 ### C-REVIEW：Independent Critical review
 
-状态：`blocked-on-C-G7`
+状态：`ACCEPT@2026-08-10`
 
 专属路径：no production edits。
 
-职责：从 goal alignment、V4 boundary、data/save contract、security/permission、runtime evidence 和 mobile UX 反向审计。无 `ACCEPT` 不进入 V5-D。
+职责：从 goal alignment、V4 boundary、data/save contract、security/permission、runtime evidence 和 mobile UX 反向审计。已接受 V5-C 工程/发布门；F1 registry mapping 与 F5 historical-row bytes/hash 在引入下一 registry version 前补齐。`R803/M404` 仍不属于本工程 gate。
 
 ## 不可并行的共享 ownership
 

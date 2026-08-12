@@ -31,6 +31,7 @@ from ai_pdf_api.services.research_constants import (
     WORKFLOW_VERSION_ID,
 )
 from ai_pdf_api.services.research_idempotency import ResearchError, canonical_sha256
+from ai_pdf_api.services.research_agent_io_registry import resolve_registry
 from ai_pdf_api.services.research_runs import (
     build_execution_snapshot_hash_payload,
     build_plan_snapshot_hash_payload,
@@ -192,6 +193,19 @@ def _approve_plan(
             "The approved Research execution profile is no longer available.",
             422,
         )
+    try:
+        resolve_registry(
+            agent_result_schema_version=revision.agent_result_schema_version,
+            context_policy_version=revision.context_policy_version,
+            compact_policy_version=revision.compact_policy_version,
+            for_new_run=True,
+        )
+    except ValueError as error:
+        raise ResearchError(
+            "research_agent_io_version_unavailable",
+            "The approved Research agent I/O registry version is unavailable for new execution.",
+            422,
+        ) from error
     snapshot_payload = build_execution_snapshot_hash_payload(revision, decision, frozen_assets, bindings)
     snapshot = ResearchExecutionSnapshot(
         workspace_id=run.workspace_id,
@@ -227,6 +241,9 @@ def _approve_plan(
         max_run_timeout_seconds=revision.proposed_max_run_timeout_seconds,
         max_step_timeout_seconds=revision.proposed_max_step_timeout_seconds,
         max_provider_timeout_seconds=revision.proposed_max_provider_timeout_seconds,
+        agent_result_schema_version=revision.agent_result_schema_version,
+        context_policy_version=revision.context_policy_version,
+        compact_policy_version=revision.compact_policy_version,
         execution_snapshot_sha256=canonical_sha256(snapshot_payload),
         created_at=now,
     )

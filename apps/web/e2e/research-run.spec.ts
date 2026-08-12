@@ -49,7 +49,6 @@ function planningBudgetLimits() {
     maxProviderCalls: 2,
     maxInputTokens: 32000,
     maxOutputTokens: 8000,
-    maxCost: { currency: "USD", amountMicros: 500000 },
     plannerTimeoutSeconds: 300,
     providerTimeoutSeconds: 120,
     maxPlannerAttempts: 3,
@@ -62,7 +61,6 @@ function researchBudgetLimits() {
     maxToolCalls: 64,
     maxInputTokens: 250000,
     maxOutputTokens: 64000,
-    maxCost: { currency: "USD", amountMicros: 5000000 },
     maxParallelResearchers: 3,
     runTimeoutSeconds: 1800,
     stepTimeoutSeconds: 300,
@@ -179,11 +177,8 @@ function summary(status: string, stateVersion: number, currentEventSeq: number) 
     stateVersion,
     requestedAssetScope: { mode: "all_ready" },
     frozenAssetCount: 1,
-    costCurrency: "USD",
     currentPlanRevisionNumber: 1,
     currentEventSeq,
-    estimatedCost: null,
-    consumedCost: { currency: "USD", amountMicros: 0 },
     createdAt: now,
     updatedAt: now,
     finishedAt: null,
@@ -208,15 +203,14 @@ function detail(status: string, stateVersion: number, currentEventSeq: number) {
       estimatedProviderCalls: 3,
       estimatedInputTokens: null,
       estimatedOutputTokens: null,
-      estimatedCost: null,
       planningUsage: {
         providerCalls: 1,
         toolCalls: 0,
         inputTokens: 0,
         outputTokens: 0,
-        cost: { currency: "USD", amountMicros: 0 },
         usageFinal: true,
         measuredAt: now,
+        usageSource: "actual",
       },
       createdAt: now,
       approvedAt: approved ? now : null,
@@ -227,9 +221,9 @@ function detail(status: string, stateVersion: number, currentEventSeq: number) {
       toolCalls: 0,
       inputTokens: 0,
       outputTokens: 0,
-      cost: { currency: "USD", amountMicros: 0 },
       usageFinal: true,
       measuredAt: now,
+      usageSource: "actual",
     },
     researchUsage: null,
     steps: [
@@ -533,6 +527,9 @@ for (const viewport of [
     await expect(page.getByText("Research Fixture", { exact: true })).toBeVisible();
     await expect(page.getByText(/预计模型调用|Estimated model calls/i)).toBeVisible();
     await expect(page.getByText(/暂无已知缺口|No known gaps/i)).toBeVisible();
+    await expect(page.getByText(/本次用量|Usage/i)).toBeVisible();
+    await expect(page.getByText(/已用时间|Elapsed/i)).toBeVisible();
+    await expect(page.getByText(/剩余模型调用|Remaining provider calls/i)).toBeVisible();
     await expect(page.getByRole("button", { name: /批准计划|approve plan/i })).toBeVisible();
     expect(requests.createRequests).toHaveLength(1);
     expect(requests.createRequests[0].idempotencyKey).toBeTruthy();

@@ -1,0 +1,25 @@
+{
+  "checks": {
+    "productionStartE2e": true,
+    "restoreCli": true,
+    "seedCli": true
+  },
+  "passed": true,
+  "schemaVersion": "v5d-mixed-live-lane-v1",
+  "stateHasThreeModalities": true,
+  "statePath": "/tmp/v5d-mixed-run/browser-state.json",
+  "stateSchema": "v5d-mixed-browser-state-v1",
+  "verification": {
+    "afterSemanticSha256": "8df796a37aca6d20f98616a9eeefe3851a60a84381d33e281af978fadb7ee390",
+    "beforeSemanticSha256": "8df796a37aca6d20f98616a9eeefe3851a60a84381d33e281af978fadb7ee390",
+    "mismatches": [],
+    "passed": true,
+    "requiredKinds": [
+      "pdf",
+      "image",
+      "document"
+    ],
+    "schemaVersion": "v5d-mixed-restore-verification-v1",
+    "workspaceId": "b6d645b7-55aa-4cb0-907d-66b4bfd29be4"
+  }
+}

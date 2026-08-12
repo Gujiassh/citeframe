@@ -27,6 +27,7 @@ from ai_pdf_api.models import (
     WorkspaceMembership,
 )
 from ai_pdf_api.services.research_events import append_research_event
+from ai_pdf_api.services.research_views import load_research_plan_artifact
 from research_router_test_support import (
     approve_seeded_plan,
     auth,
@@ -281,6 +282,31 @@ def test_artifact_content_verifies_hash_before_return(research_app, monkeypatch:
     )
     assert unavailable.status_code == 410
     assert unavailable.json()["error"]["code"] == "research_artifact_unavailable"
+
+
+def test_legacy_plan_reader_strips_cost_only_from_projection(research_app) -> None:
+    client, db, context = research_app
+    created = create_run(client, context)
+    decision = seed_plan_decision(db, created["id"], context["objectStore"])
+    artifact = db.get(ResearchArtifact, decision.input_artifact_id)
+    assert artifact is not None
+
+    legacy_bytes = context["objectStore"][artifact.object_key]
+    assert isinstance(legacy_bytes, bytes)
+    payload = __import__("json").loads(legacy_bytes)
+    payload["estimatedCost"] = {"currency": "USD", "amountMicros": 1234}
+    projected_bytes = __import__("json").dumps(payload, sort_keys=True, separators=(",", ":")).encode()
+    context["objectStore"][artifact.object_key] = projected_bytes
+    artifact.byte_size = len(projected_bytes)
+    artifact.content_sha256 = hashlib.sha256(projected_bytes).hexdigest()
+    db.commit()
+
+    plan = load_research_plan_artifact(artifact)
+
+    assert plan.estimated_provider_calls == 1
+    assert "estimatedCost" not in plan.model_dump(mode="json", by_alias=True)
+    assert context["objectStore"][artifact.object_key] == projected_bytes
+    assert artifact.content_sha256 == hashlib.sha256(projected_bytes).hexdigest()
 
 
 def test_cross_workspace_asset_scope_fails_without_partial_run(research_app) -> None:

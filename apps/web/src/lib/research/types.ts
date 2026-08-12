@@ -1,10 +1,5 @@
 import type { EvidenceLocator, SourceVersions } from "../evidence/types";
 
-export type MoneyMicrounits = {
-  currency: string;
-  amountMicros: number;
-};
-
 export type FrozenAssetScope = {
   frozenAt: string;
   assets: Array<{
@@ -31,6 +26,29 @@ export type ResearchProviderSnapshot = {
 
 export type ResearchExecutionConfigSnapshot = {
   provider: ResearchProviderSnapshot;
+  limits: ResearchBudgetLimits;
+};
+
+export type ResearchBudgetLimits = {
+  maxProviderCalls: number;
+  maxToolCalls: number;
+  maxInputTokens: number;
+  maxOutputTokens: number;
+  maxParallelResearchers: number;
+  runTimeoutSeconds: number;
+  stepTimeoutSeconds: number;
+  providerTimeoutSeconds: number;
+  maxAttemptsPerStep: number;
+};
+
+export type ResearchUsage = {
+  providerCalls: number;
+  toolCalls: number;
+  inputTokens: number;
+  outputTokens: number;
+  usageFinal: boolean;
+  measuredAt: string;
+  usageSource: "actual" | "estimated" | "mixed" | null;
 };
 
 export type ResearchPlanningInputSnapshot = {
@@ -106,7 +124,6 @@ export type ResearchPlan = {
   estimatedProviderCalls: number;
   estimatedInputTokens: number | null;
   estimatedOutputTokens: number | null;
-  estimatedCost: MoneyMicrounits | null;
   approvedAt: string | null;
 };
 
@@ -165,8 +182,6 @@ export type ResearchRunSummary = {
   frozenAssetCount: number;
   currentPlanRevisionNumber: number | null;
   currentEventSeq: number;
-  estimatedCost: MoneyMicrounits | null;
-  consumedCost: MoneyMicrounits;
   createdAt: string;
   updatedAt: string;
   finishedAt: string | null;
@@ -176,6 +191,8 @@ export type ResearchRunDetail = ResearchRunSummary & {
   frozenAssetScope: FrozenAssetScope | null;
   plan: ResearchPlan | null;
   researchExecution?: ResearchExecutionSnapshot | null;
+  planningUsage: ResearchUsage;
+  researchUsage: ResearchUsage | null;
   steps: ResearchStep[];
   pendingDecisions: ResearchDecision[];
   submittedDecisions: ResearchDecision[];

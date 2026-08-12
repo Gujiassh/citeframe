@@ -71,6 +71,7 @@ def test_ollama_and_openai_compatibility(provider_stub: str) -> None:
                 {"question": "Compare", "assetIds": ["asset-1"]},
             ),
         )
+        assert planner.json()["status"] == "completed"
         plan = json.loads(planner.json()["output_text"])
         assert planner.status_code == 200
         assert len(plan["subproblems"]) == 3
@@ -86,6 +87,8 @@ def test_ollama_and_openai_compatibility(provider_stub: str) -> None:
                 },
             ),
         )
+        assert researcher.json()["status"] == "completed"
+        assert "incomplete_details" not in researcher.json()
         claims = json.loads(researcher.json()["output_text"])["claims"]
         assert researcher.status_code == 200
         assert len(claims) == 2
@@ -109,6 +112,7 @@ def test_ollama_and_openai_compatibility(provider_stub: str) -> None:
                 },
             ),
         )
+        assert verification.json()["status"] == "completed"
         assert json.loads(verification.json()["output_text"])["claims"] == [
             {"id": "claim-1", "status": "supported"},
             {"id": "claim-2", "status": "unsupported"},
@@ -164,6 +168,7 @@ def test_ollama_and_openai_compatibility(provider_stub: str) -> None:
                 },
             ),
         )
+        assert synthesis.json()["status"] == "completed"
         assert json.loads(synthesis.json()["output_text"]) == {
             "factClaimIds": ["claim-fact"],
             "unresolvedClaimIds": ["claim-unresolved"],

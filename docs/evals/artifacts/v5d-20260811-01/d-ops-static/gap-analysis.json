@@ -1,0 +1,73 @@
+{
+  "gaps": [
+    {
+      "blockerFor": [
+        "D-G6 mixed live restore identity"
+      ],
+      "evidence": [
+        "infra/scripts has run-v5b-document-acceptance.sh (Document only)",
+        "infra/scripts has run-r800-acceptance.sh (Research engineering)",
+        "docs/fixtures/document-modality/mixed-workspace.manifest.json is shape-only"
+      ],
+      "id": "G-MIXED-LIVE-SEED",
+      "owner": "D-API-WORKER for seed/snapshot; D-OPS to wire after CLI exists",
+      "severity": "high",
+      "status": "open",
+      "summary": "No live mixed PDF/Image/Document deployment seed/snapshot/verify CLI"
+    },
+    {
+      "blockerFor": [
+        "D-G4/D-G6 browser after restore"
+      ],
+      "evidence": [
+        "v5b runner uses e2e/v5b-document-production-start.spec.ts",
+        "m403 runner uses e2e/m403-restore.spec.ts (PDF/Image historical)"
+      ],
+      "id": "G-MIXED-BROWSER",
+      "owner": "D-WEB for e2e; D-OPS for harness wiring",
+      "severity": "medium",
+      "status": "open",
+      "summary": "No production-start Playwright mixed PDF/Image/Document restore replay in infra"
+    },
+    {
+      "blockerFor": [
+        "D-G5 live restart evidence if unit tests insufficient"
+      ],
+      "evidence": [
+        "D-G5 restart/reclaim/delete covered primarily by API/Worker unit/integration tests",
+        "backup-deployment.sh stops writers only for backup window, not restart oracle"
+      ],
+      "id": "G-RESTART-LIVE",
+      "owner": "D-API-WORKER tests first; D-OPS only if live compose restart required",
+      "severity": "medium",
+      "status": "open",
+      "summary": "No dedicated live Compose API/Worker/Web restart harness under infra"
+    },
+    {
+      "blockerFor": [],
+      "decision": "Reuse existing overrides; do not fork deploy contracts for V5-D",
+      "evidence": [
+        "infra/docker/compose.v5b.yml",
+        "infra/docker/compose.r800.yml"
+      ],
+      "id": "G-COMPOSE-V5D",
+      "owner": "D-OPS",
+      "severity": "low",
+      "status": "accepted-reuse",
+      "summary": "No compose.v5d.yml; v5b and r800 overrides are sufficient provider-stub overlays"
+    },
+    {
+      "blockerFor": [],
+      "evidence": [
+        "infra/scripts/backup-deployment.sh BACKUP_CONTRACT=document-modality-v1",
+        "infra/scripts/restore-deployment.sh strict key checks"
+      ],
+      "id": "G-BACKUP-CONTRACT",
+      "owner": "D-OPS",
+      "severity": "info",
+      "status": "pass-no-change",
+      "summary": "Backup contract remains document-modality-v1; full pg_dump covers PDF/Image core tables"
+    }
+  ],
+  "schemaVersion": "v5d-mixed-gap-analysis-v1"
+}

@@ -84,10 +84,34 @@ def test_frozen_evidence_search_rejects_asset_outside_execution_scope(research_w
             tool_call_key="search-out-of-scope",
             query="facts",
             asset_ids=(str(uuid4()),),
-            top_k=3,
+            top_k=6,
             now=fixture.now + timedelta(seconds=1),
         )
     assert_research_error(scope_error, "tool_scope_violation", 409)
+    fixture.db.rollback()
+    assert fixture.db.scalar(select(ResearchToolCall)) is None
+
+
+def test_frozen_evidence_search_rejects_top_k_mismatch_before_provider_or_ledger(
+    research_worker_db,
+) -> None:
+    fixture = research_worker_db
+    lease = lease_default_step(fixture)
+    with pytest.raises(ResearchError) as mismatch_error:
+        search_frozen_evidence(
+            fixture.db,
+            run_id=fixture.run.id,
+            execution_snapshot_id=fixture.snapshot.id,
+            step_id=fixture.step.id,
+            attempt_id=lease.attempt_id,
+            branch_key=fixture.step.branch_key or "",
+            tool_call_key="search-top-k-mismatch",
+            query="facts",
+            asset_ids=(),
+            top_k=3,
+            now=fixture.now + timedelta(seconds=1),
+        )
+    assert_research_error(mismatch_error, "research_retrieval_top_k_mismatch", 409)
     fixture.db.rollback()
     assert fixture.db.scalar(select(ResearchToolCall)) is None
 
@@ -153,7 +177,7 @@ def test_frozen_evidence_search_persists_then_replays_without_retrieval(
         ]
     )
     fixture.db.commit()
-    calls = {"embed": 0, "retrieve": 0}
+    calls = {"embed": 0, "retrieve": 0, "limits": []}
 
     class FakeEmbeddingProvider:
         provider = fixture.snapshot.embedding_provider
@@ -167,6 +191,7 @@ def test_frozen_evidence_search_persists_then_replays_without_retrieval(
 
     def fake_retrieve(*_args, **_kwargs):
         calls["retrieve"] += 1
+        calls["limits"].append(_kwargs["limit"])
         return [
             RetrievedContent(
                 content_unit=content_unit,
@@ -188,7 +213,7 @@ def test_frozen_evidence_search_persists_then_replays_without_retrieval(
         "tool_call_key": "search-live-then-replay",
         "query": "facts",
         "asset_ids": (fixture.asset.id,),
-        "top_k": 3,
+        "top_k": 6,
         "embedding_provider": FakeEmbeddingProvider(),
         "now": fixture.now + timedelta(seconds=1),
     }
@@ -196,7 +221,7 @@ def test_frozen_evidence_search_persists_then_replays_without_retrieval(
     first = search_frozen_evidence(fixture.db, **args)
     second = search_frozen_evidence(fixture.db, **args)
 
-    assert calls == {"embed": 1, "retrieve": 1}
+    assert calls == {"embed": 1, "retrieve": 1, "limits": [fixture.snapshot.retrieval_top_k]}
     assert [item.evidence_handle for item in first] == [item.evidence_handle for item in second]
     assert first[0].excerpt == "Retrieved frozen evidence."
     assert first[0].score == pytest.approx(0.9)
@@ -211,7 +236,7 @@ def test_frozen_evidence_search_persists_then_replays_without_retrieval(
 def test_frozen_evidence_search_and_load_replay_persisted_handle_set(research_worker_db) -> None:
     fixture = research_worker_db
     lease = lease_default_step(fixture)
-    handle = seed_frozen_evidence(fixture, lease.attempt_id)
+    handle = seed_frozen_evidence(fixture, lease.attempt_id, top_k=6)
 
     search_args = {
         "run_id": fixture.run.id,
@@ -222,7 +247,7 @@ def test_frozen_evidence_search_and_load_replay_persisted_handle_set(research_wo
         "tool_call_key": "search-replay",
         "query": "facts",
         "asset_ids": (fixture.asset.id,),
-        "top_k": 3,
+        "top_k": 6,
         "now": fixture.now + timedelta(seconds=1),
     }
     first_search = search_frozen_evidence(fixture.db, **search_args)
@@ -632,7 +657,7 @@ def test_frozen_evidence_search_maps_embedding_index_mismatch_to_research_error(
             tool_call_key="search-embedding-index-mismatch",
             query="facts",
             asset_ids=(fixture.asset.id,),
-            top_k=3,
+            top_k=6,
             embedding_provider=FakeEmbeddingProvider(),
             now=fixture.now + timedelta(seconds=1),
         )

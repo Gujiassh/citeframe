@@ -303,7 +303,7 @@ def test_deepseek_maps_openai_image_parts_and_rejects_unsupported_urls() -> None
         )
         return httpx.Response(
             200,
-            json={"content": [{"type": "text", "text": "mapped"}]},
+            json={"stop_reason": "end_turn", "content": [{"type": "text", "text": "mapped"}]},
         )
 
     provider = DeepSeekGenerationProvider(

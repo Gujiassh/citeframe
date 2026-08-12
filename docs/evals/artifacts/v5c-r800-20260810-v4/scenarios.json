@@ -1,0 +1,210 @@
+{
+  "checks": {
+    "cancelNoFinal": {
+      "evidence": {
+        "cancelEvents": 1,
+        "finalCount": 0,
+        "status": "cancelled"
+      },
+      "passed": true,
+      "status": "pass"
+    },
+    "conflictResume": {
+      "evidence": {
+        "submittedConflictDecisions": 0
+      },
+      "passed": false,
+      "status": "fail"
+    },
+    "leaseReclaim": {
+      "blockedReason": "plan_not_ready",
+      "evidence": {
+        "status": "failed"
+      },
+      "passed": false,
+      "status": "blocked"
+    },
+    "mainCompleted": {
+      "evidence": {
+        "runId": "a47c762c-d37d-418a-a431-701be0a05456",
+        "status": "failed",
+        "workerErrors": [
+          "ResearchPortError:research_provider_output_incomplete"
+        ]
+      },
+      "passed": false,
+      "status": "fail"
+    },
+    "membershipRemoval": {
+      "evidence": {
+        "eventTypes": [
+          "run_created",
+          "step_queued",
+          "cancel_requested",
+          "run_cancelled"
+        ],
+        "status": "cancelled",
+        "workerResult": "ResearchError:Research creator is no longer a Workspace member."
+      },
+      "passed": true,
+      "status": "pass"
+    },
+    "parallelFanout": {
+      "evidence": {
+        "maxActive": 1,
+        "providerEntries": 1
+      },
+      "passed": false,
+      "status": "fail"
+    },
+    "sseReplay": {
+      "evidence": {
+        "allEventIds": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6
+        ],
+        "cursor": 4,
+        "replayEventIds": [
+          5,
+          6
+        ]
+      },
+      "passed": true,
+      "status": "pass"
+    },
+    "transientRetry": {
+      "evidence": {
+        "failedAttempts": 1,
+        "retryAttempts": 0,
+        "transientProviderResponses": 0
+      },
+      "passed": false,
+      "status": "fail"
+    },
+    "uniqueFinal": {
+      "evidence": {
+        "apiFinalCount": 0,
+        "databaseFinalCount": 0
+      },
+      "passed": false,
+      "status": "fail"
+    },
+    "unsupportedWithheld": {
+      "evidence": {
+        "unsupportedClaims": 0,
+        "unsupportedFinalLinks": 0
+      },
+      "passed": false,
+      "status": "fail"
+    }
+  },
+  "engineeringGate": "fail",
+  "errors": [],
+  "runs": {
+    "cancel": {
+      "id": "aaf8190b-53f4-4b6b-8edc-4dd812820207",
+      "status": "cancelled"
+    },
+    "main": {
+      "artifactIds": [],
+      "eventCount": 6,
+      "id": "a47c762c-d37d-418a-a431-701be0a05456",
+      "providerTimeline": {
+        "entryCount": 1,
+        "maxActive": 1,
+        "transientCount": 0
+      },
+      "status": "failed"
+    },
+    "membershipRemoval": {
+      "id": "5da22374-a0b8-4ec3-a77b-8af95ba69129",
+      "status": "cancelled"
+    },
+    "reclaim": {
+      "artifactCount": 0,
+      "cancelRequestedAt": null,
+      "cancelledAt": null,
+      "createdAt": "2026-08-10T12:28:44.313606Z",
+      "createdByUserId": "2c1ce847-ca1e-5d44-b30e-03d218dd3fbf",
+      "currentEventSeq": 6,
+      "currentPlanRevisionNumber": 1,
+      "failure": {
+        "code": "research_execution_failed",
+        "failedAt": "2026-08-10T12:28:44.478672Z",
+        "message": "Research step failed: research_execution_failed.",
+        "retryable": false
+      },
+      "finishedAt": "2026-08-10T12:28:44.478672Z",
+      "frozenAssetCount": 1,
+      "frozenAssetScope": {
+        "assets": [
+          {
+            "assetId": "2f00e613-c792-589d-af16-be30cba6b847",
+            "assetKind": "pdf",
+            "assetTitle": "r800-research.pdf",
+            "indexVersion": 1,
+            "processingGeneration": 1
+          }
+        ],
+        "frozenAt": "2026-08-10T12:28:44.313606Z"
+      },
+      "id": "300beebf-7770-44da-b1b1-e8f99e6f057c",
+      "pendingDecisions": [],
+      "plan": null,
+      "planningUsage": {
+        "inputTokens": 375,
+        "measuredAt": "2026-08-10T12:28:44.450612Z",
+        "outputTokens": 8000,
+        "providerCalls": 1,
+        "toolCalls": 0,
+        "usageFinal": false,
+        "usageSource": "estimated"
+      },
+      "question": "Verify lease reclaim from frozen evidence.",
+      "requestedAssetScope": {
+        "assetIds": [
+          "2f00e613-c792-589d-af16-be30cba6b847"
+        ],
+        "mode": "selected"
+      },
+      "researchExecution": null,
+      "researchUsage": null,
+      "startedAt": "2026-08-10T12:28:44.357390Z",
+      "stateVersion": 6,
+      "status": "failed",
+      "steps": [
+        {
+          "branchKey": null,
+          "currentAttemptNumber": 1,
+          "dependsOnStepIds": [],
+          "evidenceCount": 0,
+          "failure": {
+            "code": "research_execution_failed",
+            "failedAt": "2026-08-10T12:28:44.478672Z",
+            "message": "Research step failed: research_execution_failed.",
+            "retryable": true
+          },
+          "finishedAt": "2026-08-10T12:28:44.478672Z",
+          "id": "4ce791e9-bdba-4f1c-9c3f-9a42a9eaed27",
+          "key": "revision-1:planner",
+          "kind": "planner",
+          "maxAttempts": 3,
+          "providerCalls": 1,
+          "runId": "300beebf-7770-44da-b1b1-e8f99e6f057c",
+          "startedAt": "2026-08-10T12:28:44.357390Z",
+          "stateVersion": 3,
+          "status": "failed",
+          "toolCalls": 0
+        }
+      ],
+      "submittedDecisions": [],
+      "updatedAt": "2026-08-10T12:28:44.478672Z",
+      "workspaceId": "f54c7366-4a49-5eda-8373-dcd80bd5df6d"
+    }
+  },
+  "schemaVersion": "citeframe-r800-research-acceptance-v1"
+}

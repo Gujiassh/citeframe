@@ -20,6 +20,7 @@ from ai_pdf_api.models import (
     ResearchToolCall,
 )
 from ai_pdf_api.services.research import ResearchError, append_research_event
+from ai_pdf_api.services.research_worker_policy import add_optional_cost, subtract_optional_cost
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
@@ -306,7 +307,10 @@ def reclaim_expired_research_steps(
                 ledger.reserved_provider_calls -= 1
                 ledger.reserved_input_tokens -= call.reserved_input_tokens
                 ledger.reserved_output_tokens -= call.reserved_output_tokens
-                ledger.reserved_cost_microunits -= call.reserved_cost_microunits
+                ledger.reserved_cost_microunits = subtract_optional_cost(
+                    ledger.reserved_cost_microunits,
+                    call.reserved_cost_microunits,
+                )
             else:
                 call.status = "outcome_unknown"
                 call.actual_input_tokens = call.reserved_input_tokens
@@ -317,15 +321,24 @@ def reclaim_expired_research_steps(
                 call.error_code = "provider_outcome_unknown"
                 ledger.reserved_input_tokens -= call.reserved_input_tokens
                 ledger.reserved_output_tokens -= call.reserved_output_tokens
-                ledger.reserved_cost_microunits -= call.reserved_cost_microunits
+                ledger.reserved_cost_microunits = subtract_optional_cost(
+                    ledger.reserved_cost_microunits,
+                    call.reserved_cost_microunits,
+                )
                 ledger.actual_input_tokens += call.reserved_input_tokens
                 ledger.actual_output_tokens += call.reserved_output_tokens
-                ledger.actual_cost_microunits += call.reserved_cost_microunits
+                ledger.actual_cost_microunits = add_optional_cost(
+                    ledger.actual_cost_microunits,
+                    call.reserved_cost_microunits,
+                )
                 ledger.usage_final = False
                 attempt.provider_call_count += 1
                 attempt.input_tokens += call.reserved_input_tokens
                 attempt.output_tokens += call.reserved_output_tokens
-                attempt.cost_microunits += call.reserved_cost_microunits
+                attempt.cost_microunits = add_optional_cost(
+                    attempt.cost_microunits,
+                    call.reserved_cost_microunits,
+                )
             call.finished_at = reclaimed_at
             ledger.state_version += 1
             ledger.updated_at = reclaimed_at

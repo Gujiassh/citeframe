@@ -1,0 +1,97 @@
+{
+  "schemaVersion": "v5d-gate0-v1",
+  "recordedAt": "2026-08-11T06:59:52.027143+00:00",
+  "worktree": "/home/cc/code/citeframe",
+  "branch": "main",
+  "sourceSha": "4f2129cdfc5ba0c73cf854c83add7809c5966b0a",
+  "aheadOfOriginMain": 1,
+  "dirtyDisposition": {
+    "policy": "retain-all-v5c-dirty-changes",
+    "classification": {
+      "v5c-api": 31,
+      "v5c-worker": 13,
+      "v5c-web": 6,
+      "v5c-docs-specs": 29,
+      "totalPaths": 79
+    },
+    "owner": "V5-C accepted implementation (2026-08-10) plus V5-D docs package (2026-08-11)",
+    "overwritePolicy": "no-reset-no-stash-no-clean; lanes must not touch unowned files",
+    "commitPush": "forbidden unless user explicitly requests in active turn"
+  },
+  "f1": {
+    "status": "deferred-with-executable-baseline",
+    "reason": "No new registry version is enabled in V5-D. Existing frozen v1 + legacy-v0 registry and role contracts remain; full F1 executable mapping oracle remains Medium residual before next registry version.",
+    "existingEvidence": [
+      "apps/api/tests/test_research_v5c_contract.py::test_production_registry_is_strict_and_versioned",
+      "apps/api/tests/test_research_v5c_contract.py::test_legacy_registry_reader_and_new_run_rejection",
+      "apps/api/tests/test_research_v5c_contract.py::test_registry_rejects_role_binding_drift_before_runtime_resolution",
+      "apps/api/src/ai_pdf_api/services/research_agent_io_registry.py"
+    ],
+    "v5dAction": "D-API-WORKER may strengthen executable mapping assertions without enabling a new registry version"
+  },
+  "f5": {
+    "status": "deferred-explicit",
+    "reason": "V5-D does not enable another registry version. Live pre-V5-C historical-row bytes/hash fixture remains Medium residual before next registry version; V5-D uses existing R800 v6 and V5-C migration/restore artifacts as engineering restore evidence only.",
+    "existingEvidence": [
+      "docs/evals/artifacts/v5c-r800-20260810-v6/",
+      "docs/evals/artifacts/v5c-migration-roundtrip-20260810/",
+      "specs/v5/multimodal-agent-product/v5c-implementation-acceptance-2026-08-10.md"
+    ]
+  },
+  "contractGuard": {
+    "newRegistryVersion": false,
+    "newSchema": false,
+    "newPublicApi": false,
+    "saveReplayChange": false,
+    "providerSelector": false,
+    "newModality": false
+  },
+  "lanes": {
+    "D-API-WORKER": {
+      "allow": [
+        "apps/api/src/** related mixed/recovery",
+        "apps/api/tests/**",
+        "apps/worker/src/** related",
+        "apps/worker/tests/**"
+      ],
+      "deny": [
+        "apps/web/**",
+        "schema/migration without checklist"
+      ]
+    },
+    "D-WEB": {
+      "allow": [
+        "apps/web/src/**",
+        "apps/web/e2e/**",
+        "web fixtures/tests"
+      ],
+      "deny": [
+        "apps/api/**",
+        "apps/worker/**",
+        "infra/**"
+      ]
+    },
+    "D-OPS": {
+      "allow": [
+        "infra/**",
+        "acceptance scripts",
+        "artifact schema"
+      ],
+      "deny": [
+        "business contracts"
+      ]
+    },
+    "D-DOCS": {
+      "allow": [
+        "docs/ssot/**",
+        "docs/architecture/**",
+        "specs/v5/**",
+        "docs/evals acceptance records"
+      ],
+      "deny": [
+        "production code"
+      ]
+    }
+  },
+  "artifactRoot": "docs/evals/artifacts/v5d-20260811-01/"
+}

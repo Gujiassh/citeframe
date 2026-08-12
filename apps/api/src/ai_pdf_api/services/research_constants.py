@@ -65,3 +65,11 @@ PRICING_VERSION = "research-pricing-v1"
 BUDGET_POLICY_VERSION = "research-budget-v1"
 RETRY_POLICY_VERSION = "research-retry-v1"
 IDEMPOTENCY_TTL = timedelta(hours=24)
+
+# V5-C production Agent I/O / context packing versions (new Runs bind these).
+AGENT_RESULT_SCHEMA_VERSION = "research-agent-results-v1"
+CONTEXT_POLICY_VERSION = "research-context-policy-v1"
+COMPACT_POLICY_VERSION = "research-compact-policy-v1"
+AGENT_RESULT_SCHEMA_VERSION_LEGACY = "research-agent-results-legacy-v0"
+CONTEXT_POLICY_VERSION_LEGACY = "research-context-policy-legacy-v0"
+COMPACT_POLICY_VERSION_LEGACY = "research-compact-policy-legacy-v0"

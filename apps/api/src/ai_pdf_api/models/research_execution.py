@@ -116,7 +116,7 @@ class ResearchStepAttempt(Base):
     tool_call_count: Mapped[int] = mapped_column(Integer, default=0)
     input_tokens: Mapped[int] = mapped_column(BigInteger, default=0)
     output_tokens: Mapped[int] = mapped_column(BigInteger, default=0)
-    cost_microunits: Mapped[int] = mapped_column(BigInteger, default=0)
+    cost_microunits: Mapped[int | None] = mapped_column(BigInteger, nullable=True, default=0)
     checkpoint_artifact_id: Mapped[str | None] = mapped_column(
         String(36),
         ForeignKey("research_artifacts.id", use_alter=True, name="fk_research_attempt_checkpoint_artifact"),
@@ -258,12 +258,12 @@ class ResearchBudgetLedger(Base):
     reserved_tool_calls: Mapped[int] = mapped_column(BigInteger, default=0)
     reserved_input_tokens: Mapped[int] = mapped_column(BigInteger, default=0)
     reserved_output_tokens: Mapped[int] = mapped_column(BigInteger, default=0)
-    reserved_cost_microunits: Mapped[int] = mapped_column(BigInteger, default=0)
+    reserved_cost_microunits: Mapped[int | None] = mapped_column(BigInteger, nullable=True, default=0)
     actual_provider_calls: Mapped[int] = mapped_column(BigInteger, default=0)
     actual_tool_calls: Mapped[int] = mapped_column(BigInteger, default=0)
     actual_input_tokens: Mapped[int] = mapped_column(BigInteger, default=0)
     actual_output_tokens: Mapped[int] = mapped_column(BigInteger, default=0)
-    actual_cost_microunits: Mapped[int] = mapped_column(BigInteger, default=0)
+    actual_cost_microunits: Mapped[int | None] = mapped_column(BigInteger, nullable=True, default=0)
     usage_final: Mapped[bool] = mapped_column(Boolean, default=True)
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
 
@@ -298,7 +298,7 @@ class ResearchProviderCall(Base):
     provider_config_fingerprint: Mapped[str] = mapped_column(String(64))
     reserved_input_tokens: Mapped[int] = mapped_column(BigInteger)
     reserved_output_tokens: Mapped[int] = mapped_column(BigInteger)
-    reserved_cost_microunits: Mapped[int] = mapped_column(BigInteger)
+    reserved_cost_microunits: Mapped[int | None] = mapped_column(BigInteger, nullable=True)
     actual_input_tokens: Mapped[int | None] = mapped_column(BigInteger, nullable=True)
     actual_output_tokens: Mapped[int | None] = mapped_column(BigInteger, nullable=True)
     actual_cost_microunits: Mapped[int | None] = mapped_column(BigInteger, nullable=True)

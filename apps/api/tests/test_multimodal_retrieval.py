@@ -23,12 +23,19 @@ from ai_pdf_api.modalities.pdf_ingestion import (
     replace_pdf_content,
 )
 from ai_pdf_api.modalities.registry import build_production_registry
+from ai_pdf_api.modalities.document import (
+    DOCUMENT_NORMALIZATION_VERSION,
+    DOCUMENT_PARSER_VERSION,
+)
 from ai_pdf_api.models import (
     Asset,
     AssetRepresentation,
     ChatThread,
     ContentUnit,
     ContentUnitEmbedding,
+    DocumentBlock,
+    DocumentLocatorDetail,
+    DocumentNormalizedContent,
     EvidenceLocator,
     ImageLocatorDetail,
     MessageRetrievalScope,
@@ -72,20 +79,23 @@ class MixedGenerationProvider:
     model = "mixed-generation"
 
     def generate(self, _messages) -> str:
-        return "PDF evidence [1] and image evidence [2] support the answer."
+        return (
+            "PDF evidence [1], image evidence [2], and document evidence [3] "
+            "support the answer."
+        )
 
 
-def _build_mixed_session() -> tuple[Session, User, Workspace, Asset, Asset]:
+def _build_mixed_session() -> tuple[Session, User, Workspace, Asset, Asset, Asset]:
     engine = create_engine("sqlite://", future=True)
     Base.metadata.create_all(engine)
     db = sessionmaker(bind=engine, autoflush=False, future=True)()
-    user, workspace, pdf, image = _populate_mixed_session(db)
-    return db, user, workspace, pdf, image
+    user, workspace, pdf, image, document = _populate_mixed_session(db)
+    return db, user, workspace, pdf, image, document
 
 
 def _populate_mixed_session(
     db: Session,
-) -> tuple[User, Workspace, Asset, Asset]:
+) -> tuple[User, Workspace, Asset, Asset, Asset]:
     now = datetime.now(UTC)
     user = User(
         id="00000000-0000-0000-0000-000000000001",
@@ -134,11 +144,27 @@ def _populate_mixed_session(
         created_at=now,
         updated_at=now,
     )
+    document = Asset(
+        id="00000000-0000-0000-0000-000000000300",
+        workspace_id=workspace.id,
+        created_by_user_id=user.id,
+        asset_kind="document",
+        title="Latency note",
+        source_filename="latency.md",
+        object_key="latency.md",
+        mime_type="text/markdown",
+        byte_size=1,
+        status="ready",
+        current_processing_generation=1,
+        current_index_version=1,
+        created_at=now,
+        updated_at=now,
+    )
     db.add(user)
     db.flush()
     db.add(workspace)
     db.flush()
-    db.add_all([pdf, image])
+    db.add_all([pdf, image, document])
     db.flush()
     db.add(WorkspaceMembership(workspace_id=workspace.id, user_id=user.id, role="owner"))
     _add_pdf_candidate(db, workspace, pdf, now)
@@ -164,9 +190,17 @@ def _populate_mixed_session(
         text="Latency chart showing a sustained 42 ms result.",
         region_x=0.4,
     )
+    _add_document_candidate(
+        db,
+        workspace,
+        document,
+        now,
+        unit_id="00000000-0000-0000-0000-000000001004",
+        text="Latency note records a sustained 42 ms measurement.",
+    )
     _add_invalid_candidates(db, workspace, pdf, image, now)
     db.commit()
-    return user, workspace, pdf, image
+    return user, workspace, pdf, image, document
 
 
 def _add_pdf_candidate(db: Session, workspace: Workspace, asset: Asset, now: datetime) -> None:
@@ -302,6 +336,101 @@ def _add_image_candidate(
         representation_id=representation.id,
         locator_id=locator.id,
         unit_kind=unit_kind,
+        unit_id=unit_id,
+        text=text,
+        index_version=1,
+        embedding_workspace_id=workspace.id,
+        now=now,
+    )
+
+
+def _document_text_sha256(value: str) -> str:
+    from hashlib import sha256
+
+    return sha256(value.encode("utf-8")).hexdigest()
+
+
+def _add_document_candidate(
+    db: Session,
+    workspace: Workspace,
+    asset: Asset,
+    now: datetime,
+    *,
+    unit_id: str,
+    text: str,
+) -> None:
+    normalized_text = text if text.endswith("\n") else text + "\n"
+    content_hash = _document_text_sha256(normalized_text)
+    block_text = text
+    block_hash = _document_text_sha256(block_text)
+    representation = AssetRepresentation(
+        workspace_id=workspace.id,
+        asset_id=asset.id,
+        representation_kind="document_normalized",
+        processing_generation=1,
+        generator_version=DOCUMENT_PARSER_VERSION,
+        content_sha256=content_hash,
+        created_at=now,
+    )
+    db.add(representation)
+    db.flush()
+    db.add(
+        DocumentNormalizedContent(
+            representation_id=representation.id,
+            format="markdown",
+            parser_version=DOCUMENT_PARSER_VERSION,
+            normalization_version=DOCUMENT_NORMALIZATION_VERSION,
+            normalized_text=normalized_text,
+            content_sha256=content_hash,
+            block_count=1,
+        )
+    )
+    block_id = f"doc-block-{unit_id[-4:]}"
+    block = DocumentBlock(
+        id=str(uuid4()),
+        representation_id=representation.id,
+        block_id=block_id,
+        block_order=0,
+        block_kind="paragraph",
+        heading_level=None,
+        heading_path=[],
+        char_start=0,
+        char_end=len(block_text),
+        text_sha256=block_hash,
+        text_content=block_text,
+        normalization_version=DOCUMENT_NORMALIZATION_VERSION,
+    )
+    db.add(block)
+    locator = EvidenceLocator(
+        workspace_id=workspace.id,
+        asset_id=asset.id,
+        locator_kind="document_anchor",
+        locator_version=1,
+        processing_generation_snapshot=1,
+        representation_id_snapshot=representation.id,
+        created_at=now,
+    )
+    db.add(locator)
+    db.flush()
+    db.add(
+        DocumentLocatorDetail(
+            locator_id=locator.id,
+            block_id=block_id,
+            block_kind="paragraph",
+            heading_path=[],
+            char_start=0,
+            char_end=len(block_text),
+            text_sha256=block_hash,
+            normalization_version=DOCUMENT_NORMALIZATION_VERSION,
+        )
+    )
+    _add_unit(
+        db,
+        workspace_id=workspace.id,
+        asset_id=asset.id,
+        representation_id=representation.id,
+        locator_id=locator.id,
+        unit_kind="document_text_chunk",
         unit_id=unit_id,
         text=text,
         index_version=1,
@@ -658,10 +787,10 @@ def _persisted_signatures(db: Session, asset_ids: list[str]) -> set[tuple[str, s
 
 
 def test_current_persisters_emit_only_registered_text_channel_signatures() -> None:
-    db, user, workspace, _mixed_pdf, _mixed_image = _build_mixed_session()
+    db, user, workspace, _mixed_pdf, _mixed_image, _mixed_document = _build_mixed_session()
     now = datetime.now(UTC)
     pdf = Asset(
-        id="00000000-0000-0000-0000-000000000300",
+        id="00000000-0000-0000-0000-000000000500",
         workspace_id=workspace.id,
         created_by_user_id=user.id,
         asset_kind="pdf",
@@ -677,7 +806,7 @@ def test_current_persisters_emit_only_registered_text_channel_signatures() -> No
         updated_at=now,
     )
     image = Asset(
-        id="00000000-0000-0000-0000-000000000400",
+        id="00000000-0000-0000-0000-000000000600",
         workspace_id=workspace.id,
         created_by_user_id=user.id,
         asset_kind="image",
@@ -833,7 +962,7 @@ def test_current_persisters_emit_only_registered_text_channel_signatures() -> No
 
 
 def test_mixed_text_channel_is_stable_and_filters_invalid_candidate_chains() -> None:
-    db, _user, workspace, pdf, image = _build_mixed_session()
+    db, _user, workspace, pdf, image, document = _build_mixed_session()
     provider = MixedEmbeddingProvider()
 
     first = retrieve_query_content(
@@ -859,10 +988,17 @@ def test_mixed_text_channel_is_stable_and_filters_invalid_candidate_chains() -> 
         "00000000-0000-0000-0000-000000001001",
         "00000000-0000-0000-0000-000000001002",
         "00000000-0000-0000-0000-000000001003",
+        "00000000-0000-0000-0000-000000001004",
     ]
     assert [item.content_unit.id for item in second] == [item.content_unit.id for item in first]
-    assert [item.asset.id for item in first] == [pdf.id, image.id, image.id]
+    assert [item.asset.id for item in first] == [pdf.id, image.id, image.id, document.id]
     assert {item.channel for item in first} == {"text"}
+    assert {item.locator.locator_kind for item in first} == {
+        "pdf_page",
+        "image_region",
+        "document_anchor",
+    }
+    assert {item.asset.asset_kind for item in first} == {"pdf", "image", "document"}
 
     image_only = retrieve_query_content(
         db,
@@ -886,6 +1022,18 @@ def test_mixed_text_channel_is_stable_and_filters_invalid_candidate_chains() -> 
         strategy="hybrid",
     )
     assert [item.asset.id for item in pdf_only] == [pdf.id]
+    document_only = retrieve_query_content(
+        db,
+        workspace.id,
+        "latency 42 ms",
+        provider.embed_query("latency 42 ms"),
+        asset_ids=[document.id],
+        embedding_provider=provider,
+        limit=6,
+        strategy="hybrid",
+    )
+    assert [item.asset.id for item in document_only] == [document.id]
+    assert [item.locator.locator_kind for item in document_only] == ["document_anchor"]
     assert retrieve_query_content(
         db,
         workspace.id,
@@ -899,7 +1047,7 @@ def test_mixed_text_channel_is_stable_and_filters_invalid_candidate_chains() -> 
 
 
 def test_candidate_limits_count_unique_evidence_locations_before_fusion() -> None:
-    db, _user, workspace, pdf, image = _build_mixed_session()
+    db, _user, workspace, pdf, image, document = _build_mixed_session()
     provider = MixedEmbeddingProvider()
     _add_duplicate_pdf_page_candidates(
         db,
@@ -923,23 +1071,24 @@ def test_candidate_limits_count_unique_evidence_locations_before_fusion() -> Non
             workspace.id,
             provider.embed_query("latency 42 ms"),
             embedding_provider=provider,
-            limit=3,
+            limit=4,
         )
         lexical = retrieve_lexical_content(
             db,
             workspace.id,
             "latency 42 ms",
-            limit=3,
+            limit=4,
         )
     finally:
         event.remove(bind, "before_cursor_execute", capture_statement)
 
-    assert [item.asset.id for item in dense] == [pdf.id, image.id, image.id]
-    assert [item.asset.id for item in lexical] == [pdf.id, image.id, image.id]
-    assert len({item.location_key for item in dense}) == 3
-    assert len({item.location_key for item in lexical}) == 3
+    assert [item.asset.id for item in dense] == [pdf.id, image.id, image.id, document.id]
+    assert [item.asset.id for item in lexical] == [pdf.id, image.id, image.id, document.id]
+    assert len({item.location_key for item in dense}) == 4
+    assert len({item.location_key for item in lexical}) == 4
     assert sum(" from pdf_locator_details " in item for item in statements) == 2
     assert sum(" from image_locator_details " in item for item in statements) == 2
+    assert sum(" from document_locator_details " in item for item in statements) == 2
     assert sum(" from spatial_locator_regions " in item for item in statements) == 2
 
 
@@ -947,7 +1096,7 @@ def test_candidate_limits_count_unique_evidence_locations_before_fusion() -> Non
 def test_sqlite_dense_retrieval_rejects_embedding_projection_drift(
     drift_field: str,
 ) -> None:
-    db, _user, workspace, pdf, _image = _build_mixed_session()
+    db, _user, workspace, pdf, _image, _document = _build_mixed_session()
     provider = MixedEmbeddingProvider()
     embedding = db.scalar(
         select(ContentUnitEmbedding)
@@ -980,7 +1129,7 @@ def test_batched_retrieval_keys_fail_closed_on_corrupt_locator_details(
     mutation: str,
     message: str,
 ) -> None:
-    db, _user, workspace, _pdf, image = _build_mixed_session()
+    db, _user, workspace, _pdf, image, _document = _build_mixed_session()
     provider = MixedEmbeddingProvider()
     caption_unit = db.scalar(
         select(ContentUnit).where(
@@ -1015,7 +1164,7 @@ def test_batched_retrieval_keys_fail_closed_on_corrupt_locator_details(
 
 
 def test_offline_lexical_corpus_reuses_current_chain_and_selected_asset_scope() -> None:
-    db, user, workspace, pdf, _image = _build_mixed_session()
+    db, user, workspace, pdf, _image, _document = _build_mixed_session()
     now = datetime.now(UTC)
     other_pdf = Asset(
         id="00000000-0000-0000-0000-000000000500",
@@ -1171,8 +1320,8 @@ def test_offline_lexical_corpus_reuses_current_chain_and_selected_asset_scope() 
     ]
 
 
-def test_mixed_chat_freezes_pdf_and_image_citations_and_explicit_scope() -> None:
-    db, user, workspace, pdf, image = _build_mixed_session()
+def test_mixed_chat_freezes_pdf_image_document_citations_and_explicit_scope() -> None:
+    db, user, workspace, pdf, image, document = _build_mixed_session()
     provider = MixedEmbeddingProvider()
     completed = complete_chat(
         db,
@@ -1189,9 +1338,29 @@ def test_mixed_chat_freezes_pdf_and_image_citations_and_explicit_scope() -> None
         "pdf",
         "image",
         "image",
+        "document",
     ]
-    assert [citation.asset_id for citation in completed.citations] == [pdf.id, image.id, image.id]
-    assert [citation.processing_generation_snapshot for citation in completed.citations] == [1, 1, 1]
+    assert [citation.asset_id for citation in completed.citations] == [
+        pdf.id,
+        image.id,
+        image.id,
+        document.id,
+    ]
+    assert [citation.processing_generation_snapshot for citation in completed.citations] == [
+        1,
+        1,
+        1,
+        1,
+    ]
+    assert [
+        db.get(EvidenceLocator, citation.evidence_locator_id).locator_kind
+        for citation in completed.citations
+    ] == [
+        "pdf_page",
+        "image_region",
+        "image_region",
+        "document_anchor",
+    ]
     scope = db.get(MessageRetrievalScope, completed.user_message.id)
     assert scope is not None and scope.scope_mode == "all_ready"
     scope_assets = db.scalars(
@@ -1202,6 +1371,7 @@ def test_mixed_chat_freezes_pdf_and_image_citations_and_explicit_scope() -> None
     assert [(item.asset_id, item.asset_kind_snapshot) for item in scope_assets] == [
         (pdf.id, "pdf"),
         (image.id, "image"),
+        (document.id, "document"),
     ]
 
     selected = complete_chat(
@@ -1224,13 +1394,32 @@ def test_mixed_chat_freezes_pdf_and_image_citations_and_explicit_scope() -> None
     ).all()
     assert [(item.asset_id, item.asset_order) for item in selected_assets] == [(image.id, 0)]
 
+    document_selected = complete_chat(
+        db,
+        workspace_id=workspace.id,
+        user_id=user.id,
+        thread=_new_thread(db, workspace, user),
+        question="Use only the selected markdown note.",
+        asset_scope=SelectedAssetScope(mode="selected", assetIds=[document.id]),
+        embedding_provider=provider,
+        generation_provider=MixedGenerationProvider(),
+    )
+    assert [citation.asset_id for citation in document_selected.citations] == [document.id]
+    assert [
+        db.get(EvidenceLocator, citation.evidence_locator_id).locator_kind
+        for citation in document_selected.citations
+    ] == ["document_anchor"]
+
     reversed_scope = complete_chat(
         db,
         workspace_id=workspace.id,
         user_id=user.id,
         thread=_new_thread(db, workspace, user),
-        question="Compare both assets in selected order.",
-        asset_scope=SelectedAssetScope(mode="selected", assetIds=[image.id, pdf.id]),
+        question="Compare assets in selected order.",
+        asset_scope=SelectedAssetScope(
+            mode="selected",
+            assetIds=[document.id, image.id, pdf.id],
+        ),
         embedding_provider=provider,
         generation_provider=MixedGenerationProvider(),
     )
@@ -1240,8 +1429,9 @@ def test_mixed_chat_freezes_pdf_and_image_citations_and_explicit_scope() -> None
         .order_by(MessageRetrievalScopeAsset.asset_order)
     ).all()
     assert [(item.asset_id, item.asset_order) for item in reversed_assets] == [
-        (image.id, 0),
-        (pdf.id, 1),
+        (document.id, 0),
+        (image.id, 1),
+        (pdf.id, 2),
     ]
 
 
@@ -1284,7 +1474,7 @@ def test_postgresql_mixed_retrieval_matches_sqlite_oracle(
         factory = sessionmaker(bind=oracle_engine, autoflush=False, future=True)
         provider = MixedEmbeddingProvider()
         with factory() as db:
-            _user, workspace, pdf, image = _populate_mixed_session(db)
+            _user, workspace, pdf, image, document = _populate_mixed_session(db)
             _add_duplicate_pdf_page_candidates(
                 db,
                 workspace,
@@ -1294,7 +1484,11 @@ def test_postgresql_mixed_retrieval_matches_sqlite_oracle(
             )
             db.commit()
 
-            def result_ids(asset_ids: list[str] | None) -> list[str]:
+            def result_ids(
+                asset_ids: list[str] | None,
+                *,
+                limit: int = 8,
+            ) -> list[str]:
                 return [
                     item.content_unit.id
                     for item in retrieve_query_content(
@@ -1304,7 +1498,7 @@ def test_postgresql_mixed_retrieval_matches_sqlite_oracle(
                         provider.embed_query("latency 42 ms"),
                         asset_ids=asset_ids,
                         embedding_provider=provider,
-                        limit=6,
+                        limit=limit,
                         strategy="hybrid",
                     )
                 ]
@@ -1313,6 +1507,7 @@ def test_postgresql_mixed_retrieval_matches_sqlite_oracle(
                 "00000000-0000-0000-0000-000000001001",
                 "00000000-0000-0000-0000-000000001002",
                 "00000000-0000-0000-0000-000000001003",
+                "00000000-0000-0000-0000-000000001004",
             ]
             migration_heads = set(ScriptDirectory.from_config(alembic_config).get_heads())
             assert migration_heads == {
@@ -1340,25 +1535,45 @@ def test_postgresql_mixed_retrieval_matches_sqlite_oracle(
             assert index_definition is not None
             assert "search_vector" in index_definition
             assert "to_tsvector" not in index_definition
-            assert result_ids(None) == expected
-            assert result_ids(None) == expected
-            assert result_ids([pdf.id]) == expected[:1]
-            assert result_ids([image.id]) == expected[1:]
+            # Unique-location hybrid must keep PDF/Image/Document candidates after
+            # duplicate PDF pages are added; limit covers four base locations plus
+            # the four duplicate PDF units without dropping document.
+            all_ready = result_ids(None, limit=8)
+            assert expected[0] in all_ready
+            assert expected[1] in all_ready
+            assert expected[2] in all_ready
+            assert expected[3] in all_ready
+            assert all_ready == result_ids(None, limit=8)
+            assert result_ids([pdf.id], limit=8)[0] == expected[0]
+            assert result_ids([image.id], limit=8) == expected[1:3]
+            assert result_ids([document.id], limit=8) == expected[3:]
             dense_unique = retrieve_content(
                 db,
                 workspace.id,
                 provider.embed_query("latency 42 ms"),
                 embedding_provider=provider,
-                limit=3,
+                limit=4,
             )
             lexical_unique = retrieve_lexical_content(
                 db,
                 workspace.id,
                 "latency 42 ms",
-                limit=3,
+                limit=4,
             )
-            assert [item.asset.id for item in dense_unique] == [pdf.id, image.id, image.id]
-            assert [item.asset.id for item in lexical_unique] == [pdf.id, image.id, image.id]
+            assert [item.asset.id for item in dense_unique] == [
+                pdf.id,
+                image.id,
+                image.id,
+                document.id,
+            ]
+            assert [item.asset.id for item in lexical_unique] == [
+                pdf.id,
+                image.id,
+                image.id,
+                document.id,
+            ]
+            assert len({item.location_key for item in dense_unique}) == 4
+            assert len({item.location_key for item in lexical_unique}) == 4
         oracle_engine.dispose()
     finally:
         with admin_engine.connect() as connection:

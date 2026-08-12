@@ -33,19 +33,23 @@ from ai_pdf_worker.research_runtime_core import (
 )
 from ai_pdf_worker.research_runtime_ports import LedgeredGeneration
 
-DEFAULT_AGENT_RESULT_SCHEMAS: dict[str, dict[str, object]] = {
-    "planner": {
-        "type": "object",
-        "required": ["summary", "knownGaps", "estimatedProviderCalls", "subproblems"],
-    },
-    "researcher": {"type": "object", "required": ["claims"]},
-    "verifier": {"type": "object", "required": ["claims"]},
-    "critic": {"type": "object", "required": ["conflictClaimIds"]},
-    "synthesizer": {
-        "type": "object",
-        "required": ["factClaimIds", "unresolvedClaimIds"],
-    },
-}
+from ai_pdf_api.services.research_agent_io_registry import (
+    AGENT_RESULT_SCHEMA_VERSION_LEGACY,
+    require_current_production_registry,
+    resolve_registry,
+    resolve_role_contract,
+)
+
+from ai_pdf_worker.research_agent_schemas import (
+    schemas_for_registry,
+    validators_for_registry,
+)
+from ai_pdf_worker.research_agent_schemas import (
+    validate_critic_claim_set,
+    validate_researcher_claim_evidence_scope,
+    validate_synthesizer_claim_sets,
+    validate_verifier_claim_set,
+)
 
 
 class GenerationResearchAgents:
@@ -59,13 +63,30 @@ class GenerationResearchAgents:
         result_validator: Callable[[str, dict[str, Any]], None] | None = None,
         output_observer: Callable[[str, str, str], None] | None = None,
         diagnostic_mode: bool = False,
+        allow_empty_researcher_claims: bool = False,
     ) -> None:
         self._generation = generation
-        self._result_schemas = result_schemas or DEFAULT_AGENT_RESULT_SCHEMAS
-        self._result_validator = result_validator
+        execution = getattr(generation, "execution", None)
+        if execution is None:
+            self._registry = require_current_production_registry()
+        else:
+            self._registry = resolve_registry(
+                agent_result_schema_version=getattr(execution, "agent_result_schema_version", None),
+                context_policy_version=getattr(execution, "context_policy_version", None),
+                compact_policy_version=getattr(execution, "compact_policy_version", None),
+                for_new_run=False,
+            )
+        self._result_schemas = result_schemas or schemas_for_registry(self._registry)
+        self._result_validators = (
+            {node_key: result_validator for node_key in self._registry.roles}
+            if result_validator is not None
+            else validators_for_registry(self._registry)
+        )
+        self._legacy_mode = self._registry.agent_result_schema_version == AGENT_RESULT_SCHEMA_VERSION_LEGACY
         self._output_observer = output_observer
         # Evaluator-only boundary. Production/default remains historical failure codes.
         self._diagnostic_mode = bool(diagnostic_mode)
+        self._allow_empty_researcher_claims = bool(allow_empty_researcher_claims)
         self.plan_summary: str | None = None
         self.plan_known_gaps: tuple[str, ...] = ()
         self.plan_estimated_provider_calls: int | None = None
@@ -93,7 +114,6 @@ class GenerationResearchAgents:
                     "maxProviderCalls": self._generation.execution.max_provider_calls,
                     "maxInputTokens": self._generation.execution.max_input_tokens,
                     "maxOutputTokens": self._generation.execution.max_output_tokens,
-                    "maxCostMicrounits": self._generation.execution.max_cost_microunits,
                 },
                 "planOutputSchema": self._result_schemas["planner"],
             },
@@ -112,7 +132,16 @@ class GenerationResearchAgents:
     def researcher(self, subproblem: ResearchSubproblem, tools: Any, lease: StepLease | None = None) -> BranchResult:
         if lease is None:
             raise ResearchExecutionError("researcher_lease_required")
-        handles = tuple(tools.search(query=subproblem.question, asset_ids=subproblem.asset_ids, top_k=8))
+        retrieval_top_k = int(getattr(self._generation.execution, "retrieval_top_k", 0) or 0)
+        if retrieval_top_k < 1:
+            raise ResearchExecutionError("research_retrieval_top_k_unavailable")
+        handles = tuple(
+            tools.search(
+                query=subproblem.question,
+                asset_ids=subproblem.asset_ids,
+                top_k=retrieval_top_k,
+            )
+        )
         if not handles:
             raise ResearchExecutionError("no_evidence_found")
         loaded = tools.load(evidence_handles=tuple(item.id for item in handles))
@@ -152,6 +181,22 @@ class GenerationResearchAgents:
             )
             for row in rows
         )
+        try:
+            if not claims and self._allow_empty_researcher_claims:
+                return BranchResult(subproblem.branch_key, claims, handles)
+            validate_researcher_claim_evidence_scope(
+                [
+                    {
+                        "text": claim.text,
+                        "evidenceHandleIds": list(claim.evidence_handle_ids),
+                    }
+                    for claim in claims
+                ],
+                branch_evidence_handle_ids=[item.id for item in handles],
+                allow_empty=self._legacy_mode,
+            )
+        except ValueError as error:
+            raise ResearchExecutionError("researcher_invalid_output") from error
         return BranchResult(subproblem.branch_key, claims, handles)
 
     def verifier(self, claims: Sequence[DraftClaim], evidence: Sequence[EvidenceHandle], lease: StepLease | None = None) -> Sequence[VerifiedClaim]:
@@ -195,8 +240,12 @@ class GenerationResearchAgents:
         )
         rows = payload.get("claims") if isinstance(payload, dict) else None
         source = {item.id: item for item in claims}
-        if not isinstance(rows, list) or {str(_field(row, "id")) for row in rows} != set(source):
+        if not isinstance(rows, list):
             raise ResearchExecutionError("verifier_invalid_output")
+        try:
+            validate_verifier_claim_set(rows, researcher_claim_ids=tuple(source))
+        except ValueError as error:
+            raise ResearchExecutionError("verifier_invalid_output") from error
         return tuple(VerifiedClaim(item.id, item.text, item.evidence_handle_ids, _field(next(row for row in rows if str(_field(row, "id")) == item.id), "status")) for item in claims)
 
     def critic(self, claims: Sequence[VerifiedClaim], lease: StepLease | None = None) -> Sequence[str]:
@@ -216,6 +265,13 @@ class GenerationResearchAgents:
         conflicts = payload.get("conflictClaimIds") if isinstance(payload, dict) else None
         if not isinstance(conflicts, list):
             raise ResearchExecutionError("critic_invalid_output")
+        try:
+            validate_critic_claim_set(
+                [str(item) for item in conflicts],
+                verified_claim_ids=[claim.id for claim in claims],
+            )
+        except ValueError as error:
+            raise ResearchExecutionError("critic_invalid_output") from error
         return tuple(str(item) for item in conflicts)
 
     def synthesizer(self, question: str, claims: Sequence[VerifiedClaim], unresolved: Sequence[VerifiedClaim], lease: StepLease | None = None) -> SynthesisSelection:
@@ -238,10 +294,26 @@ class GenerationResearchAgents:
                 "resultSchema": self._result_schemas["synthesizer"],
             },
         )
-        return SynthesisSelection(tuple(str(item) for item in payload.get("factClaimIds", ())), tuple(str(item) for item in payload.get("unresolvedClaimIds", ())))
+        fact_claim_ids = tuple(str(item) for item in payload.get("factClaimIds", ()))
+        unresolved_claim_ids = tuple(str(item) for item in payload.get("unresolvedClaimIds", ()))
+        try:
+            validate_synthesizer_claim_sets(
+                fact_claim_ids=fact_claim_ids,
+                unresolved_claim_ids=unresolved_claim_ids,
+                allowed_claim_ids=[claim.id for claim in (*claims, *unresolved)],
+            )
+        except ValueError as error:
+            raise ResearchExecutionError("synthesizer_invalid_output") from error
+        return SynthesisSelection(fact_claim_ids, unresolved_claim_ids)
 
     def _json(self, lease: StepLease, node_key: str, variables: Mapping[str, object]) -> Any:
+        role = resolve_role_contract(self._registry, node_key)
         prompt = self._generation.prompt(node_key)
+        if (
+            prompt.node_key != role.prompt_node_key
+            or prompt.prompt_key != role.prompt_key
+        ):
+            raise ResearchExecutionError("research_prompt_contract_invalid")
         _validate_prompt_variables(prompt, variables)
         messages: list[GenerationMessage] = [
             {"role": "system", "content": prompt.template_text},
@@ -282,18 +354,19 @@ class GenerationResearchAgents:
                     raw_output_sha256=raw_sha256,
                 )
             raise ResearchExecutionError(f"{node_key}_invalid_output")
-        if self._result_validator is not None:
+        result_validator = self._result_validators.get(node_key)
+        if result_validator is not None:
             try:
                 # Prefer keyword-aware diagnostic validators when available.
                 try:
-                    self._result_validator(
+                    result_validator(
                         node_key,
                         value,
                         logical_call_key=logical_call_key,
                         raw_output_sha256=raw_sha256,
                     )
                 except TypeError:
-                    self._result_validator(node_key, value)
+                    result_validator(node_key, value)
             except Exception as error:
                 # Preserve production failure codes while allowing evaluator-only
                 # typed diagnostics to propagate when callers opt into them.

@@ -1,0 +1,89 @@
+{
+  "schemaVersion": "v5d-dg7-full-regression-v1",
+  "recordedAt": "2026-08-12T11:02:42.934303+00:00",
+  "worktree": "/home/cc/code/citeframe",
+  "branch": "main",
+  "sourceSha": "4f2129cdfc5ba0c73cf854c83add7809c5966b0a",
+  "dirtyPaths": 90,
+  "suites": {
+    "api": {
+      "command": "uv run --project apps/api python -m pytest apps/api/tests -q --tb=line",
+      "result": "562 passed, 1 warning",
+      "exitCode": 0,
+      "durationSec": 353.24,
+      "log": "d-g7/api-full.txt"
+    },
+    "worker": {
+      "command": "uv run --project apps/worker python -m pytest apps/worker/tests -q --tb=line",
+      "result": "296 passed",
+      "exitCode": 0,
+      "durationSec": 306.11,
+      "log": "d-g7/worker-full.txt"
+    },
+    "webUnit": {
+      "command": "pnpm --dir apps/web test",
+      "result": "131 passed",
+      "exitCode": 0,
+      "log": "d-g7/web-test.txt"
+    },
+    "webLint": {
+      "command": "pnpm --dir apps/web lint",
+      "result": "pass",
+      "exitCode": 0,
+      "log": "d-g7/web-lint.txt"
+    },
+    "webTsc": {
+      "command": "pnpm --dir apps/web exec tsc --noEmit",
+      "result": "pass",
+      "exitCode": 0,
+      "log": "d-g7/web-tsc.txt"
+    },
+    "webBuild": {
+      "command": "pnpm --dir apps/web build",
+      "result": "pass",
+      "exitCode": 0,
+      "log": "d-g7/web-build.txt"
+    },
+    "compileallApi": {
+      "command": "uv run --project apps/api python -m compileall -q apps/api/src apps/api/tests",
+      "result": "pass",
+      "exitCode": 0
+    },
+    "compileallWorker": {
+      "command": "uv run --project apps/worker python -m compileall -q apps/worker/src apps/worker/tests",
+      "result": "pass",
+      "exitCode": 0
+    },
+    "gitDiffCheck": {
+      "command": "git diff --check",
+      "result": "pass",
+      "exitCode": 0
+    },
+    "docsPathsAndRelativeLinks": {
+      "result": "pass",
+      "brokenLinks": 0
+    }
+  },
+  "priorFocusedGates": {
+    "D-G0": "pass",
+    "D-G1": "pass-focused",
+    "D-G2": "pass-focused",
+    "D-G3": "partial-existing-v5c",
+    "D-G4": "pass-production-start",
+    "D-G5": "partial-existing-unit",
+    "D-G6": "pass-focused-live-seed-snapshot"
+  },
+  "engineeringGate": "pass",
+  "releaseGatePassed": true,
+  "realModelQualityPassed": false,
+  "userValuePassed": false,
+  "productStage": "internal_preview",
+  "residuals": [
+    "D-G6 full empty-target Compose backup/restore loop still optional residual (focused live seed/snapshot/self-verify already green)",
+    "F5 live pre-V5-C historical-row bytes/hash remains deferred Medium residual until next registry version",
+    "R803 model quality and M404 user value remain not_evaluable (V5-E)",
+    "Canonical worktree remains dirty with uncommitted V5-C/V5-D delivery; no commit/push without explicit user request",
+    "D-G3/D-G5 rely on existing V5-C production-start Research and unit recovery suites rather than a new dedicated mixed Research E2E in this D-G7 run"
+  ],
+  "commitPush": false
+}

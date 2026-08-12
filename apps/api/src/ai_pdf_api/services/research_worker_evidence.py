@@ -210,6 +210,12 @@ def search_frozen_evidence(
         or len(requested_asset_ids) != len(set(requested_asset_ids))
     ):
         raise ResearchError("tool_input_invalid", "Research Evidence search input is invalid.", 422)
+    if top_k != snapshot.retrieval_top_k:
+        raise ResearchError(
+            "research_retrieval_top_k_mismatch",
+            "Research Evidence search must use the frozen retrievalTopK exactly.",
+            409,
+        )
     if not set(requested_asset_ids).issubset(frozen_asset_ids):
         raise ResearchError("tool_scope_violation", "Research Evidence search exceeds frozen scope.", 409)
     effective_asset_ids = requested_asset_ids or [item.asset_id for item in frozen_assets]
@@ -271,7 +277,7 @@ def search_frozen_evidence(
             query_embedding,
             asset_ids=effective_asset_ids,
             embedding_provider=provider,
-            limit=min(top_k, snapshot.retrieval_top_k),
+            limit=snapshot.retrieval_top_k,
             strategy=snapshot.retrieval_strategy,
         )
         frozen_by_asset = {item.asset_id: item for item in frozen_assets}

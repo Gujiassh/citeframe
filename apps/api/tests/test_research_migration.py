@@ -43,6 +43,15 @@ def load_prompt_v2_migration():
     return module
 
 
+def load_v5c_migration(filename: str, module_name: str):
+    path = Path(__file__).parents[1] / "alembic/versions" / filename
+    spec = importlib.util.spec_from_file_location(module_name, path)
+    assert spec is not None and spec.loader is not None
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
 RESEARCH_TABLES = set(load_migration().RESEARCH_TABLES)
 
 
@@ -207,4 +216,53 @@ def test_prompt_v2_migration_refuses_downgrade_for_every_business_reference(
 
 def test_alembic_has_one_evolvable_head_after_prompt_v2() -> None:
     config = Config(str(Path(__file__).parents[1] / "alembic.ini"))
-    assert ScriptDirectory.from_config(config).get_heads() == ["f9a1b2c3d4e5"]
+    assert ScriptDirectory.from_config(config).get_heads() == ["h2b3c4d5e6f7"]
+
+
+def test_v5c_migrations_backfill_legacy_registry_and_allow_unknown_cost(monkeypatch: pytest.MonkeyPatch) -> None:
+    registry = load_v5c_migration(
+        "g1a2b3c4d5e6_add_research_agent_io_versions.py",
+        "research_agent_io_migration",
+    )
+    costs = load_v5c_migration(
+        "h2b3c4d5e6f7_nullable_research_cost_aggregates.py",
+        "research_cost_migration",
+    )
+
+    add_column = Mock()
+    execute = Mock()
+    alter_column = Mock()
+    monkeypatch.setattr(registry.op, "add_column", add_column)
+    monkeypatch.setattr(registry.op, "execute", execute)
+    monkeypatch.setattr(registry.op, "alter_column", alter_column)
+    registry.upgrade()
+
+    added = {(call.args[0], call.args[1].name) for call in add_column.call_args_list}
+    assert added == {
+        ("research_plan_revisions", "agent_result_schema_version"),
+        ("research_plan_revisions", "context_policy_version"),
+        ("research_plan_revisions", "compact_policy_version"),
+        ("research_execution_snapshots", "agent_result_schema_version"),
+        ("research_execution_snapshots", "context_policy_version"),
+        ("research_execution_snapshots", "compact_policy_version"),
+    }
+    assert len(execute.call_args_list) == 2
+    assert all("UPDATE" in str(call.args[0]) for call in execute.call_args_list)
+    bindparams = execute.call_args_list[0].args[0]._bindparams
+    assert bindparams["agent"].value == registry.LEGACY_AGENT
+    assert bindparams["context"].value == registry.LEGACY_CONTEXT
+    assert bindparams["compact"].value == registry.LEGACY_COMPACT
+    assert all(call.kwargs["nullable"] is False for call in alter_column.call_args_list)
+
+    cost_alter = Mock()
+    monkeypatch.setattr(costs.op, "alter_column", cost_alter)
+    costs.upgrade()
+    assert {
+        (call.args[0], call.args[1]) for call in cost_alter.call_args_list
+    } == {
+        ("research_step_attempts", "cost_microunits"),
+        ("research_budget_ledgers", "reserved_cost_microunits"),
+        ("research_budget_ledgers", "actual_cost_microunits"),
+        ("research_provider_calls", "reserved_cost_microunits"),
+    }
+    assert all(call.kwargs["nullable"] is True for call in cost_alter.call_args_list)

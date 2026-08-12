@@ -1,6 +1,6 @@
 # V5 多模态 AI 知识工作台与 Agent 协作实施计划
 
-当前阶段索引：V5-B/V5-C 的实现不得只依据本文件的阶段描述；字段、状态、API、locator、lane ownership 和验收以 [`README.md`](README.md)、[`open-decisions.md`](open-decisions.md)、[`v5b-detailed-spec.md`](v5b-detailed-spec.md)、[`v5c-detailed-spec.md`](v5c-detailed-spec.md)、[`implementation-lanes-v5bc.md`](implementation-lanes-v5bc.md) 和 [`verification-matrix-v5bc.md`](verification-matrix-v5bc.md) 为准。
+当前阶段索引：V5-D 规格已就绪、生产实现尚未开始。V5-B/V5-C/V5-D 的实现不得只依据本文件的阶段描述；字段、状态、API、locator、lane ownership 和验收以 [`README.md`](README.md)、[`open-decisions.md`](open-decisions.md)、[`decision-2026-08-11-v5d-scope.md`](decision-2026-08-11-v5d-scope.md)、[`v5b-detailed-spec.md`](v5b-detailed-spec.md)、[`v5c-detailed-spec.md`](v5c-detailed-spec.md)、[`v5d-detailed-spec.md`](v5d-detailed-spec.md)、[`implementation-lanes-v5bc.md`](implementation-lanes-v5bc.md)、[`implementation-lanes-v5d.md`](implementation-lanes-v5d.md)、[`verification-matrix-v5bc.md`](verification-matrix-v5bc.md) 和 [`verification-matrix-v5d.md`](verification-matrix-v5d.md) 为准。
 
 ## 1. 实施策略
 
@@ -57,17 +57,23 @@ V3/V4 已完成的 Asset/Evidence、Citation、NoteSource、Quick Chat、Researc
 
 ### V5-D：端到端整合与工程稳定
 
-目标是将多模型、多模态和多 Agent 组合成一个稳定工作区。
+详细规格、lane 和验收以以下文档为准：
 
-交付：
+- [`decision-2026-08-11-v5d-scope.md`](decision-2026-08-11-v5d-scope.md)
+- [`v5d-detailed-spec.md`](v5d-detailed-spec.md)
+- [`implementation-lanes-v5d.md`](implementation-lanes-v5d.md)
+- [`verification-matrix-v5d.md`](verification-matrix-v5d.md)
+- [`grok-handoff-v5d.md`](grok-handoff-v5d.md)
 
-- 混合模态资产范围、检索、引用和笔记
-- provider/model 配置、任务状态、成本和失败原因的统一展示
-- Web 桌面/移动端主路径
-- API/Worker/Web 重启恢复、删除、权限和备份恢复
-- 运行手册、部署 profile 和开发者文档
+D001-D005 交付混合 PDF/Image/Markdown Workspace、统一 scope/retrieval、
+Quick Chat/Citation/NoteSource/Research 桌面与移动主路径、API/Worker/Web
+重启/删除/备份恢复、部署 profile、runbook/diagnostics，以及全链路工程回归。
+默认不新增数据库/API/save/replay 合同；触发变化时必须停工走
+[`save-contract-checklist.md`](save-contract-checklist.md)。
 
-退出条件：完整功能链路通过工程回归，产品可以作为内部预览持续使用。
+退出条件：D-G0 至 D-G7 验收矩阵全部有证据，生产启动桌面/移动 Playwright、
+live PostgreSQL/MinIO restore、zero-residue 和独立 Critical review 通过；只宣布
+internal-preview engineering gate，不替代 R803/M404。
 
 ### V5-E：模型质量与用户价值
 

@@ -45,8 +45,8 @@ test("Neither mode submits without ready assets or a question", () => {
 const run = (id: string, createdAt: string, createdByUserId = "creator") => ({
   id, workspaceId: "workspace-1", createdByUserId, question: id, status: "completed" as const,
   stateVersion: 1, requestedAssetScope: { mode: "all_ready" as const }, frozenAssetCount: 1,
-  currentPlanRevisionNumber: 1, currentEventSeq: 1, estimatedCost: null,
-  consumedCost: { currency: "USD", amountMicros: 0 }, createdAt, updatedAt: createdAt, finishedAt: createdAt,
+  currentPlanRevisionNumber: 1, currentEventSeq: 1,
+  createdAt, updatedAt: createdAt, finishedAt: createdAt,
 });
 
 test("Research history chooses the latest run by createdAt and id, not response order", () => {

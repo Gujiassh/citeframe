@@ -232,7 +232,6 @@ def seed_plan_decision(db: Session, run_id: str, object_store: dict[str, bytes])
             "estimatedProviderCalls": 1,
             "estimatedInputTokens": 100,
             "estimatedOutputTokens": 100,
-            "estimatedCost": {"currency": run.cost_currency, "amountMicros": 1000},
         },
         sort_keys=True,
         separators=(",", ":"),

@@ -161,6 +161,9 @@ def research_worker_db(
         max_run_timeout_seconds=3_600,
         max_step_timeout_seconds=600,
         max_provider_timeout_seconds=120,
+        agent_result_schema_version="research-agent-results-v1",
+        context_policy_version="research-context-policy-v1",
+        compact_policy_version="research-compact-policy-v1",
         execution_snapshot_sha256=sha256("execution-snapshot"),
         created_at=now,
     )
@@ -428,6 +431,7 @@ def seed_frozen_evidence(
     *,
     query: str = "facts",
     tool_call_key: str = "search-replay",
+    top_k: int = 3,
 ) -> ResearchEvidenceHandle:
     representation = AssetRepresentation(
         id=str(uuid4()),
@@ -488,7 +492,7 @@ def seed_frozen_evidence(
         tool_version=1,
         status="succeeded",
         request_sha256=canonical_sha256(
-            {"query": query, "assetIds": [fixture.asset.id], "topK": 3}
+            {"query": query, "assetIds": [fixture.asset.id], "topK": top_k}
         ),
         result_count=1,
         created_at=fixture.now,
