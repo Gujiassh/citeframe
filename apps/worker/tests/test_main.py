@@ -22,7 +22,7 @@ class SessionContext:
 
 def test_production_worker_enables_pdf_image_and_document_adapters() -> None:
     assert worker.INGESTION_ADAPTERS.asset_kinds == frozenset(
-        {"pdf", "image", "document", "docx", "xlsx", "pptx"}
+        {"pdf", "image", "document", "docx", "xlsx", "pptx", "audio"}
     )
     assert worker.INGESTION_ADAPTERS.get("document").asset_kind == "document"
     assert worker.INGESTION_ADAPTERS.get("docx").asset_kind == "docx"
