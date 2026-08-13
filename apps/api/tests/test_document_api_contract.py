@@ -486,6 +486,7 @@ def test_document_upload_session_accepts_markdown_mime() -> None:
     assert payload["asset"]["mimeType"] == "text/markdown"
     assert payload["upload"]["headers"]["Content-Type"] == "text/markdown"
 
+    # HTML is production-enabled at S0; reject an unknown MIME instead.
     rejected = client.post(
         f"/v1/workspaces/{workspace.id}/assets/upload-session",
         headers={
@@ -493,8 +494,8 @@ def test_document_upload_session_accepts_markdown_mime() -> None:
             "x-user-id": user.id,
         },
         json={
-            "sourceFilename": "page.html",
-            "mimeType": "text/html",
+            "sourceFilename": "blob.bin",
+            "mimeType": "application/x-unknown-blob",
             "byteSize": 32,
         },
     )

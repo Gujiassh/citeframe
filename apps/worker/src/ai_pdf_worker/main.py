@@ -23,6 +23,7 @@ from ai_pdf_api.core.research_observability import (
 from ai_pdf_worker.audio_ingestion import AudioIngestionAdapter
 from ai_pdf_worker.video_ingestion import VideoIngestionAdapter
 from ai_pdf_worker.document_ingestion import DocumentIngestionAdapter
+from ai_pdf_worker.html_ingestion import HtmlIngestionAdapter
 from ai_pdf_worker.docx_ingestion import DocxIngestionAdapter
 from ai_pdf_worker.image_ingestion import ImageIngestionAdapter
 from ai_pdf_worker.metrics import WORKER_ACTIVE_JOBS, WORKER_JOBS, start_metrics_server
@@ -40,16 +41,12 @@ INGESTION_ADAPTERS = IngestionAdapterRegistry(
         PdfIngestionAdapter(),
         ImageIngestionAdapter(),  # caption provider resolved at first image ingest
         DocumentIngestionAdapter(),
-        # Office adapters are present for isolated ingest tests. Upload remains
-        # fail-closed until S0 production registry/catalog enablement.
+        HtmlIngestionAdapter(),
         DocxIngestionAdapter(),
+        # Office/html/audio/video adapters are production-enabled at S0.
         XlsxIngestionAdapter(),
         PptxIngestionAdapter(),
-        # Audio adapter for isolated ingest tests. Upload remains fail-closed
-        # until S0 production registry/catalog enablement.
         AudioIngestionAdapter(),
-        # Video adapter for isolated ingest tests. Upload remains fail-closed
-        # until S0 production registry/catalog enablement.
         VideoIngestionAdapter(),
     )
 )

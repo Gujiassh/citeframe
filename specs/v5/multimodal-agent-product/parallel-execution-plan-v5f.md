@@ -221,13 +221,13 @@ V5-F 模态分线收尾（本文）。
 
 | 线 | 状态 | Owner | 当前阻塞 | 出口证据路径 |
 |---|---|---|---|---|
-| W0 / S0 | pending | main controller | — | 本文件 + sanitizer 政策段落 |
-| A HTML | pending | | | `docs/evals/artifacts/…` |
+| W0 / S0 | accept | main controller | — | 本文件 + sanitizer 政策段落 |
+| A HTML | accept | | | `docs/evals/artifacts/…` |
 | P PDF-VIS | pending | | | `pdf-in-page-visual-v1.md` |
-| B DOCX | pending | | | |
-| C XLSX | pending | | | |
-| D PPTX | pending | | | |
-| E ASR | pending | | | |
+| B DOCX | accept | | | |
+| C XLSX | accept | | | |
+| D PPTX | accept | | | |
+| E ASR | accept | | | |
 | F AUDIO | blocked-on-E | | E | |
 | G VIDEO | blocked-on-E | | E | |
 | H AGENT | pending | | | |

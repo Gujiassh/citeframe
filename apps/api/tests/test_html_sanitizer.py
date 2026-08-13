@@ -101,11 +101,11 @@ def test_upload_probe_accepts_html_and_rejects_binary() -> None:
         pass
 
 
-def test_production_registry_does_not_enable_html_until_s0() -> None:
+def test_production_registry_enables_html_after_s0() -> None:
     production = build_production_registry()
-    assert "html" not in production.asset_kinds
-    # Office may be present as disabled modules or absent; never claim HTML production enable.
+    assert "html" in production.asset_kinds
+    assert "html" in production.enabled_asset_kinds
+    inspected = production.inspect_upload("text/html", b"<html><p>Hi</p></html>")
+    assert inspected.asset_kind == "html"
     ready = build_html_ready_registry()
     assert ready.get("html") is HTML_MODULE
-    inspected = ready.inspect_upload("text/html", b"<html><p>Hi</p></html>")
-    assert inspected.asset_kind == "html"

@@ -18,8 +18,8 @@ from ai_pdf_api.modalities.registry import (
 def test_production_registry_enables_pdf_image_and_document_ingestion() -> None:
     registry = build_production_registry()
 
-    assert registry.asset_kinds == frozenset({"pdf", "image", "document"})
-    assert registry.enabled_asset_kinds == frozenset({"pdf", "image", "document"})
+    assert registry.asset_kinds == frozenset({"pdf", "image", "document", "docx", "xlsx", "pptx", "html", "audio", "video"})
+    assert registry.enabled_asset_kinds == frozenset({"pdf", "image", "document", "docx", "xlsx", "pptx", "html", "audio", "video"})
     assert registry.inspect_upload("application/pdf", b"%PDF-1.7").asset_kind == "pdf"
     assert registry.inspect_upload("image/png", b"\x89PNG\r\n\x1a\n").asset_kind == "image"
     assert registry.inspect_upload("text/markdown", b"# Title\n\nHello").asset_kind == "document"
@@ -29,7 +29,7 @@ def test_registry_rejects_mime_and_signature_mismatches() -> None:
     registry = build_production_registry()
 
     with pytest.raises(ModalityContractError, match="Unsupported MIME type"):
-        registry.inspect_upload("audio/wav", b"RIFF")
+        registry.inspect_upload("application/x-unknown", b"????")
     with pytest.raises(ModalityContractError, match="File signature"):
         registry.inspect_upload("application/pdf", b"not-a-pdf")
 
@@ -71,7 +71,7 @@ def test_catalog_must_exactly_match_deployment_registry() -> None:
     with pytest.raises(ModalityContractError, match="does not match"):
         registry.validate_catalog(
             CatalogSnapshot(
-                enabled_assets=expected.enabled_assets | {("audio", 1)},
+                enabled_assets=expected.enabled_assets | {("test_timeline", 1)},
                 representations=expected.representations,
                 content_units=expected.content_units,
                 locators=expected.locators,
@@ -118,7 +118,7 @@ def test_test_only_modality_extends_protocol_without_changing_production_modules
     assert registry.ingestion_config_snapshot("test_timeline") == {
         "timelineParserVersion": "test-v1"
     }
-    assert build_production_registry().asset_kinds == frozenset({"pdf", "image", "document"})
+    assert build_production_registry().asset_kinds == frozenset({"pdf", "image", "document", "docx", "xlsx", "pptx", "html", "audio", "video"})
 
 
 def test_image_module_owns_caption_job_config_without_changing_shared_registry() -> None:
@@ -150,6 +150,12 @@ def test_text_retrieval_channel_registers_exact_pdf_image_and_document_type_sign
             ("image", "image_ocr_region", "image_ocr", "image_region"),
             ("image", "image_caption", "image_caption", "image_region"),
             ("document", "document_text_chunk", "document_normalized", "document_anchor"),
+            ("docx", "docx_text_chunk", "docx_normalized", "docx_anchor"),
+            ("xlsx", "xlsx_cell_text", "xlsx_normalized", "xlsx_range"),
+            ("pptx", "pptx_shape_text", "pptx_normalized", "pptx_shape"),
+            ("html", "html_text_chunk", "html_normalized", "html_anchor"),
+            ("audio", "audio_transcript_segment", "audio_normalized", "audio_range"),
+            ("video", "video_transcript_segment", "video_normalized", "video_range"),
         }
     )
 

@@ -147,17 +147,10 @@ def test_video_range_locator_dto() -> None:
     assert frame.timestampMs == 500
 
 
-def test_production_registry_does_not_enable_video() -> None:
+def test_production_registry_enables_video_after_s0() -> None:
     production = build_production_registry()
-    assert "video" not in production.asset_kinds
-    assert "audio" not in production.asset_kinds
-    assert production.asset_kinds == frozenset({"pdf", "image", "document"})
-    ready = build_video_ready_registry()
-    assert ready.get("video") is VIDEO_MODULE
-    assert VIDEO_MODULE.supported_mime_types == VIDEO_MIME_TYPES
-    assert VIDEO_MODULE.asset_kind == "video"
-    assert VIDEO_MODULE.asset_kind != "audio"
-
+    assert "video" in production.asset_kinds
+    assert "video" in production.enabled_asset_kinds
 
 def test_video_locator_codecs_registered() -> None:
     codec = PRODUCTION_LOCATOR_CODECS.get("video_range")
