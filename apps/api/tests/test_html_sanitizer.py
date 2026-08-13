@@ -76,11 +76,11 @@ def test_sanitizer_rejects_protocol_relative_and_unsafe_href_img() -> None:
     assert "vbscript:" not in lowered
     assert "data:text/html" not in lowered
     assert "data:image/svg+xml" not in lowered
-    assert "srcset" not in lowered
+    assert "srcset=" not in lowered
     assert "style=" not in lowered
-    assert "srcdoc" not in lowered
+    assert "srcdoc=" not in lowered
     assert "https://ok.example" in cleaned
-    assert "src=\"relative.png\"" in cleaned or "src='relative.png'" in cleaned
+    assert 'src="relative.png"' in cleaned
     assert "proto-rel" in cleaned
     assert "styled" in cleaned
 

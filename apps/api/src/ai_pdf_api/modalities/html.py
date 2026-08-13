@@ -276,6 +276,23 @@ def _sanitize_attr(tag: str, name: str, value: str | None) -> tuple[str, str] | 
     return (name.lower(), cleaned)
 
 
+# Forbidden containers suppress nested content until the matching end tag.
+# Void-like forbidden tags are dropped without changing skip depth.
+_FORBIDDEN_CONTAINER_TAGS = frozenset(
+    {
+        "script",
+        "style",
+        "iframe",
+        "object",
+        "form",
+        "textarea",
+        "svg",
+        "math",
+    }
+)
+_FORBIDDEN_VOID_TAGS = frozenset({"embed", "input", "link", "meta", "base"})
+
+
 class _Sanitizer(HTMLParser):
     def __init__(self) -> None:
         super().__init__(convert_charrefs=True)
@@ -284,7 +301,9 @@ class _Sanitizer(HTMLParser):
 
     def handle_starttag(self, tag: str, attrs: list[tuple[str, str | None]]) -> None:
         tag = tag.lower()
-        if tag in {"script", "style", "iframe", "object", "embed", "form", "input", "textarea", "svg", "math", "link", "meta", "base"}:
+        if tag in _FORBIDDEN_VOID_TAGS:
+            return
+        if tag in _FORBIDDEN_CONTAINER_TAGS:
             self._skip += 1
             return
         if self._skip or tag not in ALLOWED_TAGS:
@@ -303,7 +322,9 @@ class _Sanitizer(HTMLParser):
 
     def handle_endtag(self, tag: str) -> None:
         tag = tag.lower()
-        if tag in {"script", "style", "iframe", "object", "embed", "form", "input", "textarea", "svg", "math", "link", "meta", "base"}:
+        if tag in _FORBIDDEN_VOID_TAGS:
+            return
+        if tag in _FORBIDDEN_CONTAINER_TAGS:
             if self._skip:
                 self._skip -= 1
             return
