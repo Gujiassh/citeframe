@@ -32,7 +32,6 @@ from ai_pdf_worker.pdf import (
 )
 
 
-_ABSTRACT_OCR_MIN_CHARS = 16
 _VISUAL_CLAIM_OVERLAP = 0.45
 
 
@@ -211,31 +210,22 @@ def _enrich_page_visual_regions(
         except Exception as error:
             raise IngestionError("pdf_visual_ocr_failed", "PDF visual region OCR failed.") from error
         ocr_text = ocr.text.strip()
-        needs_caption = len(ocr_text) < _ABSTRACT_OCR_MIN_CHARS
-        caption_text = ""
-        if needs_caption or caption_provider is not None:
-            provider = caption_provider or _require_caption_provider()
-            try:
-                caption_text = provider.caption(crop_png, content_type="image/png").strip()
-            except ModelProviderError:
-                if needs_caption:
-                    raise
-                caption_text = ""
-            except Exception as error:
-                if needs_caption:
-                    raise IngestionError(
-                        "pdf_visual_caption_failed",
-                        "PDF visual region caption failed.",
-                    ) from error
-                caption_text = ""
-            if needs_caption and not caption_text:
-                raise IngestionError(
-                    "pdf_visual_caption_empty",
-                    "PDF visual region caption is required and was empty.",
-                )
+        provider = caption_provider or _require_caption_provider()
+        try:
+            caption_text = provider.caption(crop_png, content_type="image/png").strip()
+        except ModelProviderError:
+            raise
+        except Exception as error:
+            raise IngestionError(
+                "pdf_visual_caption_failed",
+                "PDF visual region caption failed.",
+            ) from error
+        if not caption_text:
+            raise IngestionError(
+                "pdf_visual_caption_empty",
+                "PDF visual region caption is required and was empty.",
+            )
         unit_text = "\n".join(part for part in (caption_text, ocr_text) if part)
-        if not unit_text:
-            continue
         prefix = "" if not text or text.endswith("\n") else "\n"
         start = len(text) + len(prefix)
         text = f"{text}{prefix}{unit_text}"

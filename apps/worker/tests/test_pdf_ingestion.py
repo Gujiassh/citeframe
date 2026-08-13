@@ -375,6 +375,36 @@ def test_visual_enrichment_fails_closed_when_vision_is_not_configured() -> None:
     assert getattr(error.value, "code", "") == "image_caption_provider_not_configured"
 
 
+def test_production_adapter_requires_caption_for_labeled_abstract_figures(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    payload = _drawing_only_flowchart_pdf()
+    labeled = OcrTextResult(
+        text="Ingest Parse Retrieve Answer across four labeled boxes.",
+        regions=(),
+    )
+    adapter = PdfIngestionAdapter(region_ocr=lambda _pixels: labeled)
+    assert adapter._caption_provider is None
+
+    from ai_pdf_api.services.providers import ModelProviderError
+
+    def _missing_vision() -> object:
+        raise ModelProviderError(
+            "image_caption_provider_not_configured",
+            "OpenAI image caption API key is not configured.",
+        )
+
+    monkeypatch.setattr(
+        "ai_pdf_api.modalities.image_caption.get_image_caption_provider",
+        _missing_vision,
+    )
+
+    with pytest.raises(Exception) as error:
+        adapter._parse_pages(payload)
+
+    assert getattr(error.value, "code", "") == "image_caption_provider_not_configured"
+
+
 def test_visual_enrichment_ocrs_flattened_screenshot_without_image_xobjects() -> None:
     payload = _screenshot_without_embed_pdf()
     document = fitz.open(stream=payload, filetype="pdf")
