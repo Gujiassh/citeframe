@@ -2,7 +2,7 @@
   "schemaVersion": "m402-real-model-execution-v1",
   "goldenSchemaVersion": "multimodal-golden-v1",
   "testFile": "apps/worker/tests/test_multimodal_golden_execution.py",
-  "testFileSha256": "789e0674b29787857aee8bcdf932b966ad8459406a851b3468f01e6f3441e25e",
+  "testFileSha256": "fb59ffdeed4122f71f0677772b875009cc439353d7eb57a489ba8274dfe9502c",
   "testNode": "apps/worker/tests/test_multimodal_golden_execution.py::test_m402_worker_executes_every_golden_evidence_target",
   "cases": [
     {
