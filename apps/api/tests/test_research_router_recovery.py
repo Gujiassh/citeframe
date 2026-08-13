@@ -32,6 +32,7 @@ from research_router_test_support import (
     approve_seeded_plan,
     auth,
     create_run,
+    seed_final_artifact_detail,
     seed_plan_decision,
 )
 from sqlalchemy import delete, func, select
@@ -558,3 +559,143 @@ def test_create_fails_closed_without_deployment_published_versions(research_app)
     assert response.json()["error"]["code"] == "research_provider_not_configured"
     assert db.scalar(select(func.count()).select_from(WorkflowVersion)) == 0
     assert db.scalar(select(func.count()).select_from(ResearchRun)) == 0
+
+
+def test_f5_historical_final_artifact_bytes_survive_retry_and_recovery(
+    research_app, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """F5 residual: finished final_report bytes/hashes stay immutable across retry.
+
+    Simulates a pre-V5-C-style finished artifact (legacy agent I/O registry on the
+    execution snapshot when columns exist) and proves manual step retry / recovery
+    requeue does not rewrite object bytes, content_sha256, or byte_size.
+    Does not call a paid provider.
+    """
+    from ai_pdf_api.services.research_agent_io_registry import (
+        AGENT_RESULT_SCHEMA_VERSION_LEGACY,
+        COMPACT_POLICY_VERSION_LEGACY,
+        CONTEXT_POLICY_VERSION_LEGACY,
+    )
+
+    client, db, context = research_app
+    run, artifact, _claim, steps = seed_final_artifact_detail(client, db, context)
+    snapshot = db.get(ResearchExecutionSnapshot, run.approved_execution_snapshot_id)
+    assert snapshot is not None
+    if hasattr(snapshot, "agent_result_schema_version"):
+        snapshot.agent_result_schema_version = AGENT_RESULT_SCHEMA_VERSION_LEGACY
+        snapshot.context_policy_version = CONTEXT_POLICY_VERSION_LEGACY
+        snapshot.compact_policy_version = COMPACT_POLICY_VERSION_LEGACY
+
+    content = b"# Citeframe Research Report\n"
+    assert artifact.byte_size == len(content)
+    expected_sha = hashlib.sha256(content).hexdigest()
+    assert artifact.content_sha256 == expected_sha
+    object_store = context["objectStore"]
+    assert isinstance(object_store, dict)
+    object_store[artifact.object_key] = content
+    object_key = artifact.object_key
+    artifact_id = artifact.id
+    run_id = run.id
+    workspace_id = run.workspace_id
+
+    # Capture pre-retry identity oracle.
+    before = {
+        "artifactId": artifact_id,
+        "objectKey": object_key,
+        "byteSize": artifact.byte_size,
+        "contentSha256": artifact.content_sha256,
+        "objectBytesSha256": hashlib.sha256(object_store[object_key]).hexdigest(),
+        "agentResultSchemaVersion": getattr(snapshot, "agent_result_schema_version", None),
+    }
+
+    # Add a failed branch step (same pattern as manual-retry oracle) and requeue it.
+    # Final report identity must remain untouched by recovery bookkeeping.
+    now = datetime.now(UTC)
+    failed_step = ResearchStep(
+        workspace_id=workspace_id,
+        run_id=run_id,
+        execution_snapshot_id=snapshot.id,
+        step_key="researcher:f5-branch",
+        step_kind="researcher",
+        branch_key="f5-branch",
+        status="failed",
+        max_attempts_snapshot=3,
+        current_attempt_number=1,
+        error_code="provider_timeout",
+        error_message="Provider timed out.",
+        created_at=now,
+        updated_at=now,
+        started_at=now,
+        finished_at=now,
+    )
+    db.add(failed_step)
+    db.flush()
+    db.add(
+        ResearchStepAttempt(
+            workspace_id=workspace_id,
+            step_id=failed_step.id,
+            attempt_number=1,
+            status="timed_out",
+            input_sha256="a" * 64,
+            error_code="provider_timeout",
+            error_message="Provider timed out.",
+            started_at=now,
+            finished_at=now,
+        )
+    )
+    run.status = "awaiting_retry"
+    run.state_version += 1
+    db.commit()
+    db.refresh(run)
+    db.refresh(failed_step)
+
+    response = client.post(
+        f"/v1/workspaces/{workspace_id}/research-runs/{run_id}/steps/{failed_step.id}/retry",
+        headers=auth(context["creator"], key="research-f5-legacy-retry-01"),
+        json={
+            "expectedStateVersion": run.state_version,
+            "expectedStepStateVersion": failed_step.state_version,
+            "failedAttempt": 1,
+        },
+    )
+    assert response.status_code == 202, response.text
+
+    db.refresh(artifact)
+    after_bytes = object_store[object_key]
+    after = {
+        "artifactId": artifact.id,
+        "objectKey": artifact.object_key,
+        "byteSize": artifact.byte_size,
+        "contentSha256": artifact.content_sha256,
+        "objectBytesSha256": hashlib.sha256(after_bytes).hexdigest(),
+        "agentResultSchemaVersion": getattr(
+            db.get(ResearchExecutionSnapshot, run.approved_execution_snapshot_id),
+            "agent_result_schema_version",
+            None,
+        ),
+    }
+    assert after == before
+    assert after_bytes == content
+
+    monkeypatch.setattr(
+        "ai_pdf_api.services.research_views.download_bytes",
+        lambda key: object_store[key],
+    )
+    content_response = client.get(
+        f"/v1/workspaces/{workspace_id}/research-runs/{run_id}/artifacts/{artifact_id}/content",
+        headers=auth(context["member"]),
+    )
+    assert content_response.status_code == 200
+    assert content_response.content == content
+    assert content_response.headers["etag"] == expected_sha
+
+    # Recovery projection: detail still serves the same identity.
+    detail = client.get(
+        f"/v1/workspaces/{workspace_id}/research-runs/{run_id}/artifacts/{artifact_id}",
+        headers=auth(context["member"]),
+    )
+    assert detail.status_code == 200, detail.text
+    body = detail.json()["artifact"]
+    assert body["id"] == artifact_id
+    assert body["sha256"] == expected_sha
+    assert body["byteSize"] == len(content)

@@ -92,3 +92,17 @@ The current worktree adds `LegacyResearchPlanArtifactPayload` and a legacy resea
 - No live pre-V5-C database row artifact currently proves unchanged finished-artifact bytes/hashes through legacy retry/recovery; add this before introducing another registry version (F5, Medium).
 - Scripted R800 provider proves engineering plumbing only. R803 model quality and M404 user value remain `not_evaluable`, and the product remains `internal_preview`.
 - `alembic upgrade head --sql` remains blocked by the existing offline-incompatible migration `e6a7b8c9d0f1`; online migration is green and this is not a V5-C release blocker.
+
+
+## F5 residual closeout (2026-08-13)
+
+Status: **closed for current frozen registry (no new registry version)**.
+
+- Test: `test_f5_historical_final_artifact_bytes_survive_retry_and_recovery`
+- Artifact: `docs/evals/artifacts/v5c-f5-historical-artifact-20260813/`
+- Paid provider calls: 0
+- Proves finished final_report bytes/sha/byte_size and content etag are unchanged
+  across manual retry requeue under legacy agent I/O snapshot versions.
+
+F1 remains Medium residual only for **future** registry versions (current v1 has
+Worker executable binding coverage from V5-D).

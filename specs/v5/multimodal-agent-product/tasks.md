@@ -8,7 +8,7 @@
 - [x] V5-B 多模态资料扩展（Markdown-only `document` v1：isolated/canonical implementation、前序 Critical review、online migration、live scoped PostgreSQL/MinIO restore、standalone browser `4 passed` 与 B008 formal isolated deployment Critical closure 已通过；accepted deployment artifact=`docs/evals/artifacts/v5b-document-deployment-v4/`；HTML/Audio/Video 仍受 OD-B5/B6/B7 独立 gate 阻塞）
 - [x] V5-C 多 Agent 协作产品化（2026-08-10 工程/发布门 `ACCEPT`；严格版本化 production Agent I/O、usage/context、Web projection、production-start Research、online migration 与 R800 v6 已通过；F1/F5 为 Medium 后续风险）
 - [x] V5-D 端到端整合与工程稳定（2026-08-12 D-G7 全量回归通过：API 562 / Worker 296 / Web 131；Critical `ACCEPT` with residuals；internal-preview；R803/M404 仍后置；未 commit/push）
-- [ ] V5-E 模型质量与用户价值（E001 计划包已于 2026-08-12 落地；正式 campaign / M404 仍待主人授权）
+- [ ] V5-E 模型质量与用户价值（E001 已落地；**主人 2026-08-13 决定暂缓付费 formal R803**；M404 仍 blocked；先做免费工程 residual / 已批准模态工作）
 
 ### V5-B/C 详细规格状态
 

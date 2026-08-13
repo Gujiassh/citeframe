@@ -85,6 +85,13 @@ V1、V2-A、阶段 9、V3 M401-M403B 与 V4 R000-R800 工程基线已完成。�
 当前：`V5-A/B/C 与 V5-D 工程门已完成（internal-preview）。2026-08-12 跑通 D-G7 全量回归：API 562 passed、Worker 296 passed、Web 131 passed，lint/tsc/build/compileall/diff-check 通过；Critical closeout ACCEPT with residuals。artifact：docs/evals/artifacts/v5d-20260811-01/d-g7/。R803/M404 仍 not_evaluable（V5-E）。D-G6 empty-target mixed Compose residual 已关闭。V5-E E001 计划包已落地；正式 R803/M404 待授权。`
 
 
+## 2026-08-13：付费 R803 暂缓 + F5 免费 residual
+
+- 主人决定：**暂缓付费 formal R803**；不发起 provider 质量评测，不把工程绿当成模型质量。
+- 免费推进：关闭 V5-C F5 Medium residual——`test_f5_historical_final_artifact_bytes_survive_retry_and_recovery` 1 passed；artifact `docs/evals/artifacts/v5c-f5-historical-artifact-20260813/`。
+- 仍 open：F1 仅在引入下一 registry version 前；OD-B6/B7 Audio/Video；OD-B5 HTML 仍 rejected；M404。
+- 下一步候选（均 0 付费）：Audio/Video 仅设计 brief（需 OD 批准后才能生产）、HTML 重开 OD、D-G3 mixed Research scripted E2E 加固、CI/runbook 整理。
+
 ## 2026-08-12：V5-E E001 plan package
 
 - 新增 `decision-2026-08-12-v5e-scope.md`、`v5e-detailed-spec.md`、`verification-matrix-v5e.md`、`grok-handoff-v5e.md`。
@@ -301,7 +308,7 @@ V1、V2-A、阶段 9、V3 M401-M403B 与 V4 R000-R800 工程基线已完成。�
 
 ## 7. 下一步
 
-下一步：`V5-E E001 计划包已完成。等待主人明确授权正式 R803 campaign（成本上限 + provider/model）或提供 M404 协议要素。在此之前不发起付费模型评估、不宣称质量/用户价值通过。`
+下一步：`付费 R803 已按主人要求暂缓。优先免费模块：F5 已关；可选 Audio/Video 设计 brief（OD 批准前不生产启用）、HTML 重开决策、scripted Research E2E 加固。不发起付费评测。`
 
 ## 2026-08-10：V5-C C-API-WORKER implementation slice
 

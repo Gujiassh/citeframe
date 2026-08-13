@@ -52,3 +52,12 @@ evidence. M404 has no qualified user evidence. Product stage remains
 E001 is complete when the V5-E detailed plan, verification matrix, and frozen
 package inventory are committed and linked from `tasks.md` / progress docs.
 It is **not** complete when a model run finishes.
+
+
+## Owner deferral: paid formal R803 (2026-08-13)
+
+Owner decision: **skip paid formal R803 campaign for now**. Do not start
+provider-backed quality runs, do not spend on evaluation, and do not treat
+engineering green as model quality. Continue free modules (engineering residuals,
+modality design only when OD approved, docs/tooling). Re-open only with an
+explicit cost ceiling + profile authorization in an active turn.

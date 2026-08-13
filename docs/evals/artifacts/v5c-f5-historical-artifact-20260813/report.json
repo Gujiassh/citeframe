@@ -1,0 +1,11 @@
+{
+  "schemaVersion": "v5c-f5-historical-artifact-v1",
+  "recordedAt": "2026-08-13T02:33:03.699614+00:00",
+  "sourceSha": "9763299ccfe23820306b18a899d21a0c05198569",
+  "paidProviderCalls": 0,
+  "test": "apps/api/tests/test_research_router_recovery.py::test_f5_historical_final_artifact_bytes_survive_retry_and_recovery",
+  "result": "passed",
+  "oracle": "final_report object bytes, content_sha256, byte_size, content etag, and detail sha256 unchanged across manual retry requeue on a finished run with legacy agent I/O versions on the execution snapshot",
+  "realModelQualityPassed": false,
+  "userValuePassed": false
+}

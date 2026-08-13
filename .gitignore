@@ -29,3 +29,6 @@ __pycache__/
 
 # Local infra data
 infra/docker/data/
+
+# Playwright local output
+apps/web/test-results/
