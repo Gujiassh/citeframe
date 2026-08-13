@@ -15,24 +15,49 @@ from ai_pdf_api.modalities.document import (
     validate_document_anchor_range,
     validate_document_normalized_content,
 )
+from ai_pdf_api.modalities.docx import (
+    DocxIntegrityError,
+    validate_docx_anchor_range,
+    validate_docx_normalized_content,
+)
+from ai_pdf_api.modalities.pptx import PptxIntegrityError, validate_pptx_shape
+from ai_pdf_api.modalities.xlsx import XlsxIntegrityError, validate_xlsx_range
 from ai_pdf_api.models import (
     AssetRepresentation,
     DocumentBlock,
     DocumentLocatorDetail,
     DocumentNormalizedContent,
+    DocxBlock,
+    DocxLocatorDetail,
+    DocxNormalizedContent,
     EvidenceLocator,
     ImageLocatorDetail,
     PdfLocatorDetail,
+    PptxLocatorDetail,
     SpatialLocatorRegion,
+    XlsxLocatorDetail,
 )
 from ai_pdf_api.schemas.chat import (
     DocumentAnchorLocator,
+    DocxAnchorLocator,
     EvidenceLocatorDto,
     ImageRegionLocator,
     PageGeometry,
     PdfPageLocator,
     PdfRegionLocator,
+    PptxShapeLocator,
     SpatialRegion,
+    XlsxRangeLocator,
+)
+
+TypedLocatorDetail = (
+    PdfLocatorDetail
+    | ImageLocatorDetail
+    | DocumentLocatorDetail
+    | DocxLocatorDetail
+    | XlsxLocatorDetail
+    | PptxLocatorDetail
+    | None
 )
 
 PDF_COORDINATE_SPACE = "pdf_crop_box_normalized_top_left_v1"
@@ -60,7 +85,7 @@ class LocatorCodec(Protocol):
         self,
         db: Session,
         locator: EvidenceLocator,
-        detail: PdfLocatorDetail | ImageLocatorDetail | DocumentLocatorDetail | None,
+        detail: TypedLocatorDetail,
         regions: list[SpatialLocatorRegion],
     ) -> EvidenceLocatorDto: ...
 
@@ -143,7 +168,7 @@ class PdfLocatorCodec:
         self,
         db: Session,
         locator: EvidenceLocator,
-        detail: PdfLocatorDetail | ImageLocatorDetail | DocumentLocatorDetail | None,
+        detail: TypedLocatorDetail,
         regions: list[SpatialLocatorRegion],
     ) -> EvidenceLocatorDto:
         del db
@@ -228,7 +253,7 @@ class ImageLocatorCodec:
         self,
         db: Session,
         locator: EvidenceLocator,
-        detail: PdfLocatorDetail | ImageLocatorDetail | DocumentLocatorDetail | None,
+        detail: TypedLocatorDetail,
         regions: list[SpatialLocatorRegion],
     ) -> EvidenceLocatorDto:
         del db
@@ -360,7 +385,7 @@ class DocumentLocatorCodec:
         self,
         db: Session,
         locator: EvidenceLocator,
-        detail: PdfLocatorDetail | ImageLocatorDetail | DocumentLocatorDetail | None,
+        detail: TypedLocatorDetail,
         regions: list[SpatialLocatorRegion],
     ) -> EvidenceLocatorDto:
         del regions
@@ -395,6 +420,277 @@ class DocumentLocatorCodec:
         return locator.id
 
 
+def _load_docx_anchor_context(
+    db: Session,
+    locator: EvidenceLocator,
+    detail: DocxLocatorDetail,
+) -> tuple[DocxNormalizedContent, DocxBlock, str]:
+    representation = db.get(AssetRepresentation, locator.representation_id_snapshot)
+    if representation is None:
+        raise EvidenceContractError(f"docx_anchor {locator.id} representation is missing")
+    if (
+        representation.id != locator.representation_id_snapshot
+        or representation.workspace_id != locator.workspace_id
+        or representation.asset_id != locator.asset_id
+        or representation.processing_generation != locator.processing_generation_snapshot
+        or representation.representation_kind != "docx_normalized"
+    ):
+        raise EvidenceContractError(
+            f"docx_anchor {locator.id} representation snapshot is inconsistent"
+        )
+    normalized = db.get(DocxNormalizedContent, representation.id)
+    if normalized is None:
+        raise EvidenceContractError(f"docx_anchor {locator.id} normalized content is missing")
+    try:
+        normalized_text = validate_docx_normalized_content(normalized)
+    except DocxIntegrityError as error:
+        raise EvidenceContractError(
+            f"docx_anchor {locator.id} normalized content is invalid: {error}"
+        ) from error
+    block = db.scalar(
+        select(DocxBlock).where(
+            DocxBlock.representation_id == representation.id,
+            DocxBlock.block_id == detail.block_id,
+        )
+    )
+    if block is None:
+        raise EvidenceContractError(
+            f"docx_anchor {locator.id} block {detail.block_id} is missing"
+        )
+    return normalized, block, normalized_text
+
+
+class DocxLocatorCodec:
+    kinds = frozenset({"docx_anchor"})
+    representation_kinds = frozenset({"docx_normalized"})
+
+    def clone_details(self, db: Session, source: EvidenceLocator, target: EvidenceLocator) -> None:
+        detail = db.get(DocxLocatorDetail, source.id)
+        if detail is None:
+            raise EvidenceContractError(f"DOCX locator {source.id} has no typed detail")
+        _normalized, block, normalized_text = _load_docx_anchor_context(db, source, detail)
+        heading_path = validate_docx_anchor_range(
+            block_id=detail.block_id,
+            block_kind=detail.block_kind,
+            heading_path=detail.heading_path,
+            char_start=detail.char_start,
+            char_end=detail.char_end,
+            text_sha256_value=detail.text_sha256,
+            normalization_version=detail.normalization_version,
+            block=block,
+            normalized_text=normalized_text,
+        )
+        db.add(
+            DocxLocatorDetail(
+                locator_id=target.id,
+                block_id=detail.block_id,
+                block_kind=detail.block_kind,
+                heading_path=heading_path,
+                char_start=detail.char_start,
+                char_end=detail.char_end,
+                text_sha256=detail.text_sha256,
+                normalization_version=detail.normalization_version,
+            )
+        )
+
+    def serialize(self, db: Session, locator: EvidenceLocator) -> EvidenceLocatorDto:
+        detail = db.get(DocxLocatorDetail, locator.id)
+        return self.serialize_loaded(db, locator, detail, [])
+
+    def serialize_loaded(
+        self,
+        db: Session,
+        locator: EvidenceLocator,
+        detail: TypedLocatorDetail,
+        regions: list[SpatialLocatorRegion],
+    ) -> EvidenceLocatorDto:
+        del regions
+        if not isinstance(detail, DocxLocatorDetail):
+            raise EvidenceContractError(f"DOCX locator {locator.id} has no typed detail")
+        _normalized, block, normalized_text = _load_docx_anchor_context(db, locator, detail)
+        heading_path = validate_docx_anchor_range(
+            block_id=detail.block_id,
+            block_kind=detail.block_kind,
+            heading_path=detail.heading_path,
+            char_start=detail.char_start,
+            char_end=detail.char_end,
+            text_sha256_value=detail.text_sha256,
+            normalization_version=detail.normalization_version,
+            block=block,
+            normalized_text=normalized_text,
+        )
+        return DocxAnchorLocator(
+            kind="docx_anchor",
+            version=locator.locator_version,
+            blockId=detail.block_id,
+            blockKind=detail.block_kind,  # type: ignore[arg-type]
+            headingPath=heading_path,
+            charStart=detail.char_start,
+            charEnd=detail.char_end,
+            textSha256=detail.text_sha256,
+            normalizationVersion=detail.normalization_version,  # type: ignore[arg-type]
+        )
+
+    def retrieval_key(
+        self,
+        locator: EvidenceLocator,
+        serialized: EvidenceLocatorDto,
+    ) -> str:
+        if isinstance(serialized, DocxAnchorLocator):
+            return (
+                f"docx_anchor:{serialized.blockId}:"
+                f"{serialized.charStart}:{serialized.charEnd}"
+            )
+        return locator.id
+
+
+class XlsxLocatorCodec:
+    kinds = frozenset({"xlsx_range"})
+    representation_kinds = frozenset({"xlsx_normalized"})
+
+    def clone_details(self, db: Session, source: EvidenceLocator, target: EvidenceLocator) -> None:
+        detail = db.get(XlsxLocatorDetail, source.id)
+        if detail is None:
+            raise EvidenceContractError(f"XLSX locator {source.id} has no typed detail")
+        try:
+            validate_xlsx_range(
+                sheet_name=detail.sheet_name,
+                start_cell=detail.start_cell,
+                end_cell=detail.end_cell,
+                text_sha256_value=detail.text_sha256,
+                expected_text=detail.displayed_text,
+            )
+        except XlsxIntegrityError as error:
+            raise EvidenceContractError(str(error)) from error
+        db.add(
+            XlsxLocatorDetail(
+                locator_id=target.id,
+                sheet_name=detail.sheet_name,
+                start_cell=detail.start_cell,
+                end_cell=detail.end_cell,
+                text_sha256=detail.text_sha256,
+                displayed_text=detail.displayed_text,
+                normalization_version=detail.normalization_version,
+            )
+        )
+
+    def serialize(self, db: Session, locator: EvidenceLocator) -> EvidenceLocatorDto:
+        return self.serialize_loaded(db, locator, db.get(XlsxLocatorDetail, locator.id), [])
+
+    def serialize_loaded(
+        self,
+        db: Session,
+        locator: EvidenceLocator,
+        detail: TypedLocatorDetail,
+        regions: list[SpatialLocatorRegion],
+    ) -> EvidenceLocatorDto:
+        del db, regions
+        if not isinstance(detail, XlsxLocatorDetail):
+            raise EvidenceContractError(f"XLSX locator {locator.id} has no typed detail")
+        try:
+            validate_xlsx_range(
+                sheet_name=detail.sheet_name,
+                start_cell=detail.start_cell,
+                end_cell=detail.end_cell,
+                text_sha256_value=detail.text_sha256,
+                expected_text=detail.displayed_text,
+            )
+        except XlsxIntegrityError as error:
+            raise EvidenceContractError(str(error)) from error
+        return XlsxRangeLocator(
+            kind="xlsx_range",
+            version=locator.locator_version,
+            sheetName=detail.sheet_name,
+            startCell=detail.start_cell,
+            endCell=detail.end_cell,
+            textSha256=detail.text_sha256,
+            displayedText=detail.displayed_text,
+            normalizationVersion=detail.normalization_version,  # type: ignore[arg-type]
+        )
+
+    def retrieval_key(
+        self,
+        locator: EvidenceLocator,
+        serialized: EvidenceLocatorDto,
+    ) -> str:
+        if isinstance(serialized, XlsxRangeLocator):
+            return (
+                f"xlsx_range:{serialized.sheetName}:"
+                f"{serialized.startCell}:{serialized.endCell}"
+            )
+        return locator.id
+
+
+class PptxLocatorCodec:
+    kinds = frozenset({"pptx_shape"})
+    representation_kinds = frozenset({"pptx_normalized"})
+
+    def clone_details(self, db: Session, source: EvidenceLocator, target: EvidenceLocator) -> None:
+        detail = db.get(PptxLocatorDetail, source.id)
+        if detail is None:
+            raise EvidenceContractError(f"PPTX locator {source.id} has no typed detail")
+        try:
+            validate_pptx_shape(
+                slide_index=detail.slide_index,
+                shape_id=detail.shape_id,
+                text_sha256_value=detail.text_sha256,
+                expected_text=detail.displayed_text,
+            )
+        except PptxIntegrityError as error:
+            raise EvidenceContractError(str(error)) from error
+        db.add(
+            PptxLocatorDetail(
+                locator_id=target.id,
+                slide_index=detail.slide_index,
+                shape_id=detail.shape_id,
+                text_sha256=detail.text_sha256,
+                displayed_text=detail.displayed_text,
+                normalization_version=detail.normalization_version,
+            )
+        )
+
+    def serialize(self, db: Session, locator: EvidenceLocator) -> EvidenceLocatorDto:
+        return self.serialize_loaded(db, locator, db.get(PptxLocatorDetail, locator.id), [])
+
+    def serialize_loaded(
+        self,
+        db: Session,
+        locator: EvidenceLocator,
+        detail: TypedLocatorDetail,
+        regions: list[SpatialLocatorRegion],
+    ) -> EvidenceLocatorDto:
+        del db, regions
+        if not isinstance(detail, PptxLocatorDetail):
+            raise EvidenceContractError(f"PPTX locator {locator.id} has no typed detail")
+        try:
+            validate_pptx_shape(
+                slide_index=detail.slide_index,
+                shape_id=detail.shape_id,
+                text_sha256_value=detail.text_sha256,
+                expected_text=detail.displayed_text,
+            )
+        except PptxIntegrityError as error:
+            raise EvidenceContractError(str(error)) from error
+        return PptxShapeLocator(
+            kind="pptx_shape",
+            version=locator.locator_version,
+            slideIndex=detail.slide_index,
+            shapeId=detail.shape_id,
+            textSha256=detail.text_sha256,
+            displayedText=detail.displayed_text,
+            normalizationVersion=detail.normalization_version,  # type: ignore[arg-type]
+        )
+
+    def retrieval_key(
+        self,
+        locator: EvidenceLocator,
+        serialized: EvidenceLocatorDto,
+    ) -> str:
+        if isinstance(serialized, PptxShapeLocator):
+            return f"pptx_shape:{serialized.slideIndex}:{serialized.shapeId}"
+        return locator.id
+
+
 class LocatorCodecRegistry:
     def __init__(self, codecs: Iterable[LocatorCodec]) -> None:
         self._by_kind: dict[str, LocatorCodec] = {}
@@ -416,7 +712,14 @@ class LocatorCodecRegistry:
 
 
 PRODUCTION_LOCATOR_CODECS = LocatorCodecRegistry(
-    (PdfLocatorCodec(), ImageLocatorCodec(), DocumentLocatorCodec())
+    (
+        PdfLocatorCodec(),
+        ImageLocatorCodec(),
+        DocumentLocatorCodec(),
+        DocxLocatorCodec(),
+        XlsxLocatorCodec(),
+        PptxLocatorCodec(),
+    )
 )
 
 
@@ -649,7 +952,22 @@ def evidence_retrieval_keys(
         for source in source_list
         if source.locator.locator_kind in DocumentLocatorCodec.kinds
     ]
-    details: dict[str, PdfLocatorDetail | ImageLocatorDetail | DocumentLocatorDetail] = {}
+    docx_ids = [
+        source.locator.id
+        for source in source_list
+        if source.locator.locator_kind in DocxLocatorCodec.kinds
+    ]
+    xlsx_ids = [
+        source.locator.id
+        for source in source_list
+        if source.locator.locator_kind in XlsxLocatorCodec.kinds
+    ]
+    pptx_ids = [
+        source.locator.id
+        for source in source_list
+        if source.locator.locator_kind in PptxLocatorCodec.kinds
+    ]
+    details: dict[str, TypedLocatorDetail] = {}
     if pdf_ids:
         details.update(
             (detail.locator_id, detail)
@@ -671,6 +989,27 @@ def evidence_retrieval_keys(
                 select(DocumentLocatorDetail).where(
                     DocumentLocatorDetail.locator_id.in_(document_ids)
                 )
+            )
+        )
+    if docx_ids:
+        details.update(
+            (detail.locator_id, detail)
+            for detail in db.scalars(
+                select(DocxLocatorDetail).where(DocxLocatorDetail.locator_id.in_(docx_ids))
+            )
+        )
+    if xlsx_ids:
+        details.update(
+            (detail.locator_id, detail)
+            for detail in db.scalars(
+                select(XlsxLocatorDetail).where(XlsxLocatorDetail.locator_id.in_(xlsx_ids))
+            )
+        )
+    if pptx_ids:
+        details.update(
+            (detail.locator_id, detail)
+            for detail in db.scalars(
+                select(PptxLocatorDetail).where(PptxLocatorDetail.locator_id.in_(pptx_ids))
             )
         )
     regions_by_locator: dict[str, list[SpatialLocatorRegion]] = {

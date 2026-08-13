@@ -110,6 +110,58 @@ class DocumentAnchorLocator(BaseModel):
             raise ValueError("Document textSha256 must be a lowercase hex SHA-256 digest")
         return self
 
+
+class DocxAnchorLocator(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    kind: Literal["docx_anchor"]
+    version: Literal[1]
+    blockId: str = Field(min_length=1, max_length=64)
+    blockKind: Literal["heading", "paragraph", "list_item", "table"]
+    headingPath: list[str] = Field(default_factory=list)
+    charStart: int = Field(ge=0)
+    charEnd: int = Field(gt=0)
+    textSha256: str = Field(min_length=64, max_length=64)
+    normalizationVersion: Literal["docx-normalization-v1"]
+
+    @model_validator(mode="after")
+    def validate_range_and_path(self) -> "DocxAnchorLocator":
+        if self.charEnd <= self.charStart:
+            raise ValueError("DOCX anchor charEnd must be greater than charStart")
+        if any(not isinstance(part, str) or not part for part in self.headingPath):
+            raise ValueError("DOCX headingPath must be an ordered array of non-empty strings")
+        if len(self.textSha256) != 64 or any(
+            ch not in "0123456789abcdef" for ch in self.textSha256
+        ):
+            raise ValueError("DOCX textSha256 must be a lowercase hex SHA-256 digest")
+        return self
+
+
+class XlsxRangeLocator(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    kind: Literal["xlsx_range"]
+    version: Literal[1]
+    sheetName: str = Field(min_length=1, max_length=255)
+    startCell: str = Field(min_length=1, max_length=32)
+    endCell: str = Field(min_length=1, max_length=32)
+    textSha256: str = Field(min_length=64, max_length=64)
+    displayedText: str = Field(min_length=1)
+    normalizationVersion: Literal["xlsx-normalization-v1"]
+
+
+class PptxShapeLocator(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    kind: Literal["pptx_shape"]
+    version: Literal[1]
+    slideIndex: int = Field(ge=1)
+    shapeId: str = Field(min_length=1, max_length=64)
+    textSha256: str = Field(min_length=64, max_length=64)
+    displayedText: str = Field(min_length=1)
+    normalizationVersion: Literal["pptx-normalization-v1"]
+
+
 class ImageRegionLocator(BaseModel):
     kind: Literal["image_region"]
     version: Literal[1]
@@ -121,7 +173,13 @@ class ImageRegionLocator(BaseModel):
 
 
 EvidenceLocatorDto = Annotated[
-    PdfPageLocator | PdfRegionLocator | ImageRegionLocator | DocumentAnchorLocator,
+    PdfPageLocator
+    | PdfRegionLocator
+    | ImageRegionLocator
+    | DocumentAnchorLocator
+    | DocxAnchorLocator
+    | XlsxRangeLocator
+    | PptxShapeLocator,
     Field(discriminator="kind"),
 ]
 
