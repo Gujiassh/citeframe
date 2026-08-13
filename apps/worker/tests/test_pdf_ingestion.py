@@ -264,3 +264,173 @@ def test_real_artifact_fixture_persists_unique_region_content_units() -> None:
     finally:
         Base.metadata.drop_all(bind=engine)
         engine.dispose()
+
+
+class _StaticCaption:
+    provider = "openai"
+    model = "gpt-5.5"
+    version = "image-caption-v1"
+    detail = "high"
+    max_output_tokens = 320
+    config_fingerprint = "a" * 64
+
+    def __init__(self, text: str = "Flowchart from ingest to retrieval.") -> None:
+        self._text = text
+        self.calls: list[tuple[bytes, str]] = []
+
+    def caption(self, payload: bytes, *, content_type: str) -> str:
+        self.calls.append((payload, content_type))
+        assert content_type == "image/png"
+        assert payload.startswith(b"\x89PNG")
+        return self._text
+
+
+class _FailClosedCaption(_StaticCaption):
+    def caption(self, payload: bytes, *, content_type: str) -> str:
+        from ai_pdf_api.services.providers import ModelProviderError
+
+        self.calls.append((payload, content_type))
+        raise ModelProviderError(
+            "image_caption_provider_not_configured",
+            "OpenAI image caption API key is not configured.",
+        )
+
+
+def _drawing_only_flowchart_pdf() -> bytes:
+    document = fitz.open()
+    page = document.new_page(width=612, height=792)
+    boxes = [
+        fitz.Rect(80, 140, 220, 210),
+        fitz.Rect(320, 140, 500, 210),
+        fitz.Rect(80, 300, 220, 370),
+        fitz.Rect(320, 300, 500, 370),
+    ]
+    for box in boxes:
+        page.draw_rect(box, color=(0.05, 0.15, 0.45), width=2, fill=(0.82, 0.88, 0.96))
+    page.draw_line((220, 175), (320, 175), color=(0.05, 0.15, 0.45), width=3)
+    page.draw_line((150, 210), (150, 300), color=(0.05, 0.15, 0.45), width=3)
+    page.draw_line((410, 210), (410, 300), color=(0.05, 0.15, 0.45), width=3)
+    page.insert_text((72, 88), "System architecture overview", fontsize=16)
+    payload = document.tobytes()
+    document.close()
+    return payload
+
+
+def _screenshot_without_embed_pdf() -> bytes:
+    source = fitz.open()
+    source_page = source.new_page(width=420, height=220)
+    source_page.draw_rect(source_page.rect, fill=(0.95, 0.95, 0.88))
+    source_page.insert_text((24, 72), "SNAPSHOT-TOKEN-ALPHA", fontsize=22)
+    source_page.insert_text((24, 120), "visible screenshot words", fontsize=14)
+    pixmap = source_page.get_pixmap(dpi=120, alpha=False)
+    source.close()
+
+    document = fitz.open()
+    page = document.new_page(width=612, height=792)
+    page.draw_rect(fitz.Rect(72, 160, 520, 430), fill=(0.12, 0.18, 0.28))
+    # Paint raster-like ink without relying on an Image XObject: tiled color cells.
+    for row in range(0, pixmap.height, 8):
+        for col in range(0, pixmap.width, 8):
+            sample = pixmap.pixel(min(col, pixmap.width - 1), min(row, pixmap.height - 1))
+            color = (sample[0] / 255, sample[1] / 255, sample[2] / 255)
+            x0 = 80 + col * 0.95
+            y0 = 180 + row * 0.95
+            page.draw_rect(fitz.Rect(x0, y0, x0 + 8, y0 + 8), color=color, fill=color, width=0)
+    payload = document.tobytes()
+    document.close()
+    return payload
+
+
+def test_visual_enrichment_captions_abstract_drawing_figures() -> None:
+    payload = _drawing_only_flowchart_pdf()
+    document = fitz.open(stream=payload, filetype="pdf")
+    assert document[0].get_image_info() == []
+    document.close()
+
+    caption = _StaticCaption()
+    empty_ocr = OcrTextResult(text="", regions=())
+    adapter = PdfIngestionAdapter(
+        caption_provider=caption,
+        region_ocr=lambda _pixels: empty_ocr,
+    )
+    pages = adapter._parse_pages(payload)
+
+    assert caption.calls
+    figures = [artifact for artifact in pages[0].artifacts if artifact.unit_kind == "pdf_figure"]
+    assert figures
+    assert any("Flowchart from ingest to retrieval." in artifact.text for artifact in figures)
+    assert all(artifact.regions for artifact in figures)
+
+
+def test_visual_enrichment_fails_closed_when_vision_is_not_configured() -> None:
+    payload = _drawing_only_flowchart_pdf()
+    adapter = PdfIngestionAdapter(
+        caption_provider=_FailClosedCaption(),
+        region_ocr=lambda _pixels: OcrTextResult(text="", regions=()),
+    )
+
+    with pytest.raises(Exception) as error:
+        adapter._parse_pages(payload)
+
+    assert getattr(error.value, "code", "") == "image_caption_provider_not_configured"
+
+
+def test_production_adapter_requires_caption_for_labeled_abstract_figures(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    payload = _drawing_only_flowchart_pdf()
+    labeled = OcrTextResult(
+        text="Ingest Parse Retrieve Answer across four labeled boxes.",
+        regions=(),
+    )
+    adapter = PdfIngestionAdapter(region_ocr=lambda _pixels: labeled)
+    assert adapter._caption_provider is None
+
+    from ai_pdf_api.services.providers import ModelProviderError
+
+    def _missing_vision() -> object:
+        raise ModelProviderError(
+            "image_caption_provider_not_configured",
+            "OpenAI image caption API key is not configured.",
+        )
+
+    monkeypatch.setattr(
+        "ai_pdf_api.modalities.image_caption.get_image_caption_provider",
+        _missing_vision,
+    )
+
+    with pytest.raises(Exception) as error:
+        adapter._parse_pages(payload)
+
+    assert getattr(error.value, "code", "") == "image_caption_provider_not_configured"
+
+
+def test_visual_enrichment_ocrs_flattened_screenshot_without_image_xobjects() -> None:
+    payload = _screenshot_without_embed_pdf()
+    document = fitz.open(stream=payload, filetype="pdf")
+    assert document[0].get_image_info() == []
+    document.close()
+
+    recognized = OcrTextResult(
+        text="SNAPSHOT-TOKEN-ALPHA\nvisible screenshot words",
+        regions=(
+            OcrRegionResult(
+                text="SNAPSHOT-TOKEN-ALPHA",
+                x=0.1,
+                y=0.2,
+                width=0.6,
+                height=0.15,
+                char_start=0,
+                char_end=21,
+            ),
+        ),
+    )
+    adapter = PdfIngestionAdapter(
+        caption_provider=_StaticCaption("Screenshot of snapshot token."),
+        region_ocr=lambda _pixels: recognized,
+    )
+    pages = adapter._parse_pages(payload)
+    figures = [artifact for artifact in pages[0].artifacts if artifact.unit_kind == "pdf_figure"]
+    assert figures
+    assert any("SNAPSHOT-TOKEN-ALPHA" in artifact.text for artifact in figures)
+    assert any("Screenshot of snapshot token." in artifact.text for artifact in figures)

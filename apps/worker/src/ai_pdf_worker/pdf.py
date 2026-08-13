@@ -6,6 +6,7 @@ from math import isclose
 import re
 
 import fitz
+import numpy as np
 from pypdf import PdfReader
 
 from ai_pdf_api.modalities.pdf_ingestion import (
@@ -231,6 +232,122 @@ def _rect_overlap_ratio(left: fitz.Rect, right: fitz.Rect) -> float:
     return intersection.get_area() / min(left.get_area(), right.get_area())
 
 
+def _display_rect(rect: fitz.Rect, page: fitz.Page) -> fitz.Rect:
+    return (rect * page.rotation_matrix) & page.rect
+
+
+def _figure_size_ok(display_rect: fitz.Rect, page_area: float) -> bool:
+    if display_rect.is_empty or display_rect.width <= 0 or display_rect.height <= 0:
+        return False
+    area_ratio = display_rect.get_area() / page_area
+    return (
+        0.02 <= area_ratio < 0.9
+        and display_rect.width >= 96
+        and display_rect.height >= 72
+    )
+
+
+def _embedded_and_drawing_figure_rects(
+    page: fitz.Page,
+    table_rects: list[fitz.Rect],
+) -> list[fitz.Rect]:
+    figure_rects: list[fitz.Rect] = []
+    page_area = page.rect.width * page.rect.height
+    for image in page.get_image_info():
+        rect = fitz.Rect(image["bbox"])
+        if _figure_size_ok(_display_rect(rect, page), page_area):
+            figure_rects.append(rect)
+
+    drawings = page.get_drawings()
+    for cluster in page.cluster_drawings(drawings=drawings):
+        rect = fitz.Rect(cluster)
+        member_count = sum(rect.intersects(fitz.Rect(drawing["rect"])) for drawing in drawings)
+        overlaps_table = any(rect.intersects(table_rect) for table_rect in table_rects)
+        if (
+            member_count >= 4
+            and not overlaps_table
+            and _figure_size_ok(_display_rect(rect, page), page_area)
+        ):
+            figure_rects.append(rect)
+    return figure_rects
+
+
+def detect_rendered_visual_rects(page: fitz.Page) -> list[fitz.Rect]:
+    """Find figure-like ink blocks from a raster, without Image XObjects."""
+    zoom = 1.0
+    pixmap = page.get_pixmap(matrix=fitz.Matrix(zoom, zoom), alpha=False)
+    pixels = np.frombuffer(pixmap.samples, dtype=np.uint8).reshape(
+        pixmap.height,
+        pixmap.width,
+        pixmap.n,
+    )[:, :, :3]
+    luminance = pixels.mean(axis=2)
+    chroma = pixels.max(axis=2) - pixels.min(axis=2)
+    ink = (luminance < 246) | (chroma > 16)
+
+    text_mask = np.zeros((pixmap.height, pixmap.width), dtype=bool)
+    for word in page.get_text("words"):
+        display = _display_rect(fitz.Rect(word[:4]), page)
+        x0 = max(0, int(display.x0 * zoom))
+        y0 = max(0, int(display.y0 * zoom))
+        x1 = min(pixmap.width, int(display.x1 * zoom) + 1)
+        y1 = min(pixmap.height, int(display.y1 * zoom) + 1)
+        if x1 > x0 and y1 > y0:
+            text_mask[y0:y1, x0:x1] = True
+    visual = ink & ~text_mask
+
+    cell = 8
+    height, width = visual.shape
+    grid_h, grid_w = height // cell, width // cell
+    if grid_h < 2 or grid_w < 2:
+        return []
+    grid = visual[: grid_h * cell, : grid_w * cell].reshape(grid_h, cell, grid_w, cell).any(axis=(1, 3))
+    visited = np.zeros_like(grid, dtype=bool)
+    page_area = page.rect.width * page.rect.height
+    rects: list[fitz.Rect] = []
+    neighbors = ((1, 0), (-1, 0), (0, 1), (0, -1))
+    for start_y in range(grid_h):
+        for start_x in range(grid_w):
+            if not grid[start_y, start_x] or visited[start_y, start_x]:
+                continue
+            stack = [(start_y, start_x)]
+            visited[start_y, start_x] = True
+            min_y = max_y = start_y
+            min_x = max_x = start_x
+            cells = 0
+            while stack:
+                cy, cx = stack.pop()
+                cells += 1
+                min_y, max_y = min(min_y, cy), max(max_y, cy)
+                min_x, max_x = min(min_x, cx), max(max_x, cx)
+                for dy, dx in neighbors:
+                    ny, nx = cy + dy, cx + dx
+                    if 0 <= ny < grid_h and 0 <= nx < grid_w and grid[ny, nx] and not visited[ny, nx]:
+                        visited[ny, nx] = True
+                        stack.append((ny, nx))
+            if cells < 8:
+                continue
+            rect = fitz.Rect(
+                min_x * cell / zoom,
+                min_y * cell / zoom,
+                min((max_x + 1) * cell, width) / zoom,
+                min((max_y + 1) * cell, height) / zoom,
+            )
+            display = rect & page.rect
+            if _figure_size_ok(display, page_area):
+                # Store in unrotated user space so _normalized_region(display_space=False) matches figures.
+                user_rect = display * ~page.rotation_matrix
+                rects.append(user_rect)
+    return _merge_figure_rects(rects)
+
+
+def detect_visual_region_rects(page: fitz.Page, table_rects: list[fitz.Rect] | None = None) -> list[fitz.Rect]:
+    tables = table_rects or []
+    return _merge_figure_rects(
+        _embedded_and_drawing_figure_rects(page, tables) + detect_rendered_visual_rects(page)
+    )
+
+
 def _merge_figure_rects(rects: list[fitz.Rect]) -> list[fitz.Rect]:
     candidates = sorted(
         (fitz.Rect(rect) for rect in rects),
@@ -317,34 +434,7 @@ def _extract_page_artifacts(
         )
 
     lines = _text_lines(page)
-    figure_rects: list[fitz.Rect] = []
-    page_area = page.rect.width * page.rect.height
-    for image in page.get_image_info():
-        rect = fitz.Rect(image["bbox"])
-        display_rect = rect * page.rotation_matrix
-        area_ratio = display_rect.get_area() / page_area
-        if (
-            0.02 <= area_ratio < 0.9
-            and display_rect.width >= 96
-            and display_rect.height >= 72
-        ):
-            figure_rects.append(rect)
-
-    drawings = page.get_drawings()
-    for cluster in page.cluster_drawings(drawings=drawings):
-        rect = fitz.Rect(cluster)
-        member_count = sum(rect.intersects(fitz.Rect(drawing["rect"])) for drawing in drawings)
-        overlaps_table = any(rect.intersects(table_rect) for table_rect in table_rects)
-        display_rect = rect * page.rotation_matrix
-        area_ratio = display_rect.get_area() / page_area
-        if (
-            member_count >= 4
-            and not overlaps_table
-            and area_ratio >= 0.02
-            and display_rect.width >= 96
-            and display_rect.height >= 72
-        ):
-            figure_rects.append(rect)
+    figure_rects = _embedded_and_drawing_figure_rects(page, table_rects)
 
     proposals: list[
         tuple[float, float, PageArtifactResult]

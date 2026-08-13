@@ -6,7 +6,12 @@ import numpy as np
 import pytest
 
 from ai_pdf_api.modalities.ingestion import IngestionError
-from ai_pdf_worker.pdf import _map_page_words, _merge_figure_rects, extract_pdf_page_layout
+from ai_pdf_worker.pdf import (
+    _map_page_words,
+    _merge_figure_rects,
+    detect_visual_region_rects,
+    extract_pdf_page_layout,
+)
 
 
 REPOSITORY_ROOT = Path(__file__).resolve().parents[3]
@@ -264,6 +269,41 @@ def test_pdf_figure_detection_deduplicates_mixed_raster_vector_chart() -> None:
         artifact.regions[0].width,
         artifact.regions[0].height,
     ] == pytest.approx([90 / 612, 200 / 792, 420 / 612, 230 / 792], abs=1e-6)
+
+
+def _drawing_only_flowchart_pdf() -> bytes:
+    document = fitz.open()
+    page = document.new_page(width=612, height=792)
+    boxes = [
+        fitz.Rect(80, 140, 220, 210),
+        fitz.Rect(320, 140, 500, 210),
+        fitz.Rect(80, 300, 220, 370),
+        fitz.Rect(320, 300, 500, 370),
+    ]
+    for box in boxes:
+        page.draw_rect(box, color=(0.05, 0.15, 0.45), width=2, fill=(0.82, 0.88, 0.96))
+    page.draw_line((220, 175), (320, 175), color=(0.05, 0.15, 0.45), width=3)
+    page.draw_line((150, 210), (150, 300), color=(0.05, 0.15, 0.45), width=3)
+    page.draw_line((410, 210), (410, 300), color=(0.05, 0.15, 0.45), width=3)
+    page.insert_text((72, 88), "System architecture overview", fontsize=16)
+    payload = document.tobytes()
+    document.close()
+    return payload
+
+
+def test_visual_region_detection_finds_drawing_only_figures_without_image_xobjects() -> None:
+    payload = _drawing_only_flowchart_pdf()
+    document = fitz.open(stream=payload, filetype="pdf")
+    try:
+        page = document[0]
+        assert page.get_image_info() == []
+        rects = detect_visual_region_rects(page)
+    finally:
+        document.close()
+
+    assert rects
+    assert any(rect.get_area() > 20_000 for rect in rects)
+    assert extract_pdf_page_layout(payload)[0].artifacts == ()
 
 
 def test_figure_rect_merge_closes_transitive_overlaps_independent_of_input_order() -> None:
