@@ -33,6 +33,13 @@ from ai_pdf_api.modalities.audio import (
     validate_audio_range,
     validate_audio_transcript_segment,
 )
+from ai_pdf_api.modalities.video import (
+    VideoIntegrityError,
+    validate_video_frame,
+    validate_video_normalized_content,
+    validate_video_range,
+    validate_video_transcript_segment,
+)
 from ai_pdf_api.models import (
     AssetRepresentation,
     DocumentBlock,
@@ -45,6 +52,10 @@ from ai_pdf_api.models import (
     AudioLocatorDetail,
     AudioNormalizedContent,
     AudioTranscriptSegment,
+    VideoFrameLocatorDetail,
+    VideoLocatorDetail,
+    VideoNormalizedContent,
+    VideoTranscriptSegment,
     HtmlBlock,
     HtmlLocatorDetail,
     HtmlNormalizedContent,
@@ -59,6 +70,8 @@ from ai_pdf_api.schemas.chat import (
     DocxAnchorLocator,
     EvidenceLocatorDto,
     AudioRangeLocator,
+    VideoFrameLocator,
+    VideoRangeLocator,
     HtmlAnchorLocator,
     ImageRegionLocator,
     PageGeometry,
@@ -75,6 +88,8 @@ TypedLocatorDetail = (
     | DocumentLocatorDetail
     | HtmlLocatorDetail
     | AudioLocatorDetail
+    | VideoLocatorDetail
+    | VideoFrameLocatorDetail
     | DocxLocatorDetail
     | XlsxLocatorDetail
     | PptxLocatorDetail
@@ -967,6 +982,202 @@ class AudioLocatorCodec:
         return locator.id
 
 
+
+
+def _load_video_range_context(
+    db: Session,
+    locator: EvidenceLocator,
+    detail: VideoLocatorDetail,
+) -> tuple[VideoNormalizedContent, VideoTranscriptSegment]:
+    representation = db.get(AssetRepresentation, locator.representation_id_snapshot)
+    if representation is None:
+        raise EvidenceContractError(f"video_range {locator.id} representation is missing")
+    if (
+        representation.id != locator.representation_id_snapshot
+        or representation.workspace_id != locator.workspace_id
+        or representation.asset_id != locator.asset_id
+        or representation.processing_generation != locator.processing_generation_snapshot
+        or representation.representation_kind != "video_normalized"
+    ):
+        raise EvidenceContractError(
+            f"video_range {locator.id} representation snapshot is inconsistent"
+        )
+    normalized = db.get(VideoNormalizedContent, representation.id)
+    if normalized is None:
+        raise EvidenceContractError(f"video_range {locator.id} normalized content is missing")
+    try:
+        validate_video_normalized_content(normalized)
+    except VideoIntegrityError as error:
+        raise EvidenceContractError(
+            f"video_range {locator.id} normalized content is invalid: {error}"
+        ) from error
+    segment = db.scalar(
+        select(VideoTranscriptSegment).where(
+            VideoTranscriptSegment.representation_id == representation.id,
+            VideoTranscriptSegment.segment_id == detail.segment_id,
+        )
+    )
+    if segment is None:
+        raise EvidenceContractError(
+            f"video_range {locator.id} segment {detail.segment_id} is missing"
+        )
+    try:
+        validate_video_transcript_segment(segment)
+    except VideoIntegrityError as error:
+        raise EvidenceContractError(
+            f"video_range {locator.id} segment is invalid: {error}"
+        ) from error
+    return normalized, segment
+
+
+def _validate_video_detail(
+    detail: VideoLocatorDetail,
+    *,
+    segment: VideoTranscriptSegment,
+) -> None:
+    try:
+        validate_video_range(
+            start_ms=detail.start_ms,
+            end_ms=detail.end_ms,
+            text_sha256_value=detail.text_sha256,
+            segment=segment,
+        )
+    except VideoIntegrityError as error:
+        raise EvidenceContractError(str(error)) from error
+
+
+class VideoLocatorCodec:
+    kinds = frozenset({"video_range"})
+    representation_kinds = frozenset({"video_normalized"})
+
+    def clone_details(self, db: Session, source: EvidenceLocator, target: EvidenceLocator) -> None:
+        detail = db.get(VideoLocatorDetail, source.id)
+        if detail is None:
+            raise EvidenceContractError(f"Video locator {source.id} has no typed detail")
+        _normalized, segment = _load_video_range_context(db, source, detail)
+        _validate_video_detail(detail, segment=segment)
+        db.add(
+            VideoLocatorDetail(
+                locator_id=target.id,
+                segment_id=detail.segment_id,
+                start_ms=detail.start_ms,
+                end_ms=detail.end_ms,
+                text_sha256=detail.text_sha256,
+                normalization_version=detail.normalization_version,
+            )
+        )
+
+    def serialize(self, db: Session, locator: EvidenceLocator) -> EvidenceLocatorDto:
+        detail = db.get(VideoLocatorDetail, locator.id)
+        return self.serialize_loaded(db, locator, detail, [])
+
+    def serialize_loaded(
+        self,
+        db: Session,
+        locator: EvidenceLocator,
+        detail: TypedLocatorDetail,
+        regions: list[SpatialLocatorRegion],
+    ) -> EvidenceLocatorDto:
+        del regions
+        if not isinstance(detail, VideoLocatorDetail):
+            raise EvidenceContractError(f"Video locator {locator.id} has no typed detail")
+        _normalized, segment = _load_video_range_context(db, locator, detail)
+        _validate_video_detail(detail, segment=segment)
+        return VideoRangeLocator(
+            kind="video_range",
+            version=locator.locator_version,
+            startMs=detail.start_ms,
+            endMs=detail.end_ms,
+            textSha256=detail.text_sha256,
+            segmentId=detail.segment_id,
+            normalizationVersion=detail.normalization_version,  # type: ignore[arg-type]
+        )
+
+    def retrieval_key(
+        self,
+        locator: EvidenceLocator,
+        serialized: EvidenceLocatorDto,
+    ) -> str:
+        if isinstance(serialized, VideoRangeLocator):
+            return (
+                f"video_range:{serialized.segmentId}:"
+                f"{serialized.startMs}:{serialized.endMs}"
+            )
+        return locator.id
+
+
+class VideoFrameLocatorCodec:
+    """Codec for optional keyframe locators. Ingestion may leave keyframes deferred."""
+
+    kinds = frozenset({"video_frame"})
+    representation_kinds = frozenset({"video_normalized", "video_keyframe_set", "video_source"})
+
+    def clone_details(self, db: Session, source: EvidenceLocator, target: EvidenceLocator) -> None:
+        detail = db.get(VideoFrameLocatorDetail, source.id)
+        if detail is None:
+            raise EvidenceContractError(f"Video frame locator {source.id} has no typed detail")
+        try:
+            validate_video_frame(
+                timestamp_ms=detail.timestamp_ms,
+                frame_index=detail.frame_index,
+                keyframe_object_key=detail.keyframe_object_key,
+            )
+        except VideoIntegrityError as error:
+            raise EvidenceContractError(str(error)) from error
+        db.add(
+            VideoFrameLocatorDetail(
+                locator_id=target.id,
+                timestamp_ms=detail.timestamp_ms,
+                frame_index=detail.frame_index,
+                keyframe_object_key=detail.keyframe_object_key,
+                normalization_version=detail.normalization_version,
+            )
+        )
+
+    def serialize(self, db: Session, locator: EvidenceLocator) -> EvidenceLocatorDto:
+        detail = db.get(VideoFrameLocatorDetail, locator.id)
+        return self.serialize_loaded(db, locator, detail, [])
+
+    def serialize_loaded(
+        self,
+        db: Session,
+        locator: EvidenceLocator,
+        detail: TypedLocatorDetail,
+        regions: list[SpatialLocatorRegion],
+    ) -> EvidenceLocatorDto:
+        del regions
+        if not isinstance(detail, VideoFrameLocatorDetail):
+            raise EvidenceContractError(f"Video frame locator {locator.id} has no typed detail")
+        try:
+            validate_video_frame(
+                timestamp_ms=detail.timestamp_ms,
+                frame_index=detail.frame_index,
+                keyframe_object_key=detail.keyframe_object_key,
+            )
+        except VideoIntegrityError as error:
+            raise EvidenceContractError(str(error)) from error
+        return VideoFrameLocator(
+            kind="video_frame",
+            version=locator.locator_version,
+            timestampMs=detail.timestamp_ms,
+            frameIndex=detail.frame_index,
+            keyframeObjectKey=detail.keyframe_object_key,
+            normalizationVersion=detail.normalization_version,  # type: ignore[arg-type]
+        )
+
+    def retrieval_key(
+        self,
+        locator: EvidenceLocator,
+        serialized: EvidenceLocatorDto,
+    ) -> str:
+        if isinstance(serialized, VideoFrameLocator):
+            return (
+                f"video_frame:{serialized.timestampMs}:{serialized.frameIndex}:"
+                f"{serialized.keyframeObjectKey or ''}"
+            )
+        return locator.id
+
+
 class LocatorCodecRegistry:
     def __init__(self, codecs: Iterable[LocatorCodec]) -> None:
         self._by_kind: dict[str, LocatorCodec] = {}
@@ -997,6 +1208,8 @@ PRODUCTION_LOCATOR_CODECS = LocatorCodecRegistry(
         XlsxLocatorCodec(),
         PptxLocatorCodec(),
         AudioLocatorCodec(),
+        VideoLocatorCodec(),
+        VideoFrameLocatorCodec(),
     )
 )
 
@@ -1255,6 +1468,16 @@ def evidence_retrieval_keys(
         for source in source_list
         if source.locator.locator_kind in AudioLocatorCodec.kinds
     ]
+    video_ids = [
+        source.locator.id
+        for source in source_list
+        if source.locator.locator_kind in VideoLocatorCodec.kinds
+    ]
+    video_frame_ids = [
+        source.locator.id
+        for source in source_list
+        if source.locator.locator_kind in VideoFrameLocatorCodec.kinds
+    ]
     details: dict[str, TypedLocatorDetail] = {}
     if pdf_ids:
         details.update(
@@ -1312,6 +1535,22 @@ def evidence_retrieval_keys(
             (detail.locator_id, detail)
             for detail in db.scalars(
                 select(AudioLocatorDetail).where(AudioLocatorDetail.locator_id.in_(audio_ids))
+            )
+        )
+    if video_ids:
+        details.update(
+            (detail.locator_id, detail)
+            for detail in db.scalars(
+                select(VideoLocatorDetail).where(VideoLocatorDetail.locator_id.in_(video_ids))
+            )
+        )
+    if video_frame_ids:
+        details.update(
+            (detail.locator_id, detail)
+            for detail in db.scalars(
+                select(VideoFrameLocatorDetail).where(
+                    VideoFrameLocatorDetail.locator_id.in_(video_frame_ids)
+                )
             )
         )
     regions_by_locator: dict[str, list[SpatialLocatorRegion]] = {

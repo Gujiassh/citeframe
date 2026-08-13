@@ -218,6 +218,47 @@ class AudioRangeLocator(BaseModel):
         return self
 
 
+
+
+class VideoRangeLocator(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    kind: Literal["video_range"]
+    version: Literal[1]
+    startMs: int = Field(ge=0)
+    endMs: int = Field(gt=0)
+    textSha256: str = Field(min_length=64, max_length=64)
+    segmentId: str = Field(min_length=1, max_length=64)
+    normalizationVersion: Literal["video-normalization-v1"] = "video-normalization-v1"
+
+    @model_validator(mode="after")
+    def validate_range(self) -> "VideoRangeLocator":
+        if self.endMs <= self.startMs:
+            raise ValueError("Video range endMs must be greater than startMs")
+        if len(self.textSha256) != 64 or any(
+            ch not in "0123456789abcdef" for ch in self.textSha256
+        ):
+            raise ValueError("Video textSha256 must be a lowercase hex SHA-256 digest")
+        return self
+
+
+class VideoFrameLocator(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    kind: Literal["video_frame"]
+    version: Literal[1]
+    timestampMs: int | None = Field(default=None, ge=0)
+    frameIndex: int | None = Field(default=None, ge=0)
+    keyframeObjectKey: str | None = Field(default=None, min_length=1, max_length=512)
+    normalizationVersion: Literal["video-normalization-v1"] = "video-normalization-v1"
+
+    @model_validator(mode="after")
+    def validate_frame(self) -> "VideoFrameLocator":
+        if self.timestampMs is None and self.frameIndex is None:
+            raise ValueError("Video frame requires timestampMs or frameIndex")
+        return self
+
+
 class ImageRegionLocator(BaseModel):
 
     kind: Literal["image_region"]
@@ -238,7 +279,9 @@ EvidenceLocatorDto = Annotated[
     | DocxAnchorLocator
     | XlsxRangeLocator
     | PptxShapeLocator
-    | AudioRangeLocator,
+    | AudioRangeLocator
+    | VideoRangeLocator
+    | VideoFrameLocator,
     Field(discriminator="kind"),
 ]
 

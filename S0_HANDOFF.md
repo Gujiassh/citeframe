@@ -180,3 +180,80 @@ Never invent transcripts.
 
 Do not enable catalog without the worker adapter and ASR ops readiness.
 
+---
+
+# S0 handoff: enable video modality
+
+Video slice ships MIME freeze (`video/mp4`, `video/webm`), typed tables, ASR-gated
+adapter, locator codecs (`video_range`, `video_frame`), player/timeline viewer, and
+tests. **Production registry/catalog are not enabled** in this PR.
+
+Keyframes are deferred: ingestion does not invent `video_keyframe_set` frames when
+extraction tooling is missing. Player + `video_range` still ship.
+
+Controller should apply these patches in one deploy so readiness stays aligned.
+
+## 1. Registry
+
+File: `apps/api/src/ai_pdf_api/modalities/registry.py`
+
+Add `VIDEO_MODULE` to `build_production_registry()` (with any other S0 modules
+already staged for the same deploy). Do not enable video alone without catalog
+rows and the worker adapter.
+
+`VIDEO_MODULE` and `build_video_ready_registry()` already exist.
+
+## 2. Worker adapter registry
+
+File: `apps/worker/src/ai_pdf_worker/main.py`
+
+`VideoIngestionAdapter()` is already registered for isolated ingest. Keep it
+when enabling production. Video is a distinct `asset_kind` — never register as
+audio + thumbnail.
+
+## 3. Catalog rows (same migration as enable)
+
+Additive inserts only:
+
+```sql
+INSERT INTO asset_types(kind, contract_version, enabled)
+VALUES ('video', 1, true);
+
+INSERT INTO representation_types(kind, asset_kind, contract_version) VALUES
+  ('video_source', 'video', 1),
+  ('video_normalized', 'video', 1),
+  ('video_keyframe_set', 'video', 1);
+
+INSERT INTO content_unit_types(kind, asset_kind, contract_version) VALUES
+  ('video_transcript_segment', 'video', 1);
+
+INSERT INTO locator_types(kind, contract_version, detail_family) VALUES
+  ('video_range', 1, 'temporal'),
+  ('video_frame', 1, 'temporal');
+```
+
+Tables `video_normalized_contents`, `video_transcript_segments`,
+`video_locator_details`, `video_frame_locator_details` already ship in
+`l6f7a8b9c0d1`.
+
+## 4. Web upload (optional same slice)
+
+`production-registry.ts` already registers the video renderer with
+`uploadAccept: []`. To accept uploads, add the frozen MIME list
+(`video/mp4`, `video/webm`) to upload accept.
+
+## 5. ASR prerequisite
+
+Production video ingest **requires** a configured OpenAI ASR secret
+(`AI_PDF_OPENAI_API_KEY` / `OPENAI_API_KEY`). Missing secret fails closed with
+`asr_not_configured` before any representation or content-unit persist.
+Never invent transcripts. Keyframes remain deferred/fail-closed without tooling.
+
+## 6. Tests that must flip
+
+- production registry membership for `video`
+- catalog snapshot equality tests
+- worker `INGESTION_ADAPTERS` membership if asserted against production-only set
+
+Do not enable catalog without the worker adapter and ASR ops readiness.
+

@@ -17,6 +17,11 @@ from ai_pdf_api.modalities.audio import (
     detect_audio_mime_type,
     validate_audio_upload_payload,
 )
+from ai_pdf_api.modalities.video import (
+    VIDEO_MIME_TYPES,
+    detect_video_mime_type,
+    validate_video_upload_payload,
+)
 
 
 class ModalityContractError(ValueError):
@@ -520,6 +525,55 @@ def build_audio_ready_registry() -> ModalityRegistry:
     """Registry including audio. Production must not call this until S0."""
     return ModalityRegistry(
         (PDF_MODULE, IMAGE_MODULE, DOCUMENT_MODULE, AUDIO_MODULE),
+        embedding_spaces=(TypeRegistration("text"),),
+    )
+
+
+# Defined for S0 enablement. Do not add to build_production_registry until
+# catalog rows ship in the same controller patch (see S0_HANDOFF.md).
+VIDEO_MODULE = ModalityModule(
+    asset_kind="video",
+    contract_version=1,
+    enabled=True,
+    supported_mime_types=VIDEO_MIME_TYPES,
+    byte_inspector=detect_video_mime_type,
+    representation_types=(
+        TypeRegistration("video_source"),
+        TypeRegistration("video_normalized"),
+        TypeRegistration("video_keyframe_set"),
+    ),
+    content_unit_types=(TypeRegistration("video_transcript_segment"),),
+    locator_types=(
+        TypeRegistration("video_range", detail_family="temporal"),
+        TypeRegistration("video_frame", detail_family="temporal"),
+    ),
+    retrieval_channels=(
+        RetrievalChannelRegistration(
+            kind="text",
+            embedding_space="text",
+            type_signatures=frozenset(
+                {
+                    ("video_transcript_segment", "video_normalized", "video_range"),
+                }
+            ),
+        ),
+    ),
+    metrics_namespace="video",
+    ingestion_config_snapshot=lambda: {
+        "videoFormat": "video",
+        "videoParserVersion": "video-parser-v1",
+        "videoNormalizationVersion": "video-normalization-v1",
+        "asrAdapterVersion": "asr-openai-transcriptions-v1",
+        "videoKeyframeVersion": "video-keyframe-v1",
+    },
+    full_payload_validator=validate_video_upload_payload,
+)
+
+
+def build_video_ready_registry() -> ModalityRegistry:
+    """Registry including video. Production must not call this until S0."""
+    return ModalityRegistry(
+        (PDF_MODULE, IMAGE_MODULE, DOCUMENT_MODULE, VIDEO_MODULE),
         embedding_spaces=(TypeRegistration("text"),),
     )
 

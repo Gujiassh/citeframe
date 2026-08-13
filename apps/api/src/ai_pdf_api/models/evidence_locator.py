@@ -220,3 +220,54 @@ class AudioLocatorDetail(Base):
     text_sha256: Mapped[str] = mapped_column(String(64))
     normalization_version: Mapped[str] = mapped_column(String(64))
 
+
+class VideoLocatorDetail(Base):
+    __tablename__ = "video_locator_details"
+    __table_args__ = (
+        CheckConstraint("start_ms >= 0", name="ck_video_locator_details_start_ms"),
+        CheckConstraint("end_ms > start_ms", name="ck_video_locator_details_time_range"),
+        CheckConstraint(
+            "normalization_version = 'video-normalization-v1'",
+            name="ck_video_locator_details_normalization_version",
+        ),
+    )
+
+    locator_id: Mapped[str] = mapped_column(
+        String(36), ForeignKey("evidence_locators.id", ondelete="CASCADE"), primary_key=True
+    )
+    segment_id: Mapped[str] = mapped_column(String(64))
+    start_ms: Mapped[int] = mapped_column(Integer)
+    end_ms: Mapped[int] = mapped_column(Integer)
+    text_sha256: Mapped[str] = mapped_column(String(64))
+    normalization_version: Mapped[str] = mapped_column(String(64))
+
+
+class VideoFrameLocatorDetail(Base):
+    __tablename__ = "video_frame_locator_details"
+    __table_args__ = (
+        CheckConstraint(
+            "timestamp_ms IS NOT NULL OR frame_index IS NOT NULL",
+            name="ck_video_frame_locator_details_anchor",
+        ),
+        CheckConstraint(
+            "timestamp_ms IS NULL OR timestamp_ms >= 0",
+            name="ck_video_frame_locator_details_timestamp_ms",
+        ),
+        CheckConstraint(
+            "frame_index IS NULL OR frame_index >= 0",
+            name="ck_video_frame_locator_details_frame_index",
+        ),
+        CheckConstraint(
+            "normalization_version = 'video-normalization-v1'",
+            name="ck_video_frame_locator_details_normalization_version",
+        ),
+    )
+
+    locator_id: Mapped[str] = mapped_column(
+        String(36), ForeignKey("evidence_locators.id", ondelete="CASCADE"), primary_key=True
+    )
+    timestamp_ms: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    frame_index: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    keyframe_object_key: Mapped[str | None] = mapped_column(String(512), nullable=True)
+    normalization_version: Mapped[str] = mapped_column(String(64))
+
