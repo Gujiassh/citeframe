@@ -80,13 +80,34 @@ export type AudioRangeLocator = {
   normalizationVersion: "audio-normalization-v1";
 };
 
+export type VideoRangeLocator = {
+  kind: "video_range";
+  version: number;
+  startMs: number;
+  endMs: number;
+  textSha256: string;
+  segmentId: string;
+  normalizationVersion: "video-normalization-v1";
+};
+
+export type VideoFrameLocator = {
+  kind: "video_frame";
+  version: number;
+  timestampMs?: number | null;
+  frameIndex?: number | null;
+  keyframeObjectKey?: string | null;
+  normalizationVersion: "video-normalization-v1";
+};
+
 export type EvidenceLocator =
   | PdfPageLocator
   | PdfRegionLocator
   | ImageRegionLocator
   | DocumentAnchorLocator
   | HtmlAnchorLocator
-  | AudioRangeLocator;
+  | AudioRangeLocator
+  | VideoRangeLocator
+  | VideoFrameLocator;
 
 export type SourceVersions = {
   parserVersion: string;
@@ -143,6 +164,20 @@ export function getLocatorSummary(locator: EvidenceLocator): string {
     const start = Math.floor(locator.startMs / 1000);
     const end = Math.floor(locator.endMs / 1000);
     return `Audio · ${start}s–${end}s`;
+  }
+  if (locator.kind === "video_range") {
+    const start = Math.floor(locator.startMs / 1000);
+    const end = Math.floor(locator.endMs / 1000);
+    return `Video · ${start}s–${end}s`;
+  }
+  if (locator.kind === "video_frame") {
+    if (typeof locator.timestampMs === "number") {
+      return `Video frame · ${Math.floor(locator.timestampMs / 1000)}s`;
+    }
+    if (typeof locator.frameIndex === "number") {
+      return `Video frame · #${locator.frameIndex}`;
+    }
+    return "Video frame";
   }
   return `Image · ${locator.regions.length > 1 ? `${locator.regions.length} regions` : "region"}`;
 }

@@ -22,6 +22,7 @@ from ai_pdf_api.core.research_observability import (
 )
 
 from ai_pdf_worker.audio_ingestion import AudioIngestionAdapter
+from ai_pdf_worker.video_ingestion import VideoIngestionAdapter
 from ai_pdf_worker.document_ingestion import DocumentIngestionAdapter
 from ai_pdf_worker.docx_ingestion import DocxIngestionAdapter
 from ai_pdf_worker.image_ingestion import ImageIngestionAdapter
@@ -48,6 +49,9 @@ INGESTION_ADAPTERS = IngestionAdapterRegistry(
         # Audio adapter for isolated ingest tests. Upload remains fail-closed
         # until S0 production registry/catalog enablement.
         AudioIngestionAdapter(),
+        # Video adapter for isolated ingest tests. Upload remains fail-closed
+        # until S0 production registry/catalog enablement.
+        VideoIngestionAdapter(),
     )
 )
 

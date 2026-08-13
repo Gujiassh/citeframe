@@ -15,6 +15,8 @@ from ai_pdf_api.models.content_unit_embedding import ContentUnitEmbedding
 from ai_pdf_api.models.evidence_locator import (
     EvidenceLocator,
     AudioLocatorDetail,
+    VideoLocatorDetail,
+    VideoFrameLocatorDetail,
     DocumentLocatorDetail,
     DocxLocatorDetail,
     HtmlLocatorDetail,
@@ -36,6 +38,10 @@ from ai_pdf_api.models.html_representation import HtmlBlock, HtmlNormalizedConte
 from ai_pdf_api.models.audio_representation import (
     AudioNormalizedContent,
     AudioTranscriptSegment,
+)
+from ai_pdf_api.models.video_representation import (
+    VideoNormalizedContent,
+    VideoTranscriptSegment,
 )
 from ai_pdf_api.models.image_representation_geometry import ImageRepresentationGeometry
 from ai_pdf_api.models.ingestion_job import IngestionJob
@@ -105,6 +111,10 @@ __all__ = [
     "AudioNormalizedContent",
     "AudioTranscriptSegment",
     "AudioLocatorDetail",
+    "VideoNormalizedContent",
+    "VideoTranscriptSegment",
+    "VideoLocatorDetail",
+    "VideoFrameLocatorDetail",
     "DocxBlock",
     "DocxLocatorDetail",
     "DocxNormalizedContent",

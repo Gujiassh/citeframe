@@ -1,5 +1,6 @@
 import { DocumentEvidenceRenderer } from "@/components/evidence/document-viewer";
 import { AudioEvidenceRenderer } from "@/components/evidence/audio-viewer";
+import { VideoEvidenceRenderer } from "@/components/evidence/video-viewer";
 import { HtmlEvidenceRenderer } from "@/components/evidence/html-viewer";
 import { ImageEvidenceRenderer } from "@/components/image-viewer";
 import { PdfEvidenceRenderer } from "@/components/pdf-viewer";
@@ -45,5 +46,12 @@ export const productionEvidenceRegistry = createEvidenceModuleRegistry([
     label: "Audio",
     uploadAccept: [],
     EvidenceRenderer: AudioEvidenceRenderer,
+  },
+  {
+    assetKind: "video",
+    locatorKinds: ["video_range", "video_frame"],
+    label: "Video",
+    uploadAccept: [],
+    EvidenceRenderer: VideoEvidenceRenderer,
   },
 ]);
