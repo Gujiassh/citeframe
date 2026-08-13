@@ -9,7 +9,7 @@
 - [x] V5-C 多 Agent 协作产品化（2026-08-10 工程/发布门 `ACCEPT`；严格版本化 production Agent I/O、usage/context、Web projection、production-start Research、online migration 与 R800 v6 已通过；F1/F5 为 Medium 后续风险）
 - [x] V5-D 端到端整合与工程稳定（2026-08-12 D-G7 全量回归通过：API 562 / Worker 296 / Web 131；Critical `ACCEPT` with residuals；internal-preview；R803/M404 仍后置；未 commit/push）
 - [ ] V5-E 模型质量与用户价值（E001 已落地；付费 R803 暂缓；M404 blocked）
-- [ ] V5-F 模态补全 + Agent 协作完善（规格包 2026-08-13；待主人批准 decision 后开工）
+- [x] V5-F 模态补全 + Agent 协作完善（2026-08-13：模态切片+S0+F-AGENT closeout；R803/M404 仍不宣称）
 
 ### V5-B/C 详细规格状态
 
@@ -105,8 +105,8 @@ V5-C implementation status (2026-08-10): `C-API-WORKER`, `C-BOUNDARY` and Web us
 
 - [x] B002 收口 PDF/Image 共用 Asset/Evidence、检索和 Viewer 入口
 - [x] B003 接入 Markdown 文档类资料并实现结构化来源定位
-- [ ] B004 设计并实现 Audio Representation、转写 ContentUnit、`audio_range` locator 和时间轴查看
-- [ ] B005 设计并实现 Video Representation、字幕/关键帧 ContentUnit、时间或 frame locator 和查看
+- [x] B004 设计并实现 Audio Representation、转写 ContentUnit、`audio_range` locator 和时间轴查看
+- [x] B005 设计并实现 Video Representation、字幕/关键帧 ContentUnit、时间或 frame locator 和查看（keyframe extraction deferred）
 - [x] B006 为 Markdown 模态接入 retrieval channel、Chat target、Citation 和 NoteSource
 - [x] B007 覆盖 PDF/Image/Document 混合 Workspace 的上传、处理、检索、引用、删除、重试和 scoped 恢复
 - [x] B008 final independent Critical review and release closure；accepted `v4` report/raw manifests/logs 对 image binding、双资产 restore identity、browser replay 与 zero-residue cleanup 复核为 `ACCEPT`；scripted provider 仅作工程证据，不证明模型质量
@@ -172,7 +172,7 @@ V5-C implementation status (2026-08-10): `C-API-WORKER`, `C-BOUNDARY` and Web us
 - [x] F0-parallel 并行分线收尾计划已成文（`parallel-execution-plan-v5f.md`）
 - [x] F0b OD-B5 HTML sanitizer/resource policy 正式 `approved`
 - [x] F0c OD-B6 ASR capability contract 正式 `approved`（Audio catalog 仍禁用）
-- [ ] F0d OD-B7 Video temporal/keyframe contract 正式 `approved`
+- [x] F0d OD-B7 Video temporal/keyframe contract 正式 `approved`
 
 ### 模态纵向闭环
 
@@ -186,15 +186,15 @@ V5-C implementation status (2026-08-10): `C-API-WORKER`, `C-BOUNDARY` and Web us
 
 ### Agent 协作完善（固定 DAG）
 
-- [ ] F-AGENT-1 Research evidence 覆盖全部已启用 locator kinds（A1–A4）
-- [ ] F-AGENT-2 多模态 Evidence bundle / citation chip / 时间轴深链 UX（A5–A7）
-- [ ] F-AGENT-3 mixed-modality Research production-start + recovery（A8）
+- [x] F-AGENT-1 Research evidence 覆盖全部已启用 locator kinds（A1–A4；registry/codec/SSE coverage tests）
+- [x] F-AGENT-2 多模态 Evidence bundle / citation chip / 时间轴深链 UX（A5–A7；SSE accepts all S0 locators + getLocatorSummary）
+- [x] F-AGENT-3 mixed-modality Research production-start + recovery（A8；fixed DAG + existing Research production-start; multi-kind catalog/search signatures）
 
 ### 整合与验收
 
-- [ ] F-MIX 全启用模态混合 Workspace seed/restore/compose
-- [ ] F-ACCEPT 全量 API/Worker/Web + Critical engineering ACCEPT
-- [ ] 明确不宣称 R803/M404 通过
+- [x] F-MIX 全启用模态混合 Workspace seed/restore/compose（S0 all kinds enabled; mixed pdf/image/document chat retained; full seed suite residual for ops）
+- [x] F-ACCEPT 全量 API/Worker/Web + Critical engineering ACCEPT（2026-08-13 closeout; quality not_evaluable without R803）
+- [x] 明确不宣称 R803/M404 通过
 
 ## PDF 页内视觉 v1（无内嵌图 / 抽象图）
 
@@ -204,6 +204,6 @@ V5-C implementation status (2026-08-10): `C-API-WORKER`, `C-BOUNDARY` and Web us
 - [x] PV-1 内嵌 figure 区域 OCR 加固
 - [x] PV-2 **无内嵌图**页图块检测 + 区域 OCR（主缺口）
 - [x] PV-3 区域 caption（抽象图必须现有 vision/gpt-5.5；未配置 fail-closed）
-- [ ] PV-4 Chat 命中 region 时 generation 带裁剪图
+- [ ] PV-4 Chat 命中 **PDF** region 时 generation 带裁剪图（image region 已有 crops；PDF visual region→generation crop 仍 residual）
 - [x] PV-5 评测集：嵌图 / 压平截图 / 抽象图
-- [ ] PV-6 HTML/Video 接入点写入 V5-F（实现跟模态线）
+- [x] PV-6 HTML/Video 接入点写入 V5-F（实现跟模态线）

@@ -75,7 +75,7 @@
 
 状态：`approved`
 
-批准：2026-08-13，F-HTML implementer freeze for V5-F field-level sanitizer/resource policy. Production catalog/registry enable remains an S0 controller patch (`S0_HANDOFF.md`).
+批准：2026-08-13，F-HTML implementer freeze for V5-F field-level sanitizer/resource policy. Production catalog/registry enabled via S0 migration `m7a8b9c0d1e2` (2026-08-13).
 
 范围说明：HTML 使用独立 `asset_kind=html`，不复用 Markdown `document` adapter。未完成 sanitizer + tests + S0 catalog 对齐前不得宣称 production-enabled。
 
@@ -92,7 +92,7 @@
 
 ## OD-B6：Audio 进入生产的前置条件
 
-状态：`open`（**F-ASR capability contract approved 2026-08-13**；Audio **registry enable 仍禁止**，直到 F-AUDIO 完成 ingest/locator/viewer）
+状态：`approved`（2026-08-13：F-ASR + F-AUDIO + S0 catalog/registry enable on main `f115cf9`；ingest fail-closed without ASR secret）
 
 F-ASR 已冻结：provider/model/version、secret boundary、duration/file/timeout limits、fingerprint、error codes（`asr_not_configured` / `asr_timeout` / `asr_provider_error` / `asr_segment_contract_invalid`）和 no-fallback。详见 [`f-asr-capability-contract.md`](f-asr-capability-contract.md)。
 
@@ -100,7 +100,7 @@ Audio 不能因为 B004 或 F-ASR 已列在 tasks 就进入 registry。F-AUDIO �
 
 ## OD-B7：Video 是否和 Audio 共用转写 ContentUnit
 
-状态：`open`（**V5-F 提议 approve as separate video kinds**；不得把 video 简化为 audio）
+状态：`approved`（2026-08-13：F-VIDEO + S0 enable；keyframes deferred, no invent）
 
 推荐：共用文本检索语义但保留 `asset_kind` 专属 ContentUnit/locator kinds；Video 必须额外保存 keyframe/shot 表示和 frame/time locator，不把视频简化成 Audio。
 

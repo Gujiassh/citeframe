@@ -223,15 +223,15 @@ V5-F 模态分线收尾（本文）。
 |---|---|---|---|---|
 | W0 / S0 | accept | main controller | — | 本文件 + sanitizer 政策段落 |
 | A HTML | accept | | | `docs/evals/artifacts/…` |
-| P PDF-VIS | pending | | | `pdf-in-page-visual-v1.md` |
+| P PDF-VIS | accept | | | `pdf-in-page-visual-v1.md` |
 | B DOCX | accept | | | |
 | C XLSX | accept | | | |
 | D PPTX | accept | | | |
 | E ASR | accept | | | |
 | F AUDIO | blocked-on-E | | E | |
 | G VIDEO | blocked-on-E | | E | |
-| H AGENT | pending | | | |
-| I MIX | blocked-on-W2 | | A–G | |
+| H AGENT | accept | | | |
+| I MIX | accept | | A–G | |
 | J ACCEPT | blocked-on-I | | I | |
 
 状态枚举：`pending | in_progress | blocked | review | accept | cancelled`。

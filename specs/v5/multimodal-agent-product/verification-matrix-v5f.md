@@ -57,3 +57,14 @@ Audio upload/ingest must fail closed with stable code before representation rows
 ### Agent finished artifact
 
 Retry after complete must not rewrite final_report bytes/sha (retain F5).
+
+
+## Closeout status (2026-08-13)
+
+| Gate | Status |
+| --- | --- |
+| F-G-HTML…F-G-VIDEO | engineering landed + S0 enable |
+| F-G-AGENT | SSE/locator/codec coverage; fixed DAG Research unchanged |
+| F-G-MIX | all kinds production-enabled; mixed pdf/image/document chat retained |
+| F-G-FULL | engineering ACCEPT; R803/M404 **not** claimed |
+| Quality | `not_evaluable` without paid R803 / M404 |
