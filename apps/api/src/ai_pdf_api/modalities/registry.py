@@ -8,6 +8,10 @@ from ai_pdf_api.modalities.document import (
     detect_markdown_mime_type,
     validate_markdown_upload_payload,
 )
+from ai_pdf_api.modalities.html import (
+    detect_html_mime_type,
+    validate_html_upload_payload,
+)
 
 
 class ModalityContractError(ValueError):
@@ -416,9 +420,56 @@ DOCUMENT_MODULE = ModalityModule(
     full_payload_validator=validate_markdown_upload_payload,
 )
 
+# Defined for S0 enablement. Do not add to build_production_registry until
+# catalog rows ship in the same controller patch (see S0_HANDOFF.md).
+HTML_MODULE = ModalityModule(
+    asset_kind="html",
+    contract_version=1,
+    enabled=True,
+    supported_mime_types=frozenset({"text/html", "application/xhtml+xml"}),
+    byte_inspector=detect_html_mime_type,
+    representation_types=(
+        TypeRegistration("html_source"),
+        TypeRegistration("html_normalized"),
+        TypeRegistration("html_sanitized"),
+    ),
+    content_unit_types=(
+        TypeRegistration("html_block"),
+        TypeRegistration("html_text_chunk"),
+    ),
+    locator_types=(TypeRegistration("html_anchor", detail_family="record"),),
+    retrieval_channels=(
+        RetrievalChannelRegistration(
+            kind="text",
+            embedding_space="text",
+            type_signatures=frozenset(
+                {
+                    ("html_text_chunk", "html_normalized", "html_anchor"),
+                }
+            ),
+        ),
+    ),
+    metrics_namespace="html",
+    ingestion_config_snapshot=lambda: {
+        "htmlFormat": "html",
+        "htmlParserVersion": "html-parser-v1",
+        "htmlSanitizerVersion": "html-sanitizer-v1",
+        "htmlNormalizationVersion": "html-normalization-v1",
+    },
+    full_payload_validator=validate_html_upload_payload,
+)
+
 
 def build_production_registry() -> ModalityRegistry:
     return ModalityRegistry(
         (PDF_MODULE, IMAGE_MODULE, DOCUMENT_MODULE),
+        embedding_spaces=(TypeRegistration("text"),),
+    )
+
+
+def build_html_ready_registry() -> ModalityRegistry:
+    """Registry including HTML. Production must not call this until S0."""
+    return ModalityRegistry(
+        (PDF_MODULE, IMAGE_MODULE, DOCUMENT_MODULE, HTML_MODULE),
         embedding_spaces=(TypeRegistration("text"),),
     )

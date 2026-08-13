@@ -1,4 +1,5 @@
 import { DocumentEvidenceRenderer } from "@/components/evidence/document-viewer";
+import { HtmlEvidenceRenderer } from "@/components/evidence/html-viewer";
 import { ImageEvidenceRenderer } from "@/components/image-viewer";
 import { PdfEvidenceRenderer } from "@/components/pdf-viewer";
 import {
@@ -29,5 +30,12 @@ export const productionEvidenceRegistry = createEvidenceModuleRegistry([
     label: "Document",
     uploadAccept: [DOCUMENT_UPLOAD_MIME_TYPE],
     EvidenceRenderer: DocumentEvidenceRenderer,
+  },
+  {
+    assetKind: "html",
+    locatorKinds: ["html_anchor"],
+    label: "HTML",
+    uploadAccept: [],
+    EvidenceRenderer: HtmlEvidenceRenderer,
   },
 ]);

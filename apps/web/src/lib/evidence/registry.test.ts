@@ -3,6 +3,7 @@ import test from "node:test";
 import { createElement } from "react";
 
 import { DocumentEvidenceRenderer } from "@/components/evidence/document-viewer";
+import { HtmlEvidenceRenderer } from "@/components/evidence/html-viewer";
 import { ImageEvidenceRenderer } from "@/components/image-viewer";
 import { PdfEvidenceRenderer } from "@/components/pdf-viewer";
 import { productionEvidenceRegistry } from "./production-registry";
@@ -112,4 +113,20 @@ test("production registry registers exact document modality without changing PDF
     }),
     /does not belong/,
   );
+
+  const htmlModule = productionEvidenceRegistry.resolve("html", {
+    kind: "html_anchor",
+    version: 1,
+    blockId: "htmlblk_1",
+    blockKind: "paragraph",
+    headingPath: ["Intro"],
+    charStart: 0,
+    charEnd: 4,
+    textSha256: "a".repeat(64),
+    normalizationVersion: "html-normalization-v1",
+  });
+  assert.equal(htmlModule.assetKind, "html");
+  assert.deepEqual(htmlModule.locatorKinds, ["html_anchor"]);
+  assert.deepEqual(htmlModule.uploadAccept, []);
+  assert.equal(htmlModule.EvidenceRenderer, HtmlEvidenceRenderer);
 });
