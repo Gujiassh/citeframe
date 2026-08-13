@@ -32,16 +32,21 @@ export function HtmlEvidenceRenderer({
   });
 
   useEffect(() => {
-    if (!workspaceId || !sourceVersions?.representationId) {
-      setLoadState({ status: "unavailable", reason: "content_unavailable" });
-      return;
-    }
     let cancelled = false;
+    const representationId = sourceVersions?.representationId;
     async function load() {
-      setLoadState({ status: "loading" });
+      if (!workspaceId || !representationId) {
+        if (!cancelled) {
+          setLoadState({ status: "unavailable", reason: "content_unavailable" });
+        }
+        return;
+      }
+      if (!cancelled) {
+        setLoadState({ status: "loading" });
+      }
       try {
         const response = await fetch(
-          `/api/workspaces/${workspaceId}/assets/${asset.id}/representations/${sourceVersions.representationId}/content`,
+          `/api/workspaces/${workspaceId}/assets/${asset.id}/representations/${representationId}/content`,
         );
         if (!response.ok) {
           throw new Error("unavailable");
