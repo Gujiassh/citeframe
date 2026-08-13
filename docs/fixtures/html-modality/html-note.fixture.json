@@ -1,0 +1,21 @@
+{
+  "assetKind": "html",
+  "mimeType": "text/html",
+  "parserVersion": "html-parser-v1",
+  "sanitizerVersion": "html-sanitizer-v1",
+  "normalizationVersion": "html-normalization-v1",
+  "locatorKind": "html_anchor",
+  "sourceFile": "note.html",
+  "failureContracts": [
+    "empty bytes",
+    "non-UTF-8",
+    "PDF/PNG/JPEG/ZIP signatures",
+    "MIME not text/html or application/xhtml+xml"
+  ],
+  "sanitizerPolicy": {
+    "strip": ["script", "style", "iframe", "on* handlers", "javascript: hrefs", "remote img"],
+    "allowDataImages": true,
+    "allowRelativeImages": true,
+    "viewer": "static sanitized or normalized text; no script execution"
+  }
+}

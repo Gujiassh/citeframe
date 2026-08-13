@@ -170,7 +170,7 @@ V5-C implementation status (2026-08-10): `C-API-WORKER`, `C-BOUNDARY` and Web us
 
 - [x] F0 主人批准 V5-F scope decision（2026-08-13；实现仍暂停直至开工令）
 - [x] F0-parallel 并行分线收尾计划已成文（`parallel-execution-plan-v5f.md`）
-- [ ] F0b OD-B5 HTML sanitizer/resource policy 正式 `approved`
+- [x] F0b OD-B5 HTML sanitizer/resource policy 正式 `approved`
 - [x] F0c OD-B6 ASR capability contract 正式 `approved`（Audio catalog 仍禁用）
 - [ ] F0d OD-B7 Video temporal/keyframe contract 正式 `approved`
 

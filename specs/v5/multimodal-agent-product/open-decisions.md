@@ -73,9 +73,22 @@
 
 ## OD-B5：HTML 安全和资源政策
 
-状态：`rejected`（**V5-F 提议 reopen → approve**，见 `decision-2026-08-13-v5f-scope.md`；字段级 sanitizer 政策批准前不得实现）
+状态：`approved`
 
-范围说明：HTML 未进入 Markdown-only 第一 slice；重新启用 HTML 必须批准 sanitizer/resource policy、fixture、restore 和独立 enablement gate。
+批准：2026-08-13，F-HTML implementer freeze for V5-F field-level sanitizer/resource policy. Production catalog/registry enable remains an S0 controller patch (`S0_HANDOFF.md`).
+
+范围说明：HTML 使用独立 `asset_kind=html`，不复用 Markdown `document` adapter。未完成 sanitizer + tests + S0 catalog 对齐前不得宣称 production-enabled。
+
+冻结政策（`html-sanitizer-v1`）：
+
+- 解析/规范化版本：`html-parser-v1` / `html-normalization-v1`（不得复用 `document-normalization-v1`）。
+- 标签允许清单：`a, b, blockquote, br, code, div, em, h1-h6, hr, i, img, li, ol, p, pre, span, strong, table, tbody, td, th, thead, tr, ul`。
+- 删除：`script, style, iframe, object, embed, form, input, textarea, svg, math, link, meta, base` 及未知标签。
+- 属性允许清单：`a[href,title]`、`img[src,alt]`、`td/th[colspan,rowspan]`。删除全部 `on*` 事件、`style`、`srcset`、`srcdoc`。
+- 外链：`a[href]` 仅 `http`/`https`/`mailto`、同文档 `#`、相对路径。拒绝 `javascript:`、`vbscript:`、`data:`、protocol-relative `//`。
+- 图片：拒绝远程 `http(s)`/`//`。仅允许相对路径或 `data:image/(png|jpeg|jpg|gif|webp);base64,...`。
+- Viewer：只渲染 sanitizer 输出或规范化纯文本块；禁止脚本执行、禁止把源 HTML 当 innerHTML。
+- Locator：`html_anchor`，`block_id` + `char_start/end` + `text_sha256` + `normalization_version=html-normalization-v1`；`css_path_hint` 仅为 renderer hint，不是 Evidence 真相。
 
 ## OD-B6：Audio 进入生产的前置条件
 

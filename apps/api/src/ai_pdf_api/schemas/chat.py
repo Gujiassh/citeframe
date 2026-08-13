@@ -162,6 +162,40 @@ class PptxShapeLocator(BaseModel):
     normalizationVersion: Literal["pptx-normalization-v1"]
 
 
+
+
+class HtmlAnchorLocator(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    kind: Literal["html_anchor"]
+    version: Literal[1]
+    blockId: str = Field(min_length=1, max_length=64)
+    blockKind: Literal["heading", "paragraph", "list_item", "code_block", "quote", "table"]
+    headingPath: list[str] = Field(default_factory=list)
+    charStart: int = Field(ge=0)
+    charEnd: int = Field(gt=0)
+    textSha256: str = Field(min_length=64, max_length=64)
+    normalizationVersion: Literal["html-normalization-v1"]
+    cssPathHint: str | None = None
+
+    @model_validator(mode="after")
+    def validate_range_and_path(self) -> "HtmlAnchorLocator":
+        if self.charEnd <= self.charStart:
+            raise ValueError("HTML anchor charEnd must be greater than charStart")
+        if any(not isinstance(part, str) or not part for part in self.headingPath):
+            raise ValueError("HTML headingPath must be an ordered array of non-empty strings")
+        if len(self.textSha256) != 64 or any(
+            ch not in "0123456789abcdef" for ch in self.textSha256
+        ):
+            raise ValueError("HTML textSha256 must be a lowercase hex SHA-256 digest")
+        if self.cssPathHint is not None and (
+            not self.cssPathHint or len(self.cssPathHint) > 512 or any(
+                ch in self.cssPathHint for ch in ("\x00", "<", ">")
+            )
+        ):
+            raise ValueError("HTML cssPathHint is not a safe renderer hint")
+        return self
+
 class ImageRegionLocator(BaseModel):
     kind: Literal["image_region"]
     version: Literal[1]
@@ -177,6 +211,7 @@ EvidenceLocatorDto = Annotated[
     | PdfRegionLocator
     | ImageRegionLocator
     | DocumentAnchorLocator
+    | HtmlAnchorLocator
     | DocxAnchorLocator
     | XlsxRangeLocator
     | PptxShapeLocator,

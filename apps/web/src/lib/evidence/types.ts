@@ -57,11 +57,25 @@ export type DocumentAnchorLocator = {
   normalizationVersion: "document-normalization-v1";
 };
 
+export type HtmlAnchorLocator = {
+  kind: "html_anchor";
+  version: number;
+  blockId: string;
+  blockKind: DocumentBlockKind;
+  headingPath: string[];
+  charStart: number;
+  charEnd: number;
+  textSha256: string;
+  normalizationVersion: "html-normalization-v1";
+  cssPathHint?: string | null;
+};
+
 export type EvidenceLocator =
   | PdfPageLocator
   | PdfRegionLocator
   | ImageRegionLocator
-  | DocumentAnchorLocator;
+  | DocumentAnchorLocator
+  | HtmlAnchorLocator;
 
 export type SourceVersions = {
   parserVersion: string;
@@ -107,6 +121,12 @@ export function getLocatorSummary(locator: EvidenceLocator): string {
       ? locator.headingPath[locator.headingPath.length - 1]
       : locator.blockKind;
     return `Document · ${heading}`;
+  }
+  if (locator.kind === "html_anchor") {
+    const heading = locator.headingPath.length > 0
+      ? locator.headingPath[locator.headingPath.length - 1]
+      : locator.blockKind;
+    return `HTML · ${heading}`;
   }
   return `Image · ${locator.regions.length > 1 ? `${locator.regions.length} regions` : "region"}`;
 }

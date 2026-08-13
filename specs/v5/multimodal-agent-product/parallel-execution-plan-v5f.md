@@ -245,7 +245,7 @@ V5-F 模态分线收尾（本文）。
 ## 10. 开工检查单（W0）
 
 - [ ] 主人确认按本并行计划执行（本文 status 保持 owner-aligned）  
-- [ ] HTML sanitizer/resource 政策写入可引用段落（OD-B5 正式批准正文）  
+- [x] HTML sanitizer/resource 政策写入可引用段落（OD-B5 正式批准正文）  
 - [ ] S0 共享文件清单 + shared owner 姓名/角色  
 - [ ] 各线 owner 与「禁止改动路径」表填进 §8  
 - [ ] 明确第一波并行集合：默认 `A+B+C+D+E+H`  

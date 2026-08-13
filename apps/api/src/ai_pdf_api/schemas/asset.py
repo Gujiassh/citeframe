@@ -98,9 +98,56 @@ class DocumentNormalizedContentResponse(BaseModel):
     blocks: list[DocumentNormalizedBlock]
 
 
+class HtmlHeadingSummary(BaseModel):
+    blockId: str
+    level: int = Field(ge=1, le=6)
+    text: str
+    order: int = Field(ge=0)
+
+
+class HtmlAssetDetail(BaseModel):
+    kind: Literal["html"] = "html"
+    format: Literal["html"]
+    parserVersion: Literal["html-parser-v1"]
+    sanitizerVersion: Literal["html-sanitizer-v1"]
+    normalizationVersion: Literal["html-normalization-v1"]
+    representationId: str
+    blockCount: int = Field(ge=0)
+    headings: list[HtmlHeadingSummary] = Field(default_factory=list)
+
+
+class HtmlNormalizedBlock(BaseModel):
+    blockId: str
+    blockOrder: int = Field(ge=0)
+    blockKind: Literal["heading", "paragraph", "list_item", "code_block", "quote", "table"]
+    headingLevel: int | None = Field(default=None, ge=1, le=6)
+    headingPath: list[str]
+    charStart: int = Field(ge=0)
+    charEnd: int = Field(gt=0)
+    textSha256: str
+    text: str
+    cssPathHint: str | None = None
+
+
+class HtmlNormalizedContentResponse(BaseModel):
+    assetId: str
+    representationId: str
+    processingGeneration: int = Field(ge=1)
+    format: Literal["html"]
+    parserVersion: Literal["html-parser-v1"]
+    sanitizerVersion: Literal["html-sanitizer-v1"]
+    normalizationVersion: Literal["html-normalization-v1"]
+    contentSha256: str
+    normalizedText: str
+    sanitizedHtml: str
+    blocks: list[HtmlNormalizedBlock]
+
+
 class AssetDetailResponse(BaseModel):
     asset: AssetSummary
-    detail: PdfAssetDetail | ImageAssetDetail | DocumentAssetDetail = Field(discriminator="kind")
+    detail: PdfAssetDetail | ImageAssetDetail | DocumentAssetDetail | HtmlAssetDetail = Field(
+        discriminator="kind"
+    )
 
 
 class UploadDescriptor(BaseModel):

@@ -19,6 +19,10 @@ from ai_pdf_api.modalities.document import (
     DocumentIntegrityError,
     validate_document_normalized_bundle,
 )
+from ai_pdf_api.modalities.html import (
+    HtmlIntegrityError,
+    validate_html_normalized_bundle,
+)
 from ai_pdf_api.modalities.registry import ModalityContractError, build_production_registry
 from ai_pdf_api.models import (
     Asset,
@@ -26,6 +30,8 @@ from ai_pdf_api.models import (
     ContentUnit,
     DocumentBlock,
     DocumentNormalizedContent,
+    HtmlBlock,
+    HtmlNormalizedContent,
     ImageRepresentationGeometry,
     IngestionJob,
     PdfPage,
@@ -41,6 +47,10 @@ from ai_pdf_api.schemas.asset import (
     DocumentHeadingSummary,
     DocumentNormalizedBlock,
     DocumentNormalizedContentResponse,
+    HtmlAssetDetail,
+    HtmlHeadingSummary,
+    HtmlNormalizedBlock,
+    HtmlNormalizedContentResponse,
     PdfPageContent,
     PdfPageOcrBlock,
     AssetSummary,
@@ -302,6 +312,60 @@ def get_asset_detail(
                 headings=headings,
             ),
         )
+    if asset.asset_kind == "html":
+        representation = db.scalar(
+            select(AssetRepresentation).where(
+                AssetRepresentation.asset_id == asset.id,
+                AssetRepresentation.workspace_id == workspace_id,
+                AssetRepresentation.representation_kind == "html_normalized",
+                AssetRepresentation.processing_generation
+                == asset.current_processing_generation,
+            )
+        )
+        if representation is None:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND, detail="Asset detail not found."
+            )
+        normalized = db.get(HtmlNormalizedContent, representation.id)
+        if normalized is None:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND, detail="Asset detail not found."
+            )
+        heading_blocks = db.scalars(
+            select(HtmlBlock)
+            .where(
+                HtmlBlock.representation_id == representation.id,
+                HtmlBlock.block_kind == "heading",
+            )
+            .order_by(HtmlBlock.block_order)
+        ).all()
+        headings: list[HtmlHeadingSummary] = []
+        for block in heading_blocks:
+            if block.heading_level is None or not (1 <= block.heading_level <= 6):
+                raise HTTPException(
+                    status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                    detail="HTML heading level is invalid.",
+                )
+            headings.append(
+                HtmlHeadingSummary(
+                    blockId=block.block_id,
+                    level=block.heading_level,
+                    text=block.text_content,
+                    order=block.block_order,
+                )
+            )
+        return AssetDetailResponse(
+            asset=to_asset_summary(asset),
+            detail=HtmlAssetDetail(
+                format="html",
+                parserVersion=normalized.parser_version,  # type: ignore[arg-type]
+                sanitizerVersion=normalized.sanitizer_version,  # type: ignore[arg-type]
+                normalizationVersion=normalized.normalization_version,  # type: ignore[arg-type]
+                representationId=representation.id,
+                blockCount=normalized.block_count,
+                headings=headings,
+            ),
+        )
     representation = db.scalar(
         select(AssetRepresentation)
         .where(
@@ -377,7 +441,7 @@ def get_asset_file(
 
 @router.get(
     "/{asset_id}/representations/{representation_id}/content",
-    response_model=DocumentNormalizedContentResponse,
+    response_model=DocumentNormalizedContentResponse | HtmlNormalizedContentResponse,
 )
 def get_document_representation_content(
     workspace_id: str,
@@ -385,13 +449,20 @@ def get_document_representation_content(
     representation_id: str,
     user_id: str = Depends(require_user_id),
     db: Session = Depends(get_db),
-) -> DocumentNormalizedContentResponse:
-    """Generation-scoped normalized document content for exact block lookup.
+) -> DocumentNormalizedContentResponse | HtmlNormalizedContentResponse:
+    """Generation-scoped normalized document/HTML content for exact block lookup.
 
     Source `/file` remains the immutable upload object and is unchanged.
     """
     get_accessible_workspace(db, user_id, workspace_id)
     asset = get_workspace_asset(db, workspace_id, asset_id)
+    if asset.asset_kind == "html":
+        return _html_representation_content(
+            db,
+            asset=asset,
+            workspace_id=workspace_id,
+            representation_id=representation_id,
+        )
     if asset.asset_kind != "document":
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -450,6 +521,73 @@ def get_document_representation_content(
                 charEnd=block.char_end,
                 textSha256=block.text_sha256,
                 text=block.text_content,
+            )
+            for block in validated_blocks
+        ],
+    )
+
+
+def _html_representation_content(
+    db: Session,
+    *,
+    asset: Asset,
+    workspace_id: str,
+    representation_id: str,
+) -> HtmlNormalizedContentResponse:
+    representation = db.scalar(
+        select(AssetRepresentation).where(
+            AssetRepresentation.id == representation_id,
+            AssetRepresentation.asset_id == asset.id,
+            AssetRepresentation.workspace_id == workspace_id,
+            AssetRepresentation.representation_kind == "html_normalized",
+        )
+    )
+    if representation is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="HTML representation not found.",
+        )
+    normalized = db.get(HtmlNormalizedContent, representation.id)
+    if normalized is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="HTML normalized content not found.",
+        )
+    blocks = db.scalars(
+        select(HtmlBlock)
+        .where(HtmlBlock.representation_id == representation.id)
+        .order_by(HtmlBlock.block_order)
+    ).all()
+    try:
+        normalized_text, validated_blocks = validate_html_normalized_bundle(normalized, blocks)
+    except HtmlIntegrityError as error:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"HTML normalized content is corrupt: {error}",
+        ) from error
+    return HtmlNormalizedContentResponse(
+        assetId=asset.id,
+        representationId=representation.id,
+        processingGeneration=representation.processing_generation,
+        format="html",
+        parserVersion=normalized.parser_version,  # type: ignore[arg-type]
+        sanitizerVersion=normalized.sanitizer_version,  # type: ignore[arg-type]
+        normalizationVersion=normalized.normalization_version,  # type: ignore[arg-type]
+        contentSha256=normalized.content_sha256,
+        normalizedText=normalized_text,
+        sanitizedHtml=normalized.sanitized_html,
+        blocks=[
+            HtmlNormalizedBlock(
+                blockId=block.block_id,
+                blockOrder=block.block_order,
+                blockKind=block.block_kind,  # type: ignore[arg-type]
+                headingLevel=block.heading_level,
+                headingPath=list(block.heading_path or []),
+                charStart=block.char_start,
+                charEnd=block.char_end,
+                textSha256=block.text_sha256,
+                text=block.text_content,
+                cssPathHint=block.css_path_hint,
             )
             for block in validated_blocks
         ],

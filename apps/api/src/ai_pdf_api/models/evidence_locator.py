@@ -172,3 +172,31 @@ class PptxLocatorDetail(Base):
     text_sha256: Mapped[str] = mapped_column(String(64))
     displayed_text: Mapped[str] = mapped_column(Text)
     normalization_version: Mapped[str] = mapped_column(String(64))
+
+class HtmlLocatorDetail(Base):
+    __tablename__ = "html_locator_details"
+    __table_args__ = (
+        CheckConstraint(
+            "block_kind IN ('heading', 'paragraph', 'list_item', 'code_block', 'quote', 'table')",
+            name="ck_html_locator_details_block_kind",
+        ),
+        CheckConstraint("char_start >= 0", name="ck_html_locator_details_char_start"),
+        CheckConstraint("char_end > char_start", name="ck_html_locator_details_char_range"),
+        CheckConstraint(
+            "normalization_version = 'html-normalization-v1'",
+            name="ck_html_locator_details_normalization_version",
+        ),
+    )
+
+    locator_id: Mapped[str] = mapped_column(
+        String(36), ForeignKey("evidence_locators.id", ondelete="CASCADE"), primary_key=True
+    )
+    block_id: Mapped[str] = mapped_column(String(64))
+    block_kind: Mapped[str] = mapped_column(String(32))
+    heading_path: Mapped[list[str]] = mapped_column(JSON)
+    char_start: Mapped[int] = mapped_column(Integer)
+    char_end: Mapped[int] = mapped_column(Integer)
+    text_sha256: Mapped[str] = mapped_column(String(64))
+    normalization_version: Mapped[str] = mapped_column(String(64))
+    css_path_hint: Mapped[str | None] = mapped_column(String(512), nullable=True)
+

@@ -22,6 +22,11 @@ from ai_pdf_api.modalities.docx import (
 )
 from ai_pdf_api.modalities.pptx import PptxIntegrityError, validate_pptx_shape
 from ai_pdf_api.modalities.xlsx import XlsxIntegrityError, validate_xlsx_range
+from ai_pdf_api.modalities.html import (
+    HtmlIntegrityError,
+    validate_html_anchor_range,
+    validate_html_normalized_content,
+)
 from ai_pdf_api.models import (
     AssetRepresentation,
     DocumentBlock,
@@ -31,6 +36,9 @@ from ai_pdf_api.models import (
     DocxLocatorDetail,
     DocxNormalizedContent,
     EvidenceLocator,
+    HtmlBlock,
+    HtmlLocatorDetail,
+    HtmlNormalizedContent,
     ImageLocatorDetail,
     PdfLocatorDetail,
     PptxLocatorDetail,
@@ -41,6 +49,7 @@ from ai_pdf_api.schemas.chat import (
     DocumentAnchorLocator,
     DocxAnchorLocator,
     EvidenceLocatorDto,
+    HtmlAnchorLocator,
     ImageRegionLocator,
     PageGeometry,
     PdfPageLocator,
@@ -86,6 +95,7 @@ class LocatorCodec(Protocol):
         db: Session,
         locator: EvidenceLocator,
         detail: TypedLocatorDetail,
+        detail: PdfLocatorDetail | ImageLocatorDetail | DocumentLocatorDetail | HtmlLocatorDetail | None,
         regions: list[SpatialLocatorRegion],
     ) -> EvidenceLocatorDto: ...
 
@@ -169,6 +179,7 @@ class PdfLocatorCodec:
         db: Session,
         locator: EvidenceLocator,
         detail: TypedLocatorDetail,
+        detail: PdfLocatorDetail | ImageLocatorDetail | DocumentLocatorDetail | HtmlLocatorDetail | None,
         regions: list[SpatialLocatorRegion],
     ) -> EvidenceLocatorDto:
         del db
@@ -254,6 +265,7 @@ class ImageLocatorCodec:
         db: Session,
         locator: EvidenceLocator,
         detail: TypedLocatorDetail,
+        detail: PdfLocatorDetail | ImageLocatorDetail | DocumentLocatorDetail | HtmlLocatorDetail | None,
         regions: list[SpatialLocatorRegion],
     ) -> EvidenceLocatorDto:
         del db
@@ -386,6 +398,7 @@ class DocumentLocatorCodec:
         db: Session,
         locator: EvidenceLocator,
         detail: TypedLocatorDetail,
+        detail: PdfLocatorDetail | ImageLocatorDetail | DocumentLocatorDetail | HtmlLocatorDetail | None,
         regions: list[SpatialLocatorRegion],
     ) -> EvidenceLocatorDto:
         del regions
@@ -428,6 +441,14 @@ def _load_docx_anchor_context(
     representation = db.get(AssetRepresentation, locator.representation_id_snapshot)
     if representation is None:
         raise EvidenceContractError(f"docx_anchor {locator.id} representation is missing")
+def _load_html_anchor_context(
+    db: Session,
+    locator: EvidenceLocator,
+    detail: HtmlLocatorDetail,
+) -> tuple[HtmlNormalizedContent, HtmlBlock, str]:
+    representation = db.get(AssetRepresentation, locator.representation_id_snapshot)
+    if representation is None:
+        raise EvidenceContractError(f"html_anchor {locator.id} representation is missing")
     if (
         representation.id != locator.representation_id_snapshot
         or representation.workspace_id != locator.workspace_id
@@ -451,11 +472,30 @@ def _load_docx_anchor_context(
         select(DocxBlock).where(
             DocxBlock.representation_id == representation.id,
             DocxBlock.block_id == detail.block_id,
+        or representation.representation_kind != "html_normalized"
+    ):
+        raise EvidenceContractError(
+            f"html_anchor {locator.id} representation snapshot is inconsistent"
+        )
+    normalized = db.get(HtmlNormalizedContent, representation.id)
+    if normalized is None:
+        raise EvidenceContractError(f"html_anchor {locator.id} normalized content is missing")
+    try:
+        normalized_text = validate_html_normalized_content(normalized)
+    except HtmlIntegrityError as error:
+        raise EvidenceContractError(
+            f"html_anchor {locator.id} normalized content is invalid: {error}"
+        ) from error
+    block = db.scalar(
+        select(HtmlBlock).where(
+            HtmlBlock.representation_id == representation.id,
+            HtmlBlock.block_id == detail.block_id,
         )
     )
     if block is None:
         raise EvidenceContractError(
             f"docx_anchor {locator.id} block {detail.block_id} is missing"
+            f"html_anchor {locator.id} block {detail.block_id} is missing"
         )
     return normalized, block, normalized_text
 
@@ -470,6 +510,14 @@ class DocxLocatorCodec:
             raise EvidenceContractError(f"DOCX locator {source.id} has no typed detail")
         _normalized, block, normalized_text = _load_docx_anchor_context(db, source, detail)
         heading_path = validate_docx_anchor_range(
+def _validate_html_detail(
+    detail: HtmlLocatorDetail,
+    *,
+    block: HtmlBlock,
+    normalized_text: str,
+) -> list[str]:
+    try:
+        return validate_html_anchor_range(
             block_id=detail.block_id,
             block_kind=detail.block_kind,
             heading_path=detail.heading_path,
@@ -482,6 +530,26 @@ class DocxLocatorCodec:
         )
         db.add(
             DocxLocatorDetail(
+            css_path_hint=detail.css_path_hint,
+            block=block,
+            normalized_text=normalized_text,
+        )
+    except HtmlIntegrityError as error:
+        raise EvidenceContractError(str(error)) from error
+
+
+class HtmlLocatorCodec:
+    kinds = frozenset({"html_anchor"})
+    representation_kinds = frozenset({"html_normalized"})
+
+    def clone_details(self, db: Session, source: EvidenceLocator, target: EvidenceLocator) -> None:
+        detail = db.get(HtmlLocatorDetail, source.id)
+        if detail is None:
+            raise EvidenceContractError(f"HTML locator {source.id} has no typed detail")
+        _normalized, block, normalized_text = _load_html_anchor_context(db, source, detail)
+        heading_path = _validate_html_detail(detail, block=block, normalized_text=normalized_text)
+        db.add(
+            HtmlLocatorDetail(
                 locator_id=target.id,
                 block_id=detail.block_id,
                 block_kind=detail.block_kind,
@@ -490,11 +558,13 @@ class DocxLocatorCodec:
                 char_end=detail.char_end,
                 text_sha256=detail.text_sha256,
                 normalization_version=detail.normalization_version,
+                css_path_hint=detail.css_path_hint,
             )
         )
 
     def serialize(self, db: Session, locator: EvidenceLocator) -> EvidenceLocatorDto:
         detail = db.get(DocxLocatorDetail, locator.id)
+        detail = db.get(HtmlLocatorDetail, locator.id)
         return self.serialize_loaded(db, locator, detail, [])
 
     def serialize_loaded(
@@ -521,6 +591,16 @@ class DocxLocatorCodec:
         )
         return DocxAnchorLocator(
             kind="docx_anchor",
+        detail: PdfLocatorDetail | ImageLocatorDetail | DocumentLocatorDetail | HtmlLocatorDetail | None,
+        regions: list[SpatialLocatorRegion],
+    ) -> EvidenceLocatorDto:
+        del regions
+        if not isinstance(detail, HtmlLocatorDetail):
+            raise EvidenceContractError(f"HTML locator {locator.id} has no typed detail")
+        _normalized, block, normalized_text = _load_html_anchor_context(db, locator, detail)
+        heading_path = _validate_html_detail(detail, block=block, normalized_text=normalized_text)
+        return HtmlAnchorLocator(
+            kind="html_anchor",
             version=locator.locator_version,
             blockId=detail.block_id,
             blockKind=detail.block_kind,  # type: ignore[arg-type]
@@ -529,6 +609,7 @@ class DocxLocatorCodec:
             charEnd=detail.char_end,
             textSha256=detail.text_sha256,
             normalizationVersion=detail.normalization_version,  # type: ignore[arg-type]
+            cssPathHint=detail.css_path_hint,
         )
 
     def retrieval_key(
@@ -539,6 +620,9 @@ class DocxLocatorCodec:
         if isinstance(serialized, DocxAnchorLocator):
             return (
                 f"docx_anchor:{serialized.blockId}:"
+        if isinstance(serialized, HtmlAnchorLocator):
+            return (
+                f"html_anchor:{serialized.blockId}:"
                 f"{serialized.charStart}:{serialized.charEnd}"
             )
         return locator.id
@@ -720,6 +804,7 @@ PRODUCTION_LOCATOR_CODECS = LocatorCodecRegistry(
         XlsxLocatorCodec(),
         PptxLocatorCodec(),
     )
+    (PdfLocatorCodec(), ImageLocatorCodec(), DocumentLocatorCodec(), HtmlLocatorCodec())
 )
 
 
@@ -968,6 +1053,14 @@ def evidence_retrieval_keys(
         if source.locator.locator_kind in PptxLocatorCodec.kinds
     ]
     details: dict[str, TypedLocatorDetail] = {}
+    html_ids = [
+        source.locator.id
+        for source in source_list
+        if source.locator.locator_kind in HtmlLocatorCodec.kinds
+    ]
+    details: dict[
+        str, PdfLocatorDetail | ImageLocatorDetail | DocumentLocatorDetail | HtmlLocatorDetail
+    ] = {}
     if pdf_ids:
         details.update(
             (detail.locator_id, detail)
@@ -1010,6 +1103,11 @@ def evidence_retrieval_keys(
             (detail.locator_id, detail)
             for detail in db.scalars(
                 select(PptxLocatorDetail).where(PptxLocatorDetail.locator_id.in_(pptx_ids))
+    if html_ids:
+        details.update(
+            (detail.locator_id, detail)
+            for detail in db.scalars(
+                select(HtmlLocatorDetail).where(HtmlLocatorDetail.locator_id.in_(html_ids))
             )
         )
     regions_by_locator: dict[str, list[SpatialLocatorRegion]] = {
