@@ -12,6 +12,11 @@ from ai_pdf_api.modalities.html import (
     detect_html_mime_type,
     validate_html_upload_payload,
 )
+from ai_pdf_api.modalities.audio import (
+    AUDIO_MIME_TYPES,
+    detect_audio_mime_type,
+    validate_audio_upload_payload,
+)
 
 
 class ModalityContractError(ValueError):
@@ -473,3 +478,48 @@ def build_html_ready_registry() -> ModalityRegistry:
         (PDF_MODULE, IMAGE_MODULE, DOCUMENT_MODULE, HTML_MODULE),
         embedding_spaces=(TypeRegistration("text"),),
     )
+
+
+# Defined for S0 enablement. Do not add to build_production_registry until
+# catalog rows ship in the same controller patch (see S0_HANDOFF.md).
+AUDIO_MODULE = ModalityModule(
+    asset_kind="audio",
+    contract_version=1,
+    enabled=True,
+    supported_mime_types=AUDIO_MIME_TYPES,
+    byte_inspector=detect_audio_mime_type,
+    representation_types=(
+        TypeRegistration("audio_source"),
+        TypeRegistration("audio_normalized"),
+    ),
+    content_unit_types=(TypeRegistration("audio_transcript_segment"),),
+    locator_types=(TypeRegistration("audio_range", detail_family="temporal"),),
+    retrieval_channels=(
+        RetrievalChannelRegistration(
+            kind="text",
+            embedding_space="text",
+            type_signatures=frozenset(
+                {
+                    ("audio_transcript_segment", "audio_normalized", "audio_range"),
+                }
+            ),
+        ),
+    ),
+    metrics_namespace="audio",
+    ingestion_config_snapshot=lambda: {
+        "audioFormat": "audio",
+        "audioParserVersion": "audio-parser-v1",
+        "audioNormalizationVersion": "audio-normalization-v1",
+        "asrAdapterVersion": "asr-openai-transcriptions-v1",
+    },
+    full_payload_validator=validate_audio_upload_payload,
+)
+
+
+def build_audio_ready_registry() -> ModalityRegistry:
+    """Registry including audio. Production must not call this until S0."""
+    return ModalityRegistry(
+        (PDF_MODULE, IMAGE_MODULE, DOCUMENT_MODULE, AUDIO_MODULE),
+        embedding_spaces=(TypeRegistration("text"),),
+    )
+

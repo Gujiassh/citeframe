@@ -196,7 +196,30 @@ class HtmlAnchorLocator(BaseModel):
             raise ValueError("HTML cssPathHint is not a safe renderer hint")
         return self
 
+class AudioRangeLocator(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    kind: Literal["audio_range"]
+    version: Literal[1]
+    startMs: int = Field(ge=0)
+    endMs: int = Field(gt=0)
+    textSha256: str = Field(min_length=64, max_length=64)
+    segmentId: str = Field(min_length=1, max_length=64)
+    normalizationVersion: Literal["audio-normalization-v1"] = "audio-normalization-v1"
+
+    @model_validator(mode="after")
+    def validate_range(self) -> "AudioRangeLocator":
+        if self.endMs <= self.startMs:
+            raise ValueError("Audio range endMs must be greater than startMs")
+        if len(self.textSha256) != 64 or any(
+            ch not in "0123456789abcdef" for ch in self.textSha256
+        ):
+            raise ValueError("Audio textSha256 must be a lowercase hex SHA-256 digest")
+        return self
+
+
 class ImageRegionLocator(BaseModel):
+
     kind: Literal["image_region"]
     version: Literal[1]
     coordinateSpace: Literal["image_normalized_top_left_v1"]
@@ -214,7 +237,8 @@ EvidenceLocatorDto = Annotated[
     | HtmlAnchorLocator
     | DocxAnchorLocator
     | XlsxRangeLocator
-    | PptxShapeLocator,
+    | PptxShapeLocator
+    | AudioRangeLocator,
     Field(discriminator="kind"),
 ]
 

@@ -852,7 +852,7 @@ def test_asset_delete_cleanup_removes_content_units_but_keeps_history() -> None:
 
 def test_dispatch_selects_document_only_for_markdown_registry_and_not_pdf_image() -> None:
     assert worker_main.INGESTION_ADAPTERS.asset_kinds == frozenset(
-        {"pdf", "image", "document", "docx", "xlsx", "pptx"}
+        {"pdf", "image", "document", "docx", "xlsx", "pptx", "audio"}
     )
     document = worker_main.INGESTION_ADAPTERS.get("document")
     assert document.asset_kind == "document"
@@ -860,9 +860,7 @@ def test_dispatch_selects_document_only_for_markdown_registry_and_not_pdf_image(
     image = worker_main.INGESTION_ADAPTERS.get("image")
     assert pdf.asset_kind == "pdf"
     assert image.asset_kind == "image"
-    with pytest.raises(IngestionError) as missing:
-        worker_main.INGESTION_ADAPTERS.get("audio")
-    assert missing.value.code == "modality_adapter_unavailable"
+    assert worker_main.INGESTION_ADAPTERS.get("audio").asset_kind == "audio"
 
 
 def test_pdf_image_dispatch_regression_document_adapter_rejects_non_document_asset() -> None:

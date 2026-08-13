@@ -27,6 +27,12 @@ from ai_pdf_api.modalities.html import (
     validate_html_anchor_range,
     validate_html_normalized_content,
 )
+from ai_pdf_api.modalities.audio import (
+    AudioIntegrityError,
+    validate_audio_normalized_content,
+    validate_audio_range,
+    validate_audio_transcript_segment,
+)
 from ai_pdf_api.models import (
     AssetRepresentation,
     DocumentBlock,
@@ -36,6 +42,9 @@ from ai_pdf_api.models import (
     DocxLocatorDetail,
     DocxNormalizedContent,
     EvidenceLocator,
+    AudioLocatorDetail,
+    AudioNormalizedContent,
+    AudioTranscriptSegment,
     HtmlBlock,
     HtmlLocatorDetail,
     HtmlNormalizedContent,
@@ -49,6 +58,7 @@ from ai_pdf_api.schemas.chat import (
     DocumentAnchorLocator,
     DocxAnchorLocator,
     EvidenceLocatorDto,
+    AudioRangeLocator,
     HtmlAnchorLocator,
     ImageRegionLocator,
     PageGeometry,
@@ -64,6 +74,7 @@ TypedLocatorDetail = (
     | ImageLocatorDetail
     | DocumentLocatorDetail
     | HtmlLocatorDetail
+    | AudioLocatorDetail
     | DocxLocatorDetail
     | XlsxLocatorDetail
     | PptxLocatorDetail
@@ -832,6 +843,130 @@ class PptxLocatorCodec:
         return locator.id
 
 
+
+
+def _load_audio_range_context(
+    db: Session,
+    locator: EvidenceLocator,
+    detail: AudioLocatorDetail,
+) -> tuple[AudioNormalizedContent, AudioTranscriptSegment]:
+    representation = db.get(AssetRepresentation, locator.representation_id_snapshot)
+    if representation is None:
+        raise EvidenceContractError(f"audio_range {locator.id} representation is missing")
+    if (
+        representation.id != locator.representation_id_snapshot
+        or representation.workspace_id != locator.workspace_id
+        or representation.asset_id != locator.asset_id
+        or representation.processing_generation != locator.processing_generation_snapshot
+        or representation.representation_kind != "audio_normalized"
+    ):
+        raise EvidenceContractError(
+            f"audio_range {locator.id} representation snapshot is inconsistent"
+        )
+    normalized = db.get(AudioNormalizedContent, representation.id)
+    if normalized is None:
+        raise EvidenceContractError(f"audio_range {locator.id} normalized content is missing")
+    try:
+        validate_audio_normalized_content(normalized)
+    except AudioIntegrityError as error:
+        raise EvidenceContractError(
+            f"audio_range {locator.id} normalized content is invalid: {error}"
+        ) from error
+    segment = db.scalar(
+        select(AudioTranscriptSegment).where(
+            AudioTranscriptSegment.representation_id == representation.id,
+            AudioTranscriptSegment.segment_id == detail.segment_id,
+        )
+    )
+    if segment is None:
+        raise EvidenceContractError(
+            f"audio_range {locator.id} segment {detail.segment_id} is missing"
+        )
+    try:
+        validate_audio_transcript_segment(segment)
+    except AudioIntegrityError as error:
+        raise EvidenceContractError(
+            f"audio_range {locator.id} segment is invalid: {error}"
+        ) from error
+    return normalized, segment
+
+
+def _validate_audio_detail(
+    detail: AudioLocatorDetail,
+    *,
+    segment: AudioTranscriptSegment,
+) -> None:
+    try:
+        validate_audio_range(
+            start_ms=detail.start_ms,
+            end_ms=detail.end_ms,
+            text_sha256_value=detail.text_sha256,
+            segment=segment,
+        )
+    except AudioIntegrityError as error:
+        raise EvidenceContractError(str(error)) from error
+
+
+class AudioLocatorCodec:
+    kinds = frozenset({"audio_range"})
+    representation_kinds = frozenset({"audio_normalized"})
+
+    def clone_details(self, db: Session, source: EvidenceLocator, target: EvidenceLocator) -> None:
+        detail = db.get(AudioLocatorDetail, source.id)
+        if detail is None:
+            raise EvidenceContractError(f"Audio locator {source.id} has no typed detail")
+        _normalized, segment = _load_audio_range_context(db, source, detail)
+        _validate_audio_detail(detail, segment=segment)
+        db.add(
+            AudioLocatorDetail(
+                locator_id=target.id,
+                segment_id=detail.segment_id,
+                start_ms=detail.start_ms,
+                end_ms=detail.end_ms,
+                text_sha256=detail.text_sha256,
+                normalization_version=detail.normalization_version,
+            )
+        )
+
+    def serialize(self, db: Session, locator: EvidenceLocator) -> EvidenceLocatorDto:
+        detail = db.get(AudioLocatorDetail, locator.id)
+        return self.serialize_loaded(db, locator, detail, [])
+
+    def serialize_loaded(
+        self,
+        db: Session,
+        locator: EvidenceLocator,
+        detail: TypedLocatorDetail,
+        regions: list[SpatialLocatorRegion],
+    ) -> EvidenceLocatorDto:
+        del regions
+        if not isinstance(detail, AudioLocatorDetail):
+            raise EvidenceContractError(f"Audio locator {locator.id} has no typed detail")
+        _normalized, segment = _load_audio_range_context(db, locator, detail)
+        _validate_audio_detail(detail, segment=segment)
+        return AudioRangeLocator(
+            kind="audio_range",
+            version=locator.locator_version,
+            startMs=detail.start_ms,
+            endMs=detail.end_ms,
+            textSha256=detail.text_sha256,
+            segmentId=detail.segment_id,
+            normalizationVersion=detail.normalization_version,  # type: ignore[arg-type]
+        )
+
+    def retrieval_key(
+        self,
+        locator: EvidenceLocator,
+        serialized: EvidenceLocatorDto,
+    ) -> str:
+        if isinstance(serialized, AudioRangeLocator):
+            return (
+                f"audio_range:{serialized.segmentId}:"
+                f"{serialized.startMs}:{serialized.endMs}"
+            )
+        return locator.id
+
+
 class LocatorCodecRegistry:
     def __init__(self, codecs: Iterable[LocatorCodec]) -> None:
         self._by_kind: dict[str, LocatorCodec] = {}
@@ -861,6 +996,7 @@ PRODUCTION_LOCATOR_CODECS = LocatorCodecRegistry(
         DocxLocatorCodec(),
         XlsxLocatorCodec(),
         PptxLocatorCodec(),
+        AudioLocatorCodec(),
     )
 )
 
@@ -1114,6 +1250,11 @@ def evidence_retrieval_keys(
         for source in source_list
         if source.locator.locator_kind in PptxLocatorCodec.kinds
     ]
+    audio_ids = [
+        source.locator.id
+        for source in source_list
+        if source.locator.locator_kind in AudioLocatorCodec.kinds
+    ]
     details: dict[str, TypedLocatorDetail] = {}
     if pdf_ids:
         details.update(
@@ -1164,6 +1305,13 @@ def evidence_retrieval_keys(
             (detail.locator_id, detail)
             for detail in db.scalars(
                 select(PptxLocatorDetail).where(PptxLocatorDetail.locator_id.in_(pptx_ids))
+            )
+        )
+    if audio_ids:
+        details.update(
+            (detail.locator_id, detail)
+            for detail in db.scalars(
+                select(AudioLocatorDetail).where(AudioLocatorDetail.locator_id.in_(audio_ids))
             )
         )
     regions_by_locator: dict[str, list[SpatialLocatorRegion]] = {

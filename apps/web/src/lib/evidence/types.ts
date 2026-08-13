@@ -70,12 +70,23 @@ export type HtmlAnchorLocator = {
   cssPathHint?: string | null;
 };
 
+export type AudioRangeLocator = {
+  kind: "audio_range";
+  version: number;
+  startMs: number;
+  endMs: number;
+  textSha256: string;
+  segmentId: string;
+  normalizationVersion: "audio-normalization-v1";
+};
+
 export type EvidenceLocator =
   | PdfPageLocator
   | PdfRegionLocator
   | ImageRegionLocator
   | DocumentAnchorLocator
-  | HtmlAnchorLocator;
+  | HtmlAnchorLocator
+  | AudioRangeLocator;
 
 export type SourceVersions = {
   parserVersion: string;
@@ -127,6 +138,11 @@ export function getLocatorSummary(locator: EvidenceLocator): string {
       ? locator.headingPath[locator.headingPath.length - 1]
       : locator.blockKind;
     return `HTML · ${heading}`;
+  }
+  if (locator.kind === "audio_range") {
+    const start = Math.floor(locator.startMs / 1000);
+    const end = Math.floor(locator.endMs / 1000);
+    return `Audio · ${start}s–${end}s`;
   }
   return `Image · ${locator.regions.length > 1 ? `${locator.regions.length} regions` : "region"}`;
 }
