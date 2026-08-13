@@ -57,6 +57,40 @@ export type DocumentAnchorLocator = {
   normalizationVersion: "document-normalization-v1";
 };
 
+
+export type DocxAnchorLocator = {
+  kind: "docx_anchor";
+  version: number;
+  blockId: string;
+  blockKind: DocumentBlockKind | "table";
+  headingPath: string[];
+  charStart: number;
+  charEnd: number;
+  textSha256: string;
+  normalizationVersion: "docx-normalization-v1";
+};
+
+export type XlsxRangeLocator = {
+  kind: "xlsx_range";
+  version: number;
+  sheetName: string;
+  startCell: string;
+  endCell: string;
+  textSha256: string;
+  displayedText: string;
+  normalizationVersion: "xlsx-normalization-v1";
+};
+
+export type PptxShapeLocator = {
+  kind: "pptx_shape";
+  version: number;
+  slideIndex: number;
+  shapeId: string;
+  textSha256: string;
+  displayedText: string;
+  normalizationVersion: "pptx-normalization-v1";
+};
+
 export type HtmlAnchorLocator = {
   kind: "html_anchor";
   version: number;
@@ -104,6 +138,9 @@ export type EvidenceLocator =
   | PdfRegionLocator
   | ImageRegionLocator
   | DocumentAnchorLocator
+  | DocxAnchorLocator
+  | XlsxRangeLocator
+  | PptxShapeLocator
   | HtmlAnchorLocator
   | AudioRangeLocator
   | VideoRangeLocator
@@ -154,6 +191,18 @@ export function getLocatorSummary(locator: EvidenceLocator): string {
       : locator.blockKind;
     return `Document · ${heading}`;
   }
+  if (locator.kind === "docx_anchor") {
+    const heading = locator.headingPath.length > 0
+      ? locator.headingPath[locator.headingPath.length - 1]
+      : locator.blockKind;
+    return `DOCX · ${heading}`;
+  }
+  if (locator.kind === "xlsx_range") {
+    return `XLSX · ${locator.sheetName} ${locator.startCell}:${locator.endCell}`;
+  }
+  if (locator.kind === "pptx_shape") {
+    return `PPTX · slide ${locator.slideIndex}`;
+  }
   if (locator.kind === "html_anchor") {
     const heading = locator.headingPath.length > 0
       ? locator.headingPath[locator.headingPath.length - 1]
@@ -179,5 +228,8 @@ export function getLocatorSummary(locator: EvidenceLocator): string {
     }
     return "Video frame";
   }
-  return `Image · ${locator.regions.length > 1 ? `${locator.regions.length} regions` : "region"}`;
+  if (locator.kind === "image_region") {
+    return `Image · ${locator.regions.length > 1 ? `${locator.regions.length} regions` : "region"}`;
+  }
+  return "Evidence";
 }

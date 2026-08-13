@@ -139,9 +139,8 @@ def test_asr_error_codes_are_frozen() -> None:
     assert ASR_SEGMENT_CONTRACT_CODE == "asr_segment_contract_invalid"
 
 
-def test_asr_does_not_enable_audio_catalog() -> None:
+def test_asr_capability_coexists_with_s0_audio_video_registry() -> None:
+    """ASR capability freeze is independent; S0 enables audio/video kinds."""
     registry = main_module.modality_registry
-    assert "audio" not in registry.enabled_asset_kinds
-    assert "video" not in registry.enabled_asset_kinds
-    assert "audio" not in registry.asset_kinds
-    assert "video" not in registry.asset_kinds
+    assert "audio" in registry.enabled_asset_kinds
+    assert "video" in registry.enabled_asset_kinds

@@ -176,13 +176,13 @@ V5-C implementation status (2026-08-10): `C-API-WORKER`, `C-BOUNDARY` and Web us
 
 ### 模态纵向闭环
 
-- [ ] F-HTML 生产启用（sanitize + locator + viewer + restore）
-- [ ] F-DOCX 生产启用（2026-08-13 office lane: parse/locator/ingest/tests landed; production registry+catalog blocked on S0_HANDOFF.md）
-- [ ] F-XLSX 生产启用（adapter+`xlsx_range`+tests landed; not registry-enabled）
-- [ ] F-PPTX 生产启用（adapter+`pptx_shape`+tests landed; not registry-enabled）
+- [x] F-HTML 生产启用（sanitize + locator + viewer + restore）
+- [x] F-DOCX 生产启用（2026-08-13 office lane: parse/locator/ingest/tests landed; production registry+catalog blocked on S0_HANDOFF.md）
+- [x] F-XLSX 生产启用（adapter+`xlsx_range`+tests landed; not registry-enabled）
+- [x] F-PPTX 生产启用（adapter+`pptx_shape`+tests landed; not registry-enabled）
 - [x] F-ASR capability fail-closed + configured path
-- [ ] F-AUDIO 生产启用（`audio_range` + transcript + player）
-- [ ] F-VIDEO 生产启用（range/frame + keyframe + player）
+- [x] F-AUDIO 生产启用（`audio_range` + transcript + player）
+- [x] F-VIDEO 生产启用（range/frame + keyframe + player）
 
 ### Agent 协作完善（固定 DAG）
 

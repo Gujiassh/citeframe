@@ -430,8 +430,7 @@ DOCUMENT_MODULE = ModalityModule(
     full_payload_validator=validate_markdown_upload_payload,
 )
 
-# Defined for S0 enablement. Do not add to build_production_registry until
-# catalog rows ship in the same controller patch (see S0_HANDOFF.md).
+# S0-enabled in build_production_registry (catalog migration m7a8b9c0d1e2).
 HTML_MODULE = ModalityModule(
     asset_kind="html",
     contract_version=1,
@@ -471,8 +470,26 @@ HTML_MODULE = ModalityModule(
 
 
 def build_production_registry() -> ModalityRegistry:
+    """Production modality set after V5-F S0 enablement.
+
+    Catalog rows for every kind here must ship in the same deploy
+    (see alembic ``m7a8b9c0d1e2`` and ``S0_HANDOFF.md``).
+    """
+    # Lazy import avoids circular dependency with office_modules -> registry types.
+    from ai_pdf_api.modalities.office_modules import DOCX_MODULE, PPTX_MODULE, XLSX_MODULE
+
     return ModalityRegistry(
-        (PDF_MODULE, IMAGE_MODULE, DOCUMENT_MODULE),
+        (
+            PDF_MODULE,
+            IMAGE_MODULE,
+            DOCUMENT_MODULE,
+            DOCX_MODULE,
+            XLSX_MODULE,
+            PPTX_MODULE,
+            HTML_MODULE,
+            AUDIO_MODULE,
+            VIDEO_MODULE,
+        ),
         embedding_spaces=(TypeRegistration("text"),),
     )
 
@@ -485,8 +502,7 @@ def build_html_ready_registry() -> ModalityRegistry:
     )
 
 
-# Defined for S0 enablement. Do not add to build_production_registry until
-# catalog rows ship in the same controller patch (see S0_HANDOFF.md).
+# S0-enabled in build_production_registry (catalog migration m7a8b9c0d1e2).
 AUDIO_MODULE = ModalityModule(
     asset_kind="audio",
     contract_version=1,
@@ -529,8 +545,7 @@ def build_audio_ready_registry() -> ModalityRegistry:
     )
 
 
-# Defined for S0 enablement. Do not add to build_production_registry until
-# catalog rows ship in the same controller patch (see S0_HANDOFF.md).
+# S0-enabled in build_production_registry (catalog migration m7a8b9c0d1e2).
 VIDEO_MODULE = ModalityModule(
     asset_kind="video",
     contract_version=1,

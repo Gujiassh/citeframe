@@ -1,7 +1,7 @@
 """Office ModalityModule definitions.
 
-These modules are owned by the office lane and are not registered in
-``build_production_registry`` until S0 catalog enablement.
+These modules are owned by the office lane. S0 registers them in
+``build_production_registry`` together with catalog rows.
 """
 
 from __future__ import annotations
@@ -28,7 +28,7 @@ from ai_pdf_api.modalities.xlsx import (
 DOCX_MODULE = ModalityModule(
     asset_kind="docx",
     contract_version=1,
-    enabled=False,
+    enabled=True,
     supported_mime_types=frozenset({DOCX_MIME}),
     byte_inspector=detect_docx_mime_type,
     representation_types=(
@@ -57,7 +57,7 @@ DOCX_MODULE = ModalityModule(
 XLSX_MODULE = ModalityModule(
     asset_kind="xlsx",
     contract_version=1,
-    enabled=False,
+    enabled=True,
     supported_mime_types=frozenset({XLSX_MIME}),
     byte_inspector=detect_xlsx_mime_type,
     representation_types=(
@@ -86,7 +86,7 @@ XLSX_MODULE = ModalityModule(
 PPTX_MODULE = ModalityModule(
     asset_kind="pptx",
     contract_version=1,
-    enabled=False,
+    enabled=True,
     supported_mime_types=frozenset({PPTX_MIME}),
     byte_inspector=detect_pptx_mime_type,
     representation_types=(

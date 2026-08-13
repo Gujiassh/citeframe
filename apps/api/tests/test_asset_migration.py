@@ -180,7 +180,17 @@ def _assert_migrated_contract(database_url: str) -> None:
         asset_types = connection.execute(
             text("SELECT kind, contract_version, enabled FROM asset_types ORDER BY kind")
         ).all()
-        assert asset_types == [("document", 1, True), ("image", 1, True), ("pdf", 1, True)]
+        assert asset_types == [
+            ("audio", 1, True),
+            ("document", 1, True),
+            ("docx", 1, True),
+            ("html", 1, True),
+            ("image", 1, True),
+            ("pdf", 1, True),
+            ("pptx", 1, True),
+            ("video", 1, True),
+            ("xlsx", 1, True),
+        ]
 
         asset = connection.execute(
             text(

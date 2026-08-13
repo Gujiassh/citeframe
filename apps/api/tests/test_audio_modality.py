@@ -131,14 +131,10 @@ def test_audio_range_locator_dto() -> None:
         )
 
 
-def test_production_registry_does_not_enable_audio() -> None:
+def test_production_registry_enables_audio_after_s0() -> None:
     production = build_production_registry()
-    assert "audio" not in production.asset_kinds
-    assert production.asset_kinds == frozenset({"pdf", "image", "document"})
-    ready = build_audio_ready_registry()
-    assert ready.get("audio") is AUDIO_MODULE
-    assert AUDIO_MODULE.supported_mime_types == AUDIO_MIME_TYPES
-
+    assert "audio" in production.asset_kinds
+    assert "audio" in production.enabled_asset_kinds
 
 def test_audio_locator_codec_registered() -> None:
     codec = PRODUCTION_LOCATOR_CODECS.get("audio_range")

@@ -127,6 +127,6 @@ test("production registry registers exact document modality without changing PDF
   });
   assert.equal(htmlModule.assetKind, "html");
   assert.deepEqual(htmlModule.locatorKinds, ["html_anchor"]);
-  assert.deepEqual(htmlModule.uploadAccept, []);
+  assert.deepEqual(htmlModule.uploadAccept, ["text/html"]);
   assert.equal(htmlModule.EvidenceRenderer, HtmlEvidenceRenderer);
 });

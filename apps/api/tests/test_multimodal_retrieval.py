@@ -945,19 +945,15 @@ def test_current_persisters_emit_only_registered_text_channel_signatures() -> No
 
     current_signatures = _persisted_signatures(db, [pdf.id, image.id])
     registered = build_production_registry().retrieval_channel_scope("text").type_signatures
-    # Document is registered for the text channel but current PDF/Image persisters
-    # do not emit document signatures; keep the catalog mismatch explicit.
-    document_registered = {
+    # PDF/Image fixtures only; other S0 kinds are registered but not persisted here.
+    pdf_image_registered = {
         signature
         for signature in registered
-        if signature[0] == "document"
+        if signature[0] in {"pdf", "image"}
     }
-    assert document_registered == {
-        ("document", "document_text_chunk", "document_normalized", "document_anchor")
-    }
-    assert current_signatures == registered - {
+    assert current_signatures <= pdf_image_registered
+    assert current_signatures == pdf_image_registered - {
         ("pdf", "pdf_text_chunk", "pdf_text_legacy", "pdf_page"),
-        *document_registered,
     }
 
 

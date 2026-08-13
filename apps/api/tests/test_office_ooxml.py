@@ -25,27 +25,25 @@ from ai_pdf_api.modalities.registry import (
 from ai_pdf_api.modalities.xlsx import build_minimal_xlsx_bytes, parse_xlsx_workbook
 
 
-def test_production_registry_does_not_enable_office_kinds() -> None:
+def test_production_registry_enables_office_kinds_after_s0() -> None:
     registry = build_production_registry()
-    assert registry.asset_kinds == frozenset({"pdf", "image", "document"})
-    with pytest.raises(Exception, match="Unsupported MIME type"):
-        registry.inspect_upload(DOCX_MIME, b"PK\x03\x04")
+    assert {"docx", "xlsx", "pptx"}.issubset(registry.asset_kinds)
+    assert {"docx", "xlsx", "pptx"}.issubset(registry.enabled_asset_kinds)
+    assert "office" not in registry.asset_kinds
 
-
-def test_office_modules_exist_as_separate_kinds_and_stay_disabled() -> None:
+def test_office_modules_exist_as_separate_kinds_and_are_enabled_for_s0() -> None:
     assert DOCX_MODULE.asset_kind == "docx"
     assert XLSX_MODULE.asset_kind == "xlsx"
     assert PPTX_MODULE.asset_kind == "pptx"
-    assert not DOCX_MODULE.enabled
-    assert not XLSX_MODULE.enabled
-    assert not PPTX_MODULE.enabled
+    assert DOCX_MODULE.enabled
+    assert XLSX_MODULE.enabled
+    assert PPTX_MODULE.enabled
     registry = ModalityRegistry(
         (PDF_MODULE, IMAGE_MODULE, DOCUMENT_MODULE, DOCX_MODULE, XLSX_MODULE, PPTX_MODULE),
         embedding_spaces=(TypeRegistration("text"),),
     )
-    assert "docx" not in registry.enabled_asset_kinds
-    with pytest.raises(Exception, match="not enabled"):
-        registry.for_mime_type(DOCX_MIME)
+    assert {"docx", "xlsx", "pptx"}.issubset(registry.enabled_asset_kinds)
+    assert registry.for_mime_type(DOCX_MIME).asset_kind == "docx"
 
 
 def test_parse_docx_is_deterministic_and_captures_blocks() -> None:
@@ -104,4 +102,4 @@ def test_disabled_office_module_can_be_enabled_only_in_test_registry() -> None:
     module = registry.inspect_upload(DOCX_MIME, payload[:16])
     assert module.asset_kind == "docx"
     registry.validate_upload_payload(module, payload)
-    assert build_production_registry().asset_kinds == frozenset({"pdf", "image", "document"})
+    assert {"docx", "xlsx", "pptx"}.issubset(build_production_registry().asset_kinds)
