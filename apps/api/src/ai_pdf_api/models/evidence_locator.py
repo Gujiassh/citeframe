@@ -200,3 +200,23 @@ class HtmlLocatorDetail(Base):
     normalization_version: Mapped[str] = mapped_column(String(64))
     css_path_hint: Mapped[str | None] = mapped_column(String(512), nullable=True)
 
+class AudioLocatorDetail(Base):
+    __tablename__ = "audio_locator_details"
+    __table_args__ = (
+        CheckConstraint("start_ms >= 0", name="ck_audio_locator_details_start_ms"),
+        CheckConstraint("end_ms > start_ms", name="ck_audio_locator_details_time_range"),
+        CheckConstraint(
+            "normalization_version = 'audio-normalization-v1'",
+            name="ck_audio_locator_details_normalization_version",
+        ),
+    )
+
+    locator_id: Mapped[str] = mapped_column(
+        String(36), ForeignKey("evidence_locators.id", ondelete="CASCADE"), primary_key=True
+    )
+    segment_id: Mapped[str] = mapped_column(String(64))
+    start_ms: Mapped[int] = mapped_column(Integer)
+    end_ms: Mapped[int] = mapped_column(Integer)
+    text_sha256: Mapped[str] = mapped_column(String(64))
+    normalization_version: Mapped[str] = mapped_column(String(64))
+

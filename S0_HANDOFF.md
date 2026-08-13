@@ -111,3 +111,72 @@ ship in `i3c4d5e6f7a8`.
 
 Do not enable catalog without the worker adapter, or readiness will fail.
 
+---
+
+# S0 handoff: enable audio modality
+
+Audio slice ships MIME freeze, typed tables, ASR-gated adapter, locator codec,
+viewer, and tests. **Production registry/catalog are not enabled** in this PR.
+
+Controller should apply these patches in one deploy so readiness stays aligned.
+
+## 1. Registry
+
+File: `apps/api/src/ai_pdf_api/modalities/registry.py`
+
+Add `AUDIO_MODULE` to `build_production_registry()` (with any other S0 modules
+already staged for the same deploy). Do not enable audio alone without catalog
+rows and the worker adapter.
+
+`AUDIO_MODULE` and `build_audio_ready_registry()` already exist.
+
+## 2. Worker adapter registry
+
+File: `apps/worker/src/ai_pdf_worker/main.py`
+
+`AudioIngestionAdapter()` is already registered for isolated ingest. Keep it
+when enabling production.
+
+## 3. Catalog rows (same migration as enable)
+
+Additive inserts only:
+
+```sql
+INSERT INTO asset_types(kind, contract_version, enabled)
+VALUES ('audio', 1, true);
+
+INSERT INTO representation_types(kind, asset_kind, contract_version) VALUES
+  ('audio_source', 'audio', 1),
+  ('audio_normalized', 'audio', 1);
+
+INSERT INTO content_unit_types(kind, asset_kind, contract_version) VALUES
+  ('audio_transcript_segment', 'audio', 1);
+
+INSERT INTO locator_types(kind, contract_version, detail_family)
+VALUES ('audio_range', 1, 'temporal');
+```
+
+Tables `audio_normalized_contents`, `audio_transcript_segments`,
+`audio_locator_details` already ship in `k5e6f7a8b9c0`.
+
+## 4. Web upload (optional same slice)
+
+`production-registry.ts` already registers the audio renderer with
+`uploadAccept: []`. To accept uploads, add the frozen MIME list
+(`audio/mpeg`, `audio/wav`, `audio/mp4`, `audio/webm`) to upload accept.
+
+## 5. ASR prerequisite
+
+Production audio ingest **requires** a configured OpenAI ASR secret
+(`AI_PDF_OPENAI_API_KEY` / `OPENAI_API_KEY`). Missing secret fails closed with
+`asr_not_configured` before any representation or content-unit persist.
+Never invent transcripts.
+
+## 6. Tests that must flip
+
+- production registry membership for `audio`
+- catalog snapshot equality tests
+- worker `INGESTION_ADAPTERS` membership if asserted against production-only set
+
+Do not enable catalog without the worker adapter and ASR ops readiness.
+
