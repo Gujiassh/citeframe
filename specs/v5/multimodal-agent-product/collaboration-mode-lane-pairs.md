@@ -84,6 +84,15 @@ Parent: [`current-execution-plan.md`](current-execution-plan.md)
 
 打回：优先 `resume` 原开发；不要新开第三人覆盖同一文件。
 
+
+## 5.1 Agent 复用（省 token）
+
+- **同一条线的返工、追问、补测、改 PR：必须 `resume` 原开发 / 原审计。**
+- **禁止**因为「新开一轮对话」就再 spawn 一个实现或审计 agent。
+- 只有这些情况才新开：原 agent 会话不可用、lane 范围已变、需要独立第二审、或主控明确换人。
+- 新开时必须在派工单写明 **为什么不能 resume**。
+- **审计 agent 默认用 Grok（grok-4.5）**，不要用 GPT；实现 agent 另议。上游卡顿时优先保审计走 Grok。
+
 ## 6. 工具策略
 
 **默认纯手动，不先开发调度产品。**
