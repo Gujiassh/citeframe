@@ -171,7 +171,7 @@ V5-C implementation status (2026-08-10): `C-API-WORKER`, `C-BOUNDARY` and Web us
 - [x] F0 主人批准 V5-F scope decision（2026-08-13；实现仍暂停直至开工令）
 - [x] F0-parallel 并行分线收尾计划已成文（`parallel-execution-plan-v5f.md`）
 - [ ] F0b OD-B5 HTML sanitizer/resource policy 正式 `approved`
-- [ ] F0c OD-B6 Audio/ASR capability contract 正式 `approved`
+- [x] F0c OD-B6 ASR capability contract 正式 `approved`（Audio catalog 仍禁用）
 - [ ] F0d OD-B7 Video temporal/keyframe contract 正式 `approved`
 
 ### 模态纵向闭环
@@ -180,7 +180,7 @@ V5-C implementation status (2026-08-10): `C-API-WORKER`, `C-BOUNDARY` and Web us
 - [ ] F-DOCX 生产启用
 - [ ] F-XLSX 生产启用
 - [ ] F-PPTX 生产启用
-- [ ] F-ASR capability fail-closed + configured path
+- [x] F-ASR capability fail-closed + configured path
 - [ ] F-AUDIO 生产启用（`audio_range` + transcript + player）
 - [ ] F-VIDEO 生产启用（range/frame + keyframe + player）
 

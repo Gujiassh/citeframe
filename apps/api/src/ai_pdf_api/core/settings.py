@@ -59,6 +59,14 @@ class Settings(BaseSettings):
     image_caption_timeout_seconds: float = Field(default=120.0, gt=0)
     image_caption_max_output_tokens: int = Field(default=320, ge=64, le=2048)
 
+    # F-ASR contract only: profile identity for fail-closed gates. Does not enable audio/video catalog.
+    asr_provider: str = Field(default="openai", pattern="^openai$")
+    asr_model: str = "whisper-1"
+    asr_version: str = "asr-v1"
+    asr_timeout_seconds: float = Field(default=120.0, gt=0)
+    asr_max_duration_seconds: float = Field(default=600.0, gt=0)
+    asr_max_file_bytes: int = Field(default=25 * 1024 * 1024, ge=1)
+
     openai_api_key: str | None = Field(
         default=None,
         validation_alias=AliasChoices("AI_PDF_OPENAI_API_KEY", "OPENAI_API_KEY"),

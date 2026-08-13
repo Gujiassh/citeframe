@@ -158,12 +158,33 @@ def build_capability_registry() -> CapabilityRegistry:
         secret_required=vision_provider == "openai",
     )
 
+    asr_provider = settings.asr_provider
+    asr = _make_profile(
+        capability="asr",
+        provider=asr_provider,
+        model=settings.asr_model,
+        adapter_version=f"asr-{asr_provider}-transcriptions-v1",
+        model_version=settings.asr_version,
+        endpoint_identifier=normalize_provider_endpoint(
+            _asr_base(asr_provider), provider=asr_provider
+        ),
+        limits={
+            "timeoutSeconds": settings.asr_timeout_seconds,
+            "maxDurationSeconds": settings.asr_max_duration_seconds,
+            "maxFileBytes": settings.asr_max_file_bytes,
+        },
+        pricing_version=PRICING_VERSION,
+        data_boundary_policy_version=DATA_BOUNDARY_POLICY,
+        secret=_asr_secret(asr_provider),
+        secret_required=asr_provider == "openai",
+    )
+
     return CapabilityRegistry(
         {
             "generation": generation,
             "embedding": embedding,
             "vision": vision,
-            "asr": None,
+            "asr": asr,
         }
     )
 
@@ -228,6 +249,21 @@ def embedding_profile_snapshot_fields(profile: CapabilityProfile | None = None) 
         "embeddingDimensions": resolved.limits.get("dimensions", settings.embedding_dimensions),
         "embeddingVersion": resolved.model_version or settings.embedding_version,
         "embeddingProfileFingerprint": resolved.config_fingerprint,
+    }
+
+
+def asr_profile_snapshot_fields(profile: CapabilityProfile | None = None) -> dict[str, object]:
+    resolved = profile or build_capability_registry().resolve("asr")
+    return {
+        "asrProvider": resolved.provider,
+        "asrModel": resolved.model,
+        "asrVersion": resolved.model_version or settings.asr_version,
+        "asrTimeoutSeconds": resolved.limits.get("timeoutSeconds", settings.asr_timeout_seconds),
+        "asrMaxDurationSeconds": resolved.limits.get(
+            "maxDurationSeconds", settings.asr_max_duration_seconds
+        ),
+        "asrMaxFileBytes": resolved.limits.get("maxFileBytes", settings.asr_max_file_bytes),
+        "asrProfileFingerprint": resolved.config_fingerprint,
     }
 
 
@@ -405,6 +441,16 @@ def _embedding_secret(provider: str) -> str | None:
 
 
 def _vision_secret(provider: str) -> str | None:
+    return settings.openai_api_key if provider == "openai" else None
+
+
+def _asr_base(provider: str) -> str:
+    if provider == "openai":
+        return settings.openai_api_base
+    return ""
+
+
+def _asr_secret(provider: str) -> str | None:
     return settings.openai_api_key if provider == "openai" else None
 
 

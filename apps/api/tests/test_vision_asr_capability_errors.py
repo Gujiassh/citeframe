@@ -12,10 +12,11 @@ from ai_pdf_api.modalities.image_caption import (
 )
 from ai_pdf_api.services.capabilities import build_capability_registry
 from ai_pdf_api.services.capability_errors import (
-    CAPABILITY_UNAVAILABLE_CODE,
+    ASR_NOT_CONFIGURED_CODE,
     VISION_NOT_CONFIGURED_CODE,
     asr_capability_status,
     require_asr_capability,
+    require_configured_asr_profile,
     require_configured_vision_profile,
     vision_readiness_status,
 )
@@ -47,18 +48,22 @@ def test_registry_asr_is_always_capability_unavailable_with_no_fallback(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     _configure_vision_baseline(monkeypatch)
+    monkeypatch.setattr(settings, "openai_api_key", None)
     registry = build_capability_registry()
 
-    assert registry.get("asr") is None
+    asr = registry.get("asr")
+    assert asr is not None
+    assert asr.configured is False
     with pytest.raises(ModelProviderError) as captured:
         require_asr_capability()
-    assert captured.value.code == CAPABILITY_UNAVAILABLE_CODE
+    assert captured.value.code == ASR_NOT_CONFIGURED_CODE
     assert "asr" in captured.value.message.lower()
-    assert asr_capability_status() == "unavailable"
+    assert asr_capability_status() == "not_configured"
 
     # No silent substitution of vision/generation for ASR.
     assert registry.resolve("vision").capability == "vision"
     assert registry.resolve("generation").capability == "generation"
+    assert asr.capability == "asr"
 
 
 def test_vision_missing_key_fails_before_provider_http(
@@ -266,7 +271,7 @@ def test_error_and_status_surfaces_do_not_leak_secrets_or_preimage(
     assert "secret-proxy" not in serialized
     assert "endpointIdentifier" not in public
     assert "endpoint" not in readiness
-    assert readiness["asr"] == "unavailable"
+    assert readiness["asr"] == "ok"
     assert readiness["vision"] == "ok"
 
     monkeypatch.setattr(settings, "openai_api_key", None)
@@ -294,7 +299,7 @@ def test_capability_status_is_informational_and_readiness_shape_unchanged(
     monkeypatch.setattr(
         main_module,
         "capability_status",
-        lambda: {"vision": "ok", "asr": "unavailable"},
+        lambda: {"vision": "ok", "asr": "ok"},
     )
     client = TestClient(main_module.app)
     response = client.get("/health/ready")
@@ -311,7 +316,7 @@ def test_capability_status_is_informational_and_readiness_shape_unchanged(
             "generationProvider": "ok",
         },
     }
-    assert main_module.capability_status() == {"vision": "ok", "asr": "unavailable"}
+    assert main_module.capability_status() == {"vision": "ok", "asr": "ok"}
 
 
 def test_image_caption_readiness_uses_vision_capability_without_http(
@@ -337,7 +342,7 @@ def test_image_caption_readiness_uses_vision_capability_without_http(
 
     assert main_module.readiness_checks()["imageCaptionConfiguration"] == "ok"
     assert main_module.capability_status()["vision"] == "ok"
-    assert main_module.capability_status()["asr"] == "unavailable"
+    assert main_module.capability_status()["asr"] == "ok"
 
     monkeypatch.setattr(settings, "openai_api_key", None)
     assert main_module._check_image_caption_configuration() == "not_configured"
