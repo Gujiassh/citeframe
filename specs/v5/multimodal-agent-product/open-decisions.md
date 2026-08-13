@@ -79,9 +79,11 @@
 
 ## OD-B6：Audio 进入生产的前置条件
 
-状态：`open`（**V5-F 提议 approve after F-ASR freeze**；批准前不得 registry enable）
+状态：`open`（**F-ASR capability contract approved 2026-08-13**；Audio **registry enable 仍禁止**，直到 F-AUDIO 完成 ingest/locator/viewer）
 
-Audio 不能因为 B004 已列在 tasks 就进入 registry。必须先完成 ASR capability contract：provider/model/version、secret boundary、duration/cost limit、segment schema、fingerprint、timeout、error codes 和 no-fallback behavior。
+F-ASR 已冻结：provider/model/version、secret boundary、duration/file/timeout limits、fingerprint、error codes（`asr_not_configured` / `asr_timeout` / `asr_provider_error` / `asr_segment_contract_invalid`）和 no-fallback。详见 [`f-asr-capability-contract.md`](f-asr-capability-contract.md)。
+
+Audio 不能因为 B004 或 F-ASR 已列在 tasks 就进入 registry。F-AUDIO 仍须交付 `audio_range`、transcript ContentUnit 和 player，且不得在 ASR 未配置时假转写。
 
 ## OD-B7：Video 是否和 Audio 共用转写 ContentUnit
 

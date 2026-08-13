@@ -14,6 +14,11 @@ from ai_pdf_api.services.providers import ModelProviderError
 VISION_NOT_CONFIGURED_CODE = "image_caption_provider_not_configured"
 VISION_NOT_CONFIGURED_MESSAGE = "OpenAI image caption API key is not configured."
 CAPABILITY_UNAVAILABLE_CODE = "capability_unavailable"
+ASR_NOT_CONFIGURED_CODE = "asr_not_configured"
+ASR_NOT_CONFIGURED_MESSAGE = "OpenAI ASR API key is not configured."
+ASR_TIMEOUT_CODE = "asr_timeout"
+ASR_PROVIDER_ERROR_CODE = "asr_provider_error"
+ASR_SEGMENT_CONTRACT_CODE = "asr_segment_contract_invalid"
 
 
 def capability_unavailable_message(capability: CapabilityName) -> str:
@@ -75,17 +80,47 @@ def require_configured_vision_profile() -> CapabilityProfile:
     return profile
 
 
-def require_asr_capability() -> NoReturn:
-    """ASR has no production adapter and must never fall back to another capability."""
+def normalize_asr_api_key(api_key: str | None) -> str | None:
+    """Treat blank/whitespace-only secrets as missing (aligned with registry strip semantics)."""
 
-    profile = build_capability_registry().get("asr")
-    if profile is not None and profile.configured:
-        # Defensive: a future registered profile must still be an explicit new slice.
-        raise ModelProviderError(
-            CAPABILITY_UNAVAILABLE_CODE,
-            "The asr capability has no production adapter in this release.",
-        )
-    raise_capability_unavailable("asr")
+    return normalize_vision_api_key(api_key)
+
+
+def asr_api_key_configured(api_key: str | None | object = ...) -> bool:
+    """True only when the ASR/OpenAI key has non-whitespace content."""
+
+    if api_key is ...:
+        candidate = settings.openai_api_key
+    else:
+        candidate = api_key if isinstance(api_key, str) or api_key is None else None
+    return normalize_asr_api_key(candidate) is not None
+
+
+def require_configured_asr_profile() -> CapabilityProfile:
+    """Resolve the ASR profile and fail before any provider HTTP or audio persist.
+
+    Missing registry entry -> capability_unavailable.
+    Present but missing/blank/whitespace secret or registry-unconfigured
+    -> asr_not_configured.
+
+    This is configuration readiness only. It does not transcribe audio and must
+    not be used as a fake adapter.
+    """
+
+    profile = require_capability_profile("asr")
+    if not profile.configured or not asr_api_key_configured():
+        raise ModelProviderError(ASR_NOT_CONFIGURED_CODE, ASR_NOT_CONFIGURED_MESSAGE)
+    return profile
+
+
+def require_asr_capability() -> CapabilityProfile:
+    """Fail closed for unconfigured ASR; never fall back to vision/generation.
+
+    Configured servers receive the frozen profile so a later audio ingest slice
+    can persist a snapshot. This helper never invents transcripts.
+    """
+
+    return require_configured_asr_profile()
 
 
 def vision_readiness_status() -> str:
@@ -101,9 +136,11 @@ def vision_readiness_status() -> str:
 
 
 def asr_capability_status() -> str:
-    """Informational ASR status. Always unavailable until a dedicated adapter slice."""
+    """Local ASR configuration readiness; never probes provider HTTP."""
 
     profile = build_capability_registry().get("asr")
-    if profile is None or not profile.configured:
-        return "unavailable"
-    return "unavailable"
+    if profile is None:
+        return "not_configured"
+    if not profile.configured or not asr_api_key_configured():
+        return "not_configured"
+    return "ok"

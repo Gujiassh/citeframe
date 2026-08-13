@@ -8,7 +8,7 @@ import pytest
 from ai_pdf_api.core.settings import settings
 from ai_pdf_api.modalities.image_caption import get_image_caption_provider
 from ai_pdf_api.services.capabilities import (
-    CapabilityUnavailableError,
+    asr_profile_snapshot_fields,
     build_capability_registry,
     current_execution_profile_fingerprint,
     embedding_profile_snapshot_fields,
@@ -67,16 +67,18 @@ def test_registry_reports_asr_unavailable_and_exposes_typed_profiles(
     generation = registry.resolve("generation")
     embedding = registry.resolve("embedding")
     vision = registry.resolve("vision")
+    asr = registry.resolve("asr")
 
     assert generation.provider == "openai"
     assert generation.adapter_version == "generation-openai-responses-v1"
     assert embedding.provider == "openai"
     assert vision.provider == "openai"
     assert vision.capability == "vision"
-    assert registry.get("asr") is None
-    with pytest.raises(CapabilityUnavailableError) as error:
-        registry.resolve("asr")
-    assert error.value.code == "capability_unavailable"
+    assert asr.capability == "asr"
+    assert asr.provider == "openai"
+    assert asr.adapter_version == "asr-openai-transcriptions-v1"
+    assert asr.configured is True
+    assert asr.limits["timeoutSeconds"] == settings.asr_timeout_seconds
 
     public = generation.public_metadata()
     assert "endpointIdentifier" not in public
@@ -194,6 +196,9 @@ def test_ingestion_snapshot_fields_require_non_empty_fingerprint_when_present(
     embedding_snapshot = embedding_profile_snapshot_fields()
     # Caption fingerprint fail-closed is owned by ImageIngestionAdapter worker path.
     assert "imageCaptionProfileFingerprint" in vision_profile_snapshot_fields()
+    asr_snapshot = asr_profile_snapshot_fields()
+    assert asr_snapshot["asrProvider"] == "openai"
+    assert asr_snapshot["asrProfileFingerprint"]
 
     matching_embedding = SimpleNamespace(
         provider="openai",
