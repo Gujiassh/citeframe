@@ -22,9 +22,12 @@ from ai_pdf_api.core.research_observability import (
 )
 
 from ai_pdf_worker.document_ingestion import DocumentIngestionAdapter
+from ai_pdf_worker.docx_ingestion import DocxIngestionAdapter
 from ai_pdf_worker.image_ingestion import ImageIngestionAdapter
 from ai_pdf_worker.metrics import WORKER_ACTIVE_JOBS, WORKER_JOBS, start_metrics_server
 from ai_pdf_worker.pdf_ingestion import PdfIngestionAdapter
+from ai_pdf_worker.pptx_ingestion import PptxIngestionAdapter
+from ai_pdf_worker.xlsx_ingestion import XlsxIngestionAdapter
 from ai_pdf_worker.research_runtime import ResearchWorkProcessor, build_default_research_service
 
 POLL_INTERVAL_SECONDS = 1.0
@@ -36,6 +39,11 @@ INGESTION_ADAPTERS = IngestionAdapterRegistry(
         PdfIngestionAdapter(),
         ImageIngestionAdapter(caption_provider=get_image_caption_provider()),
         DocumentIngestionAdapter(),
+        # Office adapters are present for isolated ingest tests. Upload remains
+        # fail-closed until S0 production registry/catalog enablement.
+        DocxIngestionAdapter(),
+        XlsxIngestionAdapter(),
+        PptxIngestionAdapter(),
     )
 )
 

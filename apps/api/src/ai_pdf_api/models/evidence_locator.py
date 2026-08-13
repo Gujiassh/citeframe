@@ -1,7 +1,7 @@
 from datetime import UTC, datetime
 from uuid import uuid4
 
-from sqlalchemy import Boolean, CheckConstraint, DateTime, Float, ForeignKey, Integer, String, UniqueConstraint
+from sqlalchemy import Boolean, CheckConstraint, DateTime, Float, ForeignKey, Integer, String, Text, UniqueConstraint
 from sqlalchemy.types import JSON
 from sqlalchemy.orm import Mapped, mapped_column
 
@@ -102,4 +102,73 @@ class DocumentLocatorDetail(Base):
     char_start: Mapped[int] = mapped_column(Integer)
     char_end: Mapped[int] = mapped_column(Integer)
     text_sha256: Mapped[str] = mapped_column(String(64))
+    normalization_version: Mapped[str] = mapped_column(String(64))
+
+
+class DocxLocatorDetail(Base):
+    __tablename__ = "docx_locator_details"
+    __table_args__ = (
+        CheckConstraint(
+            "block_kind IN ('heading', 'paragraph', 'list_item', 'table')",
+            name="ck_docx_locator_details_block_kind",
+        ),
+        CheckConstraint("char_start >= 0", name="ck_docx_locator_details_char_start"),
+        CheckConstraint("char_end > char_start", name="ck_docx_locator_details_char_range"),
+        CheckConstraint(
+            "normalization_version = 'docx-normalization-v1'",
+            name="ck_docx_locator_details_normalization_version",
+        ),
+    )
+
+    locator_id: Mapped[str] = mapped_column(
+        String(36), ForeignKey("evidence_locators.id", ondelete="CASCADE"), primary_key=True
+    )
+    block_id: Mapped[str] = mapped_column(String(64))
+    block_kind: Mapped[str] = mapped_column(String(32))
+    heading_path: Mapped[list[str]] = mapped_column(JSON)
+    char_start: Mapped[int] = mapped_column(Integer)
+    char_end: Mapped[int] = mapped_column(Integer)
+    text_sha256: Mapped[str] = mapped_column(String(64))
+    normalization_version: Mapped[str] = mapped_column(String(64))
+
+
+class XlsxLocatorDetail(Base):
+    __tablename__ = "xlsx_locator_details"
+    __table_args__ = (
+        CheckConstraint("start_cell <> ''", name="ck_xlsx_locator_details_start_cell"),
+        CheckConstraint("end_cell <> ''", name="ck_xlsx_locator_details_end_cell"),
+        CheckConstraint(
+            "normalization_version = 'xlsx-normalization-v1'",
+            name="ck_xlsx_locator_details_normalization_version",
+        ),
+    )
+
+    locator_id: Mapped[str] = mapped_column(
+        String(36), ForeignKey("evidence_locators.id", ondelete="CASCADE"), primary_key=True
+    )
+    sheet_name: Mapped[str] = mapped_column(String(255))
+    start_cell: Mapped[str] = mapped_column(String(32))
+    end_cell: Mapped[str] = mapped_column(String(32))
+    text_sha256: Mapped[str] = mapped_column(String(64))
+    displayed_text: Mapped[str] = mapped_column(Text)
+    normalization_version: Mapped[str] = mapped_column(String(64))
+
+
+class PptxLocatorDetail(Base):
+    __tablename__ = "pptx_locator_details"
+    __table_args__ = (
+        CheckConstraint("slide_index >= 1", name="ck_pptx_locator_details_slide_index"),
+        CheckConstraint(
+            "normalization_version = 'pptx-normalization-v1'",
+            name="ck_pptx_locator_details_normalization_version",
+        ),
+    )
+
+    locator_id: Mapped[str] = mapped_column(
+        String(36), ForeignKey("evidence_locators.id", ondelete="CASCADE"), primary_key=True
+    )
+    slide_index: Mapped[int] = mapped_column(Integer)
+    shape_id: Mapped[str] = mapped_column(String(64))
+    text_sha256: Mapped[str] = mapped_column(String(64))
+    displayed_text: Mapped[str] = mapped_column(Text)
     normalization_version: Mapped[str] = mapped_column(String(64))

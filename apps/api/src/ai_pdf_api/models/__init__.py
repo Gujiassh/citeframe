@@ -15,9 +15,12 @@ from ai_pdf_api.models.content_unit_embedding import ContentUnitEmbedding
 from ai_pdf_api.models.evidence_locator import (
     EvidenceLocator,
     DocumentLocatorDetail,
+    DocxLocatorDetail,
     ImageLocatorDetail,
     PdfLocatorDetail,
+    PptxLocatorDetail,
     SpatialLocatorRegion,
+    XlsxLocatorDetail,
 )
 from ai_pdf_api.models.evaluation import (
     ResearchEvaluationCaseResult,
@@ -26,6 +29,7 @@ from ai_pdf_api.models.evaluation import (
     ResearchEvaluationSuite,
 )
 from ai_pdf_api.models.document_representation import DocumentBlock, DocumentNormalizedContent
+from ai_pdf_api.models.office_representation import DocxBlock, DocxNormalizedContent
 from ai_pdf_api.models.image_representation_geometry import ImageRepresentationGeometry
 from ai_pdf_api.models.ingestion_job import IngestionJob
 from ai_pdf_api.models.message_citation import MessageCitation
@@ -88,6 +92,9 @@ __all__ = [
     "DocumentBlock",
     "DocumentLocatorDetail",
     "DocumentNormalizedContent",
+    "DocxBlock",
+    "DocxLocatorDetail",
+    "DocxNormalizedContent",
     "EmbeddingSpace",
     "EvidenceLocator",
     "ImageLocatorDetail",
@@ -105,6 +112,7 @@ __all__ = [
     "NoteTag",
     "PdfLocatorDetail",
     "PdfPage",
+    "PptxLocatorDetail",
     "PromptVersion",
     "ResearchArtifact",
     "ResearchArtifactClaim",
@@ -141,4 +149,5 @@ __all__ = [
     "WorkspaceMembership",
     "WorkflowPromptBinding",
     "WorkflowVersion",
+    "XlsxLocatorDetail",
 ]

@@ -851,7 +851,9 @@ def test_asset_delete_cleanup_removes_content_units_but_keeps_history() -> None:
 
 
 def test_dispatch_selects_document_only_for_markdown_registry_and_not_pdf_image() -> None:
-    assert worker_main.INGESTION_ADAPTERS.asset_kinds == frozenset({"pdf", "image", "document"})
+    assert worker_main.INGESTION_ADAPTERS.asset_kinds == frozenset(
+        {"pdf", "image", "document", "docx", "xlsx", "pptx"}
+    )
     document = worker_main.INGESTION_ADAPTERS.get("document")
     assert document.asset_kind == "document"
     pdf = worker_main.INGESTION_ADAPTERS.get("pdf")
