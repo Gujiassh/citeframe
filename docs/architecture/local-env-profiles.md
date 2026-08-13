@@ -74,3 +74,35 @@ profile 切换的是 **API/Worker 后端**，Web 一般不用换。
 
 `run-m403*` / `run-v5d-mixed-*` 应继续用隔离 Compose 或 accept profile，
 不要改写长期 `preview.local.env` 里的真 provider。
+
+## S0 catalog migration + ASR / vision keys (2026-08-14)
+
+After V5-F S0, local Postgres must be at Alembic head **`m7a8b9c0d1e2`** so
+`asset_types` includes office/html/audio/video:
+
+```bash
+uv run --project apps/api alembic -c apps/api/alembic.ini upgrade head
+uv run --project apps/api alembic -c apps/api/alembic.ini current
+# expect: m7a8b9c0d1e2 (head)
+```
+
+### Vision caption + ASR (preview)
+
+Both use the **same OpenAI-compatible secret** (`AI_PDF_OPENAI_API_KEY` / `OPENAI_API_KEY`)
+and base (`AI_PDF_OPENAI_API_BASE`, default CLIProxy `http://127.0.0.1:8317/v1`).
+
+| Capability | Settings | Fail-closed code when missing |
+| --- | --- | --- |
+| Image / PDF abstract caption | `AI_PDF_IMAGE_CAPTION_PROVIDER=openai`, `AI_PDF_IMAGE_CAPTION_MODEL=gpt-5.5` | `image_caption_provider_not_configured` |
+| Audio/Video transcript | `AI_PDF_ASR_PROVIDER=openai`, `AI_PDF_ASR_MODEL=whisper-1` | `asr_not_configured` |
+
+Put secrets in `apps/api/.env`, `apps/worker/.env`, and/or `infra/env/preview.local.env`
+(gitignored). API and Worker must see the **same** key + base.
+
+CLIProxy must be up for preview generation/caption/ASR. `curl` to `/v1/models`
+may return 401 without a key; capability readiness only checks **key configured**,
+not live model list.
+
+Ollama remains for **embedding** (or transitional stub), not for ASR/caption unless
+a separate provider adapter is implemented later.
+
