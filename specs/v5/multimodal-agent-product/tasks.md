@@ -8,7 +8,8 @@
 - [x] V5-B 多模态资料扩展（Markdown-only `document` v1：isolated/canonical implementation、前序 Critical review、online migration、live scoped PostgreSQL/MinIO restore、standalone browser `4 passed` 与 B008 formal isolated deployment Critical closure 已通过；accepted deployment artifact=`docs/evals/artifacts/v5b-document-deployment-v4/`；HTML/Audio/Video 仍受 OD-B5/B6/B7 独立 gate 阻塞）
 - [x] V5-C 多 Agent 协作产品化（2026-08-10 工程/发布门 `ACCEPT`；严格版本化 production Agent I/O、usage/context、Web projection、production-start Research、online migration 与 R800 v6 已通过；F1/F5 为 Medium 后续风险）
 - [x] V5-D 端到端整合与工程稳定（2026-08-12 D-G7 全量回归通过：API 562 / Worker 296 / Web 131；Critical `ACCEPT` with residuals；internal-preview；R803/M404 仍后置；未 commit/push）
-- [ ] V5-E 模型质量与用户价值（E001 已落地；**主人 2026-08-13 决定暂缓付费 formal R803**；M404 仍 blocked；先做免费工程 residual / 已批准模态工作）
+- [ ] V5-E 模型质量与用户价值（E001 已落地；付费 R803 暂缓；M404 blocked）
+- [ ] V5-F 模态补全 + Agent 协作完善（规格包 2026-08-13；待主人批准 decision 后开工）
 
 ### V5-B/C 详细规格状态
 
@@ -159,3 +160,50 @@ V5-C implementation status (2026-08-10): `C-API-WORKER`, `C-BOUNDARY` and Web us
 - [ ] E-G3 M404 protocol approval
 - [ ] E-G4 M404 execution
 - [ ] E-G5 four-class release review
+
+
+## V5-F 模态补全 + Agent 协作完善
+
+规格入口：[`current-execution-plan.md`](current-execution-plan.md)（SSOT）、[`pdf-in-page-visual-v1.md`](pdf-in-page-visual-v1.md)、[`decision-2026-08-13-v5f-scope.md`](decision-2026-08-13-v5f-scope.md)、[`parallel-execution-plan-v5f.md`](parallel-execution-plan-v5f.md)、[`v5f-detailed-spec.md`](v5f-detailed-spec.md)。
+
+### 决策与基线
+
+- [x] F0 主人批准 V5-F scope decision（2026-08-13；实现仍暂停直至开工令）
+- [x] F0-parallel 并行分线收尾计划已成文（`parallel-execution-plan-v5f.md`）
+- [ ] F0b OD-B5 HTML sanitizer/resource policy 正式 `approved`
+- [ ] F0c OD-B6 Audio/ASR capability contract 正式 `approved`
+- [ ] F0d OD-B7 Video temporal/keyframe contract 正式 `approved`
+
+### 模态纵向闭环
+
+- [ ] F-HTML 生产启用（sanitize + locator + viewer + restore）
+- [ ] F-DOCX 生产启用
+- [ ] F-XLSX 生产启用
+- [ ] F-PPTX 生产启用
+- [ ] F-ASR capability fail-closed + configured path
+- [ ] F-AUDIO 生产启用（`audio_range` + transcript + player）
+- [ ] F-VIDEO 生产启用（range/frame + keyframe + player）
+
+### Agent 协作完善（固定 DAG）
+
+- [ ] F-AGENT-1 Research evidence 覆盖全部已启用 locator kinds（A1–A4）
+- [ ] F-AGENT-2 多模态 Evidence bundle / citation chip / 时间轴深链 UX（A5–A7）
+- [ ] F-AGENT-3 mixed-modality Research production-start + recovery（A8）
+
+### 整合与验收
+
+- [ ] F-MIX 全启用模态混合 Workspace seed/restore/compose
+- [ ] F-ACCEPT 全量 API/Worker/Web + Critical engineering ACCEPT
+- [ ] 明确不宣称 R803/M404 通过
+
+## PDF 页内视觉 v1（无内嵌图 / 抽象图）
+
+规格：[`pdf-in-page-visual-v1.md`](pdf-in-page-visual-v1.md)。可与 V5-F 文档族并行（线 `F-PDF-VIS`）。
+
+- [ ] PV-0 VisualRegion 最小合同 + 候选策略版本
+- [ ] PV-1 内嵌 figure 区域 OCR 加固
+- [ ] PV-2 **无内嵌图**页图块检测 + 区域 OCR（主缺口）
+- [ ] PV-3 区域 caption（默认便宜档 / 可关；非默认全量 5.5）
+- [ ] PV-4 Chat 命中 region 时 generation 带裁剪图
+- [ ] PV-5 评测集：嵌图 / 压平截图 / 抽象图
+- [ ] PV-6 HTML/Video 接入点写入 V5-F（实现跟模态线）

@@ -73,21 +73,36 @@
 
 ## OD-B5：HTML 安全和资源政策
 
-状态：`rejected`
+状态：`rejected`（**V5-F 提议 reopen → approve**，见 `decision-2026-08-13-v5f-scope.md`；字段级 sanitizer 政策批准前不得实现）
 
 范围说明：HTML 未进入 Markdown-only 第一 slice；重新启用 HTML 必须批准 sanitizer/resource policy、fixture、restore 和独立 enablement gate。
 
 ## OD-B6：Audio 进入生产的前置条件
 
-状态：`open`
+状态：`open`（**V5-F 提议 approve after F-ASR freeze**；批准前不得 registry enable）
 
 Audio 不能因为 B004 已列在 tasks 就进入 registry。必须先完成 ASR capability contract：provider/model/version、secret boundary、duration/cost limit、segment schema、fingerprint、timeout、error codes 和 no-fallback behavior。
 
 ## OD-B7：Video 是否和 Audio 共用转写 ContentUnit
 
-状态：`open`
+状态：`open`（**V5-F 提议 approve as separate video kinds**；不得把 video 简化为 audio）
 
 推荐：共用文本检索语义但保留 `asset_kind` 专属 ContentUnit/locator kinds；Video 必须额外保存 keyframe/shot 表示和 frame/time locator，不把视频简化成 Audio。
+
+## V5-F proposed reopening (2026-08-13)
+
+状态：`proposed`
+
+主人要求补全多模态并完善 Agent 协作。完整决策与审计见：
+
+- `decision-2026-08-13-v5f-scope.md`
+- `v5f-detailed-spec.md`
+- `implementation-lanes-v5f.md`
+- `verification-matrix-v5f.md`
+- `plan-audit-v5f.md`
+- `grok-handoff-v5f.md`
+
+Owner accepted V5-F scope on 2026-08-13 (implementation still paused). OD-B5/B6/B7 field-level freezes are authorized to be written as approved policy text at implementation start of each slice; until those policy paragraphs are committed, workers still must not enable registry rows.
 
 ## OD-C1：V5-C 是否纯产品化 delta
 

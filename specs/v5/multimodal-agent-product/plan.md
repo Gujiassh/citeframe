@@ -1,6 +1,6 @@
 # V5 多模态 AI 知识工作台与 Agent 协作实施计划
 
-当前阶段索引：V5-A–D 工程门已完成（internal-preview）；主动主线为 V5-E 计划与授权后的 R803/M404。V5-B/V5-C/V5-D 的实现不得只依据本文件的阶段描述；字段、状态、API、locator、lane ownership 和验收以 [`README.md`](README.md)、[`open-decisions.md`](open-decisions.md)、[`decision-2026-08-11-v5d-scope.md`](decision-2026-08-11-v5d-scope.md)、[`v5b-detailed-spec.md`](v5b-detailed-spec.md)、[`v5c-detailed-spec.md`](v5c-detailed-spec.md)、[`v5d-detailed-spec.md`](v5d-detailed-spec.md)、[`implementation-lanes-v5bc.md`](implementation-lanes-v5bc.md)、[`implementation-lanes-v5d.md`](implementation-lanes-v5d.md)、[`verification-matrix-v5bc.md`](verification-matrix-v5bc.md) 和 [`verification-matrix-v5d.md`](verification-matrix-v5d.md) 为准。
+当前阶段索引：V5-A–D 工程门已完成（internal-preview）；V5-E 付费评测暂缓；**主动主线提议为 V5-F：模态补全 + Agent 协作完善**（见 decision-2026-08-13-v5f-scope.md）。V5-B/V5-C/V5-D 的实现不得只依据本文件的阶段描述；字段、状态、API、locator、lane ownership 和验收以 [`README.md`](README.md)、[`open-decisions.md`](open-decisions.md)、[`decision-2026-08-11-v5d-scope.md`](decision-2026-08-11-v5d-scope.md)、[`v5b-detailed-spec.md`](v5b-detailed-spec.md)、[`v5c-detailed-spec.md`](v5c-detailed-spec.md)、[`v5d-detailed-spec.md`](v5d-detailed-spec.md)、[`implementation-lanes-v5bc.md`](implementation-lanes-v5bc.md)、[`implementation-lanes-v5d.md`](implementation-lanes-v5d.md)、[`verification-matrix-v5bc.md`](verification-matrix-v5bc.md) 和 [`verification-matrix-v5d.md`](verification-matrix-v5d.md) 为准。
 
 ## 1. 实施策略
 
@@ -94,10 +94,28 @@ V5-D 工程门已完成后推进；不阻塞前四个阶段的已完成结论：
 - 新模态、新 provider 和保存语义变更分别记录 contract、迁移影响和审批状态。
 - 质量评估可以并行准备测试工具，但不能把未完成的评分结果写成产品功能失败。
 
+### V5-F：模态补全 + Agent 协作完善
+
+详细规格以以下文档为准：
+
+- [`current-execution-plan.md`](current-execution-plan.md)（**当前执行 SSOT**）
+- [`pdf-in-page-visual-v1.md`](pdf-in-page-visual-v1.md)
+- [`decision-2026-08-13-v5f-scope.md`](decision-2026-08-13-v5f-scope.md)
+- [`parallel-execution-plan-v5f.md`](parallel-execution-plan-v5f.md)
+- [`v5f-detailed-spec.md`](v5f-detailed-spec.md)
+- [`implementation-lanes-v5f.md`](implementation-lanes-v5f.md)
+- [`verification-matrix-v5f.md`](verification-matrix-v5f.md)
+- [`plan-audit-v5f.md`](plan-audit-v5f.md)
+- [`grok-handoff-v5f.md`](grok-handoff-v5f.md)
+
+执行：按 `parallel-execution-plan-v5f.md` 分线并行（文档族+ASR 同波；音视频等 ASR；混合验收最后）。  
+Agent 仍固定 DAG；不做通用 Agent 平台。V5-E 付费质量评测继续后置。
+
 ## 4. 当前优先级
 
-1. V5-A Provider 与模型能力层
-2. V5-B 多模态资料扩展
-3. V5-C 多 Agent 协作产品化
-4. V5-D 端到端整合与工程稳定
-5. V5-E 模型质量与用户价值
+1. ~~V5-A Provider 与模型能力层~~ 完成
+2. ~~V5-B Markdown document~~ 完成；**其余模态 → V5-F**
+3. ~~V5-C 多 Agent 产品化基线~~ 完成；**跨模态协作完善 → V5-F**
+4. ~~V5-D 端到端工程整合~~ 完成
+5. V5-E 模型质量与用户价值（付费评测暂缓）
+6. **V5-F 模态补全 + Agent 协作完善（当前提议主线）**

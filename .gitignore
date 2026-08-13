@@ -32,3 +32,6 @@ infra/docker/data/
 
 # Playwright local output
 apps/web/test-results/
+
+# Local env profiles (secrets)
+infra/env/*.local.env

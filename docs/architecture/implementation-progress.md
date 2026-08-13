@@ -57,7 +57,8 @@ M403A 的逐次优化假设、实验手段、通过/否决结果、指标和 art
 | V5-B | 多模态资料扩展 | Markdown-only v1 已实现 | isolated/canonical、live scoped restore、online migration、standalone browser 与 B008 formal isolated deployment/Critical closure 已通过；accepted artifact 为 `v5b-document-deployment-v4` | Document registry/catalog、Markdown adapter、typed `document_anchor`、retrieval、Citation/NoteSource、Viewer、delete/recovery/restore 已完成；HTML/Office/Audio/Video 不在本切片，需独立决策与 gate |
 | V5-C | 多 Agent 协作产品化 | 工程 `ACCEPT`，Medium residual follow-up | C-API-WORKER、C-BOUNDARY 与 R800 v6 已通过 | 固定 Research DAG 已完成计划、并行、审批、重试、恢复和 Artifact 体验；生产 Agent I/O 已严格版本化，不建设通用 Agent 平台 |
 | V5-D | 端到端整合与工程稳定 | 工程 `ACCEPT`（internal-preview） | D-G0–D-G7 工程门通过（D-G3/D-G5 partial-existing；D-G6 focused live） | 全量 API 562 / Worker 296 / Web 131 + lint/tsc/build；D-G4 production-start 与 D-G6 mixed live seed 已有证据；R803/M404 仍 not_evaluable；D-G6 empty-target mixed Compose 已通过 |
-| V5-E | 模型质量与用户价值 | E001 计划包已完成 | R803/M404 仍 `not_evaluable` | E001 规格/矩阵/不可变策略已落地；正式 campaign 与 M404 待主人授权与协议 |
+| V5-E | 模型质量与用户价值 | E001 计划包已完成 | R803/M404 仍 `not_evaluable` | 付费 R803 暂缓；不阻塞 V5-F |
+| V5-F | 模态补全 + Agent 协作完善 | 规格/计划/审计已落地 | 待主人批准后实现 | HTML→Office→ASR→Audio→Video；固定 DAG 跨模态 Research；见 specs/v5/.../decision-2026-08-13-v5f-scope.md |
 
 ## 4. 已完成的设计文档
 
@@ -84,6 +85,48 @@ V1、V2-A、阶段 9、V3 M401-M403B 与 V4 R000-R800 工程基线已完成。�
 
 当前：`V5-A/B/C 与 V5-D 工程门已完成（internal-preview）。2026-08-12 跑通 D-G7 全量回归：API 562 passed、Worker 296 passed、Web 131 passed，lint/tsc/build/compileall/diff-check 通过；Critical closeout ACCEPT with residuals。artifact：docs/evals/artifacts/v5d-20260811-01/d-g7/。R803/M404 仍 not_evaluable（V5-E）。D-G6 empty-target mixed Compose residual 已关闭。V5-E E001 计划包已落地；正式 R803/M404 待授权。`
 
+
+## 2026-08-13：PDF 页内视觉列入开发计划
+
+- 问题收口：无内嵌图的 PDF 页内截图/抽象图当前识别不到。
+- 计划：`specs/v5/multimodal-agent-product/pdf-in-page-visual-v1.md`；并行线 `F-PDF-VIS`。
+- 模型：OCR 默认本地；caption 默认便宜档/按需；问答带图可用 generation 同档（5.5 可接受）；全量 ingest 用 5.5 caption 偏贵。
+- HTML/Video 复用 VisualRegion 接口，实现跟 V5-F 模态线。
+
+## 2026-08-13：合作模式落文档
+
+- 新增 `specs/v5/multimodal-agent-product/collaboration-mode-lane-pairs.md`：主控集成 + 分车道双人制；每线开发/审计；主控审 MR 合入删分支；先手动不先做工具。
+
+## 2026-08-13：执行计划拍板（仍不开工）
+
+- O1 PDF-Visual 与 W1 并行 P0'；O2 抽象图 v1 **必须 gpt-5.5 caption**；O3 三 Office kind；O4 embedding 中后期 reindex；**O5 先不开工**。
+- 解释：accept 才用 stub = 仅工程验收走 18081 假模型；preview 日常问答走 CLIProxy 真生成。
+
+## 2026-08-13：当前执行计划整理（SSOT）
+
+- 新增 `specs/v5/multimodal-agent-product/current-execution-plan.md` 作为当前执行单一入口。
+- 合并：V5-F 并行模态收尾、PDF 页内视觉 v1、vision=gpt-5.5/CLIProxy、preview/accept 分型、待拍板 O1–O5。
+- 新增 `pdf-in-page-visual-v1.md`。实现仍未开始。
+
+## 2026-08-13：本地 preview / accept 环境分型
+
+- 新增 `docs/architecture/local-env-profiles.md`、`infra/env/{preview,accept}.env.example`、`infra/scripts/citeframe-local-env.sh`。
+- preview 禁止 generation 指向 M403B stub；accept 专供确定性验收。
+- 解决验收 stub 残留导致 PDF 问答固定 Image 英文的问题。
+
+## 2026-08-13：V5-F 并行分线收尾计划
+
+- 主人确认：多模态拆多条线并行，优先收尾。
+- 权威执行文档：`specs/v5/multimodal-agent-product/parallel-execution-plan-v5f.md`。
+- 编组：W1 HTML∥DOCX∥XLSX∥PPTX∥ASR∥AGENT；W2 Audio∥Video（等 ASR）；W3 MIX+ACCEPT。共享内核 S0 串行。
+- 仍未开始实现。
+
+## 2026-08-13：V5-F 规格包（模态补全 + Agent 完善）
+
+- 主人要求：补全多模态，并完善 Agent 协作；先文档/计划/审计，不直接写生产代码。
+- 新增：`decision-2026-08-13-v5f-scope.md`、`v5f-detailed-spec.md`、`implementation-lanes-v5f.md`、`verification-matrix-v5f.md`、`plan-audit-v5f.md`、`grok-handoff-v5f.md`。
+- 审计结论：可分阶段推进；HTML/Audio/Video 需正式 OD 批准；Agent 仍固定 DAG，不做通用平台；付费 R803 继续暂缓。
+- 实现未开始，等待主人批准 decision。
 
 ## 2026-08-13：付费 R803 暂缓 + F5 免费 residual
 
@@ -308,7 +351,7 @@ V1、V2-A、阶段 9、V3 M401-M403B 与 V4 R000-R800 工程基线已完成。�
 
 ## 7. 下一步
 
-下一步：`付费 R803 已按主人要求暂缓。优先免费模块：F5 已关；可选 Audio/Video 设计 brief（OD 批准前不生产启用）、HTML 重开决策、scripted Research E2E 加固。不发起付费评测。`
+下一步：`V5-F 并行计划 + PDF 页内视觉 v1 已入计划。开工令后可 W1 多线并行，其中 F-PDF-VIS 优先修无内嵌图识别。付费 R803 仍暂缓。`
 
 ## 2026-08-10：V5-C C-API-WORKER implementation slice
 

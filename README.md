@@ -50,6 +50,21 @@ uv run --project apps/api alembic -c apps/api/alembic.ini upgrade head
 
 The development Compose file starts PostgreSQL, Redis, and MinIO. The Web, API, and Worker processes run on the host.
 
+### Local environment profiles (preview vs accept)
+
+Do **not** leave daily product Q&A pointed at the M403B acceptance stub (`:18081`).
+
+- **preview** — real generation provider for product use
+- **accept** — deterministic stub for engineering gates only
+
+See [`docs/architecture/local-env-profiles.md`](docs/architecture/local-env-profiles.md) and:
+
+```bash
+cp infra/env/preview.env.example infra/env/preview.local.env
+# edit keys, then:
+infra/scripts/citeframe-local-env.sh preview start --with-web
+```
+
 ### Configure the application
 
 Create the Web environment file:

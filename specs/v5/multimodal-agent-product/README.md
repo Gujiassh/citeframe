@@ -1,3 +1,4 @@
+<!-- status note: V5-F package added 2026-08-13; see decision-2026-08-13-v5f-scope.md -->
 # V5 详细规格索引
 
 ## 文档状态
@@ -29,7 +30,20 @@ V5-A 已在 `80d73e3` 完成并推送。V5-B Markdown v1 的 OD-B1/B2/B3/B4 已�
    - `verification-matrix-v5d.md`
    - `grok-handoff-v5d.md`
    - `save-contract-checklist.md`
-4. `spec.md`、`plan.md`、`tasks.md`：路线索引和状态汇总，不替代上述字段级冻结包。
+4. **当前执行 SSOT**（2026-08-13）：
+   - `current-execution-plan.md`
+   - `collaboration-mode-lane-pairs.md`
+   - `pdf-in-page-visual-v1.md`
+5. V5-F 模态补全 + Agent 协作完善：
+   - `decision-2026-08-13-v5f-scope.md`
+   - `parallel-execution-plan-v5f.md`
+   - `pdf-in-page-visual-v1.md`
+   - `v5f-detailed-spec.md`
+   - `implementation-lanes-v5f.md`
+   - `verification-matrix-v5f.md`
+   - `plan-audit-v5f.md`
+   - `grok-handoff-v5f.md`
+6. `spec.md`、`plan.md`、`tasks.md`：路线索引和状态汇总，不替代上述字段级冻结包。
 
 ## 实现顺序
 
