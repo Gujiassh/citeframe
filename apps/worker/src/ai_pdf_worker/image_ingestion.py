@@ -54,13 +54,22 @@ class ImageIngestionAdapter:
     def __init__(
         self,
         *,
-        caption_provider: ImageCaptionProvider,
+        caption_provider: ImageCaptionProvider | None = None,
         normalizer: ImageNormalizer = normalize_image,
         ocr_extractor: ImageOcrExtractor = extract_image_text_with_ocr,
     ) -> None:
+        # None defers get_image_caption_provider() until ingest so importing the
+        # worker module does not require a vision API key (CI / local import).
         self._caption_provider = caption_provider
         self._normalizer = normalizer
         self._ocr_extractor = ocr_extractor
+
+    def _resolve_caption_provider(self) -> ImageCaptionProvider:
+        if self._caption_provider is None:
+            from ai_pdf_api.modalities.image_caption import get_image_caption_provider
+
+            self._caption_provider = get_image_caption_provider()
+        return self._caption_provider
 
     def ingest(
         self,
@@ -72,13 +81,14 @@ class ImageIngestionAdapter:
         config_snapshot: Mapping[str, object],
         created_at: datetime,
     ) -> IngestionResult:
-        _validate_caption_config(config_snapshot, self._caption_provider)
+        caption_provider = self._resolve_caption_provider()
+        _validate_caption_config(config_snapshot, caption_provider)
         normalized = self._normalizer(payload, expected_mime_type=asset.mime_type)
         try:
             ocr = self._ocr_extractor(normalized.payload)
         except Exception as error:
             raise IngestionError("image_ocr_failed", "Image OCR processing failed.") from error
-        caption = self._caption_provider.caption(
+        caption = caption_provider.caption(
             normalized.payload,
             content_type=IMAGE_ORIENTED_CONTENT_TYPE,
         )
@@ -110,9 +120,9 @@ class ImageIngestionAdapter:
                     for region in ocr.regions
                 ),
                 caption=caption,
-                caption_provider=self._caption_provider.provider,
-                caption_model=self._caption_provider.model,
-                caption_version=self._caption_provider.version,
+                caption_provider=caption_provider.provider,
+                caption_model=caption_provider.model,
+                caption_version=caption_provider.version,
             ),
             processing_generation=processing_generation,
             created_at=created_at,

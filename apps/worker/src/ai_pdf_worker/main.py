@@ -8,7 +8,6 @@ from threading import Event
 
 from ai_pdf_api.core.settings import settings
 from ai_pdf_api.db.session import SessionLocal
-from ai_pdf_api.modalities.image_caption import get_image_caption_provider
 from ai_pdf_api.modalities.ingestion import IngestionAdapterRegistry
 from ai_pdf_api.services.ingestion import (
     claim_next_ingestion_job,
@@ -39,7 +38,7 @@ MAX_CONSECUTIVE_ERRORS = 5
 INGESTION_ADAPTERS = IngestionAdapterRegistry(
     (
         PdfIngestionAdapter(),
-        ImageIngestionAdapter(caption_provider=get_image_caption_provider()),
+        ImageIngestionAdapter(),  # caption provider resolved at first image ingest
         DocumentIngestionAdapter(),
         # Office adapters are present for isolated ingest tests. Upload remains
         # fail-closed until S0 production registry/catalog enablement.

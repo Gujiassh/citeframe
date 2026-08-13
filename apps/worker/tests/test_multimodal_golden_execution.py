@@ -66,6 +66,22 @@ class GoldenCaptionProvider:
         return "Release 4 begins the sustained drop. Verify chart and caption together."
 
 
+class GoldenPdfVisualCaptionProvider:
+    """Offline PDF visual captions. Unique per crop so retrieval stays fixture-scoped."""
+
+    provider = "m402-golden-pdf-visual"
+    model = "deterministic-pdf-visual-caption"
+    version = "m402-v1"
+    detail = "high"
+    max_output_tokens = 320
+
+    def caption(self, payload: bytes, *, content_type: str) -> str:
+        assert payload.startswith(b"\x89PNG")
+        assert content_type == "image/png"
+        digest = sha256(payload).hexdigest()[:16]
+        return f"PDF visual region caption {digest}."
+
+
 class GoldenEmbeddingProvider:
     provider = "m402-golden"
     model = "deterministic-topics"
@@ -161,7 +177,7 @@ def _persist_fixture_assets(db: Session, fixtures) -> dict[str, Asset]:
         db.add(asset)
         db.flush()
         if fixture.modality == "pdf":
-            PdfIngestionAdapter().ingest(
+            PdfIngestionAdapter(caption_provider=GoldenPdfVisualCaptionProvider()).ingest(
                 db,
                 asset=asset,
                 payload=source_path.read_bytes(),
