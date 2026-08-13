@@ -60,8 +60,27 @@ test("Research Artifact accepts a canonical existing Evidence locator", async ()
   assert.equal(payload.artifact.evidence[0].locator.kind, "pdf_page");
 });
 
+test("Research Artifact accepts S0 audio_range locators", async () => {
+  const sha = "a".repeat(64);
+  global.fetch = async () => new Response(JSON.stringify(artifact({
+    kind: "audio_range",
+    version: 1,
+    startMs: 0,
+    endMs: 1000,
+    textSha256: sha,
+    segmentId: "seg-1",
+    normalizationVersion: "audio-normalization-v1",
+  })), {
+    status: 200,
+    headers: { "content-type": "application/json" },
+  });
+
+  const payload = await getResearchArtifact("workspace-1", "run-1", "artifact-1");
+  assert.equal(payload.artifact.evidence[0].locator.kind, "audio_range");
+});
+
 test("Research Artifact rejects unknown candidate locator kinds before opening the Viewer", async () => {
-  global.fetch = async () => new Response(JSON.stringify(artifact({ kind: "audio_range", version: 1, startMs: 0, endMs: 1000 })), {
+  global.fetch = async () => new Response(JSON.stringify(artifact({ kind: "future_locator_kind", version: 1 })), {
     status: 200,
     headers: { "content-type": "application/json" },
   });

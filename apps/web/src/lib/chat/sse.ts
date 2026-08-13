@@ -144,6 +144,76 @@ export function isEvidenceLocator(value: unknown): boolean {
       && /^[0-9a-f]{64}$/.test(value.textSha256)
       && value.normalizationVersion === "html-normalization-v1";
   }
+  if (value.kind === "docx_anchor") {
+    return isString(value.blockId)
+      && value.blockId.length > 0
+      && isString(value.blockKind)
+      && ["heading", "paragraph", "list_item", "table"].includes(value.blockKind)
+      && Array.isArray(value.headingPath)
+      && value.headingPath.every((part) => isString(part) && part.length > 0)
+      && isInteger(value.charStart)
+      && value.charStart >= 0
+      && isInteger(value.charEnd)
+      && value.charEnd > value.charStart
+      && isString(value.textSha256)
+      && /^[0-9a-f]{64}$/.test(value.textSha256)
+      && value.normalizationVersion === "docx-normalization-v1";
+  }
+  if (value.kind === "xlsx_range") {
+    return isString(value.sheetName)
+      && value.sheetName.length > 0
+      && isString(value.startCell)
+      && value.startCell.length > 0
+      && isString(value.endCell)
+      && value.endCell.length > 0
+      && isString(value.displayedText)
+      && value.displayedText.length > 0
+      && isString(value.textSha256)
+      && /^[0-9a-f]{64}$/.test(value.textSha256)
+      && value.normalizationVersion === "xlsx-normalization-v1";
+  }
+  if (value.kind === "pptx_shape") {
+    return isInteger(value.slideIndex)
+      && value.slideIndex >= 1
+      && isString(value.shapeId)
+      && value.shapeId.length > 0
+      && isString(value.displayedText)
+      && value.displayedText.length > 0
+      && isString(value.textSha256)
+      && /^[0-9a-f]{64}$/.test(value.textSha256)
+      && value.normalizationVersion === "pptx-normalization-v1";
+  }
+  if (value.kind === "audio_range") {
+    return isInteger(value.startMs)
+      && value.startMs >= 0
+      && isInteger(value.endMs)
+      && value.endMs > value.startMs
+      && isString(value.segmentId)
+      && value.segmentId.length > 0
+      && isString(value.textSha256)
+      && /^[0-9a-f]{64}$/.test(value.textSha256)
+      && value.normalizationVersion === "audio-normalization-v1";
+  }
+  if (value.kind === "video_range") {
+    return isInteger(value.startMs)
+      && value.startMs >= 0
+      && isInteger(value.endMs)
+      && value.endMs > value.startMs
+      && isString(value.segmentId)
+      && value.segmentId.length > 0
+      && isString(value.textSha256)
+      && /^[0-9a-f]{64}$/.test(value.textSha256)
+      && value.normalizationVersion === "video-normalization-v1";
+  }
+  if (value.kind === "video_frame") {
+    const hasTimestamp = isInteger(value.timestampMs) && value.timestampMs >= 0;
+    const hasFrame = isInteger(value.frameIndex) && value.frameIndex >= 0;
+    const hasKey = value.keyframeObjectKey == null
+      || (isString(value.keyframeObjectKey) && value.keyframeObjectKey.length > 0);
+    return value.normalizationVersion === "video-normalization-v1"
+      && hasKey
+      && (hasTimestamp || hasFrame);
+  }
   return false;
 }
 

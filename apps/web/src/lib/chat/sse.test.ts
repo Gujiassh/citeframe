@@ -416,5 +416,116 @@ test("citation stream accepts document_anchor evidence locators", async () => {
     },
   });
   assert.equal(citations.length, 1);
+
   assert.equal(citations[0]?.locator.kind, "document_anchor");
+});
+
+test("citation stream accepts S0 office/html/audio/video evidence locators", async () => {
+  const sha = "a".repeat(64);
+  const cases = [
+    {
+      kind: "docx_anchor",
+      version: 1,
+      blockId: "b1",
+      blockKind: "paragraph",
+      headingPath: ["Intro"],
+      charStart: 0,
+      charEnd: 4,
+      textSha256: sha,
+      normalizationVersion: "docx-normalization-v1",
+    },
+    {
+      kind: "xlsx_range",
+      version: 1,
+      sheetName: "Sheet1",
+      startCell: "A1",
+      endCell: "B2",
+      textSha256: sha,
+      displayedText: "42",
+      normalizationVersion: "xlsx-normalization-v1",
+    },
+    {
+      kind: "pptx_shape",
+      version: 1,
+      slideIndex: 1,
+      shapeId: "sh1",
+      textSha256: sha,
+      displayedText: "Title",
+      normalizationVersion: "pptx-normalization-v1",
+    },
+    {
+      kind: "html_anchor",
+      version: 1,
+      blockId: "h1",
+      blockKind: "paragraph",
+      headingPath: ["Intro"],
+      charStart: 0,
+      charEnd: 3,
+      textSha256: sha,
+      normalizationVersion: "html-normalization-v1",
+    },
+    {
+      kind: "audio_range",
+      version: 1,
+      startMs: 0,
+      endMs: 1500,
+      textSha256: sha,
+      segmentId: "seg-1",
+      normalizationVersion: "audio-normalization-v1",
+    },
+    {
+      kind: "video_range",
+      version: 1,
+      startMs: 100,
+      endMs: 2000,
+      textSha256: sha,
+      segmentId: "vseg-1",
+      normalizationVersion: "video-normalization-v1",
+    },
+    {
+      kind: "video_frame",
+      version: 1,
+      timestampMs: 500,
+      frameIndex: null,
+      keyframeObjectKey: null,
+      normalizationVersion: "video-normalization-v1",
+    },
+  ] as const;
+
+  for (const locator of cases) {
+    const payload = JSON.stringify({
+      items: [{
+        id: "citation-s0-1",
+        messageId: "message-1",
+        citationIndex: 0,
+        assetId: "asset-1",
+        assetKind: "document",
+        assetTitle: "fixture",
+        sourceAvailable: true,
+        excerpt: "excerpt",
+        locator,
+        sourceVersions: {
+          parserVersion: "parser-v1",
+          processingGeneration: 1,
+          representationId: "representation-1",
+          indexVersion: 1,
+        },
+      }],
+    });
+    const stream = new ReadableStream<Uint8Array>({
+      start(controller) {
+        controller.enqueue(new TextEncoder().encode(
+          `event: citations\ndata: ${payload}\n\nevent: done\ndata: {"threadId":"thread-1","assistantMessageId":"message-1"}\n\n`,
+        ));
+        controller.close();
+      },
+    });
+    const kinds: string[] = [];
+    await consumeChatStream(new Response(stream), {
+      onCitations: (event) => {
+        kinds.push(event.items[0]?.locator.kind ?? "");
+      },
+    });
+    assert.deepEqual(kinds, [locator.kind], `expected to accept ${locator.kind}`);
+  }
 });
