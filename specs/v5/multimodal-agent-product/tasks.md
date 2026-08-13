@@ -200,10 +200,10 @@ V5-C implementation status (2026-08-10): `C-API-WORKER`, `C-BOUNDARY` and Web us
 
 规格：[`pdf-in-page-visual-v1.md`](pdf-in-page-visual-v1.md)。可与 V5-F 文档族并行（线 `F-PDF-VIS`）。
 
-- [ ] PV-0 VisualRegion 最小合同 + 候选策略版本
-- [ ] PV-1 内嵌 figure 区域 OCR 加固
-- [ ] PV-2 **无内嵌图**页图块检测 + 区域 OCR（主缺口）
-- [ ] PV-3 区域 caption（默认便宜档 / 可关；非默认全量 5.5）
+- [x] PV-0 VisualRegion 最小合同 + 候选策略版本
+- [x] PV-1 内嵌 figure 区域 OCR 加固
+- [x] PV-2 **无内嵌图**页图块检测 + 区域 OCR（主缺口）
+- [x] PV-3 区域 caption（抽象图必须现有 vision/gpt-5.5；未配置 fail-closed）
 - [ ] PV-4 Chat 命中 region 时 generation 带裁剪图
-- [ ] PV-5 评测集：嵌图 / 压平截图 / 抽象图
+- [x] PV-5 评测集：嵌图 / 压平截图 / 抽象图
 - [ ] PV-6 HTML/Video 接入点写入 V5-F（实现跟模态线）

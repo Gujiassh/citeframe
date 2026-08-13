@@ -476,3 +476,10 @@ V1、V2-A、阶段 9、V3 M401-M403B 与 V4 R000-R800 工程基线已完成。�
 - 当前主入口已同步 M403B/V4 状态；当前数据库 head 为 `e8f1a2b3c4d5`，Image 已由 M403B 正式启用，R000-R800 确定性工程基线已完成。旧 Document/PDF-only 章节的逐段清单记录在 V4 `requirements-discovery.md` 第 11 节，R000 `RD003` 已关闭；历史 ER 与旧规划不得作为当前 Research 合同输入。
 - 历史 V1/V2 规划、旧 Document 状态机、认证执行清单和 V3 Contract Draft 已加 legacy/历史状态说明，保留原始阶段证据但不再作为当前实现入口；Evidence RFC 与 migration impact 的 Image/restore 未完成项已同步关闭。
 - V4 方向、阶段和非目标已经明确，但 R000 仍未完成：新增字段级 schema、唯一/幂等键、状态迁移、事件 payload allowlist、API error matrix、provenance、删除/恢复和审批记录要求；在这些合同获批前不实现 Research 持久化或 API。
+
+## 2026-08-13：PDF in-page visual v1 (worker)
+
+- Worker PDF ingest now unions embedded images, drawing clusters, and rendered visual blocks (no Image XObject required).
+- Each new unlabeled region is cropped: RapidOCR for searchable text; abstract/low-OCR regions require the existing `image_caption` / gpt-5.5 vision path and fail closed (`image_caption_provider_not_configured` / empty caption). Units stay on the same PDF asset as `pdf_figure` + `pdf_region`.
+- Labeled figure/table layout detection is unchanged. Chat crop-on-hit was not implemented (would need save-contract work).
+- Verification: `uv run --python 3.12 --project apps/worker python -m pytest apps/worker/tests/test_pdf.py apps/worker/tests/test_pdf_ingestion.py -q` → `22 passed`.

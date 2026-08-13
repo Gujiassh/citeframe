@@ -1,7 +1,7 @@
 # PDF 页内视觉 v1
 
 Date: 2026-08-13  
-Status: **approved direction**（2026-08-13：抽象图 v1 **必须** gpt-5.5 caption；实现等开工令）  
+Status: **in progress**（2026-08-13：worker 已实现无 XObject 图块检测 + 区域 OCR + 抽象图 fail-closed caption；Chat 带裁切图未改 save contract）  
 Parent: [`current-execution-plan.md`](current-execution-plan.md)
 
 ## 1. 问题

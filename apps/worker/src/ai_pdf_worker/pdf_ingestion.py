@@ -2,24 +2,42 @@ from __future__ import annotations
 
 from collections.abc import Mapping
 from datetime import datetime
+from typing import Protocol
 
 import fitz
 import numpy as np
 from sqlalchemy.orm import Session
 
+from ai_pdf_api.modalities.image_caption import ImageCaptionProvider
 from ai_pdf_api.modalities.ingestion import IngestionError, IngestionResult
 from ai_pdf_api.modalities.pdf_ingestion import (
     CHUNK_SIZE,
+    PageArtifactResult,
     PageRegionResult,
     PageTextExtractor,
     PageTextResult,
+    SpatialRegionResult,
     delete_pdf_content,
     replace_pdf_content,
 )
 from ai_pdf_api.models import Asset
+from ai_pdf_api.services.providers import ModelProviderError
 
-from ai_pdf_worker.ocr import recognize_pixels
-from ai_pdf_worker.pdf import extract_pdf_page_layout
+from ai_pdf_worker.ocr import OcrTextResult, recognize_pixels
+from ai_pdf_worker.pdf import (
+    detect_visual_region_rects,
+    extract_pdf_page_layout,
+    _normalized_region,
+    _rect_overlap_ratio,
+)
+
+
+_ABSTRACT_OCR_MIN_CHARS = 16
+_VISUAL_CLAIM_OVERLAP = 0.45
+
+
+class _PixelOcr(Protocol):
+    def __call__(self, pixels: np.ndarray) -> OcrTextResult: ...
 
 
 def extract_page_texts_with_ocr(payload: bytes) -> list[PageTextResult]:
@@ -69,9 +87,13 @@ class PdfIngestionAdapter:
         *,
         layout_extractor: PageTextExtractor = extract_pdf_page_layout,
         ocr_extractor: PageTextExtractor = extract_page_texts_with_ocr,
+        caption_provider: ImageCaptionProvider | None = None,
+        region_ocr: _PixelOcr = recognize_pixels,
     ) -> None:
         self._layout_extractor = layout_extractor
         self._ocr_extractor = ocr_extractor
+        self._caption_provider = caption_provider
+        self._region_ocr = region_ocr
 
     def ingest(
         self,
@@ -103,22 +125,180 @@ class PdfIngestionAdapter:
         if not native_pages:
             raise IngestionError("empty_pdf", "PDF has no pages.")
         if all(page.text.strip() for page in native_pages):
-            return native_pages
+            pages = native_pages
+        else:
+            try:
+                ocr_pages = _indexed_ocr_pages(self._ocr_extractor(payload))
+                expected_numbers = {page.page_number for page in native_pages}
+                if set(ocr_pages) != expected_numbers:
+                    raise ValueError("OCR did not return the complete PDF page set.")
+                pages = [
+                    page if page.text.strip() else _merge_ocr_page(page, ocr_pages[page.page_number])
+                    for page in native_pages
+                ]
+            except Exception as error:
+                raise IngestionError("ocr_failed", str(error)) from error
+            if not any(page.text.strip() for page in pages):
+                raise IngestionError("no_extractable_text", "PDF has no extractable text after OCR.")
+        return enrich_pdf_visual_regions(
+            payload,
+            pages,
+            caption_provider=self._caption_provider,
+            region_ocr=self._region_ocr,
+        )
 
-        try:
-            ocr_pages = _indexed_ocr_pages(self._ocr_extractor(payload))
-            expected_numbers = {page.page_number for page in native_pages}
-            if set(ocr_pages) != expected_numbers:
-                raise ValueError("OCR did not return the complete PDF page set.")
-            pages = [
-                page if page.text.strip() else _merge_ocr_page(page, ocr_pages[page.page_number])
-                for page in native_pages
-            ]
-        except Exception as error:
-            raise IngestionError("ocr_failed", str(error)) from error
-        if not any(page.text.strip() for page in pages):
-            raise IngestionError("no_extractable_text", "PDF has no extractable text after OCR.")
+
+def enrich_pdf_visual_regions(
+    payload: bytes,
+    pages: list[PageTextResult],
+    *,
+    caption_provider: ImageCaptionProvider | None = None,
+    region_ocr: _PixelOcr = recognize_pixels,
+) -> list[PageTextResult]:
+    try:
+        document = fitz.open(stream=payload, filetype="pdf")
+    except Exception:
         return pages
+    try:
+        if len(document) != len(pages):
+            return pages
+        enriched: list[PageTextResult] = []
+        for page, parsed in zip(document, pages, strict=True):
+            enriched.append(
+                _enrich_page_visual_regions(
+                    page,
+                    parsed,
+                    caption_provider=caption_provider,
+                    region_ocr=region_ocr,
+                )
+            )
+        return enriched
+    finally:
+        document.close()
+
+
+def _enrich_page_visual_regions(
+    page: fitz.Page,
+    parsed: PageTextResult,
+    *,
+    caption_provider: ImageCaptionProvider | None,
+    region_ocr: _PixelOcr,
+) -> PageTextResult:
+    table_rects = [
+        _artifact_source_rect(page, artifact)
+        for artifact in parsed.artifacts
+        if artifact.unit_kind == "pdf_table"
+    ]
+    claimed = [_artifact_source_rect(page, artifact) for artifact in parsed.artifacts]
+    candidates = [
+        rect
+        for rect in detect_visual_region_rects(page, table_rects)
+        if not any(_rect_overlap_ratio(rect, existing) >= _VISUAL_CLAIM_OVERLAP for existing in claimed)
+    ]
+    if not candidates:
+        return parsed
+
+    text = parsed.text
+    artifacts = list(parsed.artifacts)
+    for source_rect in candidates:
+        try:
+            region = _normalized_region(source_rect, page, display_space=False)
+        except ValueError:
+            continue
+        crop_png, crop_pixels = _crop_region_png(page, region)
+        try:
+            ocr = region_ocr(crop_pixels)
+        except Exception as error:
+            raise IngestionError("pdf_visual_ocr_failed", "PDF visual region OCR failed.") from error
+        ocr_text = ocr.text.strip()
+        needs_caption = len(ocr_text) < _ABSTRACT_OCR_MIN_CHARS
+        caption_text = ""
+        if needs_caption or caption_provider is not None:
+            provider = caption_provider or _require_caption_provider()
+            try:
+                caption_text = provider.caption(crop_png, content_type="image/png").strip()
+            except ModelProviderError:
+                if needs_caption:
+                    raise
+                caption_text = ""
+            except Exception as error:
+                if needs_caption:
+                    raise IngestionError(
+                        "pdf_visual_caption_failed",
+                        "PDF visual region caption failed.",
+                    ) from error
+                caption_text = ""
+            if needs_caption and not caption_text:
+                raise IngestionError(
+                    "pdf_visual_caption_empty",
+                    "PDF visual region caption is required and was empty.",
+                )
+        unit_text = "\n".join(part for part in (caption_text, ocr_text) if part)
+        if not unit_text:
+            continue
+        prefix = "" if not text or text.endswith("\n") else "\n"
+        start = len(text) + len(prefix)
+        text = f"{text}{prefix}{unit_text}"
+        artifacts.append(
+            PageArtifactResult(
+                text=unit_text,
+                unit_kind="pdf_figure",
+                regions=(region,),
+                char_ranges=((start, len(text)),),
+            )
+        )
+        claimed.append(source_rect)
+    if text == parsed.text and len(artifacts) == len(parsed.artifacts):
+        return parsed
+    return PageTextResult(
+        page_number=parsed.page_number,
+        text=text,
+        geometry=parsed.geometry,
+        source_kind=parsed.source_kind,
+        regions=parsed.regions,
+        artifacts=tuple(artifacts),
+        ocr_blocks=parsed.ocr_blocks,
+    )
+
+
+def _artifact_source_rect(page: fitz.Page, artifact: PageArtifactResult) -> fitz.Rect:
+    region = artifact.regions[0]
+    return fitz.Rect(
+        region.x * page.rect.width,
+        region.y * page.rect.height,
+        (region.x + region.width) * page.rect.width,
+        (region.y + region.height) * page.rect.height,
+    ) * ~page.rotation_matrix
+
+
+def _crop_region_png(page: fitz.Page, region: SpatialRegionResult) -> tuple[bytes, np.ndarray]:
+    clip = fitz.Rect(
+        region.x * page.rect.width,
+        region.y * page.rect.height,
+        (region.x + region.width) * page.rect.width,
+        (region.y + region.height) * page.rect.height,
+    )
+    pixmap = page.get_pixmap(clip=clip, dpi=150, alpha=False)
+    pixels = np.frombuffer(pixmap.samples, dtype=np.uint8).reshape(
+        pixmap.height,
+        pixmap.width,
+        pixmap.n,
+    )
+    return pixmap.tobytes("png"), pixels
+
+
+def _require_caption_provider() -> ImageCaptionProvider:
+    from ai_pdf_api.modalities.image_caption import get_image_caption_provider
+
+    try:
+        return get_image_caption_provider()
+    except ModelProviderError:
+        raise
+    except Exception as error:
+        raise IngestionError(
+            "pdf_visual_caption_not_configured",
+            "Vision caption is required for abstract PDF figures and is not configured.",
+        ) from error
 
 
 def _chunk_size(snapshot: Mapping[str, object]) -> int:
