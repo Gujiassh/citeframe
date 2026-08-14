@@ -209,3 +209,13 @@ V5-C implementation status (2026-08-10): `C-API-WORKER`, `C-BOUNDARY` and Web us
 - [x] PPTX slide/shape 结构化 canvas（parse `slideN#shapeId=text`，非纯 pre 文本）
 - [x] PV-5 评测集：嵌图 / 压平截图 / 抽象图
 - [x] PV-6 HTML/Video 接入点写入 V5-F（实现跟模态线）
+
+
+## Architecture hardening (post V5-F)
+
+Engineering residual package (boundaries / modality purity / Research freeze / narrative):
+
+- Spec index: [`../architecture-hardening/README.md`](../architecture-hardening/README.md)
+- Plan audit: **ACCEPT** ([`../architecture-hardening/reviews/2026-08-15-plan-audit.md`](../architecture-hardening/reviews/2026-08-15-plan-audit.md))
+- Implementation: **not started** (owner start required)
+
