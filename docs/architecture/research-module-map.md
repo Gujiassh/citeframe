@@ -1,0 +1,71 @@
+# Research module map
+
+Date: 2026-08-15
+
+Canonical ownership for the fixed Research product path. Evaluation/R803 scripts are **not** the product path.
+
+## API package (`apps/api/src/ai_pdf_api/services/research/`)
+
+Import path: `ai_pdf_api.services.research.*`. Compatibility shims remain at `ai_pdf_api.services.research_*` (sys.modules aliases).
+
+## API modules
+
+| File | Responsibility (one line) |
+| --- | --- |
+| `research.py` | High-level research service entry (if present) |
+| `research_agent_io_registry.py` | Versioned agent I/O contracts |
+| `research_artifacts.py` | Artifact rows/bytes linkage |
+| `research_constants.py` | Shared constants |
+| `research_context_policy.py` | Context packing / limits |
+| `research_decisions.py` | Conflict and control decisions |
+| `research_events.py` | SSE/event sequencing |
+| `research_evidence_provenance.py` | Claim/evidence provenance |
+| `research_idempotency.py` | Idempotency keys |
+| `research_plan_approval.py` | Plan HITL approval |
+| `research_prompt_provenance.py` | Prompt/template provenance |
+| `research_recovery.py` | Recovery helpers |
+| `research_runs.py` | Run lifecycle create/list/detail |
+| `research_versions_service.py` | Workflow/prompt versions |
+| `research_views.py` | Read models / DTO assembly for Web |
+| `research_worker.py` | Facade re-exports for worker-facing ports |
+| `research_worker_completion.py` | Branch/verify/critique/synthesis completion |
+| `research_worker_evidence.py` | Frozen evidence search/load/restore |
+| `research_worker_failure.py` | Step failure recording |
+| `research_worker_lease.py` | Step lease claim/heartbeat/complete |
+| `research_worker_membership.py` | Research subsystem support module — see source module docstring/imports |
+| `research_worker_plan.py` | Publish research plan drafts |
+| `research_worker_policy.py` | Research subsystem support module — see source module docstring/imports |
+| `research_worker_provider.py` | Provider call reserve/send/reconcile |
+| `research_worker_publication.py` | Final artifact publish + conflict wait |
+| `research_worker_state.py` | Execution state load/reclaim/control steps |
+| `research_worker_tools.py` | Tool call ledger begin/complete |
+| `research_worker_types.py` | Research subsystem support module — see source module docstring/imports |
+
+## Worker (`apps/worker/src/ai_pdf_worker/`)
+
+| File | Responsibility |
+| --- | --- |
+| `research_agent_schemas.py` | Agent result schemas |
+| `research_executor.py` | Executor entry wiring |
+| `research_executor_contracts.py` | Executor typed contracts |
+| `research_executor_engine.py` | BoundedResearchExecutor fixed graph |
+| `research_executor_tools.py` | Executor-side tool adapters |
+| `research_runtime.py` | Runtime loop entry |
+| `research_runtime_agents.py` | Generation-backed role agents |
+| `research_runtime_core.py` | Shared runtime types/helpers |
+| `research_runtime_ports.py` | SQL/API ledger and tool ports |
+| `research_runtime_processor.py` | Claimed work processor |
+
+## Not product Research path
+
+- `r803_*`, `r800_*` evaluation/acceptance packages: quality campaigns and engineering gates only.
+
+## Freeze
+
+See topology freeze in [`research-workflow-runtime.md`](research-workflow-runtime.md).
+
+## Phase 2 package move (2026-08-15)
+
+- Canonical modules live under `services/research/`.
+- `27` implementation modules + `__init__.py` facade.
+- Old `services/research_*.py` paths are **aliases** (same module object) for monkeypatch/import compatibility.

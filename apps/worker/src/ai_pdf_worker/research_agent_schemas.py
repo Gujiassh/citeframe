@@ -3,7 +3,7 @@ from __future__ import annotations
 from copy import deepcopy
 from typing import Any, Callable, Mapping, Sequence
 
-from ai_pdf_api.services.research_agent_io_registry import (
+from ai_pdf_api.services.research.research_agent_io_registry import (
     AGENT_RESULT_SCHEMA_VERSION as AGENT_RESULT_SCHEMA_VERSION,
     AGENT_RESULT_SCHEMA_VERSION_LEGACY,
     COMPACT_POLICY_VERSION as COMPACT_POLICY_VERSION,

@@ -30,7 +30,7 @@ from ai_pdf_api.core.research_observability import (
 from ai_pdf_api.services.providers import (
     GenerationMessage,
 )
-from ai_pdf_api.services.research_agent_io_registry import resolve_registry
+from ai_pdf_api.services.research.research_agent_io_registry import resolve_registry
 
 from ai_pdf_worker.research_executor import (
     ApprovedResearchExecution,

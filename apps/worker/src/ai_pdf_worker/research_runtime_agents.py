@@ -33,7 +33,7 @@ from ai_pdf_worker.research_runtime_core import (
 )
 from ai_pdf_worker.research_runtime_ports import LedgeredGeneration
 
-from ai_pdf_api.services.research_agent_io_registry import (
+from ai_pdf_api.services.research.research_agent_io_registry import (
     AGENT_RESULT_SCHEMA_VERSION_LEGACY,
     require_current_production_registry,
     resolve_registry,

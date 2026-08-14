@@ -789,3 +789,11 @@ Document/Page/Chunk 已通过受控迁移切换为 Asset/Representation/ContentU
 - 浏览器只访问 Next.js BFF；业务 API 额外要求 `x-ai-pdf-internal-token`，该值来自 Web/API 服务端环境变量 `AI_PDF_API_INTERNAL_TOKEN`。
 - `/health/live` 只判断进程存活；`/health/ready` 检查数据库、对象存储、embedding provider 和 generation provider。
 - Worker 采用有限退避、结构化事件日志和信号优雅退出；任务业务失败仍由 ingestion 服务落库，不能用进程重试替代任务状态机。
+
+## Deploy and ownership invariants (architecture hardening)
+
+- **Same version**: API and Worker must be deployed from the same git SHA / image tag. Shared ORM models live in `ai_pdf_api.models`; Alembic migrations are owned only by `apps/api`.
+- **Ingestion Worker** may import shared models and write Representations/ContentUnits under the modality adapter contract.
+- **Research Worker** must mutate Research business state only through API service ports / ledger adapters, not by inventing a second persistence owner.
+- **Chat** attaches generation images only via `modalities.visual_enrichment` (no direct kind-specific crop imports).
+

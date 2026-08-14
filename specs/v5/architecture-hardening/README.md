@@ -1,7 +1,7 @@
 # Architecture Hardening (post V5-F)
 
 Date: 2026-08-15  
-Status: **spec + plan audit complete; implementation not started**  
+Status: **implemented Phase 1+2** (branch work/arch-hardening-full-20260815)  
 Product stage: `internal_preview`  
 Base: `main` after PR #13 (`3c1c517`)
 

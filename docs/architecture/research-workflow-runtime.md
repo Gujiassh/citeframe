@@ -33,6 +33,18 @@ The production path is split by ownership:
 
 ## Orchestration Decision
 
+## Topology freeze (2026-08-15)
+
+**FREEZE**: The production Research topology and role set are closed for ordinary product work:
+
+`Planner -> plan approval -> bounded Researcher fan-out -> join -> Verifier -> Critic -> optional conflict decision -> Synthesizer -> publisher`
+
+- Do **not** add graph nodes, roles, or tool kinds without a new open decision (OD) and budget impact note.
+- Prefer reliability, evidence coverage, observability, and contract tests over graph expansion.
+- This is **not** a general agent platform; dynamic DAG / plugins remain rejected.
+- Module ownership map: [`research-module-map.md`](research-module-map.md).
+
+
 The implemented topology is fixed and closed:
 
 ```text

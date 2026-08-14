@@ -8,10 +8,11 @@ Citeframe
 │  ├─ 登录 / 会话 / 隔离
 │  ├─ Workspace 创建 / 切换 / 归档
 │  └─ Prompt 与检索配置
-├─ PDF / Image Asset 接入
+├─ 多模态 Asset 接入（九种 kind）
 │  ├─ 上传 / finalize / 失败重试 / 重建索引
 │  ├─ 异步删除 / 清理重试 / 源完整性校验
-│  └─ PDF 与 PNG/JPEG/WebP 类型门禁
+│  ├─ Deep：PDF / PNG·JPEG·WebP Image
+│  └─ Evidence-complete：Markdown document / HTML / DOCX / XLSX / PPTX / Audio / Video
 ├─ 类型化知识处理
 │  ├─ PDF 文本层 / OCR fallback / 布局与区域
 │  ├─ Image oriented Representation / 区域内容
@@ -21,7 +22,7 @@ Citeframe
 ├─ 证据问答
 │  ├─ Chat-first 全部 Asset / 显式 Asset 范围问答
 │  ├─ 流式回答 / 消息分支
-│  ├─ pdf_page / pdf_region / image_region citation
+│  ├─ 类型化 citation（pdf/image/document/html/office/audio/video locators）
 │  └─ citation -> note / 标签 / 历史 Evidence
 ├─ Evidence Research
 │  ├─ 显式 Quick / Research 模式
@@ -41,7 +42,24 @@ Citeframe
    └─ Caddy HTTPS 安全入口
 ```
 
-以上是当前已实现事实。正式数据模型已经切换为 `Asset -> Representation -> ContentUnit -> EvidenceLocator -> Citation/NoteSource`；PDF 与 PNG/JPEG/WebP Image 都已进入生产摄取注册表，并共用稳定的 Asset/Evidence 主链。
+以上是当前已实现事实。正式数据模型已经切换为 `Asset -> Representation -> ContentUnit -> EvidenceLocator -> Citation/NoteSource`。
+
+生产已启用九种 `asset_kind`：`pdf`、`image`、`document`、`html`、`docx`、`xlsx`、`pptx`、`audio`、`video`（S0 catalog + registry）。深度不齐——见下方 **深度阶梯**。
+
+### 深度阶梯（产品真相）
+
+| 层级 | 当前 kinds | 含义 |
+| --- | --- | --- |
+| Deep | `pdf`, `image` | 区域几何、视觉核验、区域 Chat 输入证据成熟 |
+| Evidence-complete | `document`, `html`, `docx`, `xlsx`, `pptx`, `audio`, `video` | 上传→解析→检索→类型化 locator→Citation/Viewer 闭环；Viewer 可能以结构化/规范化文本为主 |
+| Quality | — | 未宣称；需 R803 |
+| User value | — | 未宣称；需 M404 |
+
+### 使用路径
+
+- **默认**：Quick Chat + Evidence Viewer + Note（证据问答主路径）
+- **高级**：Research 固定 DAG（计划审批、多角色、可恢复 Artifact）；不是通用 Agent 平台
+
 
 ## 2. 当前阶段：V4 基线完成，V5 能力主线启动
 
@@ -122,3 +140,7 @@ Omnilabel 不是“再支持一种文件”，而是另一个业务域；它不�
 3. 涉及持久化/API/save 语义时先取得明确批准。
 4. 用真实 fixture、指标、运行证据和旧/新 payload 比较验收。
 5. 同步代码、测试、SSoT、运行手册和进度文档。
+
+## 架构硬化
+
+边界、模态清单、Research 冻结与叙事收口见 [`../../specs/v5/architecture-hardening/`](../../specs/v5/architecture-hardening/)。

@@ -21,7 +21,7 @@ from ai_pdf_api.models import (
 from ai_pdf_api.core.settings import settings
 from ai_pdf_api.services import research_worker
 from ai_pdf_api.services.capabilities import current_execution_profile_fingerprint
-from ai_pdf_api.services.research_constants import DATA_BOUNDARY_POLICY, PRICING_VERSION
+from ai_pdf_api.services.research.research_constants import DATA_BOUNDARY_POLICY, PRICING_VERSION
 from ai_pdf_worker.research_executor import (
     ApprovedResearchExecution,
     FrozenAsset,

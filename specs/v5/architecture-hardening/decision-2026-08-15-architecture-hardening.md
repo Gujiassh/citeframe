@@ -1,7 +1,7 @@
 # Decision: Architecture Hardening (boundaries, modality purity, Research load, narrative)
 
 Date: 2026-08-15  
-Status: **proposed for owner approval before implementation**  
+Status: **approved and implemented** (owner start 2026-08-15; full Phase 1+2)  
 Author: architecture review closeout  
 Depends on: V5-F engineering closeout on main
 

@@ -30,7 +30,7 @@ from ai_pdf_api.models import (
     WorkspaceMembership,
 )
 from ai_pdf_api.routers.research import router
-from ai_pdf_api.services.research_versions_service import (
+from ai_pdf_api.services.research.research_versions_service import (
     publish_research_versions_for_release,
 )
 from fastapi import FastAPI
@@ -128,7 +128,7 @@ def research_app(monkeypatch: pytest.MonkeyPatch) -> Generator[tuple[TestClient,
     db.commit()
     object_store: dict[str, bytes] = {}
     monkeypatch.setattr(
-        "ai_pdf_api.services.research_views.download_bytes",
+        "ai_pdf_api.services.research.research_views.download_bytes",
         lambda object_key: object_store[object_key],
     )
 
