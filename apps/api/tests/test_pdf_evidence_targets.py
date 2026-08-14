@@ -6,7 +6,10 @@ import fitz
 import pytest
 
 from ai_pdf_api.modalities.evidence_targets import EvidenceTargetError
-from ai_pdf_api.modalities.pdf_evidence_targets import crop_pdf_regions_png
+from ai_pdf_api.modalities.pdf_evidence_targets import (
+    collect_retrieval_pdf_crop_payloads,
+    crop_pdf_regions_png,
+)
 from ai_pdf_api.schemas.chat import PdfRegionEvidenceTarget, SpatialRegion, ChatStreamRequest
 from ai_pdf_api.services.evidence_targets import PRODUCTION_EVIDENCE_TARGET_RESOLVERS
 
@@ -80,3 +83,17 @@ def test_pdf_region_target_model() -> None:
         regions=[SpatialRegion(x=0, y=0, width=1, height=1)],
     )
     assert target.pageNumber == 2
+
+
+def test_collect_retrieval_pdf_crop_empty_when_no_hits() -> None:
+    class _DB:
+        def get(self, *_a, **_k):
+            return None
+
+        def scalars(self, *_a, **_k):
+            class _S:
+                def all(self):
+                    return []
+            return _S()
+
+    assert collect_retrieval_pdf_crop_payloads(_DB(), [], image_bytes_loader=lambda _k: b"") == ()

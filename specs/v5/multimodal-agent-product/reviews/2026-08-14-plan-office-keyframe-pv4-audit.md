@@ -51,3 +51,20 @@ Head: post-deploy-requirements refresh
 | Fail-closed | **pass** — no invented frames; crop errors coded |
 
 Residuals remain: retrieval-auto PDF crop P1; PPTX graphics beyond text.
+
+---
+
+## Residual P1 closeout (controller)
+
+Date: 2026-08-14  
+Branch: `work/v5f-residual-p1-auto-crop-pptx-20260814`
+
+**Verdict: ACCEPT** for engineering residuals:
+
+| Item | Result |
+| --- | --- |
+| Retrieval-auto PDF crop | **pass** — `collect_retrieval_pdf_crop_payloads` soft-skips; cap 4 images; wired in `prepare_chat` |
+| PPTX structured canvas | **pass** — slide/shape groups from normalized lines; highlight by shapeId+slideIndex |
+| Tests | **pass** — chat auto-crop + soft-skip; office-content parse/highlight |
+| R803/M404 | **blocked** — still needs paid quality authorization (not pure code) |
+

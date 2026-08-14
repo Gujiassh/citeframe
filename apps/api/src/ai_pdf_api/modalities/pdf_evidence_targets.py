@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import logging
 from datetime import datetime
 
 import fitz
@@ -258,6 +259,108 @@ def _page_geometry(pdf_bytes: bytes, page_number: int) -> dict[str, float | int]
         }
     finally:
         document.close()
+
+
+
+
+logger = logging.getLogger(__name__)
+
+# Soft caps for retrieval-auto crops (P1): keep generation payload bounded.
+_MAX_RETRIEVAL_CROP_IMAGES = 4
+_MAX_RETRIEVAL_CROP_REGIONS_PER_HIT = 4
+
+
+def collect_retrieval_pdf_crop_payloads(
+    db: Session,
+    retrieved: list,
+    *,
+    image_bytes_loader: ImageBytesLoader,
+    max_images: int = _MAX_RETRIEVAL_CROP_IMAGES,
+) -> tuple[bytes, ...]:
+    """Crop PNGs for retrieved pdf_region hits (soft-skip failures).
+
+    Explicit evidenceTargets are resolved separately. This path only upgrades
+    retrieval hits that already carry spatial pdf_region geometry into
+    generation input_image parts. Failures never fail the chat.
+    """
+    if max_images < 1 or not retrieved:
+        return ()
+
+    crops: list[bytes] = []
+    seen_locator_ids: set[str] = set()
+    # Cache PDF bytes by object_key within one prepare_chat call.
+    pdf_cache: dict[str, bytes] = {}
+
+    for item in retrieved:
+        if len(crops) >= max_images:
+            break
+        locator = getattr(item, "locator", None)
+        asset = getattr(item, "asset", None)
+        if locator is None or asset is None:
+            continue
+        if getattr(locator, "locator_kind", None) != "pdf_region":
+            continue
+        locator_id = getattr(locator, "id", None)
+        if not locator_id or locator_id in seen_locator_ids:
+            continue
+        seen_locator_ids.add(locator_id)
+
+        detail = db.get(PdfLocatorDetail, locator_id)
+        if detail is None or detail.page_number is None:
+            logger.info(
+                "retrieval_pdf_crop_skip reason=missing_detail locator_id=%s",
+                locator_id,
+            )
+            continue
+        regions_rows = db.scalars(
+            select(SpatialLocatorRegion)
+            .where(SpatialLocatorRegion.locator_id == locator_id)
+            .order_by(SpatialLocatorRegion.region_order)
+        ).all()
+        if not regions_rows:
+            logger.info(
+                "retrieval_pdf_crop_skip reason=no_regions locator_id=%s",
+                locator_id,
+            )
+            continue
+        regions = [
+            SpatialRegion(x=row.x, y=row.y, width=row.width, height=row.height)
+            for row in regions_rows[:_MAX_RETRIEVAL_CROP_REGIONS_PER_HIT]
+        ]
+        object_key = getattr(asset, "object_key", None)
+        if not object_key:
+            logger.info(
+                "retrieval_pdf_crop_skip reason=no_object_key asset_id=%s",
+                getattr(asset, "id", "?"),
+            )
+            continue
+        try:
+            if object_key not in pdf_cache:
+                pdf_cache[object_key] = image_bytes_loader(object_key)
+            pdf_bytes = pdf_cache[object_key]
+            hit_crops = crop_pdf_regions_png(
+                pdf_bytes,
+                page_number=int(detail.page_number),
+                regions=regions,
+            )
+        except Exception as error:
+            logger.info(
+                "retrieval_pdf_crop_skip reason=crop_failed locator_id=%s error=%s",
+                locator_id,
+                type(error).__name__,
+            )
+            continue
+        for payload in hit_crops:
+            if len(crops) >= max_images:
+                break
+            crops.append(payload)
+        logger.info(
+            "retrieval_pdf_crop_ok locator_id=%s page=%s crop_count=%s",
+            locator_id,
+            detail.page_number,
+            len(hit_crops),
+        )
+    return tuple(crops)
 
 
 def crop_pdf_regions_png(

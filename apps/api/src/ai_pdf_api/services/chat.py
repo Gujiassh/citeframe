@@ -22,12 +22,14 @@ from ai_pdf_api.models import (
     Workspace,
 )
 from ai_pdf_api.schemas.chat import AssetScope, EvidenceTargetRequest
+from ai_pdf_api.modalities.pdf_evidence_targets import collect_retrieval_pdf_crop_payloads
 from ai_pdf_api.services.evidence_targets import (
     EvidenceTargetError,
     ImageBytesLoader,
     ResolvedEvidenceTarget,
     resolve_evidence_targets,
 )
+from ai_pdf_api.services.storage import download_bytes
 from ai_pdf_api.services.providers import (
     EmbeddingProvider,
     GenerationProvider,
@@ -145,13 +147,23 @@ def prepare_chat(
         prior_messages = _get_message_lineage(db, thread.id, parent_id)
         context = _build_retrieval_context(retrieved)
         user_prompt = _build_user_prompt(question_text, context, selection_text)
+        loader = image_bytes_loader or download_bytes
+        retrieval_crop_payloads = collect_retrieval_pdf_crop_payloads(
+            db,
+            retrieved,
+            image_bytes_loader=loader,
+        )
         generation_messages = [
             {
                 "role": "system",
                 "content": workspace.system_prompt.strip(),
             },
             *({"role": message.role, "content": message.content} for message in prior_messages),
-            _build_generation_user_message(user_prompt, resolved_targets),
+            _build_generation_user_message(
+                user_prompt,
+                resolved_targets,
+                extra_image_payloads=retrieval_crop_payloads,
+            ),
         ]
 
         user_message = ChatMessage(
@@ -436,20 +448,24 @@ def _build_user_prompt(question: str, context: str, selection_text: str | None) 
 def _build_generation_user_message(
     prompt: str,
     targets: list[ResolvedEvidenceTarget],
+    extra_image_payloads: tuple[bytes, ...] = (),
 ) -> GenerationMessage:
-    if not targets:
+    image_payloads: list[bytes] = []
+    for target in targets:
+        image_payloads.extend(target.image_payloads)
+    image_payloads.extend(extra_image_payloads)
+    if not image_payloads:
         return {"role": "user", "content": prompt}
     content: list[dict[str, str]] = [{"type": "input_text", "text": prompt}]
-    for target in targets:
-        for payload in target.image_payloads:
-            encoded = base64.b64encode(payload).decode("ascii")
-            content.append(
-                {
-                    "type": "input_image",
-                    "image_url": f"data:image/png;base64,{encoded}",
-                    "detail": "high",
-                }
-            )
+    for payload in image_payloads:
+        encoded = base64.b64encode(payload).decode("ascii")
+        content.append(
+            {
+                "type": "input_image",
+                "image_url": f"data:image/png;base64,{encoded}",
+                "detail": "high",
+            }
+        )
     return {"role": "user", "content": content}
 
 
