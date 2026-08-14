@@ -9,7 +9,7 @@ from threading import Lock
 from time import monotonic, monotonic_ns
 
 from ai_pdf_api.services.providers import GenerationMessage, ModelProviderError
-from ai_pdf_api.services.research_prompt_provenance import (
+from ai_pdf_api.services.research.research_prompt_provenance import (
     V2_WORKFLOW_VERSION_ID,
 )
 

@@ -32,15 +32,15 @@ from ai_pdf_api.services.embedding_index import (
     EMBEDDING_INDEX_MISMATCH_MESSAGE,
 )
 from ai_pdf_api.services.providers import ModelProviderError
-from ai_pdf_api.services.research_evidence_provenance import evidence_source_fingerprint
-from ai_pdf_api.services.research_idempotency import ResearchError
-from ai_pdf_api.services.research_worker import (
+from ai_pdf_api.services.research.research_evidence_provenance import evidence_source_fingerprint
+from ai_pdf_api.services.research.research_idempotency import ResearchError
+from ai_pdf_api.services.research.research_worker import (
     load_frozen_evidence,
     publish_final_report,
     restore_frozen_evidence,
     search_frozen_evidence,
 )
-from ai_pdf_api.services.research_worker_policy import (
+from ai_pdf_api.services.research.research_worker_policy import (
     is_transient_failure,
     normalize_failure_code,
 )

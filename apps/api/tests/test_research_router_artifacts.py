@@ -20,8 +20,8 @@ from ai_pdf_api.models import (
     ResearchStep,
     ResearchStepAttempt,
 )
-from ai_pdf_api.services.research_evidence_provenance import evidence_source_fingerprint
-from ai_pdf_api.services.research_prompt_provenance import (
+from ai_pdf_api.services.research.research_evidence_provenance import evidence_source_fingerprint
+from ai_pdf_api.services.research.research_prompt_provenance import (
     V2_PROMPT_VERSION_IDS,
 )
 from research_router_test_support import (

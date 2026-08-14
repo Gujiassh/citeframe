@@ -10,7 +10,7 @@ Citeframe is a self-hosted multimodal AI knowledge workspace for organizing hete
 ## What it does
 
 - Organize assets in isolated workspaces with source-linked context.
-- Ingest and understand PDFs and PNG, JPEG, and WebP images in the current production baseline.
+- Ingest nine production asset kinds: PDF, images (PNG/JPEG/WebP), Markdown documents, HTML, DOCX, XLSX, PPTX, audio, and video (depth varies; PDF/Image are deepest).
 - Preserve typed evidence locations for pages, regions, and image areas.
 - Search across ready assets with PostgreSQL full-text search, pgvector, and reciprocal rank fusion.
 - Use Quick Answer for focused questions or bounded multi-agent Research for complex comparisons.
@@ -19,7 +19,7 @@ Citeframe is a self-hosted multimodal AI knowledge workspace for organizing hete
 - Extend the same Asset/Evidence contracts to additional document, audio, and video modalities as they are implemented.
 - Run the complete stack on your own infrastructure.
 
-The current feature roadmap is maintained in [`specs/v5/multimodal-agent-product/`](specs/v5/multimodal-agent-product/). PDF/Image production support is available now; additional modalities and provider capabilities are delivered incrementally.
+Product stage is **`internal_preview`**: engineering gates may pass without claiming model quality (R803) or user-value (M404). Roadmap and post-V5-F hardening: [`specs/v5/multimodal-agent-product/`](specs/v5/multimodal-agent-product/), [`specs/v5/architecture-hardening/`](specs/v5/architecture-hardening/).
 
 ## Getting Started
 

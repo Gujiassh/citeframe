@@ -11,7 +11,7 @@ from ai_pdf_api.services.providers import (
     GenerationMessage,
     ModelProviderError,
 )
-from ai_pdf_api.services.research_prompt_provenance import (
+from ai_pdf_api.services.research.research_prompt_provenance import (
     PROMPT_NODE_ORDER,
     V2_PROMPT_SPECS,
     V2_PROMPT_VERSION_IDS,

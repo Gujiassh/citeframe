@@ -8,7 +8,7 @@ Citeframe 是一个自托管、可扩展的多模态 AI 知识库与证据工作
 
 每个 Workspace 都拥有独立的资产、检索范围、模型/Prompt profile、聊天历史、Research Run、标签、笔记和研究产物。系统首先保证资料从接入到证据定位的完整链路，再让模型和 Agent 在受控边界内完成问答、研究与知识沉淀。
 
-当前完成基线是 PDF、扫描 PDF OCR、PNG/JPEG/WebP Image、Hybrid/RRF 检索、Evidence Viewer、Citation/NoteSource、固定 Research workflow、HITL、恢复和 Evaluation Dashboard。多模型 generation/vision/ASR provider 与更多模态是 V5 主线；R803 模型质量评估和 M404 真实用户验证后置，不阻塞功能建设，产品在证据完成前仍标记 `internal_preview`。
+当前完成基线是：九种生产模态（`pdf`/`image`/`document`/`html`/`docx`/`xlsx`/`pptx`/`audio`/`video`）的 Asset/Evidence 闭环、Hybrid/RRF 检索、Evidence Viewer、Citation/NoteSource、固定 Research workflow、HITL、恢复和 Evaluation Dashboard；以及 capability-based generation/embedding/vision/ASR 配置。**深度阶梯**：PDF/Image 为 Deep；其余为 Evidence-complete（可检索可引用，Viewer 深度不等）。R803 模型质量与 M404 用户价值仍为 `not_evaluable`，产品阶段 `internal_preview`。架构硬化见 `specs/v5/architecture-hardening/`。
 
 ## 2. 目标用户
 
@@ -64,7 +64,7 @@ Chat UI、支持格式数量或接入某个模型本身不构成产品护城河�
 
 ### 4.2 Asset
 
-一个 Asset 是上传到某个 Workspace 的资料对象，当前生产模态为 PDF 和 PNG/JPEG/WebP Image，后续按 V5 逐步扩展。它包含：
+一个 Asset 是上传到某个 Workspace 的资料对象。生产 registry 启用九种 `asset_kind`（见深度阶梯）；PDF 与 Image 仍是视觉核验最深的路径。它包含：
 
 - 原始源文件与类型
 - 文件元数据和生命周期
@@ -364,3 +364,12 @@ V5 功能完成还需要满足：
 当前功能闭环、可复现部署、V3 PDF/Image 纵向链路和 V4 Evidence Research 工程基线已经建立。V5 先推进 provider/profile、多模态适配器和受控多 Agent 协作；Quick Answer 保持默认与既有保存语义，Research 继续使用冻结 Workflow/Prompt/Asset scope/provider profile。
 
 多模型 provider 选择、跨模态 locator 和新模态数据/API 合同需要单独记录影响和审批，不能通过文档先行假设已经实现。R803 模型质量评估和 M404 真实用户任务后置为发布优化证据；在它们完成前，产品保持 `internal_preview`，但不停止 V5 功能建设。V5 当前规格见 `specs/v5/multimodal-agent-product/`。
+
+## 5.x Quick Chat 与 Research（路径选择）
+
+| 路径 | 何时用 | 不是什么 |
+| --- | --- | --- |
+| **Quick Chat** | 聚焦问题、需要即时带 citation 的答案 | 不是长期研究编排 |
+| **Research** | 多子问题比较、需要计划审批、多角色校验与可恢复 Artifact | 不是通用 Agent 平台；图拓扑冻结 |
+
+默认引导用户走 Quick Chat → Viewer 核验 → Note。Research 为高级、有界路径。

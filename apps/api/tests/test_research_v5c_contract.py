@@ -10,7 +10,7 @@ from research_worker_test_support import lease_default_step, sha256
 from sqlalchemy import select
 
 from ai_pdf_api.models import ResearchProviderCall
-from ai_pdf_api.services.research_agent_io_registry import (
+from ai_pdf_api.services.research.research_agent_io_registry import (
     AGENT_RESULT_SCHEMA_VERSION,
     AGENT_RESULT_SCHEMA_VERSION_LEGACY,
     COMPACT_POLICY_VERSION,
@@ -23,7 +23,7 @@ from ai_pdf_api.services.research_agent_io_registry import (
     resolve_role_contract,
     resolve_registry,
 )
-from ai_pdf_api.services.research_context_policy import (
+from ai_pdf_api.services.research.research_context_policy import (
     ResearchContextLimitExceeded,
     ResearchProviderOutputIncomplete,
     _compact_payload,
@@ -32,13 +32,13 @@ from ai_pdf_api.services.research_context_policy import (
     assert_provider_output_complete,
     pack_provider_messages,
 )
-from ai_pdf_api.services.research_idempotency import ResearchError
-from ai_pdf_api.services.research_worker import (
+from ai_pdf_api.services.research.research_idempotency import ResearchError
+from ai_pdf_api.services.research.research_worker import (
     mark_provider_call_sent,
     reconcile_provider_call,
     reserve_provider_call,
 )
-from ai_pdf_api.services.research_worker_policy import estimate_provider_cost, normalize_failure_code
+from ai_pdf_api.services.research.research_worker_policy import estimate_provider_cost, normalize_failure_code
 
 
 def test_production_registry_is_strict_and_versioned() -> None:

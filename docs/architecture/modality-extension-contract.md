@@ -1,5 +1,9 @@
 # 模态扩展协议
 
+## 0. Onboarding checklist
+
+Adding a modality: follow [`modality-onboarding-checklist.md`](modality-onboarding-checklist.md) (architecture hardening). Shared Chat/retrieval must stay free of kind-specific business branches.
+
 ## 1. 目标
 
 V3 只交付多模态 PDF 与独立图片，但核心架构必须允许后续加入音频、视频、Markdown/HTML/Office 和结构化记录，而不再次重做 Workspace、Asset、Chat、Citation、NoteSource、检索融合或 Evidence Viewer 外壳。

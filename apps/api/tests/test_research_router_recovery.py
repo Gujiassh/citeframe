@@ -26,8 +26,8 @@ from ai_pdf_api.models import (
     WorkflowVersion,
     WorkspaceMembership,
 )
-from ai_pdf_api.services.research_events import append_research_event
-from ai_pdf_api.services.research_views import load_research_plan_artifact
+from ai_pdf_api.services.research.research_events import append_research_event
+from ai_pdf_api.services.research.research_views import load_research_plan_artifact
 from research_router_test_support import (
     approve_seeded_plan,
     auth,
@@ -264,7 +264,7 @@ def test_artifact_content_verifies_hash_before_return(research_app, monkeypatch:
     artifact.content_sha256 = hashlib.sha256(payload).hexdigest()
     decision.input_artifact_sha256 = artifact.content_sha256
     db.commit()
-    monkeypatch.setattr("ai_pdf_api.services.research_views.download_bytes", lambda _key: payload)
+    monkeypatch.setattr("ai_pdf_api.services.research.research_views.download_bytes", lambda _key: payload)
     member = context["member"]
     workspace = context["workspace"]
 
@@ -276,7 +276,7 @@ def test_artifact_content_verifies_hash_before_return(research_app, monkeypatch:
     assert response.content == payload
     assert response.headers["etag"] == artifact.content_sha256
 
-    monkeypatch.setattr("ai_pdf_api.services.research_views.download_bytes", lambda _key: b"tampered")
+    monkeypatch.setattr("ai_pdf_api.services.research.research_views.download_bytes", lambda _key: b"tampered")
     unavailable = client.get(
         f"/v1/workspaces/{workspace.id}/research-runs/{created['id']}/artifacts/{artifact.id}/content",
         headers=auth(member),
@@ -512,7 +512,7 @@ def test_unexpected_mutation_error_is_frozen_for_idempotent_replay(
     def fail_revision(*_args, **_kwargs):
         raise RuntimeError("unexpected create failure")
 
-    monkeypatch.setattr("ai_pdf_api.services.research_runs._add_revision", fail_revision)
+    monkeypatch.setattr("ai_pdf_api.services.research.research_runs._add_revision", fail_revision)
     workspace = context["workspace"]
     creator = context["creator"]
     asset = context["asset"]
@@ -571,7 +571,7 @@ def test_f5_historical_final_artifact_bytes_survive_retry_and_recovery(
     requeue does not rewrite object bytes, content_sha256, or byte_size.
     Does not call a paid provider.
     """
-    from ai_pdf_api.services.research_agent_io_registry import (
+    from ai_pdf_api.services.research.research_agent_io_registry import (
         AGENT_RESULT_SCHEMA_VERSION_LEGACY,
         COMPACT_POLICY_VERSION_LEGACY,
         CONTEXT_POLICY_VERSION_LEGACY,
@@ -678,7 +678,7 @@ def test_f5_historical_final_artifact_bytes_survive_retry_and_recovery(
     assert after_bytes == content
 
     monkeypatch.setattr(
-        "ai_pdf_api.services.research_views.download_bytes",
+        "ai_pdf_api.services.research.research_views.download_bytes",
         lambda key: object_store[key],
     )
     content_response = client.get(

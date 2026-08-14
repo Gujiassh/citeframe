@@ -7,10 +7,10 @@ from ai_pdf_api.models import (
     ResearchPlanRevision,
     ResearchRun,
 )
-from ai_pdf_api.services.research_prompt_provenance import (
+from ai_pdf_api.services.research.research_prompt_provenance import (
     prompt_contract_sha256,
 )
-from ai_pdf_api.services.research_worker import (
+from ai_pdf_api.services.research.research_worker import (
     load_planning_input,
 )
 from research_router_test_support import (

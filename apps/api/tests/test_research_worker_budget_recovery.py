@@ -29,9 +29,9 @@ from ai_pdf_api.models import (
     ResearchToolCall,
     WorkspaceMembership,
 )
-from ai_pdf_api.services import research_worker_provider, research_worker_tools
-from ai_pdf_api.services.research_idempotency import ResearchError
-from ai_pdf_api.services.research_worker import (
+from ai_pdf_api.services.research import research_worker_provider, research_worker_tools
+from ai_pdf_api.services.research.research_idempotency import ResearchError
+from ai_pdf_api.services.research.research_worker import (
     VerificationResult,
     begin_tool_call,
     cancel_provider_reservation,
@@ -50,12 +50,12 @@ from ai_pdf_api.services.research_worker import (
     reserve_provider_call,
     restore_frozen_evidence,
 )
-from ai_pdf_api.services.research_worker_lease import (
+from ai_pdf_api.services.research.research_worker_lease import (
     _active_attempt_chain,
     _locked_attempt,
     _locked_attempt_chain,
 )
-from ai_pdf_api.services.research_worker_policy import (
+from ai_pdf_api.services.research.research_worker_policy import (
     is_transient_failure,
     normalize_failure_code,
 )
@@ -759,7 +759,7 @@ def test_active_and_lease_attempt_helpers_reuse_locked_attempt_chain(research_wo
         return original_chain(db, attempt_id)
 
     with patch(
-        "ai_pdf_api.services.research_worker_lease._locked_attempt_chain",
+        "ai_pdf_api.services.research.research_worker_lease._locked_attempt_chain",
         side_effect=tracking_chain,
     ):
         _active_attempt_chain(fixture.db, lease.attempt_id, now=fixture.now + timedelta(seconds=1))

@@ -24,13 +24,13 @@ from ai_pdf_api.services.providers import (
     GenerationProvider,
     get_generation_provider,
 )
-from ai_pdf_api.services.research_context_policy import (
+from ai_pdf_api.services.research.research_context_policy import (
     ResearchContextLimitExceeded,
     ResearchProviderOutputIncomplete,
     assert_provider_output_complete,
     pack_provider_messages,
 )
-from ai_pdf_api.services.research_agent_io_registry import resolve_registry, resolve_role_contract
+from ai_pdf_api.services.research.research_agent_io_registry import resolve_registry, resolve_role_contract
 
 from ai_pdf_worker.research_executor import (
     ApprovedResearchExecution,
@@ -72,7 +72,7 @@ from ai_pdf_worker.research_runtime_core import (
 
 
 class SqlResearchLedgerAdapter(_ApiPort, ResearchLedger):
-    """Adapter over ``ai_pdf_api.services.research_worker``.
+    """Adapter over ``ai_pdf_api.services.research.research_worker``.
 
     The service module is injected to make the boundary explicit and to keep
     unit tests independent from a database.  No ORM object is accepted here.

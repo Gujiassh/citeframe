@@ -18,8 +18,8 @@ from ai_pdf_api.models import (
 from ai_pdf_api.services import (
     research_worker_plan,
 )
-from ai_pdf_api.services.research_idempotency import ResearchError
-from ai_pdf_api.services.research_worker import (
+from ai_pdf_api.services.research.research_idempotency import ResearchError
+from ai_pdf_api.services.research.research_worker import (
     PlanSubproblemDraft,
     claim_next_research_step,
     claim_specific_research_step,

@@ -32,12 +32,12 @@ from ai_pdf_api.models import (
     Workspace,
     WorkspaceMembership,
 )
-from ai_pdf_api.services.research_evidence_provenance import evidence_source_fingerprint
-from ai_pdf_api.services.research_idempotency import ResearchError, canonical_sha256
-from ai_pdf_api.services.research_versions_service import (
+from ai_pdf_api.services.research.research_evidence_provenance import evidence_source_fingerprint
+from ai_pdf_api.services.research.research_idempotency import ResearchError, canonical_sha256
+from ai_pdf_api.services.research.research_versions_service import (
     publish_research_versions_for_release,
 )
-from ai_pdf_api.services.research_worker import (
+from ai_pdf_api.services.research.research_worker import (
     claim_specific_research_step,
 )
 from sqlalchemy import create_engine, select
@@ -212,7 +212,7 @@ def research_worker_db(
     db.add_all([user, workspace, membership, asset, run, snapshot, ledger, step])
     db.commit()
     monkeypatch.setattr(
-        "ai_pdf_api.services.research_worker_provider.frozen_provider_config_matches_actual",
+        "ai_pdf_api.services.research.research_worker_provider.frozen_provider_config_matches_actual",
         lambda db, step, frozen_fingerprint: frozen_fingerprint == snapshot.provider_config_fingerprint,
     )
     yield ResearchWorkerFixture(

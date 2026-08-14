@@ -134,7 +134,7 @@ def test_package_v5_loads_with_threshold_and_scorer_v2() -> None:
         "apps/api/src/ai_pdf_api/core/settings.py",
         "apps/api/src/ai_pdf_api/schemas/evaluation.py",
         "apps/api/src/ai_pdf_api/services/providers.py",
-        "apps/api/src/ai_pdf_api/services/research_prompt_provenance.py",
+        "apps/api/src/ai_pdf_api/services/research/research_prompt_provenance.py",
     ]
     for needle in expected_needles:
         assert needle in modules, needle

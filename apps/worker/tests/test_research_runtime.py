@@ -7,12 +7,12 @@ from threading import Barrier, Lock
 
 import ai_pdf_worker.main as worker_main
 import pytest
-from ai_pdf_api.services.research_prompt_provenance import (
+from ai_pdf_api.services.research.research_prompt_provenance import (
     PROMPT_NODE_ORDER,
     V2_PROMPT_SPECS,
     V2_PROMPT_VERSION_IDS,
 )
-from ai_pdf_api.services.research_agent_io_registry import (
+from ai_pdf_api.services.research.research_agent_io_registry import (
     AGENT_RESULT_SCHEMA_VERSION,
     COMPACT_POLICY_VERSION,
     CONTEXT_POLICY_VERSION,

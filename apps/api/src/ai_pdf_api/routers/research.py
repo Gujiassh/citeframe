@@ -45,7 +45,7 @@ from ai_pdf_api.services.research import (
     retry_research_step,
     serialize_sse_event,
 )
-from ai_pdf_api.services.research_views import run_detail, verified_artifact_bytes
+from ai_pdf_api.services.research.research_views import run_detail, verified_artifact_bytes
 
 
 def _error_response(

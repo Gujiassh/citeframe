@@ -296,7 +296,7 @@ def test_f1_executable_registry_runtime_bindings() -> None:
     registry metadata only (API research_views owns DTO projection).
     """
 
-    from ai_pdf_api.services.research_agent_io_registry import (
+    from ai_pdf_api.services.research.research_agent_io_registry import (
         AGENT_RESULT_SCHEMA_VERSION,
         AGENT_RESULT_SCHEMA_VERSION_LEGACY,
         COMPACT_POLICY_VERSION,
@@ -381,7 +381,7 @@ def test_f1_executable_registry_runtime_bindings() -> None:
 
     # Mutated validator key must fail closed before any provider path uses it.
     from dataclasses import replace
-    from ai_pdf_api.services.research_agent_io_registry import AgentIoRegistryEntry
+    from ai_pdf_api.services.research.research_agent_io_registry import AgentIoRegistryEntry
 
     roles = dict(production.roles)
     roles["researcher"] = replace(

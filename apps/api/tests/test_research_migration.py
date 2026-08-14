@@ -16,7 +16,7 @@ from sqlalchemy.orm import Session
 import ai_pdf_api.models  # noqa: F401
 from ai_pdf_api.db.base import Base
 from ai_pdf_api.models import PromptVersion, WorkflowPromptBinding, WorkflowVersion
-from ai_pdf_api.services.research_prompt_provenance import (
+from ai_pdf_api.services.research.research_prompt_provenance import (
     V2_PROMPT_SPECS,
     V2_PROMPT_VERSION_IDS,
     V2_WORKFLOW_VERSION_ID,

@@ -17,7 +17,7 @@
 
 ## 2. 当前总状态
 
-当前项目状态：`V1/V2 基础闭环、V3 PDF/Image 多模态 Evidence 主链与 V4 R000-R800 Research 工程基线已完成。当前主动主线切换为 V5：先建设多模型/provider profile、多模态资料接入和受控多 Agent 协作，再集中进行 R803 模型质量评估与 M404 真实用户验证。R803 formal v1 的失败目录保持不可变，modelQuality 与 M404 仍为 not_evaluable，产品保持 internal_preview；这些后置证据不阻塞 V5 功能开发。`
+当前项目状态（2026-08-15）：V5-F 工程能力面已在 main 关闭；后续优先 architecture-hardening 与 V5-E 证据。历史描述：`V1/V2 基础闭环、V3 PDF/Image 多模态 Evidence 主链与 V4 R000-R800 Research 工程基线已完成。当前主动主线切换为 V5：先建设多模型/provider profile、多模态资料接入和受控多 Agent 协作，再集中进行 R803 模型质量评估与 M404 真实用户验证。R803 formal v1 的失败目录保持不可变，modelQuality 与 M404 仍为 not_evaluable，产品保持 internal_preview；这些后置证据不阻塞 V5 功能开发。`
 
 当前策略与任务入口：`specs/v5/multimodal-agent-product/`。V3/V4 规格、R803 artifact 和 M404 协议继续作为历史合同与后置验收证据。
 
@@ -58,7 +58,7 @@ M403A 的逐次优化假设、实验手段、通过/否决结果、指标和 art
 | V5-C | 多 Agent 协作产品化 | 工程 `ACCEPT`，Medium residual follow-up | C-API-WORKER、C-BOUNDARY 与 R800 v6 已通过 | 固定 Research DAG 已完成计划、并行、审批、重试、恢复和 Artifact 体验；生产 Agent I/O 已严格版本化，不建设通用 Agent 平台 |
 | V5-D | 端到端整合与工程稳定 | 工程 `ACCEPT`（internal-preview） | D-G0–D-G7 工程门通过（D-G3/D-G5 partial-existing；D-G6 focused live） | 全量 API 562 / Worker 296 / Web 131 + lint/tsc/build；D-G4 production-start 与 D-G6 mixed live seed 已有证据；R803/M404 仍 not_evaluable；D-G6 empty-target mixed Compose 已通过 |
 | V5-E | 模型质量与用户价值 | E001 计划包已完成 | R803/M404 仍 `not_evaluable` | 付费 R803 暂缓；不阻塞 V5-F |
-| V5-F | 模态补全 + Agent 协作完善 | 规格/计划/审计已落地 | 待主人批准后实现 | HTML→Office→ASR→Audio→Video；固定 DAG 跨模态 Research；见 specs/v5/.../decision-2026-08-13-v5f-scope.md |
+| V5-F | 模态补全 + Agent 协作完善 | 工程 `ACCEPT`（internal-preview） | main 已合 PR #1–#13（S0 九模态、F-AGENT、PV-4、retrieval-auto crop、Office canvas、video keyframe） | 工程主线关闭；R803/M404 仍 not_evaluable；架构硬化见 `specs/v5/architecture-hardening/` |
 
 ## 4. 已完成的设计文档
 

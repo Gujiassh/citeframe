@@ -18,8 +18,8 @@ from ai_pdf_api.models import (
 from ai_pdf_api.services.research import (
     build_execution_snapshot_hash_payload,
 )
-from ai_pdf_api.services.research_idempotency import canonical_sha256
-from ai_pdf_api.services.research_prompt_provenance import (
+from ai_pdf_api.services.research.research_idempotency import canonical_sha256
+from ai_pdf_api.services.research.research_prompt_provenance import (
     PROMPT_NODE_ORDER,
     V2_PROMPT_SPECS,
     V2_PROMPT_VERSION_IDS,
@@ -27,7 +27,7 @@ from ai_pdf_api.services.research_prompt_provenance import (
     prompt_contract_sha256,
     v2_workflow_manifest,
 )
-from ai_pdf_api.services.research_worker import (
+from ai_pdf_api.services.research.research_worker import (
     load_approved_execution,
 )
 from research_router_test_support import (

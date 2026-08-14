@@ -92,7 +92,7 @@ class CapabilityRegistry:
 def build_capability_registry() -> CapabilityRegistry:
     """Build the registry from server configuration without probing providers."""
 
-    from ai_pdf_api.services.research_constants import DATA_BOUNDARY_POLICY, PRICING_VERSION
+    from ai_pdf_api.services.research.research_constants import DATA_BOUNDARY_POLICY, PRICING_VERSION
 
     generation_provider = settings.generation_provider
     generation_endpoint = normalize_provider_endpoint(
@@ -192,8 +192,8 @@ def build_capability_registry() -> CapabilityRegistry:
 def legacy_execution_profile_fingerprint() -> str:
     """Historical Research provider_config_fingerprint preimage (pre-capability registry)."""
 
-    from ai_pdf_api.services.research_constants import DATA_BOUNDARY_POLICY
-    from ai_pdf_api.services.research_idempotency import canonical_sha256
+    from ai_pdf_api.services.research.research_constants import DATA_BOUNDARY_POLICY
+    from ai_pdf_api.services.research.research_idempotency import canonical_sha256
 
     return canonical_sha256(
         {
@@ -209,7 +209,7 @@ def legacy_execution_profile_fingerprint() -> str:
 
 
 def current_execution_profile_fingerprint(*, retrieval_top_k: int | None = None) -> str:
-    from ai_pdf_api.services.research_constants import DATA_BOUNDARY_POLICY
+    from ai_pdf_api.services.research.research_constants import DATA_BOUNDARY_POLICY
 
     registry = build_capability_registry()
     return registry.execution_fingerprint(

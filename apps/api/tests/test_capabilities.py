@@ -27,7 +27,7 @@ from ai_pdf_api.services.providers import (
     get_generation_provider,
 )
 from ai_pdf_api.services.research import ResearchError
-from ai_pdf_api.services.research_worker_provider import (
+from ai_pdf_api.services.research.research_worker_provider import (
     resolve_actual_research_provider_config_fingerprint,
 )
 

@@ -6,22 +6,22 @@ import from ``ai_pdf_api.services.research``.
 
 from __future__ import annotations
 
-from ai_pdf_api.services.research_artifacts import (
+from ai_pdf_api.services.research.research_artifacts import (
     get_artifact,
     get_artifact_detail,
     list_artifacts,
     list_events_after,
     serialize_sse_event,
 )
-from ai_pdf_api.services.research_decisions import decide_conflict, decide_plan
-from ai_pdf_api.services.research_events import append_research_event
-from ai_pdf_api.services.research_idempotency import (
+from ai_pdf_api.services.research.research_decisions import decide_conflict, decide_plan
+from ai_pdf_api.services.research.research_events import append_research_event
+from ai_pdf_api.services.research.research_idempotency import (
     ResearchError,
     canonical_json,
     canonical_sha256,
 )
-from ai_pdf_api.services.research_recovery import retry_research_step
-from ai_pdf_api.services.research_runs import (
+from ai_pdf_api.services.research.research_recovery import retry_research_step
+from ai_pdf_api.services.research.research_runs import (
     build_execution_snapshot_hash_payload,
     build_plan_snapshot_hash_payload,
     cancel_research_run,
