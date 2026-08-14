@@ -9,12 +9,13 @@ from ai_pdf_api.modalities.evidence_targets import (
     ResolvedEvidenceTarget,
 )
 from ai_pdf_api.modalities.image_evidence_targets import ImageRegionEvidenceTargetResolver
+from ai_pdf_api.modalities.pdf_evidence_targets import PdfRegionEvidenceTargetResolver
 from ai_pdf_api.schemas.chat import EvidenceTargetRequest
 from ai_pdf_api.services.storage import download_bytes
 
 
 PRODUCTION_EVIDENCE_TARGET_RESOLVERS = EvidenceTargetResolverRegistry(
-    (ImageRegionEvidenceTargetResolver(),)
+    (ImageRegionEvidenceTargetResolver(), PdfRegionEvidenceTargetResolver())
 )
 
 

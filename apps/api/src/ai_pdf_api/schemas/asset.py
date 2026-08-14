@@ -143,6 +143,41 @@ class HtmlNormalizedContentResponse(BaseModel):
     blocks: list[HtmlNormalizedBlock]
 
 
+class DocxNormalizedBlock(BaseModel):
+    blockId: str
+    blockOrder: int = Field(ge=0)
+    blockKind: Literal["heading", "paragraph", "list_item", "table"]
+    headingLevel: int | None = Field(default=None, ge=1, le=6)
+    headingPath: list[str]
+    charStart: int = Field(ge=0)
+    charEnd: int = Field(gt=0)
+    textSha256: str
+    text: str
+
+
+class DocxNormalizedContentResponse(BaseModel):
+    assetId: str
+    representationId: str
+    processingGeneration: int = Field(ge=1)
+    format: Literal["docx"]
+    parserVersion: Literal["docx-parser-v1"]
+    normalizationVersion: Literal["docx-normalization-v1"]
+    contentSha256: str
+    normalizedText: str
+    blocks: list[DocxNormalizedBlock]
+
+
+class OfficeNormalizedTextResponse(BaseModel):
+    """Normalized text body for xlsx/pptx (no block table in v1)."""
+
+    assetId: str
+    representationId: str
+    processingGeneration: int = Field(ge=1)
+    format: Literal["xlsx", "pptx"]
+    contentSha256: str
+    normalizedText: str
+
+
 class AssetDetailResponse(BaseModel):
     asset: AssetSummary
     detail: PdfAssetDetail | ImageAssetDetail | DocumentAssetDetail | HtmlAssetDetail = Field(

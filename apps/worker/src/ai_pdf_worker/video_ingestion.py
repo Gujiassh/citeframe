@@ -2,7 +2,8 @@
 
 ASR must be configured before any video representation or content-unit persist.
 Never invents transcripts when ASR is missing or returns empty segments.
-Keyframes are deferred: never invent frames when extraction tooling is missing.
+Keyframes: extract via ffmpeg when available; soft-skip (count=0) if tooling missing.
+Never invent frames.
 """
 
 from __future__ import annotations
@@ -55,6 +56,7 @@ NORMALIZED_CONTENT_TYPE = "application/json; charset=utf-8"
 __all__ = [
     "VideoIngestionAdapter",
     "delete_video_content",
+    "extract_video_keyframes",
     "replace_video_content",
 ]
 
@@ -208,6 +210,129 @@ def delete_video_content(db: Session, asset_id: str) -> None:
     db.execute(delete(ContentUnit).where(ContentUnit.asset_id == asset_id))
 
 
+
+def build_video_keyframe_object_key(
+    asset: Asset, processing_generation: int, index: int
+) -> str:
+    return (
+        f"workspaces/{asset.workspace_id}/assets/{asset.id}/representations/"
+        f"{processing_generation}/keyframes/{index:04d}.png"
+    )
+
+
+def extract_video_keyframes(
+    payload: bytes,
+    *,
+    asset: Asset,
+    processing_generation: int,
+    mime_type: str,
+    max_frames: int = 12,
+) -> tuple[list[dict[str, object]], list[GeneratedObject]]:
+    """Extract evenly spaced keyframe PNGs with ffmpeg.
+
+    Soft-skip when ffmpeg/ffprobe is unavailable or extraction fails:
+    returns ([], []). Never invents frames.
+    """
+    import json
+    import shutil
+    import subprocess
+    import tempfile
+    from pathlib import Path as FsPath
+
+    if shutil.which("ffmpeg") is None or shutil.which("ffprobe") is None:
+        return [], []
+
+    suffix = _extension_for_mime(mime_type)
+    with tempfile.TemporaryDirectory(prefix="citeframe-keyframes-") as tmp:
+        root = FsPath(tmp)
+        source = root / f"input{suffix}"
+        source.write_bytes(payload)
+        probe = subprocess.run(
+            [
+                "ffprobe",
+                "-v",
+                "error",
+                "-show_entries",
+                "format=duration",
+                "-of",
+                "json",
+                str(source),
+            ],
+            capture_output=True,
+            text=True,
+            timeout=60,
+            check=False,
+        )
+        if probe.returncode != 0:
+            return [], []
+        try:
+            duration_s = float(json.loads(probe.stdout)["format"]["duration"])
+        except (KeyError, TypeError, ValueError, json.JSONDecodeError):
+            return [], []
+        if duration_s <= 0:
+            return [], []
+
+        # Even samples: at least 1, at most max_frames, roughly every 10s.
+        count = max(1, min(max_frames, int(duration_s // 10) + 1))
+        # Avoid sampling exactly at end.
+        timestamps = [
+            max(0.0, min(duration_s - 0.05, (i + 0.5) * duration_s / count))
+            for i in range(count)
+        ]
+
+        meta: list[dict[str, object]] = []
+        objects: list[GeneratedObject] = []
+        for index, ts in enumerate(timestamps):
+            out = root / f"frame_{index:04d}.png"
+            render = subprocess.run(
+                [
+                    "ffmpeg",
+                    "-hide_banner",
+                    "-loglevel",
+                    "error",
+                    "-ss",
+                    f"{ts:.3f}",
+                    "-i",
+                    str(source),
+                    "-frames:v",
+                    "1",
+                    "-vf",
+                    "scale='min(1280,iw)':-2",
+                    "-y",
+                    str(out),
+                ],
+                capture_output=True,
+                text=True,
+                timeout=60,
+                check=False,
+            )
+            if render.returncode != 0 or not out.is_file() or out.stat().st_size < 32:
+                continue
+            png = out.read_bytes()
+            if not png.startswith(b"\x89PNG"):
+                continue
+            object_key = build_video_keyframe_object_key(asset, processing_generation, index)
+            digest = sha256(png).hexdigest()
+            timestamp_ms = int(round(ts * 1000))
+            meta.append(
+                {
+                    "index": index,
+                    "timestampMs": timestamp_ms,
+                    "objectKey": object_key,
+                    "contentSha256": digest,
+                }
+            )
+            objects.append(
+                GeneratedObject(
+                    object_key=object_key,
+                    payload=png,
+                    content_type="image/png",
+                    content_sha256=digest,
+                )
+            )
+        return meta, objects
+
+
 class VideoIngestionAdapter:
     asset_kind = "video"
 
@@ -266,8 +391,13 @@ class VideoIngestionAdapter:
         except ModelProviderError as error:
             raise IngestionError(error.code, error.message) from error
 
-        # Keyframes deferred: do not invent frames without extraction tooling.
-        keyframe_count = 0
+        keyframe_meta, keyframe_objects = extract_video_keyframes(
+            payload,
+            asset=asset,
+            processing_generation=processing_generation,
+            mime_type=mime_type,
+        )
+        keyframe_count = len(keyframe_meta)
 
         normalized_key = build_video_normalized_object_key(asset, processing_generation)
         replace_video_content(
@@ -318,7 +448,7 @@ class VideoIngestionAdapter:
                 "durationMs": transcription.duration_ms,
                 "segmentCount": len(transcription.segments),
                 "keyframeCount": keyframe_count,
-                "keyframes": [],
+                "keyframes": keyframe_meta,
                 "transcriptText": transcription.full_text,
                 "contentSha256": transcription.content_sha256,
                 "segments": segments_payload,
@@ -326,16 +456,16 @@ class VideoIngestionAdapter:
             separators=(",", ":"),
             ensure_ascii=False,
         ).encode("utf-8")
-        return IngestionResult(
-            generated_objects=(
-                GeneratedObject(
-                    object_key=normalized_key,
-                    payload=body,
-                    content_type=NORMALIZED_CONTENT_TYPE,
-                    content_sha256=transcription.content_sha256,
-                ),
-            )
-        )
+        generated = [
+            GeneratedObject(
+                object_key=normalized_key,
+                payload=body,
+                content_type=NORMALIZED_CONTENT_TYPE,
+                content_sha256=transcription.content_sha256,
+            ),
+            *keyframe_objects,
+        ]
+        return IngestionResult(generated_objects=tuple(generated))
 
     def cleanup(self, db: Session, *, asset: Asset) -> None:
         delete_video_content(db, asset.id)
