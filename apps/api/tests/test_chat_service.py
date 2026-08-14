@@ -60,12 +60,36 @@ class FakeGenerationProvider:
     model = "fake-generation"
 
     def __init__(self) -> None:
-        self.messages: list[dict[str, str]] = []
+        self.messages: list = []
 
-    def generate(self, messages: list[dict[str, str]]) -> str:
+    def generate(self, messages: list) -> str:
         self.messages = messages
-        assert any("Asset evidence context" in message["content"] for message in messages)
+
+        def has_context(message: dict) -> bool:
+            content = message.get("content")
+            if isinstance(content, str):
+                return "Asset evidence context" in content
+            if isinstance(content, list):
+                return any(
+                    isinstance(part, dict)
+                    and part.get("type") == "input_text"
+                    and "Asset evidence context" in str(part.get("text", ""))
+                    for part in content
+                )
+            return False
+
+        assert any(has_context(message) for message in messages)
         return "The answer is supported by [1]."
+
+
+@pytest.fixture(autouse=True)
+def _block_storage_downloads(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Unit tests must not hit MinIO; retrieval-auto crop soft-skips on loader errors."""
+
+    def _unavailable(_object_key: str) -> bytes:
+        raise RuntimeError("storage unavailable in unit test")
+
+    monkeypatch.setattr("ai_pdf_api.services.chat.download_bytes", _unavailable)
 
 
 def build_session() -> tuple[Session, str, ChatThread]:
@@ -819,3 +843,119 @@ def test_chat_uses_persisted_workspace_prompt_and_top_k(monkeypatch: pytest.Monk
         "role": "system",
         "content": "Use the workspace review policy.",
     }
+
+
+
+def test_retrieval_pdf_region_auto_crops_into_generation() -> None:
+    """P1: retrieved pdf_region hits attach PNG crops without explicit evidenceTargets."""
+    session, workspace_id, thread = build_session()
+    unit = session.query(ContentUnit).one()
+    locator = session.get(EvidenceLocator, unit.source_locator_id)
+    detail = session.get(PdfLocatorDetail, unit.source_locator_id)
+    representation = session.get(AssetRepresentation, unit.representation_id)
+    asset = session.get(Asset, unit.asset_id)
+    assert locator is not None and detail is not None and representation is not None and asset is not None
+    locator.locator_kind = "pdf_region"
+    unit.unit_kind = "pdf_ocr_region"
+    representation.representation_kind = "pdf_ocr"
+    detail.page_number = 1
+    detail.coordinate_space = "pdf_crop_box_normalized_top_left_v1"
+    detail.crop_x0_points = 0.0
+    detail.crop_y0_points = 0.0
+    detail.crop_x1_points = 300.0
+    detail.crop_y1_points = 400.0
+    detail.rotation_degrees = 0
+    detail.display_width_points = 300.0
+    detail.display_height_points = 400.0
+    session.add(
+        SpatialLocatorRegion(
+            locator_id=locator.id,
+            region_order=0,
+            x=0.1,
+            y=0.2,
+            width=0.5,
+            height=0.3,
+        )
+    )
+    session.commit()
+
+    import fitz
+
+    document = fitz.open()
+    page = document.new_page(width=300, height=400)
+    page.insert_text((50, 80), "Hello PDF crop fixture")
+    page.draw_rect(fitz.Rect(40, 100, 200, 220), color=(0, 0, 1), width=2)
+    pdf_bytes = document.tobytes()
+    document.close()
+
+    generation = FakeGenerationProvider()
+    result = complete_chat(
+        session,
+        workspace_id=workspace_id,
+        user_id="owner",
+        thread=thread,
+        question="What is in the figure region?",
+        asset_scope=AllReadyAssetScope(mode="all_ready"),
+        embedding_provider=FakeEmbeddingProvider(),
+        generation_provider=generation,
+        image_bytes_loader=lambda _key: pdf_bytes,
+    )
+
+    assert result.assistant_message.status == "completed"
+    user_input = generation.messages[-1]
+    assert user_input["role"] == "user"
+    content = user_input["content"]
+    assert isinstance(content, list)
+    assert content[0]["type"] == "input_text"
+    assert content[1]["type"] == "input_image"
+    assert content[1]["image_url"].startswith("data:image/png;base64,")
+
+
+def test_collect_retrieval_pdf_crop_soft_skips_loader_errors() -> None:
+    from ai_pdf_api.modalities.pdf_evidence_targets import collect_retrieval_pdf_crop_payloads
+    from ai_pdf_api.services.retrieval import RetrievedContent
+
+    session, _workspace_id, _thread = build_session()
+    unit = session.query(ContentUnit).one()
+    locator = session.get(EvidenceLocator, unit.source_locator_id)
+    detail = session.get(PdfLocatorDetail, unit.source_locator_id)
+    asset = session.get(Asset, unit.asset_id)
+    assert locator is not None and detail is not None and asset is not None
+    locator.locator_kind = "pdf_region"
+    detail.coordinate_space = "pdf_crop_box_normalized_top_left_v1"
+    detail.crop_x0_points = 0.0
+    detail.crop_y0_points = 0.0
+    detail.crop_x1_points = 300.0
+    detail.crop_y1_points = 400.0
+    detail.rotation_degrees = 0
+    detail.display_width_points = 300.0
+    detail.display_height_points = 400.0
+    session.add(
+        SpatialLocatorRegion(
+            locator_id=locator.id,
+            region_order=0,
+            x=0.1,
+            y=0.1,
+            width=0.2,
+            height=0.2,
+        )
+    )
+    session.commit()
+    session.refresh(locator)
+    session.refresh(asset)
+
+    item = RetrievedContent(
+        content_unit=unit,
+        asset=asset,
+        locator=locator,
+        channel="text",
+        distance=0.1,
+        location_key=("pdf_region", locator.id),
+    )
+    crops = collect_retrieval_pdf_crop_payloads(
+        session,
+        [item],
+        image_bytes_loader=lambda _key: (_ for _ in ()).throw(RuntimeError("boom")),
+    )
+    assert crops == ()
+

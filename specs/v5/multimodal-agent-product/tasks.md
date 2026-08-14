@@ -204,6 +204,8 @@ V5-C implementation status (2026-08-10): `C-API-WORKER`, `C-BOUNDARY` and Web us
 - [x] PV-1 内嵌 figure 区域 OCR 加固
 - [x] PV-2 **无内嵌图**页图块检测 + 区域 OCR（主缺口）
 - [x] PV-3 区域 caption（抽象图必须现有 vision/gpt-5.5；未配置 fail-closed）
-- [x] PV-4 Chat 命中 **PDF** region 时 generation 带裁剪图（explicit pdf_region evidenceTargets；retrieval auto-crop 仍 P1）
+- [x] PV-4 Chat 命中 **PDF** region 时 generation 带裁剪图（explicit pdf_region evidenceTargets）
+- [x] P1 retrieval-auto PDF crop：检索命中 `pdf_region` 时 soft-skip 裁剪并附 generation `input_image`（cap 4）
+- [x] PPTX slide/shape 结构化 canvas（parse `slideN#shapeId=text`，非纯 pre 文本）
 - [x] PV-5 评测集：嵌图 / 压平截图 / 抽象图
 - [x] PV-6 HTML/Video 接入点写入 V5-F（实现跟模态线）

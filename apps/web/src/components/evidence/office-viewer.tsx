@@ -6,8 +6,10 @@ import { AlertTriangle, FileSpreadsheet, FileText, Loader2, Presentation } from 
 import type { EvidenceRendererProps } from "@/lib/evidence/registry";
 import {
   highlightDocxBlock,
+  highlightPptxShape,
   parseDocxNormalizedContent,
   parseOfficeNormalizedText,
+  parsePptxNormalizedSlides,
   type DocxNormalizedContent,
   type OfficeNormalizedText,
 } from "@/lib/evidence/office-content";
@@ -196,7 +198,14 @@ export function PptxEvidenceRenderer({
   const { currentWorkspace } = useWorkspace();
   const workspaceId = currentWorkspace?.id ?? "";
   const loadState = useOfficeContent(asset.id, sourceVersions?.representationId, workspaceId);
-  const displayNeedle = locator?.kind === "pptx_shape" ? locator.displayedText : "";
+  const slides =
+    loadState.status === "ready-text" && loadState.content.format === "pptx"
+      ? parsePptxNormalizedSlides(loadState.content.normalizedText)
+      : [];
+  const active =
+    locator?.kind === "pptx_shape"
+      ? highlightPptxShape(slides, locator.shapeId, locator.slideIndex)
+      : null;
 
   return (
     <div className="flex h-full flex-col gap-3 p-4">
@@ -222,18 +231,46 @@ export function PptxEvidenceRenderer({
         </div>
       ) : null}
       {loadState.status === "ready-text" ? (
-        <pre className="min-h-0 flex-1 overflow-auto whitespace-pre-wrap rounded-md border border-border/50 bg-muted/20 p-3 font-mono text-xs leading-relaxed">
-          {displayNeedle && loadState.content.normalizedText.includes(displayNeedle)
-            ? loadState.content.normalizedText.split(displayNeedle).map((part, index, all) => (
-                <span key={index}>
-                  {part}
-                  {index < all.length - 1 ? (
-                    <mark className="rounded bg-amber-500/25 px-0.5">{displayNeedle}</mark>
-                  ) : null}
-                </span>
-              ))
-            : loadState.content.normalizedText}
-        </pre>
+        slides.length > 0 ? (
+          <div className="min-h-0 flex-1 space-y-3 overflow-auto">
+            {slides.map((slide) => (
+              <section
+                key={slide.slideIndex}
+                className="rounded-md border border-border/50 bg-muted/15 p-3"
+              >
+                <div className="mb-2 text-xs font-medium text-muted-foreground">
+                  Slide {slide.slideIndex}
+                </div>
+                <ul className="space-y-1.5">
+                  {slide.shapes.map((shape) => {
+                    const isActive =
+                      active?.slideIndex === shape.slideIndex &&
+                      active?.shapeId === shape.shapeId;
+                    return (
+                      <li
+                        key={`${shape.slideIndex}-${shape.shapeId}-${shape.text.slice(0, 24)}`}
+                        className={
+                          isActive
+                            ? "rounded-md bg-amber-500/15 px-2 py-1.5 text-sm ring-1 ring-amber-500/40"
+                            : "rounded-md px-2 py-1.5 text-sm"
+                        }
+                      >
+                        <span className="mr-2 font-mono text-[11px] text-muted-foreground">
+                          #{shape.shapeId}
+                        </span>
+                        <span className="leading-relaxed">{shape.text}</span>
+                      </li>
+                    );
+                  })}
+                </ul>
+              </section>
+            ))}
+          </div>
+        ) : (
+          <pre className="min-h-0 flex-1 overflow-auto whitespace-pre-wrap rounded-md border border-border/50 bg-muted/20 p-3 font-mono text-xs leading-relaxed">
+            {loadState.content.normalizedText}
+          </pre>
+        )
       ) : null}
     </div>
   );
