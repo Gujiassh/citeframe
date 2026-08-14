@@ -367,7 +367,21 @@ class ImageRegionEvidenceTarget(BaseModel):
     regions: list[SpatialRegion] = Field(min_length=1, max_length=8)
 
 
-EvidenceTargetRequest = ImageRegionEvidenceTarget
+class PdfRegionEvidenceTarget(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    kind: Literal["pdf_region"]
+    assetId: str
+    processingGeneration: int = Field(ge=1)
+    pageNumber: int = Field(ge=1)
+    coordinateSpace: Literal["pdf_crop_box_normalized_top_left_v1"]
+    regions: list[SpatialRegion] = Field(min_length=1, max_length=8)
+
+
+EvidenceTargetRequest = Annotated[
+    ImageRegionEvidenceTarget | PdfRegionEvidenceTarget,
+    Field(discriminator="kind"),
+]
 
 
 class ChatStreamRequest(BaseModel):

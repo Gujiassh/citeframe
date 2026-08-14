@@ -11,9 +11,11 @@ export type VideoTranscriptSegment = {
 };
 
 export type VideoKeyframe = {
+  index?: number;
   timestampMs: number;
   frameIndex?: number | null;
   objectKey?: string | null;
+  contentSha256?: string | null;
 };
 
 export type VideoNormalizedContent = {
@@ -102,9 +104,11 @@ export function parseVideoNormalizedContent(raw: unknown): VideoNormalizedConten
         continue;
       }
       keyframes.push({
+        index: typeof row.index === "number" ? row.index : undefined,
         timestampMs: row.timestampMs,
         frameIndex: typeof row.frameIndex === "number" ? row.frameIndex : null,
         objectKey: typeof row.objectKey === "string" ? row.objectKey : null,
+        contentSha256: typeof row.contentSha256 === "string" ? row.contentSha256 : null,
       });
     }
   }

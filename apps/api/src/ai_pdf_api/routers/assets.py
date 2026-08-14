@@ -7,7 +7,7 @@ from tempfile import SpooledTemporaryFile
 from urllib.parse import quote
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Request, Response, status
-from fastapi.responses import StreamingResponse
+from fastapi.responses import JSONResponse, StreamingResponse
 from sqlalchemy import case, func, select
 from sqlalchemy.orm import Session
 
@@ -30,6 +30,8 @@ from ai_pdf_api.models import (
     ContentUnit,
     DocumentBlock,
     DocumentNormalizedContent,
+    DocxBlock,
+    DocxNormalizedContent,
     HtmlBlock,
     HtmlNormalizedContent,
     ImageRepresentationGeometry,
@@ -47,10 +49,13 @@ from ai_pdf_api.schemas.asset import (
     DocumentHeadingSummary,
     DocumentNormalizedBlock,
     DocumentNormalizedContentResponse,
+    DocxNormalizedBlock,
+    DocxNormalizedContentResponse,
     HtmlAssetDetail,
     HtmlHeadingSummary,
     HtmlNormalizedBlock,
     HtmlNormalizedContentResponse,
+    OfficeNormalizedTextResponse,
     PdfPageContent,
     PdfPageOcrBlock,
     AssetSummary,
@@ -441,7 +446,10 @@ def get_asset_file(
 
 @router.get(
     "/{asset_id}/representations/{representation_id}/content",
-    response_model=DocumentNormalizedContentResponse | HtmlNormalizedContentResponse,
+    response_model=DocumentNormalizedContentResponse
+    | HtmlNormalizedContentResponse
+    | DocxNormalizedContentResponse
+    | OfficeNormalizedTextResponse,
 )
 def get_document_representation_content(
     workspace_id: str,
@@ -449,8 +457,13 @@ def get_document_representation_content(
     representation_id: str,
     user_id: str = Depends(require_user_id),
     db: Session = Depends(get_db),
-) -> DocumentNormalizedContentResponse | HtmlNormalizedContentResponse:
-    """Generation-scoped normalized document/HTML content for exact block lookup.
+) -> (
+    DocumentNormalizedContentResponse
+    | HtmlNormalizedContentResponse
+    | DocxNormalizedContentResponse
+    | OfficeNormalizedTextResponse
+):
+    """Generation-scoped normalized content for exact block/text lookup.
 
     Source `/file` remains the immutable upload object and is unchanged.
     """
@@ -462,6 +475,29 @@ def get_document_representation_content(
             asset=asset,
             workspace_id=workspace_id,
             representation_id=representation_id,
+        )
+    if asset.asset_kind == "docx":
+        return _docx_representation_content(
+            db,
+            asset=asset,
+            workspace_id=workspace_id,
+            representation_id=representation_id,
+        )
+    if asset.asset_kind in {"xlsx", "pptx"}:
+        return _office_text_representation_content(
+            db,
+            asset=asset,
+            workspace_id=workspace_id,
+            representation_id=representation_id,
+        )
+    if asset.asset_kind in {"video", "audio"}:
+        return JSONResponse(
+            _av_normalized_json_content(
+                db,
+                asset=asset,
+                workspace_id=workspace_id,
+                representation_id=representation_id,
+            )
         )
     if asset.asset_kind != "document":
         raise HTTPException(
@@ -524,6 +560,164 @@ def get_document_representation_content(
             )
             for block in validated_blocks
         ],
+    )
+
+
+
+
+
+def _av_normalized_json_content(
+    db: Session,
+    *,
+    asset: Asset,
+    workspace_id: str,
+    representation_id: str,
+) -> dict:
+    """Return stored audio/video normalized JSON for viewers."""
+    kind = asset.asset_kind
+    representation = db.scalar(
+        select(AssetRepresentation).where(
+            AssetRepresentation.id == representation_id,
+            AssetRepresentation.asset_id == asset.id,
+            AssetRepresentation.workspace_id == workspace_id,
+            AssetRepresentation.representation_kind == f"{kind}_normalized",
+        )
+    )
+    if representation is None or not representation.object_key:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Normalized media representation not found.",
+        )
+    if not object_exists(representation.object_key):
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Normalized media object is missing.",
+        )
+    import json
+
+    payload = download_bytes(representation.object_key)
+    try:
+        body = json.loads(payload.decode("utf-8"))
+    except (UnicodeDecodeError, json.JSONDecodeError) as error:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Normalized media content is corrupt.",
+        ) from error
+    if not isinstance(body, dict):
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Normalized media content is invalid.",
+        )
+    return body
+
+
+def _docx_representation_content(
+    db: Session,
+    *,
+    asset: Asset,
+    workspace_id: str,
+    representation_id: str,
+) -> DocxNormalizedContentResponse:
+    from ai_pdf_api.modalities.docx import DocxIntegrityError, validate_docx_normalized_content
+
+    representation = db.scalar(
+        select(AssetRepresentation).where(
+            AssetRepresentation.id == representation_id,
+            AssetRepresentation.asset_id == asset.id,
+            AssetRepresentation.workspace_id == workspace_id,
+            AssetRepresentation.representation_kind == "docx_normalized",
+        )
+    )
+    if representation is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="DOCX representation not found.",
+        )
+    normalized = db.get(DocxNormalizedContent, representation.id)
+    if normalized is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="DOCX normalized content not found.",
+        )
+    blocks = db.scalars(
+        select(DocxBlock)
+        .where(DocxBlock.representation_id == representation.id)
+        .order_by(DocxBlock.block_order)
+    ).all()
+    try:
+        normalized_text = validate_docx_normalized_content(normalized)
+    except DocxIntegrityError as error:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"DOCX normalized content is corrupt: {error}",
+        ) from error
+    return DocxNormalizedContentResponse(
+        assetId=asset.id,
+        representationId=representation.id,
+        processingGeneration=representation.processing_generation,
+        format="docx",
+        parserVersion=normalized.parser_version,  # type: ignore[arg-type]
+        normalizationVersion=normalized.normalization_version,  # type: ignore[arg-type]
+        contentSha256=normalized.content_sha256,
+        normalizedText=normalized_text,
+        blocks=[
+            DocxNormalizedBlock(
+                blockId=block.block_id,
+                blockOrder=block.block_order,
+                blockKind=block.block_kind,  # type: ignore[arg-type]
+                headingLevel=block.heading_level,
+                headingPath=list(block.heading_path or []),
+                charStart=block.char_start,
+                charEnd=block.char_end,
+                textSha256=block.text_sha256,
+                text=block.text_content,
+            )
+            for block in blocks
+        ],
+    )
+
+
+def _office_text_representation_content(
+    db: Session,
+    *,
+    asset: Asset,
+    workspace_id: str,
+    representation_id: str,
+) -> OfficeNormalizedTextResponse:
+    kind = asset.asset_kind
+    if kind not in {"xlsx", "pptx"}:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Office representation not found.",
+        )
+    representation = db.scalar(
+        select(AssetRepresentation).where(
+            AssetRepresentation.id == representation_id,
+            AssetRepresentation.asset_id == asset.id,
+            AssetRepresentation.workspace_id == workspace_id,
+            AssetRepresentation.representation_kind == f"{kind}_normalized",
+        )
+    )
+    if representation is None or not representation.object_key:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Office normalized representation not found.",
+        )
+    if not object_exists(representation.object_key):
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Office normalized object is missing.",
+        )
+    payload = download_bytes(representation.object_key)
+    text = payload.decode("utf-8", errors="replace")
+    content_sha = representation.content_sha256 or ""
+    return OfficeNormalizedTextResponse(
+        assetId=asset.id,
+        representationId=representation.id,
+        processingGeneration=representation.processing_generation,
+        format=kind,  # type: ignore[arg-type]
+        contentSha256=content_sha,
+        normalizedText=text,
     )
 
 
