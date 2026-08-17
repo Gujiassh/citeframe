@@ -8,7 +8,7 @@
 - [x] Phase 1 implementation (N/B/M/R docs + enricher)
 - [x] Phase 2 Research package move (`services/research/` + shims)
 - [x] Implementation Critical review (controller ACCEPT)
-- [ ] Merge to main
+- [x] Merge to main (PR #14 docs/spec package; PR #15 Phase 1+2 implementation → `28a2c72`, 2026-08-15)
 
 ## Lane N — Narrative
 
@@ -39,9 +39,22 @@
 - [x] R3 Quick vs Research one-pager in product-design
 - [x] R4 Phase 2 `services/research/` package move + sys.modules shims
 
-## Explicitly not in this package
+## Explicitly not in this package (intentional non-goals)
+
+These remain **open product debt**, not incomplete hardening work. Do not mark done without a dedicated decision + package.
+
+| Item | Status | Notes |
+| --- | --- | --- |
+| R803 / M404 | deferred / `not_evaluable` | Needs paid model campaign + user study authorization |
+| New modalities | deferred | Follow modality onboarding checklist; not in hardening scope |
+| Dynamic Research DAG | deferred | Fixed DAG frozen; dynamic planning is a new product slice |
+| `ai_pdf_*` / `AI_PDF_*` rename | deferred | High churn; explicit non-goal of hardening (OQ-2) |
+| Mixed-modality Research seed suite (ops) | residual ops | Full multi-kind seed/restore suite beyond current mixed gates |
+| Live reindex / true multi-provider reconfig E2E | residual ops | After stub→Ollama embed default; run when env ready |
 
 - [ ] R803 / M404
 - [ ] New modalities
 - [ ] Dynamic DAG
 - [ ] `ai_pdf_*` rename
+- [ ] Stronger mixed-modality Research seed suite (ops)
+- [ ] Live reindex / multi-provider reconfig E2E (ops)
