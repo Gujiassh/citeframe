@@ -745,7 +745,11 @@ def _office_text_representation_content(
                     shapes_out.append(
                         PptxNormalizedShape(
                             shapeId=str(shape.get("shapeId") or ""),
-                            shapeKind=shape.get("shapeKind") or "text",  # type: ignore[arg-type]
+                            shapeKind=(
+                                shape.get("shapeKind")
+                                if shape.get("shapeKind") in {"text", "picture", "shape"}
+                                else "text"
+                            ),  # type: ignore[arg-type]
                             text=str(shape.get("text") or ""),
                             textSha256=shape.get("textSha256"),
                             xEmu=shape.get("xEmu"),
@@ -810,10 +814,10 @@ def _pptx_source_media_bytes(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Invalid media part path.",
         )
-    if not media_part.startswith("ppt/"):
+    if not media_part.startswith("ppt/media/"):
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Media part must be inside the PPTX package.",
+            detail="Media part must be under ppt/media/.",
         )
     if not asset.object_key or not object_exists(asset.object_key):
         raise HTTPException(

@@ -105,6 +105,7 @@ and base (`AI_PDF_OPENAI_API_BASE`, default CLIProxy `http://127.0.0.1:8317/v1`)
 
 | Capability | Settings | Fail-closed code when missing |
 | --- | --- | --- |
+| Chat / generation | `AI_PDF_GENERATION_PROVIDER` + OpenAI-compatible key | `generation_provider_not_configured` |
 | Image / PDF abstract caption | `AI_PDF_IMAGE_CAPTION_PROVIDER=openai`, `AI_PDF_IMAGE_CAPTION_MODEL=gpt-5.5` | `image_caption_provider_not_configured` |
 | Audio/Video transcript | `AI_PDF_ASR_PROVIDER=openai`, `AI_PDF_ASR_MODEL=whisper-1` | `asr_not_configured` |
 

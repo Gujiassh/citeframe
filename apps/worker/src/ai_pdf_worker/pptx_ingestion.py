@@ -97,7 +97,11 @@ class PptxIngestionAdapter:
         db.add(source)
         db.add(normalized)
         db.flush()
-        for order, shape in enumerate(parsed.shapes):
+        # Index only shapes with non-empty text (layout may also list pictures/geometry).
+        order = 0
+        for shape in parsed.shapes:
+            if not shape.text or not shape.text.strip():
+                continue
             locator = EvidenceLocator(
                 workspace_id=asset.workspace_id,
                 asset_id=asset.id,
@@ -135,9 +139,10 @@ class PptxIngestionAdapter:
                     created_at=created_at,
                 )
             )
+            order += 1
         db.flush()
-        # Prefer structured layout JSON (pptx-layout-v1). content_sha256 remains
-        # the normalized text digest for locator/index stability.
+        # Prefer structured layout JSON (pptx-layout-v1). content_sha256 is the
+        # payload byte digest (layout JSON or legacy plain text).
         layout_body = parsed.layout_payload or parsed.normalized_text.encode("utf-8")
         content_type = (
             "application/json; charset=utf-8"

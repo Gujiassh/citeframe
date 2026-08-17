@@ -125,3 +125,18 @@ def test_parse_pptx_geometry_and_picture_layout() -> None:
     import json
     body = json.loads(parsed.layout_payload.decode("utf-8"))
     assert "Hello" in body["normalizedText"]
+
+
+def test_pptx_layout_payload_hash_matches_content_sha256() -> None:
+    from hashlib import sha256
+
+    payload = build_minimal_pptx_bytes(
+        shapes=[(1, "2", "Hello")],
+        with_geometry=True,
+        with_picture=True,
+    )
+    parsed = parse_pptx_presentation(payload)
+    assert parsed.layout_payload
+    assert parsed.content_sha256 == sha256(parsed.layout_payload).hexdigest()
+    assert parsed.text_content_sha256
+    assert parsed.text_content_sha256 != parsed.content_sha256

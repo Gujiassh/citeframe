@@ -218,3 +218,9 @@ def test_pptx_ingest_stores_layout_json_payload() -> None:
             for slide in body["slides"]
             for shape in slide["shapes"]
         )
+        # GeneratedObject integrity: payload hash == content_sha256
+        assert obj.content_sha256 == sha256(obj.payload).hexdigest()
+        # Pictures must not create empty text units
+        units = list(db.scalars(select(ContentUnit).order_by(ContentUnit.unit_order)))
+        assert units
+        assert all(unit.text_content and unit.text_content.strip() for unit in units)
