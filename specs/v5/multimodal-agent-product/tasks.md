@@ -218,5 +218,5 @@ Engineering residual package (boundaries / modality purity / Research freeze / n
 
 - Spec index: [`../architecture-hardening/README.md`](../architecture-hardening/README.md)
 - Plan audit: **ACCEPT** ([`../architecture-hardening/reviews/2026-08-15-plan-audit.md`](../architecture-hardening/reviews/2026-08-15-plan-audit.md))
-- Implementation: **not started** (owner start required)
+- Implementation: **done on main** (PR #14/#15, 2026-08-15); package closed except intentional non-goals
 - [x] Office/PPTX true layout + picture canvas (`pptx-layout-v1`, geometry EMU, media stream); preview embedding default real Ollama (no stub default); generation key optional fail-closed for open-source (2026-08-17)

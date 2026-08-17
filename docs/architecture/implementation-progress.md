@@ -17,7 +17,7 @@
 
 ## 2. 当前总状态
 
-当前项目状态（2026-08-15）：V5-F 工程能力面已在 main 关闭；后续优先 architecture-hardening 与 V5-E 证据。历史描述：`V1/V2 基础闭环、V3 PDF/Image 多模态 Evidence 主链与 V4 R000-R800 Research 工程基线已完成。当前主动主线切换为 V5：先建设多模型/provider profile、多模态资料接入和受控多 Agent 协作，再集中进行 R803 模型质量评估与 M404 真实用户验证。R803 formal v1 的失败目录保持不可变，modelQuality 与 M404 仍为 not_evaluable，产品保持 internal_preview；这些后置证据不阻塞 V5 功能开发。`
+当前项目状态（2026-08-17）：V5-F 工程能力面与 architecture-hardening 已在 main 关闭；PPTX layout/embed preview 默认已合；后续优先 V5-E 证据（R803/M404）与 ops 真复配。历史描述：`V1/V2 基础闭环、V3 PDF/Image 多模态 Evidence 主链与 V4 R000-R800 Research 工程基线已完成。当前主动主线切换为 V5：先建设多模型/provider profile、多模态资料接入和受控多 Agent 协作，再集中进行 R803 模型质量评估与 M404 真实用户验证。R803 formal v1 的失败目录保持不可变，modelQuality 与 M404 仍为 not_evaluable，产品保持 internal_preview；这些后置证据不阻塞 V5 功能开发。`
 
 当前策略与任务入口：`specs/v5/multimodal-agent-product/`。V3/V4 规格、R803 artifact 和 M404 协议继续作为历史合同与后置验收证据。
 
@@ -58,7 +58,7 @@ M403A 的逐次优化假设、实验手段、通过/否决结果、指标和 art
 | V5-C | 多 Agent 协作产品化 | 工程 `ACCEPT`，Medium residual follow-up | C-API-WORKER、C-BOUNDARY 与 R800 v6 已通过 | 固定 Research DAG 已完成计划、并行、审批、重试、恢复和 Artifact 体验；生产 Agent I/O 已严格版本化，不建设通用 Agent 平台 |
 | V5-D | 端到端整合与工程稳定 | 工程 `ACCEPT`（internal-preview） | D-G0–D-G7 工程门通过（D-G3/D-G5 partial-existing；D-G6 focused live） | 全量 API 562 / Worker 296 / Web 131 + lint/tsc/build；D-G4 production-start 与 D-G6 mixed live seed 已有证据；R803/M404 仍 not_evaluable；D-G6 empty-target mixed Compose 已通过 |
 | V5-E | 模型质量与用户价值 | E001 计划包已完成 | R803/M404 仍 `not_evaluable` | 付费 R803 暂缓；不阻塞 V5-F |
-| V5-F | 模态补全 + Agent 协作完善 | 工程 `ACCEPT`（internal-preview） | main 已合 PR #1–#13（S0 九模态、F-AGENT、PV-4、retrieval-auto crop、Office canvas、video keyframe） | 工程主线关闭；R803/M404 仍 not_evaluable；架构硬化见 `specs/v5/architecture-hardening/` |
+| V5-F | 模态补全 + Agent 协作完善 | 工程 `ACCEPT`（internal-preview） | main 已合通过 V5-F + hardening + PPTX layout（含 PR #13 residual、#14/#15 hardening、#16/#17 PPTX layout/hash；R803/M404 仍 not_evaluable） | 工程主线关闭；R803/M404 仍 not_evaluable；架构硬化见 `specs/v5/architecture-hardening/` |
 
 ## 4. 已完成的设计文档
 
@@ -73,17 +73,28 @@ M403A 的逐次优化假设、实验手段、通过/否决结果、指标和 art
 
 ## 5. 当前建议实施顺序
 
-V1、V2-A、阶段 9、V3 M401-M403B 与 V4 R000-R800 工程基线已完成。后续按 V5 capability-first 顺序推进：
+V1–V4 与 V5-A/B/C/D/F 工程主线、architecture-hardening、PPTX layout 已在 main 关闭。建议顺序：
 
-1. V5-A：A002-A007 已完成；后续进入 V5-B 多模态资料扩展和按需的 V5-D 工程整合
-2. V5-B：在 Asset/Evidence 稳定内核上逐模态接入文档、Audio、Video 等资料，完成 Representation、ContentUnit、typed locator、Viewer、检索、删除和恢复
-3. V5-C：复用 V4 fixed Research executor，完成用户可用的多 Agent 计划、并行、审批、重试、恢复和 Artifact 体验
-4. V5-D：完成多模型、多模态、多 Agent 的混合 Workspace 整合和端到端工程回归
-5. V5-E：功能稳定后再运行 R803/后续模型质量评估和 M404；保留冻结失败证据，不覆盖或续跑 v1
+1. **Ops 真复配**（可选、环境就绪时）：Ollama reindex、preview 真 key 冒烟、stub 向量库迁移
+2. **V5-E**：授权后跑 R803 真模型质量与 M404 用户价值（发布证据；不阻塞功能）
+3. **产品债（需独立决策包）**：动态 Research DAG、`ai_pdf_*` 重命名、新模态、更强 mixed Research seed
+4. **深度 polish**：Office/PPT 非 WYSIWYG 已知限制内的体验打磨
 
-## 6. 当前正在做什么
+## 6. 工程关闭后的残差 backlog（诚实清单）
 
-当前：`V5-A/B/C 与 V5-D 工程门已完成（internal-preview）。2026-08-12 跑通 D-G7 全量回归：API 562 passed、Worker 296 passed、Web 131 passed，lint/tsc/build/compileall/diff-check 通过；Critical closeout ACCEPT with residuals。artifact：docs/evals/artifacts/v5d-20260811-01/d-g7/。R803/M404 仍 not_evaluable（V5-E）。D-G6 empty-target mixed Compose residual 已关闭。V5-E E001 计划包已落地；正式 R803/M404 待授权。`
+| 类型 | 项 | 状态 |
+| --- | --- | --- |
+| 发布证据 | R803 真模型质量 / M404 用户价值 | deferred / not_evaluable |
+| Ops | stub→真 Ollama reindex、多 provider 真复配 E2E | residual（能力在；环境证据后置） |
+| 产品债 | 动态 Research DAG、`ai_pdf_*` 重命名、新模态 | deferred（需独立决策包） |
+| Ops/产品 | 更强 mixed-modality Research seed 套件 | residual |
+| 深度 | Office 非 PPT 级 WYSIWYG、PPT 母版/动画等 | known limit |
+
+详情见 `specs/v5/architecture-hardening/tasks.md`（Explicitly not in this package）与 `S0_HANDOFF.md`。
+
+## 7. 当前正在做什么
+
+当前（2026-08-17）：工程主线已关。main tip 含 V5-F、architecture-hardening（PR #14/#15）、PPTX layout+hash（PR #16/#17）、preview 默认真 Ollama embed。产品阶段仍为 `internal_preview`。主动缺口是 **V5-E（R803/M404）** 与 **ops 真复配**，不是功能断链。残差清单见 §6。
 
 
 ## 2026-08-13：PDF 页内视觉列入开发计划
