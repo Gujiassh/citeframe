@@ -20,6 +20,27 @@ export type DocxNormalizedContent = {
   blocks: DocxNormalizedBlock[];
 };
 
+export type PptxShapeKind = "text" | "picture" | "shape";
+
+export type PptxLayoutShape = {
+  shapeId: string;
+  shapeKind: PptxShapeKind;
+  text: string;
+  textSha256?: string | null;
+  xEmu: number | null;
+  yEmu: number | null;
+  cxEmu: number | null;
+  cyEmu: number | null;
+  mediaPart: string | null;
+  mediaContentType: string | null;
+  hasMedia: boolean;
+};
+
+export type PptxLayoutSlide = {
+  slideIndex: number;
+  shapes: PptxLayoutShape[];
+};
+
 export type OfficeNormalizedText = {
   assetId: string;
   representationId: string;
@@ -27,6 +48,10 @@ export type OfficeNormalizedText = {
   format: "xlsx" | "pptx";
   contentSha256: string;
   normalizedText: string;
+  layoutVersion?: string | null;
+  slideWidthEmu?: number | null;
+  slideHeightEmu?: number | null;
+  slides?: PptxLayoutSlide[] | null;
 };
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -55,7 +80,6 @@ export function highlightDocxBlock(
   if (!block) return null;
   return { blockId: block.blockId, text: block.text };
 }
-
 
 export type PptxShapeLine = {
   slideIndex: number;
@@ -90,8 +114,65 @@ export function parsePptxNormalizedSlides(normalizedText: string): PptxSlideGrou
     .map(([slideIndex, shapes]) => ({ slideIndex, shapes }));
 }
 
+const DEFAULT_SLIDE_W_EMU = 12_192_000;
+const DEFAULT_SLIDE_H_EMU = 6_858_000;
+
+/** Prefer structured layout slides from API; fall back to plain-text line parse. */
+export function resolvePptxSlides(content: OfficeNormalizedText): {
+  slideWidthEmu: number;
+  slideHeightEmu: number;
+  layoutVersion: string | null;
+  slides: PptxLayoutSlide[];
+} {
+  if (content.slides && content.slides.length > 0) {
+    return {
+      slideWidthEmu: content.slideWidthEmu ?? DEFAULT_SLIDE_W_EMU,
+      slideHeightEmu: content.slideHeightEmu ?? DEFAULT_SLIDE_H_EMU,
+      layoutVersion: content.layoutVersion ?? null,
+      slides: content.slides.map((slide) => ({
+        slideIndex: slide.slideIndex,
+        shapes: slide.shapes.map((shape) => ({
+          shapeId: shape.shapeId,
+          shapeKind: shape.shapeKind ?? "text",
+          text: shape.text ?? "",
+          textSha256: shape.textSha256,
+          xEmu: shape.xEmu ?? null,
+          yEmu: shape.yEmu ?? null,
+          cxEmu: shape.cxEmu ?? null,
+          cyEmu: shape.cyEmu ?? null,
+          mediaPart: shape.mediaPart ?? null,
+          mediaContentType: shape.mediaContentType ?? null,
+          hasMedia: Boolean(shape.hasMedia || shape.mediaPart),
+        })),
+      })),
+    };
+  }
+  const legacy = parsePptxNormalizedSlides(content.normalizedText);
+  return {
+    slideWidthEmu: content.slideWidthEmu ?? DEFAULT_SLIDE_W_EMU,
+    slideHeightEmu: content.slideHeightEmu ?? DEFAULT_SLIDE_H_EMU,
+    layoutVersion: content.layoutVersion ?? "pptx-layout-legacy-text",
+    slides: legacy.map((slide) => ({
+      slideIndex: slide.slideIndex,
+      shapes: slide.shapes.map((shape) => ({
+        shapeId: shape.shapeId,
+        shapeKind: "text" as const,
+        text: shape.text,
+        textSha256: null,
+        xEmu: null,
+        yEmu: null,
+        cxEmu: null,
+        cyEmu: null,
+        mediaPart: null,
+        mediaContentType: null,
+        hasMedia: false,
+      })),
+    })),
+  };
+}
+
 export function highlightPptxShape(
-  slides: PptxSlideGroup[],
+  slides: Array<{ slideIndex: number; shapes: Array<{ shapeId: string; text: string }> }>,
   shapeId: string | undefined,
   slideIndex: number | undefined,
 ): { slideIndex: number; shapeId: string; text: string } | null {
@@ -100,9 +181,24 @@ export function highlightPptxShape(
     if (slideIndex !== undefined && slide.slideIndex !== slideIndex) continue;
     const shape = slide.shapes.find((item) => item.shapeId === shapeId);
     if (shape) {
-      return { slideIndex: shape.slideIndex, shapeId: shape.shapeId, text: shape.text };
+      return { slideIndex: slide.slideIndex, shapeId: shape.shapeId, text: shape.text };
     }
   }
   return null;
 }
 
+export function shapeHasGeometry(shape: {
+  xEmu: number | null;
+  yEmu: number | null;
+  cxEmu: number | null;
+  cyEmu: number | null;
+}): boolean {
+  return (
+    shape.xEmu != null &&
+    shape.yEmu != null &&
+    shape.cxEmu != null &&
+    shape.cyEmu != null &&
+    shape.cxEmu > 0 &&
+    shape.cyEmu > 0
+  );
+}

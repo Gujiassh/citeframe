@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { AlertTriangle, FileSpreadsheet, FileText, Loader2, Presentation } from "lucide-react";
 
 import type { EvidenceRendererProps } from "@/lib/evidence/registry";
@@ -9,9 +9,12 @@ import {
   highlightPptxShape,
   parseDocxNormalizedContent,
   parseOfficeNormalizedText,
-  parsePptxNormalizedSlides,
+  resolvePptxSlides,
+  shapeHasGeometry,
   type DocxNormalizedContent,
   type OfficeNormalizedText,
+  type PptxLayoutShape,
+  type PptxLayoutSlide,
 } from "@/lib/evidence/office-content";
 import { useWorkspace } from "@/lib/workspace-context";
 
@@ -190,6 +193,127 @@ export function XlsxEvidenceRenderer({
   );
 }
 
+function PptxSlideCanvas({
+  slide,
+  slideWidthEmu,
+  slideHeightEmu,
+  activeShapeId,
+  workspaceId,
+  assetId,
+}: {
+  slide: PptxLayoutSlide;
+  slideWidthEmu: number;
+  slideHeightEmu: number;
+  activeShapeId: string | undefined;
+  workspaceId: string;
+  assetId: string;
+}) {
+  const hasAnyGeometry = slide.shapes.some(shapeHasGeometry);
+  if (!hasAnyGeometry) {
+    return (
+      <ul className="space-y-1.5">
+        {slide.shapes.map((shape) => {
+          const isActive = activeShapeId === shape.shapeId;
+          return (
+            <li
+              key={`${slide.slideIndex}-${shape.shapeId}-${shape.text.slice(0, 24)}`}
+              className={
+                isActive
+                  ? "rounded-md bg-amber-500/15 px-2 py-1.5 text-sm ring-1 ring-amber-500/40"
+                  : "rounded-md px-2 py-1.5 text-sm"
+              }
+            >
+              <span className="mr-2 font-mono text-[11px] text-muted-foreground">
+                #{shape.shapeId}
+              </span>
+              <span className="leading-relaxed">{shape.text || shape.shapeKind}</span>
+            </li>
+          );
+        })}
+      </ul>
+    );
+  }
+
+  const aspect = slideHeightEmu / Math.max(slideWidthEmu, 1);
+
+  return (
+    <div
+      className="relative w-full overflow-hidden rounded-md border border-border/60 bg-white shadow-sm dark:bg-zinc-950"
+      style={{ paddingBottom: `${aspect * 100}%` }}
+    >
+      <div className="absolute inset-0">
+        {slide.shapes.map((shape) => (
+          <PptxShapeBox
+            key={`${slide.slideIndex}-${shape.shapeId}`}
+            shape={shape}
+            slideWidthEmu={slideWidthEmu}
+            slideHeightEmu={slideHeightEmu}
+            active={activeShapeId === shape.shapeId}
+            workspaceId={workspaceId}
+            assetId={assetId}
+          />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function PptxShapeBox({
+  shape,
+  slideWidthEmu,
+  slideHeightEmu,
+  active,
+  workspaceId,
+  assetId,
+}: {
+  shape: PptxLayoutShape;
+  slideWidthEmu: number;
+  slideHeightEmu: number;
+  active: boolean;
+  workspaceId: string;
+  assetId: string;
+}) {
+  if (!shapeHasGeometry(shape)) return null;
+  const left = ((shape.xEmu as number) / slideWidthEmu) * 100;
+  const top = ((shape.yEmu as number) / slideHeightEmu) * 100;
+  const width = ((shape.cxEmu as number) / slideWidthEmu) * 100;
+  const height = ((shape.cyEmu as number) / slideHeightEmu) * 100;
+  const mediaUrl =
+    shape.hasMedia && shape.mediaPart
+      ? `/api/workspaces/${workspaceId}/assets/${assetId}/pptx-media?part=${encodeURIComponent(shape.mediaPart)}`
+      : null;
+
+  return (
+    <div
+      className={
+        active
+          ? "absolute overflow-hidden rounded-sm bg-amber-500/10 ring-2 ring-amber-500/70"
+          : "absolute overflow-hidden rounded-sm ring-1 ring-border/40"
+      }
+      style={{
+        left: `${left}%`,
+        top: `${top}%`,
+        width: `${width}%`,
+        height: `${height}%`,
+      }}
+      title={shape.text || shape.shapeId}
+    >
+      {mediaUrl ? (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img
+          src={mediaUrl}
+          alt={shape.text || "slide image"}
+          className="h-full w-full object-contain"
+        />
+      ) : (
+        <div className="flex h-full w-full items-start overflow-hidden p-1 text-[10px] leading-snug text-foreground/90 sm:text-xs">
+          {shape.text}
+        </div>
+      )}
+    </div>
+  );
+}
+
 export function PptxEvidenceRenderer({
   asset,
   locator,
@@ -198,13 +322,15 @@ export function PptxEvidenceRenderer({
   const { currentWorkspace } = useWorkspace();
   const workspaceId = currentWorkspace?.id ?? "";
   const loadState = useOfficeContent(asset.id, sourceVersions?.representationId, workspaceId);
-  const slides =
-    loadState.status === "ready-text" && loadState.content.format === "pptx"
-      ? parsePptxNormalizedSlides(loadState.content.normalizedText)
-      : [];
+  const layout = useMemo(() => {
+    if (loadState.status !== "ready-text" || loadState.content.format !== "pptx") {
+      return null;
+    }
+    return resolvePptxSlides(loadState.content);
+  }, [loadState]);
   const active =
-    locator?.kind === "pptx_shape"
-      ? highlightPptxShape(slides, locator.shapeId, locator.slideIndex)
+    layout && locator?.kind === "pptx_shape"
+      ? highlightPptxShape(layout.slides, locator.shapeId, locator.slideIndex)
       : null;
 
   return (
@@ -212,6 +338,9 @@ export function PptxEvidenceRenderer({
       <div className="flex items-center gap-2 text-sm font-medium">
         <Presentation className="h-4 w-4" />
         <span>PPTX · {asset.title || asset.id}</span>
+        {layout?.layoutVersion ? (
+          <span className="text-xs font-normal text-muted-foreground">{layout.layoutVersion}</span>
+        ) : null}
       </div>
       {locator?.kind === "pptx_shape" ? (
         <div className="flex flex-wrap gap-2">
@@ -230,47 +359,28 @@ export function PptxEvidenceRenderer({
           <AlertTriangle className="h-4 w-4" /> Content unavailable
         </div>
       ) : null}
-      {loadState.status === "ready-text" ? (
-        slides.length > 0 ? (
-          <div className="min-h-0 flex-1 space-y-3 overflow-auto">
-            {slides.map((slide) => (
-              <section
-                key={slide.slideIndex}
-                className="rounded-md border border-border/50 bg-muted/15 p-3"
-              >
-                <div className="mb-2 text-xs font-medium text-muted-foreground">
-                  Slide {slide.slideIndex}
-                </div>
-                <ul className="space-y-1.5">
-                  {slide.shapes.map((shape) => {
-                    const isActive =
-                      active?.slideIndex === shape.slideIndex &&
-                      active?.shapeId === shape.shapeId;
-                    return (
-                      <li
-                        key={`${shape.slideIndex}-${shape.shapeId}-${shape.text.slice(0, 24)}`}
-                        className={
-                          isActive
-                            ? "rounded-md bg-amber-500/15 px-2 py-1.5 text-sm ring-1 ring-amber-500/40"
-                            : "rounded-md px-2 py-1.5 text-sm"
-                        }
-                      >
-                        <span className="mr-2 font-mono text-[11px] text-muted-foreground">
-                          #{shape.shapeId}
-                        </span>
-                        <span className="leading-relaxed">{shape.text}</span>
-                      </li>
-                    );
-                  })}
-                </ul>
-              </section>
-            ))}
-          </div>
-        ) : (
-          <pre className="min-h-0 flex-1 overflow-auto whitespace-pre-wrap rounded-md border border-border/50 bg-muted/20 p-3 font-mono text-xs leading-relaxed">
-            {loadState.content.normalizedText}
-          </pre>
-        )
+      {layout && layout.slides.length > 0 ? (
+        <div className="min-h-0 flex-1 space-y-4 overflow-auto">
+          {layout.slides.map((slide) => (
+            <section key={slide.slideIndex} className="space-y-2">
+              <div className="text-xs font-medium text-muted-foreground">Slide {slide.slideIndex}</div>
+              <PptxSlideCanvas
+                slide={slide}
+                slideWidthEmu={layout.slideWidthEmu}
+                slideHeightEmu={layout.slideHeightEmu}
+                activeShapeId={
+                  active?.slideIndex === slide.slideIndex ? active.shapeId : undefined
+                }
+                workspaceId={workspaceId}
+                assetId={asset.id}
+              />
+            </section>
+          ))}
+        </div>
+      ) : loadState.status === "ready-text" ? (
+        <pre className="min-h-0 flex-1 overflow-auto whitespace-pre-wrap rounded-md border border-border/50 bg-muted/20 p-3 font-mono text-xs leading-relaxed">
+          {loadState.content.normalizedText}
+        </pre>
       ) : null}
     </div>
   );

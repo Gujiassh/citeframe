@@ -167,8 +167,27 @@ class DocxNormalizedContentResponse(BaseModel):
     blocks: list[DocxNormalizedBlock]
 
 
+class PptxNormalizedShape(BaseModel):
+    shapeId: str
+    shapeKind: Literal["text", "picture", "shape"] = "text"
+    text: str = ""
+    textSha256: str | None = None
+    xEmu: int | None = None
+    yEmu: int | None = None
+    cxEmu: int | None = None
+    cyEmu: int | None = None
+    mediaPart: str | None = None
+    mediaContentType: str | None = None
+    hasMedia: bool = False
+
+
+class PptxNormalizedSlide(BaseModel):
+    slideIndex: int = Field(ge=1)
+    shapes: list[PptxNormalizedShape] = Field(default_factory=list)
+
+
 class OfficeNormalizedTextResponse(BaseModel):
-    """Normalized text body for xlsx/pptx (no block table in v1)."""
+    """Normalized text body for xlsx; pptx may include layout slides (pptx-layout-v1)."""
 
     assetId: str
     representationId: str
@@ -176,6 +195,11 @@ class OfficeNormalizedTextResponse(BaseModel):
     format: Literal["xlsx", "pptx"]
     contentSha256: str
     normalizedText: str
+    # PPTX layout (optional; absent for xlsx and legacy pptx plain text)
+    layoutVersion: str | None = None
+    slideWidthEmu: int | None = None
+    slideHeightEmu: int | None = None
+    slides: list[PptxNormalizedSlide] | None = None
 
 
 class AssetDetailResponse(BaseModel):

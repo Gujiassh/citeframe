@@ -54,14 +54,15 @@ The development Compose file starts PostgreSQL, Redis, and MinIO. The Web, API, 
 
 Do **not** leave daily product Q&A pointed at the M403B acceptance stub (`:18081`).
 
-- **preview** — real generation provider for product use
+- **preview** — real Ollama embedding by default; generation key is **optional** (fail-closed until you set your own). Templates ship **no secrets**.
 - **accept** — deterministic stub for engineering gates only
 
 See [`docs/architecture/local-env-profiles.md`](docs/architecture/local-env-profiles.md) and:
 
 ```bash
 cp infra/env/preview.env.example infra/env/preview.local.env
-# edit keys, then:
+# optional: add AI_PDF_OPENAI_API_KEY in preview.local.env for chat/caption/ASR
+# ensure Ollama is up with qwen3-embedding:0.6b for real embeddings
 infra/scripts/citeframe-local-env.sh preview start --with-web
 ```
 

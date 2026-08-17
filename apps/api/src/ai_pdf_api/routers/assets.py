@@ -709,16 +709,153 @@ def _office_text_representation_content(
             detail="Office normalized object is missing.",
         )
     payload = download_bytes(representation.object_key)
-    text = payload.decode("utf-8", errors="replace")
     content_sha = representation.content_sha256 or ""
+    if kind == "pptx":
+        from ai_pdf_api.modalities.pptx import parse_pptx_layout_payload
+        from ai_pdf_api.schemas.asset import PptxNormalizedShape, PptxNormalizedSlide
+
+        layout = parse_pptx_layout_payload(payload)
+        if layout is None:
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail="PPTX normalized content is corrupt.",
+            )
+        normalized_text = str(layout.get("normalizedText") or "")
+        if not normalized_text and payload:
+            # legacy plain text already in payload when layoutVersion is legacy
+            try:
+                normalized_text = payload.decode("utf-8", errors="replace")
+            except Exception:
+                normalized_text = ""
+        slides_out: list[PptxNormalizedSlide] | None = None
+        raw_slides = layout.get("slides")
+        if isinstance(raw_slides, list):
+            slides_out = []
+            for slide in raw_slides:
+                if not isinstance(slide, dict):
+                    continue
+                slide_index = int(slide.get("slideIndex") or 0)
+                if slide_index < 1:
+                    continue
+                shapes_out: list[PptxNormalizedShape] = []
+                for shape in slide.get("shapes") or []:
+                    if not isinstance(shape, dict):
+                        continue
+                    media_part = shape.get("mediaPart")
+                    shapes_out.append(
+                        PptxNormalizedShape(
+                            shapeId=str(shape.get("shapeId") or ""),
+                            shapeKind=shape.get("shapeKind") or "text",  # type: ignore[arg-type]
+                            text=str(shape.get("text") or ""),
+                            textSha256=shape.get("textSha256"),
+                            xEmu=shape.get("xEmu"),
+                            yEmu=shape.get("yEmu"),
+                            cxEmu=shape.get("cxEmu"),
+                            cyEmu=shape.get("cyEmu"),
+                            mediaPart=media_part if isinstance(media_part, str) else None,
+                            mediaContentType=(
+                                shape.get("mediaContentType")
+                                if isinstance(shape.get("mediaContentType"), str)
+                                else None
+                            ),
+                            hasMedia=bool(media_part),
+                        )
+                    )
+                slides_out.append(
+                    PptxNormalizedSlide(slideIndex=slide_index, shapes=shapes_out)
+                )
+        return OfficeNormalizedTextResponse(
+            assetId=asset.id,
+            representationId=representation.id,
+            processingGeneration=representation.processing_generation,
+            format="pptx",
+            contentSha256=content_sha,
+            normalizedText=normalized_text,
+            layoutVersion=layout.get("layoutVersion")
+            if isinstance(layout.get("layoutVersion"), str)
+            else None,
+            slideWidthEmu=layout.get("slideWidthEmu")
+            if isinstance(layout.get("slideWidthEmu"), int)
+            else None,
+            slideHeightEmu=layout.get("slideHeightEmu")
+            if isinstance(layout.get("slideHeightEmu"), int)
+            else None,
+            slides=slides_out,
+        )
+    text_body = payload.decode("utf-8", errors="replace")
     return OfficeNormalizedTextResponse(
         assetId=asset.id,
         representationId=representation.id,
         processingGeneration=representation.processing_generation,
         format=kind,  # type: ignore[arg-type]
         contentSha256=content_sha,
-        normalizedText=text,
+        normalizedText=text_body,
     )
+
+
+
+def _pptx_source_media_bytes(
+    db: Session,
+    *,
+    asset: Asset,
+    workspace_id: str,
+    media_part: str,
+) -> tuple[bytes, str]:
+    """Read a media part from the original PPTX package (zip path under ppt/)."""
+    from ai_pdf_api.modalities.office_ooxml import OfficePackageError, read_zip_bytes
+    from ai_pdf_api.modalities.pptx import guess_pptx_media_content_type
+
+    if not media_part or ".." in media_part or media_part.startswith("/"):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Invalid media part path.",
+        )
+    if not media_part.startswith("ppt/"):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Media part must be inside the PPTX package.",
+        )
+    if not asset.object_key or not object_exists(asset.object_key):
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="PPTX source object is missing.",
+        )
+    package = download_bytes(asset.object_key)
+    try:
+        data = read_zip_bytes(package, media_part)
+    except OfficePackageError as error:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=str(error),
+        ) from error
+    return data, guess_pptx_media_content_type(media_part)
+
+
+
+@router.get(
+    "/{asset_id}/pptx-media",
+    status_code=status.HTTP_200_OK,
+)
+def get_pptx_media_part(
+    workspace_id: str,
+    asset_id: str,
+    part: str = Query(..., min_length=1, max_length=512),
+    db: Session = Depends(get_db),
+    user_id: str = Depends(require_user_id),
+) -> Response:
+    """Stream an embedded picture/media part from a PPTX source package."""
+    get_accessible_workspace(db, user_id, workspace_id)
+    asset = get_workspace_asset(db, workspace_id, asset_id)
+    if asset.asset_kind != "pptx":
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="PPTX asset not found.",
+        )
+    data, content_type = _pptx_source_media_bytes(
+        db, asset=asset, workspace_id=workspace_id, media_part=part
+    )
+    return Response(content=data, media_type=content_type)
+
 
 
 def _html_representation_content(
