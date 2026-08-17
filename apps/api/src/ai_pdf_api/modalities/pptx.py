@@ -91,6 +91,9 @@ class PptxParseResult:
     slide_width_emu: int = DEFAULT_SLIDE_CX_EMU
     slide_height_emu: int = DEFAULT_SLIDE_CY_EMU
     layout_payload: bytes = b""
+    # Digest of normalized text lines (locator text contract). Distinct from
+    # content_sha256 when the stored object is layout JSON (payload byte hash).
+    text_content_sha256: str = ""
 
     def layout_dict(self) -> dict:
         slides: dict[int, list[dict]] = {}
@@ -109,6 +112,7 @@ class PptxParseResult:
                     "mediaContentType": shape.media_content_type,
                 }
             )
+        text_digest = self.text_content_sha256 or text_sha256(self.normalized_text)
         return {
             "layoutVersion": PPTX_LAYOUT_VERSION,
             "normalizationVersion": PPTX_NORMALIZATION_VERSION,
@@ -116,6 +120,7 @@ class PptxParseResult:
             "slideWidthEmu": self.slide_width_emu,
             "slideHeightEmu": self.slide_height_emu,
             "normalizedText": self.normalized_text,
+            "textContentSha256": text_digest,
             "slides": [
                 {"slideIndex": index, "shapes": slides[index]}
                 for index in sorted(slides)
@@ -159,7 +164,9 @@ def _xfrm_box(parent: ElementTree.Element) -> tuple[int | None, int | None, int 
 
 
 def _slide_rel_map(payload: bytes, slide_index: int) -> dict[str, str]:
-    """Map rId -> target part path relative to package root."""
+    """Map rId -> target part path relative to package root (normalized under ppt/)."""
+    import posixpath
+
     rel_part = f"ppt/slides/_rels/slide{slide_index}.xml.rels"
     try:
         rel_xml = read_zip_text(payload, rel_part)
@@ -174,13 +181,14 @@ def _slide_rel_map(payload: bytes, slide_index: int) -> dict[str, str]:
         target = rel.attrib.get("Target")
         if not rid or not target:
             continue
-        # Targets are relative to ppt/slides/
         if target.startswith("/"):
             part = target.lstrip("/")
-        elif target.startswith("../"):
-            part = "ppt/" + target[3:]
         else:
-            part = f"ppt/slides/{target}"
+            part = posixpath.normpath(f"ppt/slides/{target}")
+        if ".." in part.split("/"):
+            continue
+        if not part.startswith("ppt/"):
+            continue
         mapping[rid] = part
     return mapping
 
@@ -324,28 +332,32 @@ def parse_pptx_presentation(payload: bytes, *, mime_type: str = PPTX_MIME) -> Pp
             *shapes[1:],
         ]
     normalized = "\n".join(lines)
-    result = PptxParseResult(
+    text_digest = text_sha256(normalized)
+    # GeneratedObject integrity requires content_sha256 == sha256(payload bytes).
+    # Text digest lives in layout JSON as textContentSha256.
+    draft = PptxParseResult(
         shapes=tuple(shapes),
         source_sha256=sha256(payload).hexdigest(),
         normalized_text=normalized,
-        content_sha256=text_sha256(normalized),
+        content_sha256=text_digest,
         slide_width_emu=slide_width,
         slide_height_emu=slide_height,
+        text_content_sha256=text_digest,
     )
-    layout_bytes = json.dumps(result.layout_dict(), ensure_ascii=False, separators=(",", ":")).encode(
+    layout_bytes = json.dumps(draft.layout_dict(), ensure_ascii=False, separators=(",", ":")).encode(
         "utf-8"
     )
-    # content_sha256 stays on normalized text for locator/index stability;
-    # layout is additive metadata in the stored object.
     return PptxParseResult(
-        shapes=result.shapes,
-        source_sha256=result.source_sha256,
-        normalized_text=result.normalized_text,
-        content_sha256=result.content_sha256,
-        slide_width_emu=result.slide_width_emu,
-        slide_height_emu=result.slide_height_emu,
+        shapes=draft.shapes,
+        source_sha256=draft.source_sha256,
+        normalized_text=draft.normalized_text,
+        content_sha256=sha256(layout_bytes).hexdigest(),
+        slide_width_emu=draft.slide_width_emu,
+        slide_height_emu=draft.slide_height_emu,
         layout_payload=layout_bytes,
+        text_content_sha256=text_digest,
     )
+
 
 
 def parse_pptx_layout_payload(payload: bytes) -> dict | None:
