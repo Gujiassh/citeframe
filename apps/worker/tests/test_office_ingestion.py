@@ -178,3 +178,43 @@ def test_worker_registers_separate_office_adapters_without_vague_kind() -> None:
     kinds = worker_main.INGESTION_ADAPTERS.asset_kinds
     assert "office" not in kinds
     assert {"docx", "xlsx", "pptx"}.issubset(kinds)
+
+
+def test_pptx_ingest_stores_layout_json_payload() -> None:
+    import json
+
+    engine = _engine()
+    Base.metadata.create_all(engine)
+    with Session(engine) as db:
+        payload = build_minimal_pptx_bytes(
+            shapes=[(1, "2", "Layout title")],
+            with_geometry=True,
+            with_picture=True,
+        )
+        asset = _make_asset(
+            db,
+            payload=payload,
+            mime_type=PPTX_MIME,
+            asset_kind="pptx",
+            filename="layout.pptx",
+        )
+        result = PptxIngestionAdapter().ingest(
+            db,
+            asset=asset,
+            payload=payload,
+            processing_generation=1,
+            config_snapshot={"pptxParserVersion": PPTX_PARSER_VERSION},
+            created_at=datetime.now(UTC),
+        )
+        db.commit()
+        assert len(result.generated_objects) == 1
+        obj = result.generated_objects[0]
+        assert obj.object_key.endswith("pptx-normalized.json")
+        body = json.loads(obj.payload.decode("utf-8"))
+        assert body["layoutVersion"] == "pptx-layout-v1"
+        assert body["slideWidthEmu"] > 0
+        assert any(
+            shape.get("shapeKind") == "picture"
+            for slide in body["slides"]
+            for shape in slide["shapes"]
+        )

@@ -103,3 +103,25 @@ def test_disabled_office_module_can_be_enabled_only_in_test_registry() -> None:
     assert module.asset_kind == "docx"
     registry.validate_upload_payload(module, payload)
     assert {"docx", "xlsx", "pptx"}.issubset(build_production_registry().asset_kinds)
+
+
+def test_parse_pptx_geometry_and_picture_layout() -> None:
+    payload = build_minimal_pptx_bytes(
+        shapes=[(1, "2", "Hello"), (1, "3", "World")],
+        with_geometry=True,
+        with_picture=True,
+    )
+    parsed = parse_pptx_presentation(payload)
+    by_id = {shape.shape_id: shape for shape in parsed.shapes}
+    assert by_id["2"].x_emu == 914400
+    assert by_id["2"].has_geometry()
+    assert by_id["99"].shape_kind == "picture"
+    assert by_id["99"].media_part == "ppt/media/image1.png"
+    layout = parsed.layout_dict()
+    assert layout["layoutVersion"] == "pptx-layout-v1"
+    assert layout["slideWidthEmu"] > 0
+    assert any(s["shapeKind"] == "picture" for slide in layout["slides"] for s in slide["shapes"])
+    # layout payload is valid JSON with normalized text
+    import json
+    body = json.loads(parsed.layout_payload.decode("utf-8"))
+    assert "Hello" in body["normalizedText"]

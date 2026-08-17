@@ -70,7 +70,7 @@ class PptxIngestionAdapter:
             )
         object_key = (
             f"workspaces/{asset.workspace_id}/assets/{asset.id}/representations/"
-            f"{processing_generation}/pptx-normalized.txt"
+            f"{processing_generation}/pptx-normalized.json"
         )
         source = AssetRepresentation(
             workspace_id=asset.workspace_id,
@@ -136,12 +136,20 @@ class PptxIngestionAdapter:
                 )
             )
         db.flush()
+        # Prefer structured layout JSON (pptx-layout-v1). content_sha256 remains
+        # the normalized text digest for locator/index stability.
+        layout_body = parsed.layout_payload or parsed.normalized_text.encode("utf-8")
+        content_type = (
+            "application/json; charset=utf-8"
+            if parsed.layout_payload
+            else "text/plain; charset=utf-8"
+        )
         return IngestionResult(
             generated_objects=(
                 GeneratedObject(
                     object_key=object_key,
-                    payload=parsed.normalized_text.encode("utf-8"),
-                    content_type="text/plain; charset=utf-8",
+                    payload=layout_body,
+                    content_type=content_type,
                     content_sha256=parsed.content_sha256,
                 ),
             )

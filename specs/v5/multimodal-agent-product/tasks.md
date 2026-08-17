@@ -180,6 +180,7 @@ V5-C implementation status (2026-08-10): `C-API-WORKER`, `C-BOUNDARY` and Web us
 - [x] F-DOCX 生产启用（2026-08-13 office lane: parse/locator/ingest/tests landed; production registry+catalog blocked on S0_HANDOFF.md）
 - [x] F-XLSX 生产启用（adapter+`xlsx_range`+tests landed; not registry-enabled）
 - [x] F-PPTX 生产启用（adapter+`pptx_shape`+tests landed; not registry-enabled）
+- [x] F-PPTX layout depth: `pptx-layout-v1` geometry+pictures+canvas viewer; content API slides; media BFF (2026-08-17)
 - [x] F-ASR capability fail-closed + configured path
 - [x] F-AUDIO 生产启用（`audio_range` + transcript + player）
 - [x] F-VIDEO 生产启用（range/frame + keyframe + player）
@@ -218,4 +219,4 @@ Engineering residual package (boundaries / modality purity / Research freeze / n
 - Spec index: [`../architecture-hardening/README.md`](../architecture-hardening/README.md)
 - Plan audit: **ACCEPT** ([`../architecture-hardening/reviews/2026-08-15-plan-audit.md`](../architecture-hardening/reviews/2026-08-15-plan-audit.md))
 - Implementation: **not started** (owner start required)
-
+- [x] Office/PPTX true layout + picture canvas (`pptx-layout-v1`, geometry EMU, media stream); preview embedding default real Ollama (no stub default); generation key optional fail-closed for open-source (2026-08-17)

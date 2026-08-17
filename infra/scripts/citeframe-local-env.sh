@@ -4,7 +4,7 @@
 #   infra/scripts/citeframe-local-env.sh preview start|stop|status|print
 #   infra/scripts/citeframe-local-env.sh accept  start|stop|status|print
 #
-# preview — real generation provider; product Q&A
+# preview — real Ollama embed by default; generation key optional (fail-closed)
 # accept  — M403B stub on :18081 for deterministic engineering gates only
 
 set -euo pipefail
@@ -19,7 +19,7 @@ usage() {
   cat <<'USAGE'
 Usage: citeframe-local-env.sh <preview|accept> <start|stop|status|print> [--with-web]
 
-  preview  Daily product preview (real generation; no M403B answer stub)
+  preview  Daily product preview (real Ollama embed; generation key optional/fail-closed)
   accept   Deterministic acceptance (generation+embedding via stub :18081)
 
   start    Start API + Worker for the profile (and stub when accept/hybrid)
@@ -183,9 +183,10 @@ start_api_worker() {
   fi
 
   if [[ "$PROFILE" == "preview" ]]; then
+    # Open-source preview: do not require a generation key to start the stack.
+    # Missing keys fail closed at capability use (chat/caption/ASR), not at process boot.
     if [[ -z "${AI_PDF_OPENAI_API_KEY:-}${OPENAI_API_KEY:-}" ]]; then
-      printf 'preview_missing_key set OPENAI_API_KEY or write AI_PDF_OPENAI_API_KEY in %s\n' "$(local_file)" >&2
-      exit 1
+      printf 'preview_note generation_key_unset capabilities_fail_closed until AI_PDF_OPENAI_API_KEY is set in %s\n' "$(local_file)"
     fi
     case "${AI_PDF_OPENAI_API_BASE:-}" in
       *18081*)
@@ -193,6 +194,9 @@ start_api_worker() {
         exit 1
         ;;
     esac
+    if preview_needs_embed_stub; then
+      printf 'preview_warn embedding_still_on_stub url=%s prefer_real_ollama=http://127.0.0.1:11434\n' "${AI_PDF_OLLAMA_BASE_URL}"
+    fi
   fi
 
   stop_pidfile "$API_PID_FILE" api

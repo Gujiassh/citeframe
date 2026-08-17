@@ -123,6 +123,24 @@ def inspect_office_package(payload: bytes, *, expected_kind: str) -> OfficePacka
         )
 
 
+def read_zip_bytes(payload: bytes, part_name: str) -> bytes:
+    try:
+        archive = zipfile.ZipFile(io.BytesIO(payload))
+    except zipfile.BadZipFile as error:
+        raise OfficePackageError(
+            "asset_bytes_invalid",
+            "Office package ZIP header is invalid.",
+        ) from error
+    with archive:
+        try:
+            return archive.read(part_name)
+        except KeyError as error:
+            raise OfficePackageError(
+                "office_parse_failed",
+                f"Office package is missing required part {part_name}.",
+            ) from error
+
+
 def read_zip_text(payload: bytes, part_name: str) -> str:
     try:
         archive = zipfile.ZipFile(io.BytesIO(payload))
