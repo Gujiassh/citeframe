@@ -22,7 +22,7 @@ This package is **optimization and debt control**, not new modalities and not R8
 
 | File | Role |
 | --- | --- |
-| [`decision-2026-08-15-architecture-hardening.md`](decision-2026-08-15-architecture-hardening.md) | Approved-scope decision (owner still must greenlight implementation) |
+| [`decision-2026-08-15-architecture-hardening.md`](decision-2026-08-15-architecture-hardening.md) | Approved-scope decision; **implemented** Phase 1+2 on main (PR #14/#15) |
 | [`spec.md`](spec.md) | Requirements, non-goals, acceptance |
 | [`plan.md`](plan.md) | Lanes, ownership, sequence, risks |
 | [`verification-matrix.md`](verification-matrix.md) | Gates and evidence |
@@ -34,7 +34,7 @@ This package is **optimization and debt control**, not new modalities and not R8
 - Does **not** reopen V5-E (R803/M404) unless owner authorizes.
 - Does **not** change Asset/Evidence locator meanings or save semantics.
 - Reuses contracts in `docs/architecture/modality-extension-contract.md` and `docs/architecture/research-workflow-runtime.md`.
-- After implementation slices land, update `docs/architecture/implementation-progress.md` and `docs/architecture/feature-map.md` as part of Lane N (narrative).
+- Lane N narrative updates landed with the package; residual non-goals remain in `tasks.md` (R803/M404, rename, dynamic DAG, etc.).
 
 ## Default recommendation
 

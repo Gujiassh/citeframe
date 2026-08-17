@@ -118,6 +118,7 @@ V1–V4 与 V5-A/B/C/D/F 工程主线、architecture-hardening、PPTX layout 已
 - 新增 `specs/v5/multimodal-agent-product/current-execution-plan.md` 作为当前执行单一入口。
 - 合并：V5-F 并行模态收尾、PDF 页内视觉 v1、vision=gpt-5.5/CLIProxy、preview/accept 分型、待拍板 O1–O5。
 - 新增 `pdf-in-page-visual-v1.md`。实现仍未开始。
+- **Superseded:** PDF in-page visual + PV-4 landed on main; see §2 (2026-08-17).
 
 ## 2026-08-13：本地 preview / accept 环境分型
 
@@ -131,6 +132,7 @@ V1–V4 与 V5-A/B/C/D/F 工程主线、architecture-hardening、PPTX layout 已
 - 权威执行文档：`specs/v5/multimodal-agent-product/parallel-execution-plan-v5f.md`。
 - 编组：W1 HTML∥DOCX∥XLSX∥PPTX∥ASR∥AGENT；W2 Audio∥Video（等 ASR）；W3 MIX+ACCEPT。共享内核 S0 串行。
 - 仍未开始实现。
+- **Superseded:** V5-F engineering closed on main; see §2 / §6 (2026-08-17). Historical diary only.
 
 ## 2026-08-13：V5-F 规格包（模态补全 + Agent 完善）
 
