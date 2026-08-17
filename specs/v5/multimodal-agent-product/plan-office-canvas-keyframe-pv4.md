@@ -1,7 +1,7 @@
 # Plan: Office canvas + Video keyframe + PDF crop (PV-4)
 
-Status: `ready-to-implement` after plan audit  
-Date: 2026-08-14  
+Status: **historical plan** — lanes landed on main (PV-4 / keyframe / office viewers; PPTX layout deepened 2026-08-17).  
+Date: 2026-08-14 (plan); supersession note 2026-08-17  
 Base: `origin/main` (post S0/F-AGENT/ops audit)  
 Mode: lane-pair (implementer + Grok audit per lane); controller merges serial if conflicts
 
@@ -106,8 +106,9 @@ Out of scope: R803/M404, Ollama ASR, new Research step kinds, Office macro execu
 
 ### Current
 
-- Ingest + typed locators + chip-only `office-viewer.tsx`.
-- Content API: document/html normalized only; **no docx/xlsx/pptx content endpoint**.
+- **Was (2026-08-14 baseline):** ingest + typed locators + chip-only `office-viewer.tsx`.
+- **Now (main):** DOCX block list, XLSX text, PPTX `pptx-layout-v1` canvas + `/pptx-media`; content API for office kinds. See `S0_HANDOFF.md`.
+- **Was:** Content API document/html only; no docx/xlsx/pptx content endpoint.
 - DOCX has `docx_normalized_contents` + `docx_blocks` in DB.
 - XLSX/PPTX: normalized text in object storage + locator details; no block tables like docx.
 
@@ -118,7 +119,7 @@ Out of scope: R803/M404, Ollama ASR, new Research step kinds, Office macro execu
      - `docx`: same shape as document blocks (reuse/adapt `DocumentNormalizedContentResponse` or `DocxNormalizedContentResponse`).
      - `xlsx` / `pptx`: return `{ normalizedText, contentSha256, processingGeneration, format }` from stored normalized object + representation row; optional structured cells/slides if parse metadata already in normalized text.
 2. **Web**
-   - Replace chip-only DOCX viewer with document-viewer-like list: load content, highlight by `docx_anchor` char range / blockId (mirror html/document).
+   - ~~Replace chip-only DOCX viewer~~ **done:** document-viewer-like list + `docx_anchor` highlight.
    - XLSX: monospaced / table-ish text view + highlight line containing `startCell:endCell` or displayedText.
    - PPTX: slide sections if normalized text has markers; else full text + highlight displayedText.
 3. Keep visual nesting ≤2 surfaces; no card-in-card.

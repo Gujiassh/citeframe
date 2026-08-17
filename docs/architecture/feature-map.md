@@ -121,12 +121,14 @@ V5 目标能力复用 `Asset -> Representation -> ContentUnit -> EvidenceLocator
 
 稳定内核通过部署期封闭注册表调度模态模块。新增 Audio/Video/其他文件时增加 adapter、类型目录、类型化 locator、检索通道和 renderer，不修改 Asset、Chat scope、Citation、NoteSource 或 Evidence Viewer shell；未知或未启用 kind 明确失败，不接受任意文件猜测。
 
-## 4. 远期与独立赌注
+## 4. 深度扩展与独立赌注
+
+> **SSoT note (2026-08-17):** `audio` / `video` 已在生产注册表启用（V5-F S0），属于 §1 深度梯子中的 **Evidence-complete** 档，**不是**“尚未支持的远期模态”。下表只描述**更深能力**或**独立产品域**，避免与九模态生产基线混淆。
 
 | 方向 | 定位 | 进入条件 |
 | --- | --- | --- |
-| Audio | ASR、说话人、时间段证据 | 单独用户任务与黄金集 |
-| Video | 镜头、关键帧、字幕、时间段证据 | 单独成本和延迟门禁 |
+| Audio depth | 说话人分离、更强时间段 UX、专项黄金集 | 单独用户任务与评测集（当前：transcript + `audio_range` 闭环） |
+| Video depth | 更丰富镜头/分析、成本与延迟门禁 | 专项门禁（当前：transcript/range/keyframe 基线） |
 | Omnilabel | 标签、预测、数据集质量和结构化分析 | 独立用户研究、权限与 SQL/分析架构 |
 
 Omnilabel 不是“再支持一种文件”，而是另一个业务域；它不默认进入当前产品下一版本。

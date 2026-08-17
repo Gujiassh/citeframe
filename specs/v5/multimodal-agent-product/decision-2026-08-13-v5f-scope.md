@@ -8,6 +8,12 @@ Source: owner request to complete remaining modalities and improve multi-agent c
 Owner also approved recommended OD reopen path (HTML/Office kinds/ASR-Audio/Video separate) and deferred paid R803.  
 Paid R803 / M404 remain deferred (see V5-E deferral 2026-08-13).
 
+> **Status supersession (2026-08-17):** This file freezes the **2026-08-13 OD / scope decision**.  
+> V5-F **engineering implementation completed** on main (S0 nine kinds, F-AGENT, residual P1, PPTX layout).  
+> For **current** product status use `docs/architecture/implementation-progress.md` §2–§7 and `S0_HANDOFF.md`.  
+> Historical rows below (e.g. “implementation not started”, OD open) are **point-in-time**, not live blockers.
+
+
 ## 1. Intent
 
 V5-A–D delivered an `internal_preview` engineering product with:
