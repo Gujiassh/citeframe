@@ -32,6 +32,8 @@ _SAFE_R803_CODES = (
     "unsupported_pricing_version",
 )
 
+pytestmark = pytest.mark.evaluation
+
 
 class HostileCodeError(Exception):
     code = _SECRET_CANARY

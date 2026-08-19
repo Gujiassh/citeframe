@@ -1,0 +1,35 @@
+{
+  "schemaVersion": "m402-execution-source-provenance-v1",
+  "entries": [
+    {
+      "id": "m402-worker-execution-v1-frozen-artifact-10f59a46",
+      "executionSchemaVersion": "m402-worker-execution-v1",
+      "testFile": "apps/worker/tests/test_multimodal_golden_execution.py",
+      "testFileSha256": "fb59ffdeed4122f71f0677772b875009cc439353d7eb57a489ba8274dfe9502c",
+      "executionArtifactPath": "docs/evals/artifacts/m402-v1/worker-execution.json",
+      "artifactSha256": "10f59a464ba216e959cefa067295ba13f1346b13023f62aa7951341d7dbb58a6",
+      "originalArtifactCommit": "9aa3bf27ec97a9c0da14cf9e57db38ca0e5a5c3c",
+      "originalEmbeddedTestFileSha256": "e6237a76d04a45d71d525121aa3b78f018f2b556b93c1ed98899ad31c61f0f60",
+      "originalEmbeddedRunnerCommit": "9aa3bf27ec97a9c0da14cf9e57db38ca0e5a5c3c",
+      "approvedRunnerCommit": "51779de913af094881802056ddd9a4e51c5444d1",
+      "identityRepinCommit": "85305e5a447d0c40ed5e4ea9590adb681df827cf",
+      "approvalKind": "manual_runner_identity_repin",
+      "rationale": "Controlled historical exception for this exact frozen Worker artifact path and bytes only. Commit 9aa3bf2 first introduced the artifact with embedded runner hash e6237a76..., which matches the Worker harness bytes at that commit. Commit 51779de later changed the harness to fb59ffde... without updating the artifact. Commit 85305e5 only rewrote the embedded testFileSha256 to fb59ffde... and did not re-run outcomes. approvedRunnerCommit therefore records the manually re-pinned runner identity, not proof that these frozen outcomes were produced by those harness bytes."
+    },
+    {
+      "id": "m402-real-model-execution-v1-frozen-artifact-55d0a545",
+      "executionSchemaVersion": "m402-real-model-execution-v1",
+      "testFile": "apps/worker/tests/test_multimodal_golden_execution.py",
+      "testFileSha256": "fb59ffdeed4122f71f0677772b875009cc439353d7eb57a489ba8274dfe9502c",
+      "executionArtifactPath": "docs/evals/artifacts/m402-v1/real-model-execution.json",
+      "artifactSha256": "55d0a545ac8add011d7e16e0f422b2c224636c03d509e5297c951e6d5d6e5ea8",
+      "originalArtifactCommit": "9aa3bf27ec97a9c0da14cf9e57db38ca0e5a5c3c",
+      "originalEmbeddedTestFileSha256": "789e0674b29787857aee8bcdf932b966ad8459406a851b3468f01e6f3441e25e",
+      "originalEmbeddedRunnerCommit": "not-attested",
+      "approvedRunnerCommit": "51779de913af094881802056ddd9a4e51c5444d1",
+      "identityRepinCommit": "85305e5a447d0c40ed5e4ea9590adb681df827cf",
+      "approvalKind": "manual_runner_identity_repin",
+      "rationale": "Controlled historical exception for this exact frozen real-model artifact path and bytes only. The artifact first appeared in 9aa3bf2 with embedded runner hash 789e0674..., but no revision of apps/worker/tests/test_multimodal_golden_execution.py in git history hashes to that value, so originalEmbeddedRunnerCommit is not-attested. Commit 85305e5 later re-pinned the embedded testFileSha256 to fb59ffde... (harness bytes at 51779de) without re-running the real-model cases. This entry is an explicit identity-repin approval, not an execution-source proof."
+    }
+  ]
+}

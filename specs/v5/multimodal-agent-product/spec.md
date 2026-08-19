@@ -2,12 +2,13 @@
 
 ## 状态
 
-- 阶段：主动开发主线
-- 目标：先完成可用的多模态、多模型和多 Agent 功能，再进行模型质量评估和真实用户验证
-- 基线：V1/V2、V3 PDF/Image、V4 R000-R800 工程合同已经完成；V3/V4 的历史证据和保存语义继续有效
-- 后置门：R803 真实模型质量评估和 M404 真实用户价值验证不再阻塞 V5 功能开发，但仍是后续 Beta/发布判断依据
+- 阶段：`internal_preview`（V5 工程主线已关闭）
+- 当前执行入口：[`current-execution-plan.md`](current-execution-plan.md)
+- 已完成：V1-V4、V5-A/B/C/D/F、architecture-hardening，以及 PPTX layout/embed preview 合入 main
+- 当前残差：ops 真复配（真实 Ollama reindex、多 provider live E2E、preview 真 key 冒烟）和后置 V5-E 证据（R803/M404）
+- 发布判断：R803 真实模型质量和 M404 用户价值均为 `not_evaluable`；在独立证据完成前不得升级为 Beta 或公开发布
 
-V5-B Markdown-only `document` v1 的字段级合同已批准并实现，B008 formal isolated deployment gate 已通过；V5-C 已于 2026-08-10 完成 owner approval、实现和独立 Critical engineering/release acceptance。V5-C 的 locator/schema/provider/product 决策以冻结合同和 [`v5c-implementation-acceptance-2026-08-10.md`](v5c-implementation-acceptance-2026-08-10.md) 为准，不得由实现 worker 猜测；F1/F5 Medium 后续风险不阻塞冻结 v1。V5-D 的 contract-preserving 详细规格、lane 分工、验收矩阵和 agent handoff 已于 2026-08-11 就绪；生产实现尚未开始，入口为 [`decision-2026-08-11-v5d-scope.md`](decision-2026-08-11-v5d-scope.md)、[`v5d-detailed-spec.md`](v5d-detailed-spec.md)、[`implementation-lanes-v5d.md`](implementation-lanes-v5d.md)、[`verification-matrix-v5d.md`](verification-matrix-v5d.md) 和 [`grok-handoff-v5d.md`](grok-handoff-v5d.md)。
+V5-B/C/D/F 的实现和验收记录继续作为历史合同与证据；V5-D contract-preserving 规格包、V5-F 分线计划及开工检查仅保留追溯用途。当前状态、残差 owner 和下一步只在 [`current-execution-plan.md`](current-execution-plan.md) 维护，其他规格不得另设“当前进行中”入口。
 
 ## 1. 产品目标
 

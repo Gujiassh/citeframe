@@ -1,31 +1,31 @@
 # Citeframe 当前执行计划（整理版）
 
-Date: 2026-08-13  
-Status: **active planning SSOT**（实现仍待主人开工令）  
+Date: 2026-08-18
+Status: **current execution SSOT**（工程主线已关闭，当前仅维护 residual execution）
 Product stage: `internal_preview`
 
-本文把已批准范围、并行编组、PDF 页内视觉、vision 用法、本地环境分型收成**一份当前主计划**。  
-更细的字段合同仍以下游文档为准；冲突时以本文「优先级与波次」+ 已批准 decision 为准。
+本文是唯一当前执行入口。V5-F、architecture-hardening 和 PPTX layout/embed preview 已在 main 关闭；旧的 W1/PDF-Visual 并行计划只保留为历史记录，不代表仍在开发。当前只维护 ops 真复配与 V5-E 后置证据的状态、owner、阻塞条件和下一步。
+更细的字段合同仍以下游文档为准；冲突时以本文当前状态和已批准 decision 为准。
 
 ---
 
-## 1. 一句话目标
+## 1. 当前目标与边界
 
-把 Citeframe 从「PDF/图/Markdown 很深、其它模态半吊子」收成：
+工程主线已经收口。当前目标不是继续开启 W1 功能开发，而是为 `internal_preview` 补齐发布前证据和运行环境证据：
 
-1. **多模态能力面补全**（HTML / Office / Audio / Video 纵向闭环）  
-2. **PDF 页内图也能认**（无内嵌图 + 抽象图）  
-3. **固定 DAG Research 吃得下全部已启用模态**  
-4. **本地 preview 用真生成（CLIProxy），accept 用 stub**  
+1. **Ops 真复配**：在环境就绪时完成真实 Ollama reindex、preview 真 key 冒烟和多 provider live E2E。
+2. **V5-E 后置证据**：取得明确授权后，以新目录运行 R803 真模型质量评估，并完成 M404 用户价值协议、执行和发布判断。
+3. **Residual 记录**：任何失败、阻塞或环境缺失都写入本入口，不以“工程门通过”替代模型质量或用户价值结论。
 
-**不做**：通用 Agent 平台、用户 provider 选择器、把工程绿当模型质量。  
-**后置**：付费 R803 formal、M404 用户价值。
+**不做**：在没有独立决策包的情况下重开动态 Agent DAG、`ai_pdf_*` 重命名、新模态或更强 mixed Research seed。Office/PPT 深度 WYSIWYG 继续作为已知产品限制。
 
 ---
 
-## 2. 已拍板 vs 待拍板
+## 2. 历史决策与当前状态
 
-### 2.1 已拍板（主人已确认）
+本节保留 2026-08-13 的 O1-O5 决策记录，作为已关闭 V5-F 的追溯材料；它们不再构成新的开工门。
+
+### 2.1 已拍板（历史决策，执行已完成）
 
 | ID | 内容 |
 |---|---|
@@ -37,13 +37,22 @@ Product stage: `internal_preview`
 | D6 | 图片/区域视觉默认模型：**gpt-5.5**（与 generation 同 profile，经 CLIProxy） |
 
 ### 2.2 主人拍板记录（2026-08-13）
+
+| ID | 问题 | 决定 |
+|---|---|---|
+| **O1** | PDF 页内视觉优先级 | **按推荐：与 W1 并行，P0'** |
+| **O2** | 抽象图 v1 | **必须上 gpt-5.5 caption**（不能只 OCR） |
+| **O3** | Office kinds | **按推荐：docx / xlsx / pptx 三个 kind** |
+| **O4** | embedding 脱离 stub | **按推荐：不挡 W1，中后期 reindex** |
+| **O5** | 是否开工 | **已开工**（2026-08-13 主人：清仓提交后按车道双人制推进） |
+
 ### 2.3 「accept 才用 stub」是什么意思
 
 本机有两种跑法，**stub = 假模型服务**（`provider_m403b_stub.py`，端口 `18081`）：
 
 | 名字 | 干什么 | 生成（问答/写描述） | 向量（检索用 embedding） |
 |---|---|---|---|
-| **preview** | 你日常打开 3100 用产品 | **真模型**，经本机 **CLIProxy :8317**（gpt-5.5） | 过渡期可仍用 18081；以后 reindex 换真 Ollama |
+| **preview** | 你日常打开 3100 用产品 | **真模型**，经本机 **CLIProxy :8317**（gpt-5.5） | 默认真 Ollama；既有 stub 向量需显式 reindex |
 | **accept** | 跑 M403B/混合等**工程验收** | **整段假模型**（固定英文、不烧钱、可重复） | **也用假 embedding** |
 
 所以：
@@ -55,36 +64,44 @@ Product stage: `internal_preview`
 stub 的固定回答 **不是** 模型质量，只证明管道通。
 
 
-
-| ID | 问题 | 决定 |
-|---|---|---|
-| **O1** | PDF 页内视觉优先级 | **按推荐：与 W1 并行，P0'** |
-| **O2** | 抽象图 v1 | **必须上 gpt-5.5 caption**（不能只 OCR） |
-| **O3** | Office kinds | **按推荐：docx / xlsx / pptx 三个 kind** |
-| **O4** | embedding 脱离 stub | **按推荐：不挡 W1，中后期 reindex** |
-| **O5** | 是否开工 | **已开工**（2026-08-13 主人：清仓提交后按车道双人制推进） |
-
 ---
 
 ## 3. 工作流全景（当前）
 
 ```text
-已完成（工程）
-  V1–V4 基线 · V5-A Provider · V5-B Markdown · V5-C 固定多 Agent
-  V5-D 混合整合门 · D-G6/D-G7 · 本地 env 分型
+已关闭（工程）
+  V1–V4 · V5-A/B/C/D/F · architecture-hardening · PPTX layout/embed preview
 
-进行中（计划层）
-  V5-F 模态并行收尾
-  PDF 页内视觉 v1（无内嵌图 + 抽象图）
-  preview=CLIProxy/gpt-5.5
+当前 residual execution
+  OPS：真实 Ollama reindex · preview 真 key 冒烟 · 多 provider live E2E
+  V5-E：R803 真模型质量 · M404 用户价值 · Beta/公开发布判断
 
-后置
-  付费 R803 · M404 · Beta 判断
+明确后置/不在当前主线
+  动态 Research DAG · ai_pdf_* 重命名 · 新模态 · 更强 mixed Research seed
 ```
+
+preview/accept 的环境分型仍有效，但它是运行约束，不是 W1 的开工状态。
+
+
+### 3.1 Residual execution board（唯一 active residual）
+
+| ID | 当前状态 | 前置条件 | 完成证据 |
+|---|---|---|---|
+| OPS-1 | `pending_environment` | 可用的 Ollama、preview 真 key 和目标 provider profile；指定 owner | reindex 命令/日志、索引合同核验、preview smoke 和多 provider live E2E artifact |
+| V5-E-R803 | `deferred_authorization` / `not_evaluable` | owner 明确批准预算、provider/profile 和全新 campaign 目录 | 新 campaign 的完整 round/report/hash；冻结 v1 不恢复、不覆盖 |
+| V5-E-M404 | `blocked_input` / `not_evaluable` | 批准协议、目标用户和合格任务样本 | M404 原始记录、资格判定和用户价值报告 |
+
+**派生门禁（不是独立 residual）**：Release review / Beta / 公开发布判断只在 OPS-1、R803、M404 证据齐备后派生裁决；不得单独写成当前可执行项。
+
+**非 active residual**：mixed Research seed、动态 Research DAG、`ai_pdf_*` 重命名、新模态、Office/PPT 深度 WYSIWYG 属于产品债或独立决策包，不进入本 board。
+
+下一步只做两类选择：为 OPS-1 指定环境和 owner，或为 V5-E 明确授权/输入。未满足前置条件时保留当前状态，不虚构进行中。
 
 ---
 
-## 4. P0 双主线
+## 4. 历史执行波次（已关闭）
+
+以下 W0-W3/PDF-Visual 内容保留为实施记录；V5-F 和 PV-0..PV-5 已完成，不能据此判断当前仍在 W1。
 
 ### 主线 A — V5-F 模态分线收尾
 
@@ -135,7 +152,7 @@ stub 的固定回答 **不是** 模型质量，只证明管道通。
 | 本地 endpoint | **CLIProxy** `http://127.0.0.1:8317/v1` | preview profile |
 
 禁止：preview 的 generation 指向 M403B stub `:18081`。  
-Embedding 过渡期可仍用 18081，见环境文档。
+preview embedding 默认走真 Ollama；accept 才使用 18081 stub。既有 stub 向量迁移和 reindex 证据属于 OPS-1。
 
 ---
 
@@ -143,7 +160,7 @@ Embedding 过渡期可仍用 18081，见环境文档。
 
 | Profile | 用途 | 生成 | Embedding |
 |---|---|---|---|
-| **preview** | 日常 3100 | CLIProxy + gpt-5.5 | 过渡 stub 或真 Ollama |
+| **preview** | 日常 3100 | CLIProxy + gpt-5.5 | 真 Ollama（默认；既有 stub 索引需 reindex） |
 | **accept** | 工程验收 only | stub 18081 | stub 18081 |
 
 文档：[`docs/architecture/local-env-profiles.md`](../../../docs/architecture/local-env-profiles.md)  
@@ -167,7 +184,7 @@ Embedding 过渡期可仍用 18081，见环境文档。
 
 | 文档 | 角色 |
 |---|---|
-| **本文** `current-execution-plan.md` | **当前执行 SSOT** |
+| **本文** `current-execution-plan.md` | **唯一当前执行 SSOT（2026-08-18）** |
 | `decision-2026-08-13-v5f-scope.md` | V5-F 范围批准 |
 | `parallel-execution-plan-v5f.md` | 模态并行线卡与 S0 |
 | `v5f-detailed-spec.md` | 模态字段级合同 |
@@ -183,24 +200,29 @@ Embedding 过渡期可仍用 18081，见环境文档。
 
 开发协作按 [`collaboration-mode-lane-pairs.md`](collaboration-mode-lane-pairs.md)：**主控分波次；每线一工作区 + 开发/审计；MR 由主控终审合入后删分支。** 先手动，不先做调度工具。
 
-## 9. 开工检查单（O5 通过后）
+## 9. 历史开工检查单（已完成/不再作为当前门）
 
-- [ ] 主人确认 O1–O4 或接受推荐默认  
-- [ ] 主人明确「开工」  
-- [ ] `preview status`：CLIProxy 生成、非 SourcesData、非 generation→18081  
-- [ ] S0 owner 指定  
-- [ ] 第一波并行集合确认：默认 `PDF-Visual + HTML + DOCX + XLSX + PPTX + ASR + AGENT`  
+以下原始清单按 2026-08-13 快照保留；未勾选不代表当前阻塞，当前不得重新据此启动 W1：
+
+- [ ] 主人确认 O1–O4 或接受推荐默认
+- [ ] 主人明确「开工」
+- [ ] `preview status`：CLIProxy 生成、非 SourcesData、非 generation→18081
+- [ ] S0 owner 指定
+- [ ] 第一波并行集合确认：默认 `PDF-Visual + HTML + DOCX + XLSX + PPTX + ASR + AGENT`
 - [ ] git 身份/远程检查（仓库规则）
 
 ---
 
-## 10. 状态（2026-08-13）
+## 10. 当前状态（2026-08-18）
 
 | 项 | 状态 |
 |---|---|
-| 计划整理 | **done** |
-| O1–O4 | **已拍板**（见 §2.2） |
-| O5 开工 | **是** |
-| 实现 | **W1 启动中**（lane pairs） |
-| 本地 preview 生成 | CLIProxy + gpt-5.5 |
-| 下一动作 | 分工作区：PDF-Visual / HTML / Office / ASR；每线开发+审计 → MR → 主控合入 |
+| 当前入口 | **本文；其他计划只作历史/字段合同** |
+| V5-F / architecture-hardening / PPTX layout | **工程已关闭（main）** |
+| 产品阶段 | **`internal_preview`** |
+| W1 / PDF-Visual | **已完成；无当前实现任务** |
+| Ops 真复配（OPS-1） | **active residual：等待环境/owner 证据** |
+| R803 真实模型质量 | **active residual：`not_evaluable`；需明确授权后新 campaign** |
+| M404 用户价值 | **active residual：`not_evaluable`；需协议、目标用户和执行证据** |
+| Release review | **派生门禁，非独立 residual** |
+| 下一动作 | **先选定 OPS 或 V5-E owner，记录命令/环境/artifact；完成后回写本表** |

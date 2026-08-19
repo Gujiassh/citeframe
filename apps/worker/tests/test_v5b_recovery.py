@@ -16,6 +16,8 @@ from types import SimpleNamespace
 
 import pytest
 
+pytestmark = pytest.mark.acceptance
+
 SCRIPT_PATH = Path(__file__).resolve().parents[1] / "scripts/v5b_document_restore_acceptance.py"
 SCRIPT_SPEC = importlib.util.spec_from_file_location("v5b_document_restore_acceptance", SCRIPT_PATH)
 assert SCRIPT_SPEC is not None and SCRIPT_SPEC.loader is not None

@@ -26,5 +26,11 @@ dev = [
     "pytest>=8.4.0",
 ]
 
+[tool.pytest.ini_options]
+markers = [
+    "acceptance: cross-layer or production-workflow acceptance checks",
+    "evaluation: model/evaluation campaign and quality-gate checks",
+]
+
 [tool.hatch.build.targets.wheel]
 packages = ["src/ai_pdf_worker"]

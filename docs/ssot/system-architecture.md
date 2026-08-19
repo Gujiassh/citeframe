@@ -25,12 +25,12 @@ V1 默认以 `模块化双服务系统` 落地，而不是微服务集群。
 ### 2.1 主要目标
 
 - 支撑多 Workspace 的强隔离知识边界
-- 支撑异构 Asset 的异步入库与索引；当前生产基线为 PDF/Image
+- 支撑异构 Asset 的异步入库与索引；当前生产 registry 已启用九类：`pdf` / `image` / `document` / `html` / `docx` / `xlsx` / `pptx` / `audio` / `video`（深度仍因模态而异，PDF/Image 最深）
 - 支撑带引用的 RAG 问答
 - 支撑笔记、标签、聊天历史沉淀
 - 支撑显式、版本化、可恢复且 Evidence-bound 的深度研究运行
 - 支撑本地学习部署和后续云上部署
-- 支撑 capability-based model/provider profile；当前 embedding 已有 OpenAI/Ollama，generation/vision/ASR 多 provider 是 V5 建设目标
+- 支撑 capability-based model/provider profile：generation（OpenAI Responses / DeepSeek Anthropic Messages）、embedding（OpenAI / Ollama）、vision/image-caption 与 ASR capability fail-closed 已落地；更多 provider adapter 或用户可见 profile 选择器属于未来扩展
 
 ### 2.2 非目标
 
@@ -45,7 +45,7 @@ V1 架构不追求：
 
 V5 允许在固定、有界、Evidence-bound 的 Research workflow 中建设多 Agent 协作，并按 modality brief 增量接入文档、Audio、Video 等类型；这不等于开放通用 Agent 平台或任意文件插件。
 
-当前运行时已切换到 Asset/Evidence 合同，PDF 与 M403B Image adapter、Evidence、Viewer、区域 Chat/Note 和混合检索均已进入生产 registry 并通过发布门禁。PDF 支持可直接提取文本的页面与无文本层页面的 RapidOCR fallback；Image 只接受 PNG/JPEG/WebP，且不改变 Citation、NoteSource、Chat 或保存语义。
+当前运行时已切换到 Asset/Evidence 合同。生产 registry 与 Worker `INGESTION_ADAPTERS` 均已启用九类模态；PDF/Image 仍是最深路径（页内视觉、区域 OCR/caption、混合检索），Document/HTML/Office/Audio/Video 已纵向接入但深度与产品限制因模态而异。任何新模态或保存语义变更仍须独立 decision/gate，且不得改变 Citation、NoteSource、Chat 或历史保存语义。
 
 ## 3. 顶层架构
 
@@ -107,7 +107,7 @@ FastAPI 主业务服务。
 后台异步任务服务。
 职责：
 
-- PDF/Image adapter
+- 九类 ingestion adapter：PDF、Image、Document、HTML、DOCX、XLSX、PPTX、Audio、Video
 - Representation 与 ContentUnit 生成
 - embedding 写入
 - 索引重建
@@ -136,22 +136,22 @@ FastAPI 主业务服务。
 
 #### `redis`
 
-缓存与任务中间层。
-职责：
+已部署的缓存/队列**基础设施预留**，不是当前业务主路径实现。
+规划用途（未来，未切换）：
 
-- 任务队列
+- 任务队列（当前任务领取仍是 Postgres 轮询）
 - 检索短缓存
 - 限流计数
 - 任务状态热点缓存
 
+当前不得把上述用途写成已上线能力；业务真相源与 job claim 仍在 Postgres。
+
 #### `model providers`
 
-- 当前 generation：OpenAI Responses API 与 DeepSeek Anthropic Messages API adapter（统一暴露 `GenerationProvider`）
-- 当前 embedding：OpenAI Embeddings 与 Ollama `qwen3-embedding:0.6b`
-- V5 目标：generation、embedding、vision、caption、ASR 的 capability registry 和多个 provider profile
+- **已完成合同**：capability registry / provider profile / 非机密 config fingerprint；generation（OpenAI Responses、DeepSeek Anthropic Messages）、embedding（OpenAI、Ollama `qwen3-embedding:0.6b`）、vision/image-caption readiness，以及 ASR capability fail-closed（未配置不得假实现）
+- **当前事实**：每个 Chat/Research Run 与 ingestion job 在发送前解析并冻结 server-resolved profile；缺失能力或配置漂移明确失败；不提供用户侧 provider 选择器，也不做静默 fallback
+- **未来扩展**：额外 provider adapter、reranker、用户可见多 profile 选择 UI；不得把未完成扩展写成当前缺口掩盖已落地合同
 - provider profile 包含能力、模型版本、限制、成本、数据边界和非机密配置指纹
-- Run/ingestion job 在发送前解析并冻结 profile；缺失能力或配置漂移必须明确失败
-- 后续是否启用 reranker 仍由真实检索缺口决定
 
 ## 4. 前端架构
 
@@ -165,9 +165,9 @@ FastAPI 主业务服务。
    - [WorkspaceList](../../apps/web/src/components/workspace-list.tsx)：主门户 100% 宽度 cardless 行列表。
 
 2. `Evidence Workspace UI`
-   - [EvidenceViewer](../../apps/web/src/components/evidence-viewer.tsx)：通过 production Evidence registry 按 Asset 类型调度 `PdfEvidenceRenderer` 或 `ImageEvidenceRenderer`，共享 citation/note Evidence shell。
-   - [PdfEvidenceRenderer](../../apps/web/src/components/pdf-viewer.tsx)：组合 PDF.js 页面 canvas、原生文本层、annotation layer 和类型化区域高亮，保留图片、排版与 PDF 内置链接。
-   - [ImageEvidenceRenderer](../../apps/web/src/components/image-viewer.tsx)：显示图片 Representation，并按 `image_region` locator 渲染区域证据。
+   - [EvidenceViewer](../../apps/web/src/components/evidence-viewer.tsx)：通过 production Evidence registry 按 Asset 类型调度对应 renderer，共享 citation/note Evidence shell。
+   - [PdfEvidenceRenderer](../../apps/web/src/components/pdf-viewer.tsx) / [ImageEvidenceRenderer](../../apps/web/src/components/image-viewer.tsx)：PDF.js 页面与图片区域证据；仍是最深 viewer 路径。
+   - Document / HTML / Office / Audio / Video Evidence renderer（`apps/web/src/components/evidence/`）：按 registry 接入 Markdown、HTML、DOCX/XLSX/PPTX、音视频时间轴；Office/PPT 深度 WYSIWYG 仍是已知产品限制。
    - [OutlineTree](../../apps/web/src/components/outline-tree.tsx)：PDF 章节目录大纲树，使用 `activeAssetId` 参与节点 Key，避免切换 Asset 后复用旧折叠节点。
    - [SelectionPopover](../../apps/web/src/components/selection-popover.tsx)：划词即时问答/记录笔记浮空菜单。
 
@@ -296,23 +296,13 @@ Worker 任务：
 - `embed_chunks`
 - `delete_cleanup`
 
-当前已实现：Worker 通过 Postgres 轮询领取 `ingestion_jobs.status=queued` 的上述三类任务。`ingest` 由共享 ingestion service 按 `asset.asset_kind` 从 Worker 的 `IngestionAdapterRegistry` 选择 `PdfIngestionAdapter` 或 `ImageIngestionAdapter`；共享层负责编排 job、processing generation、事务、embedding 和失败状态，模态 adapter 负责生成对应 Representation、ContentUnit 与 locator。PDF 路径持久化 `pdf_page_layout/pdf_ocr/pdf_table/pdf_figure` Representation、canonical `pdf_pages`、`pdf_page/pdf_region` locator 和 ContentUnit；Image 路径生成 image-oriented Representation、`image_region` locator 和对应 ContentUnit。`embed_chunks` 激活当前 generation/index 的 embedding 投影，`delete_cleanup` 清理源对象、派生对象和内容记录。检索以 Workspace、ready、未删除、当前 index version 和 provider metadata 为硬边界，分别取得 Dense 与 PostgreSQL lexical 候选；`pdf_page` 按 Asset+页去重，区域 locator 保持独立，再执行 RRF。Chat API 将候选交给 Responses API，转发 delta 流并持久化 immutable locator/sourceVersions citation；citation -> note 只接受当前 Workspace 的真实 citation，并复制完整 locator 与展示快照。
+当前已实现：Worker 通过 **Postgres 轮询**（不是 Redis）领取 `ingestion_jobs.status=queued` 的上述三类任务。`ingest` 由共享 ingestion service 按 `asset.asset_kind` 从 Worker 的 `IngestionAdapterRegistry` 选择九类 adapter 之一（PDF/Image/Document/HTML/DOCX/XLSX/PPTX/Audio/Video）；共享层负责编排 job、processing generation、事务、embedding 和失败状态，模态 adapter 负责生成对应 Representation、ContentUnit 与 locator。PDF/Image 仍是最深路径；Document/HTML/Office 产出规范化文本与 typed locator；Audio/Video 产出转写时段与时间/frame locator。`embed_chunks` 激活当前 generation/index 的 embedding 投影，`delete_cleanup` 清理源对象、派生对象和内容记录。检索以 Workspace、ready、未删除、当前 index version 和 provider metadata 为硬边界，分别取得 Dense 与 PostgreSQL lexical 候选；`pdf_page` 按 Asset+页去重，区域/时间 locator 保持独立，再执行 RRF。Chat API 将候选交给当前 generation provider，转发 delta 流并持久化 immutable locator/sourceVersions citation；citation -> note 只接受当前 Workspace 的真实 citation，并复制完整 locator 与展示快照。
 
 ### 5.4 任务编排方式
 
-目标架构采用：
+**当前生产事实**：Postgres 轮询 + `FOR UPDATE SKIP LOCKED` 领取 queued job，并把 `running/succeeded/failed` 写回同一事务边界；`ingestion_jobs` 是任务真相源。Compose 可部署 Redis，但业务主路径不依赖 Redis 队列。
 
-- `Redis queue + Worker`
-- `Postgres ingestion_jobs` 作为最终状态记录
-
-即：
-
-- 队列负责调度
-- 数据库负责真相状态
-- Redis 宕掉后可重新投递
-- Postgres 仍保留任务最终结果与失败原因
-
-当前实现采用 Postgres 轮询作为最小可运行调度：Worker 用 `FOR UPDATE SKIP LOCKED` 领取 queued job，再把 `running/succeeded/failed` 状态写回同一事务边界。Redis 队列会在重试、延迟任务和横向扩展进入主线时接入；当前不保留一套未使用的双队列逻辑。
+**未来目标（未切换）**：在重试、延迟任务和横向扩展进入主线时评估 `Redis queue + Worker`，同时继续以 Postgres 记录最终状态。在未完成调度切换前，不得把 Redis 写成当前任务调度实现，也不得保留一套未使用的双队列逻辑。
 
 ## 6. 数据库架构
 
@@ -403,12 +393,12 @@ V1 使用 `MinIO` 作为本地 S3 兼容对象存储。
 
 ### 7.2 存储内容
 
-- PDF 与 PNG/JPEG/WebP Asset 的原始源文件
-- 摄取 generation 下不可变的派生 Representation 对象
-- 当前 Image 路径生成的 image-oriented Representation
+- 九类生产 Asset 的原始源文件（PDF、PNG/JPEG/WebP、Markdown、HTML、Office、Audio、Video）
+- 摄取 generation 下不可变的派生 Representation 对象（例如 image-oriented、normalized document/html/office、audio/video normalized、video keyframe 等，按模态实际产出）
+- Research plan/checkpoint/conflict/final Artifact bytes
 - 后续可选导出文件
 
-PDF 页面、布局/OCR/表格/图片区域 Representation 元数据以及 PDF/Image ContentUnit 和 locator 当前持久化在 Postgres；文档不虚构尚未生成的 PDF 截图或解析 JSON 对象。
+页面/布局/OCR/表格/区域、Document block、音视频时段等 Representation 元数据与 ContentUnit/locator 持久化在 Postgres；对象存储只保存源文件与已生成派生字节。文档不虚构尚未生成的截图或解析 JSON 对象。
 
 ### 7.3 路径规范
 
@@ -478,54 +468,57 @@ V1 采用 `Next.js 会话鉴权 + 内部服务鉴权` 双层架构。
 
 ### 9.1 缓存选型
 
-V1 使用 `Redis`。
+Compose 可部署 `Redis` 作为**预留基础设施**。V1/当前生产**未**把 Redis 接成业务检索缓存、限流或任务队列实现；任务领取与最终状态仍是 Postgres polling / `ingestion_jobs`。
 
-### 9.2 缓存用途
+### 9.2 规划中的缓存用途（未来目标，非当前时态）
 
-#### `retrieval cache`
+以下描述的是若启用 Redis 加速层时的目标用途，不是已上线行为：
 
-缓存项：
+#### `retrieval cache`（规划）
+
+规划缓存项：
 
 - query embedding 结果
 - 同一 workspace 下短时重复检索结果
 
-适合缓存：
+适合：
 
 - 高频重复问题
 - 相同筛选条件的短时间重查
 
-不适合缓存：
+不适合：
 
 - 长时间持久答案
 - 跨 embedding_version 的结果
 
-#### `rate limit cache`
+#### `rate limit cache`（规划）
 
-缓存项：
+规划缓存项：
 
 - 用户请求频率计数
 - 上传频率计数
 - Chat 请求频率计数
 
-#### `task hot cache`
+#### `task hot cache`（规划）
 
-缓存项：
+规划缓存项：
 
 - 最近 ingestion_jobs 状态
 - 最近重建索引状态
 
-### 9.3 缓存原则
+### 9.3 缓存原则（当前约束 + 未来启用时仍适用）
 
-- 所有缓存 key 必须带 `workspace_id`
-- 所有检索缓存必须带 `embedding_version`
-- 缓存是加速层，不是真相源
+- 当前业务路径不依赖 Redis；启用前不得假定缓存命中改变检索或任务语义
+- 若未来启用：所有缓存 key 必须带 `workspace_id`
+- 若未来启用：所有检索缓存必须带 `embedding_version`
+- 缓存只能是加速层，不是真相源
 - 任务最终状态只认 Postgres
 
 ## 10. 模型与检索架构
 
 ### 10.1 生成模型
 
-当前默认：`OpenAI Responses API`。generation factory 目前仍以该 provider 为主，不能把 capability-based 多 provider 目标误写成已完成能力。
+当前生产可选：`OpenAI Responses API` 与 `DeepSeek Anthropic Messages` adapter，均通过统一 `GenerationProvider` 暴露；默认仍常配置为 OpenAI Responses。capability registry / provider profile / fingerprint 合同已完成；这不等于已提供用户侧多 profile 选择器或无限 provider 扩展。
 
 职责：
 
@@ -533,7 +526,7 @@ V1 使用 `Redis`。
 - 结构化输出
 - 引用型回答编排
 
-V5 将在不改变 Quick/Citation/NoteSource 保存语义的前提下增加 provider profile：每个 Chat/Research Run 记录实际 provider、model、version、capability 和非机密配置指纹；provider 能力不满足请求时 fail closed。
+已落地约束：每个 Chat/Research Run 记录实际 provider、model、version、capability 和非机密配置指纹；provider 能力不满足请求时 fail closed；不改变 Quick/Citation/NoteSource 保存语义。
 
 ### 10.2 Embedding Provider
 
@@ -716,15 +709,15 @@ V5 的模型层以 capability 为边界，而不是在业务代码中判断模�
 - OpenAI 或 Ollama/Qwen embedding
 - pgvector 检索
 - MinIO 本地对象存储
-- Redis 缓存 + 队列
+- Redis 作为已部署预留（缓存/队列未来目标；当前非业务主路径）
 
-### V5 capability-first 演进
+### V5 capability-first 演进（历史阶段；工程主线已关闭）
 
-- P0：generation、embedding、vision、caption、ASR capability registry 与 provider profile
-- P1：按 modality brief 增量接入文档、Audio、Video 等资料类型
-- P2：复用固定 Research executor，完成有界多 Agent 协作产品化
-- P3：完成混合模态 Workspace、统一检索、证据和知识产物
-- P4：后置 R803 模型质量、M404 用户验证与 Beta/发布判断
+- ~~P0~~：generation、embedding、vision、caption、ASR capability registry 与 provider profile（已完成）
+- ~~P1~~：按 modality brief 接入 Document/HTML/Office/Audio/Video（V5-F 已关闭）
+- ~~P2~~：固定 Research executor 有界多 Agent 协作产品化（V5-C 已关闭）
+- ~~P3~~：混合模态 Workspace、统一检索、证据和知识产物（V5-D/F 已关闭）
+- **当前 residual**：OPS 真复配；后置 R803 模型质量、M404 用户验证；Release/Beta 为派生门禁
 
 ### 已完成的 V2 基线
 
@@ -756,11 +749,11 @@ M402 的 21-case 工程执行、7-case 真实 BFF 全栈/像素 Evidence 与 7-c
 - `Caddy` 是唯一宿主公开入口；`Next.js` 是浏览器唯一应用/BFF 边界
 - `FastAPI` 是唯一业务后端
 - `Worker` 负责所有长任务
-- `Postgres` 是真相源，`Redis` 是加速层
+- `Postgres` 是业务与任务真相源；当前任务领取是 Postgres 轮询，`Redis` 仅是已部署的未来加速/队列目标，不是当前调度实现
 - `MinIO` 存文件，`pgvector` 存检索向量
-- `EmbeddingProvider` 必须可切换，不能把模型写死进业务层
+- `EmbeddingProvider` / generation / vision / ASR 走 capability profile，不能把模型写死进业务层
 - Research Workflow/Prompt/provider profile/Asset scope/预算在批准时冻结，Worker 不读取 latest 解释历史 Run
-- API service 是 Research 持久化和事务唯一所有者；Worker 不拥有 ORM 或 migration
+- **当前边界事实（模块化双进程，非独立服务）**：API package 拥有 schema/migration 与 Research/ingestion **mutation logic** 定义；Research Worker `_ApiPort` **当前**在 Worker 进程内创建 Session 并 `commit`/`rollback`；ingestion 在 API orchestrator 与 Worker adapter 的**共享 Session/ORM** 边界内持久化。不得把“定义归属”写成“runtime commit 已由 API 进程独占”，也不得声称 contracts/transport 迁移（ADR A1）已完成。跟进见 [`docs/architecture/api-worker-boundary-follow-up-2026-08-18.md`](../architecture/api-worker-boundary-follow-up-2026-08-18.md)。
 - Quick Chat SSE 与 Research Event SSE 是独立合同
 - Workspace 视图状态只应在 workspace 实际切换时同步；重复选择当前 workspace 不能清空 active thread、文档或其他局部视图状态。
 
@@ -772,12 +765,12 @@ M402 的 21-case 工程执行、7-case 真实 BFF 全栈/像素 Evidence 与 7-c
 - `Representation`：原文件、OCR、布局、表格、caption、ASR 等不可变且可版本化的派生表示
 - `ContentUnit`：段落、区域、表格、图像或时间片段等可寻址检索/分析单元
 - `Embedding`：ContentUnit 的可重建索引投影，可存在多个空间和版本
-- `EvidenceLocator`：带 discriminator 的稳定定位值；当前运行时已启用 `pdf_page / pdf_region / image_region / document_anchor`，Document locator 绑定 generation、representation、block/range、heading path/level、文本 SHA 和 normalized content SHA，并在 API/Web 端 fail-closed。
+- `EvidenceLocator`：带 discriminator 的稳定定位值；当前生产已覆盖 `pdf_page / pdf_region / image_region / document_anchor` 以及 HTML/Office/Audio/Video 对应 typed locator；Document locator 绑定 generation、representation、block/range、heading path/level、文本 SHA 和 normalized content SHA，并在 API/Web 端 fail-closed。
 - `Citation`：回答生成时冻结 locator、标题、摘要、索引映射和版本语义的证据快照；`NoteSource` 复制独立 locator snapshot，`sourceAvailable` 只按当前 Asset 动态投影，不改历史快照。
-- Document Markdown v1 通过 `document-parser-v1` / `document-normalization-v1`、typed `document_normalized` representation、`document_text_chunk` retrieval unit 和 immutable generation rows 接入；删除清理对象与当前检索投影但保留历史 representation/block/locator，以支持 Citation/NoteSource 重放。
+- Document/HTML/Office/Audio/Video 均通过封闭 registry 接入；删除清理对象与当前检索投影但保留历史 representation/locator，以支持 Citation/NoteSource 重放。
 - Upload source identity 在首次 PUT 后不可替换：API 对 pending Asset 使用 row lock 与 source SHA recheck，finalize-upload 重新校验对象 size/SHA 后才创建 ingestion job；不同源必须创建新 Asset。
 
-PDF/Image 不是稳定内核中的硬编码枚举。后端与 Web 使用部署期封闭注册表：每个模态模块提供字节验证、ingestion adapter、Representation/ContentUnit 类型、locator codec、retrieval channel 和 renderer。数据库类型目录与代码注册表不一致时 readiness 失败。后续 Audio/Video 允许增加模块和类型化 locator 明细表，但不得修改 Asset、Chat scope、Citation、NoteSource 或 Evidence Viewer shell 的核心职责。
+九类模态不是稳定内核中的硬编码枚举。后端与 Web 使用部署期封闭注册表：每个模态模块提供字节验证、ingestion adapter、Representation/ContentUnit 类型、locator codec、retrieval channel 和 renderer。数据库类型目录与代码注册表不一致时 readiness 失败。新增模态仍允许增加模块和类型化 locator 明细表，但不得修改 Asset、Chat scope、Citation、NoteSource 或 Evidence Viewer shell 的核心职责。
 
 Document/Page/Chunk 已通过受控迁移切换为 Asset/Representation/ContentUnit/Evidence，历史页码 citation 只机械映射为 `pdf_page`。当前 Evidence v1、Chat SSE、citation -> note、Viewer 跳转和删除/重索引语义保持冻结；任何 locator 新版本、核心表或保存 payload 变更仍必须先提交迁移、历史回放、坐标、fixture 和恢复影响设计并重新批准。
 
@@ -793,7 +786,7 @@ Document/Page/Chunk 已通过受控迁移切换为 Asset/Representation/ContentU
 ## Deploy and ownership invariants (architecture hardening)
 
 - **Same version**: API and Worker must be deployed from the same git SHA / image tag. Shared ORM models live in `ai_pdf_api.models`; Alembic migrations are owned only by `apps/api`.
-- **Ingestion Worker** may import shared models and write Representations/ContentUnits under the modality adapter contract.
-- **Research Worker** must mutate Research business state only through API service ports / ledger adapters, not by inventing a second persistence owner.
+- **Ingestion Worker** may import shared models and write Representations/ContentUnits under the modality adapter contract on the **shared Session** passed by the API orchestrator (current fact; not a completed process-isolated boundary).
+- **Research Worker** must call API service mutation functions via ports/ledger adapters and must not invent a second ledger schema; **today** `_ApiPort` still opens the Session and commits/rollbacks inside the Worker process. Schema/migration owner ≠ session/commit process owner.
 - **Chat** attaches generation images only via `modalities.visual_enrichment` (no direct kind-specific crop imports).
 

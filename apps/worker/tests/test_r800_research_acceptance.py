@@ -26,6 +26,8 @@ from ai_pdf_worker.r800_acceptance_snapshot import verify_snapshots
 from sqlalchemy import create_engine
 from sqlalchemy.orm import Session, sessionmaker
 
+pytestmark = pytest.mark.acceptance
+
 SCRIPT_PATH = Path(__file__).resolve().parents[1] / "scripts/r800_research_acceptance.py"
 SPEC = importlib.util.spec_from_file_location("r800_research_acceptance", SCRIPT_PATH)
 assert SPEC is not None and SPEC.loader is not None

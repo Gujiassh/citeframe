@@ -64,6 +64,8 @@ from ai_pdf_api.services.retrieval import retrieve_content, retrieve_lexical_con
 from ai_pdf_worker.document_ingestion import DocumentIngestionAdapter
 from ai_pdf_worker.main import INGESTION_ADAPTERS
 
+pytestmark = pytest.mark.acceptance
+
 ROOT = Path(__file__).resolve().parents[3]
 FIXTURE_DIR = ROOT / "docs/fixtures/document-modality"
 SOURCE_PATH = FIXTURE_DIR / "markdown-note.md"
