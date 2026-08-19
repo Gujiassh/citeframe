@@ -5,7 +5,7 @@
   "model": "gpt-5.5",
   "sourceExecutionArtifact": {
     "path": "docs/evals/multimodal-execution-v1.json",
-    "sha256": "ef746eaf11b90d78138f27be07df75967a2012cf7465c12fa44c76b7cf3952c0"
+    "sha256": "1afa26c02e70f8eb933c4d6008dd0b57f96ab6b6dc00dcfd75bde0032f4354be"
   },
   "sourceGoldenAnswerOracle": {
     "path": "docs/evals/multimodal-answer-oracle-v1.json",

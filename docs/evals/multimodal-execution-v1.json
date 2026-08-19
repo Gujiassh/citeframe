@@ -414,13 +414,18 @@
     },
     {
       "path": "docs/evals/artifacts/m402-v1/real-model-execution.json",
-      "sha256": "89429abe8a8f282855457ee0694aa4e361030302389fdb87e0e28db0964d2b4e",
+      "sha256": "55d0a545ac8add011d7e16e0f422b2c224636c03d509e5297c951e6d5d6e5ea8",
       "byteSize": 15741
     },
     {
       "path": "docs/evals/artifacts/m402-v1/worker-execution.json",
-      "sha256": "8b0870f8944ccb25d0b3832aadee91d74d0a22a834bb8a7c24d5b39fec7b364f",
+      "sha256": "10f59a464ba216e959cefa067295ba13f1346b13023f62aa7951341d7dbb58a6",
       "byteSize": 6716
+    },
+    {
+      "path": "docs/evals/m402-execution-source-provenance-v1.json",
+      "sha256": "32611f818219424c2601371950e8667b487cab26063d70b1ee4fc77c194bd1fa",
+      "byteSize": 3131
     },
     {
       "path": "docs/evals/multimodal-answer-oracle-v1.json",
