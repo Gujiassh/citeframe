@@ -34,6 +34,8 @@ from ai_pdf_worker.research_runtime import (
 from sqlalchemy import create_engine, select
 from sqlalchemy.orm import sessionmaker
 
+pytestmark = pytest.mark.acceptance
+
 
 def sha256(value: str) -> str:
     return hashlib.sha256(value.encode("utf-8")).hexdigest()

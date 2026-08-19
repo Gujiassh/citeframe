@@ -24,6 +24,8 @@ from ai_pdf_worker.r803_structured_output import (
 )
 from ai_pdf_worker.research_agent_schemas import AGENT_RESULT_SCHEMAS
 
+pytestmark = pytest.mark.evaluation
+
 
 class DeterministicProvider:
     provider = "openai"

@@ -45,6 +45,8 @@ from r803_test_helpers import CampaignProvider, DeterministicProvider
 
 REPO = Path(__file__).resolve().parents[3]
 
+pytestmark = pytest.mark.evaluation
+
 
 def _run_campaign(
     campaign_dir: Path,

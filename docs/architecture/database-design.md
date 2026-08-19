@@ -387,7 +387,14 @@ Research 表按职责分为四组：
 3. immutable outputs：Artifact bytes metadata、Claim、Evidence snapshot/handle 与 exact provenance mappings；
 4. independent Evaluation：trusted importer 写入 append-only suite/run/case/claim rows，浏览器仅 owner 可读。
 
-API service 是唯一事务所有者。Worker 通过 service ports 更新账本，不直接定义 ORM 或 migration。共享 provider/tool 事务使用 `Attempt -> Step -> Run -> call -> BudgetLedger` 锁序，并在锁查询后刷新 identity map。
+**当前 owner 事实（须三分开写，不得混称）：**
+
+- **Schema / migration owner**：API package（Alembic + ORM 定义在 `apps/api`）。
+- **Mutation logic owner**：API Research/ingestion service 实现（锁序、状态机、保存语义）；Worker 不另起一套 ledger schema。
+- **Session / commit process owner（Research）**：Worker `_ApiPort` **当前**创建 Session，并在 write 路径 `commit`/`rollback`（见 `apps/worker/src/ai_pdf_worker/research_runtime_core.py`）。因此“API 拥有 mutation logic 定义”不等于“API 进程独占 runtime commit”。
+- **Ingestion**：API `process_ingestion_job` 编排 job，并把同一 SQLAlchemy `Session` / ORM `Asset` 传入 Worker adapter；模态行写入发生在该共享会话边界内。
+
+Worker 通过 service ports 调用账本 mutation 函数，不直接定义 ORM 或 migration。共享 provider/tool 锁序仍是 `Attempt -> Step -> Run -> call -> BudgetLedger`，并在锁查询后刷新 identity map。上述运行时边界的迁移属于架构跟进（见 `api-worker-boundary-follow-up-2026-08-18.md`），**不得写成 A1 已完成**。
 
 完整字段、状态、唯一键和删除/保留语义以获批 V4 data contract、Alembic migration 与 ORM 为准；本文件不重复复制 30 余张表的字段清单。运行边界见 `research-workflow-runtime.md`。
 

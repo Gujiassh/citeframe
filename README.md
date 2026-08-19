@@ -15,8 +15,8 @@ Citeframe is a self-hosted multimodal AI knowledge workspace for organizing hete
 - Search across ready assets with PostgreSQL full-text search, pgvector, and reciprocal rank fusion.
 - Use Quick Answer for focused questions or bounded multi-agent Research for complex comparisons.
 - Save source-linked notes, tags, chat history, and research artifacts.
-- Use the current configured generation provider and switch supported embedding providers through server-side configuration; multiple generation profiles are a V5 capability target.
-- Extend the same Asset/Evidence contracts to additional document, audio, and video modalities as they are implemented.
+- Use server-resolved provider profiles already shipped for generation (OpenAI Responses / DeepSeek Anthropic Messages), embedding (OpenAI / Ollama), vision/image-caption, and ASR capability checks; missing capability fails closed. Additional provider adapters or user-facing profile selectors remain future expansion, not unfinished core contracts.
+- Keep the same Asset/Evidence contracts when adding modalities; nine production kinds are already registered (depth still varies by kind).
 - Run the complete stack on your own infrastructure.
 
 Product stage is **`internal_preview`**: engineering gates may pass without claiming model quality (R803) or user-value (M404). Roadmap and post-V5-F hardening: [`specs/v5/multimodal-agent-product/`](specs/v5/multimodal-agent-product/), [`specs/v5/architecture-hardening/`](specs/v5/architecture-hardening/).
