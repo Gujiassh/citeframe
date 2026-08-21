@@ -17,6 +17,8 @@ EVALUATOR_CLOSURE_ROOTS: tuple[str, ...] = (
 _PACKAGE_SOURCE_ROOTS: dict[str, str] = {
     "ai_pdf_worker": "apps/worker/src",
     "ai_pdf_api": "apps/api/src",
+    "citeframe_contracts": "packages/backend-contracts/src",
+    "citeframe_persistence": "packages/backend-persistence/src",
 }
 
 _SAFE_RELATIVE = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._/-]*$")
@@ -249,8 +251,9 @@ def compute_evaluator_closure(
 
     Starts at EVALUATOR_CLOSURE_ROOTS (or explicit roots for isolated tests),
     walks runtime AST imports (including function-local imports), skips only
-    `if TYPE_CHECKING` bodies, resolves `ai_pdf_worker.*` and `ai_pdf_api.*`
-    under fixed source roots, and fails closed on missing/unreadable/
+    `if TYPE_CHECKING` bodies, resolves repository-local `ai_pdf_worker.*`,
+    `ai_pdf_api.*`, `citeframe_contracts.*`, and `citeframe_persistence.*` under
+    fixed source roots, and fails closed on missing/unreadable/
     syntax-invalid required modules.
 
     For every resolved module, every existing ancestor package ``__init__.py``

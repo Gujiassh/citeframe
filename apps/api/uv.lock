@@ -12,6 +12,9 @@ version = "0.1.0"
 source = { editable = "." }
 dependencies = [
     { name = "alembic" },
+    { name = "citeframe-backend-contracts" },
+    { name = "citeframe-backend-persistence" },
+    { name = "citeframe-research-persistence" },
     { name = "email-validator" },
     { name = "fastapi" },
     { name = "httpx" },
@@ -38,6 +41,9 @@ dev = [
 [package.metadata]
 requires-dist = [
     { name = "alembic", specifier = ">=1.18.5" },
+    { name = "citeframe-backend-contracts", editable = "../../packages/backend-contracts" },
+    { name = "citeframe-backend-persistence", editable = "../../packages/backend-persistence" },
+    { name = "citeframe-research-persistence", editable = "../../packages/research-persistence" },
     { name = "email-validator", specifier = ">=2.2.0" },
     { name = "fastapi", specifier = ">=0.116.0" },
     { name = "httpx", specifier = ">=0.28.0" },
@@ -299,6 +305,43 @@ wheels = [
     { url = "https://files.pythonhosted.org/packages/80/3f/bd97d3d9c613013d07cb7733d299385b41df37f0471310f5a73dc359f0b8/charset_normalizer-3.4.9-cp314-cp314t-win_amd64.whl", hash = "sha256:9b8e0f3107e2200b76f6054de99016eac3ee6762713587b36baaa7e4bd2ae177", size = 167620, upload-time = "2026-07-07T14:34:33.438Z" },
     { url = "https://files.pythonhosted.org/packages/3d/c6/eee9dca4439b1061f76373f06ea855678cc4a64c1c3c90b50e479edbb8eb/charset_normalizer-3.4.9-cp314-cp314t-win_arm64.whl", hash = "sha256:19ac87f93086ce37b86e098888555c4b4bc48102279bae3350098c0ed664b501", size = 158037, upload-time = "2026-07-07T14:34:35.018Z" },
     { url = "https://files.pythonhosted.org/packages/98/2b/f97f1c193fb855c345d678f5077d6926034db0722df74c8f057020e05a25/charset_normalizer-3.4.9-py3-none-any.whl", hash = "sha256:68e5f26a1ad57ded6d1cfb85331d1c1a195314756471d97758c48498bb4dcdf5", size = 64538, upload-time = "2026-07-07T14:34:56.993Z" },
+]
+
+[[package]]
+name = "citeframe-backend-contracts"
+version = "0.1.0"
+source = { editable = "../../packages/backend-contracts" }
+
+[[package]]
+name = "citeframe-backend-persistence"
+version = "0.1.0"
+source = { editable = "../../packages/backend-persistence" }
+dependencies = [
+    { name = "pgvector" },
+    { name = "sqlalchemy" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "pgvector", specifier = ">=0.4.1" },
+    { name = "sqlalchemy", specifier = ">=2.0.41" },
+]
+
+[[package]]
+name = "citeframe-research-persistence"
+version = "0.1.0"
+source = { editable = "../../packages/research-persistence" }
+dependencies = [
+    { name = "citeframe-backend-contracts" },
+    { name = "citeframe-backend-persistence" },
+    { name = "sqlalchemy" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "citeframe-backend-contracts", editable = "../../packages/backend-contracts" },
+    { name = "citeframe-backend-persistence", editable = "../../packages/backend-persistence" },
+    { name = "sqlalchemy", specifier = ">=2.0,<3.0" },
 ]
 
 [[package]]

@@ -3,14 +3,14 @@
 ## 1. 当前状态
 
 - 数据库：PostgreSQL + pgvector + pg_trgm
-- Alembic head：`e8f1a2b3c4d5`
+- Alembic head：`m7a8b9c0d1e2`
 - 运行时领域模型：Asset/Evidence
 - 已移除表：`documents`、`document_pages`、`document_chunks`、`document_tags`
-- 当前生产摄取：PDF 文本层、扫描 PDF OCR fallback，以及经 M403B 发布门禁的 PNG/JPEG/WebP Image adapter
+- 当前生产摄取：九类启用模态（PDF、Image、Document、HTML、DOCX、XLSX、PPTX、Audio、Video）；PDF 文本层/扫描 PDF OCR、Image 规范化与各已启用模态 adapter 均由 Worker 注册表调度
 - 图片 `image_oriented/image_ocr/image_caption` Representation、方向后 geometry、`image_ocr_region/image_caption` ContentUnit、`image_region` locator、text embedding、Citation/NoteSource 历史快照与 Image Viewer 已接入；M403B 的真实上传/检索/Evidence/恢复报告已通过并归档
 - V4 Research/Evaluation ledger、Workflow/Prompt v2、immutable Artifact/Claim/Evidence provenance 与 provider/tool/budget accounting 已接入；R800 v4 的 PostgreSQL/MinIO 空部署恢复通过
 
-当前 schema 以本文件的表分组、字段职责和 Alembic head 为准。`database-er-legacy-document.mmd` 与 `database-er.mmd` / `database-er.svg` 均为历史快照，不得作为当前迁移或模型实现输入。
+当前 schema 以本文件的表分组、字段职责和 Alembic head `m7a8b9c0d1e2` 为准。`database-er-legacy-document.mmd` 与 `database-er.mmd` / `database-er.svg` 均为历史快照，不得作为当前迁移或模型实现输入。
 
 `c9d1e2f3a4b5` 是不可原地 downgrade 的一次性 Asset 迁移；`d0e2f4a6b8c1` 在其上增加 user-message 输入 Evidence。回到旧 Document 模型只能恢复迁移前的 PostgreSQL/MinIO 同批备份。
 
@@ -204,6 +204,15 @@ HNSW 只建立在 `is_current` 行上，并且 Dense ANN candidate CTE 在 embed
 
 - `pdf`
 - `image`
+- `document`
+- `html`
+- `docx`
+- `xlsx`
+- `pptx`
+- `audio`
+- `video`
+
+以上九类在当前 `m7a8b9c0d1e2` 目录迁移中启用。
 
 ### 5.2 当前 Representation 类型
 
@@ -394,7 +403,7 @@ Research 表按职责分为四组：
 - **Session / commit process owner（Research）**：Worker `_ApiPort` **当前**创建 Session，并在 write 路径 `commit`/`rollback`（见 `apps/worker/src/ai_pdf_worker/research_runtime_core.py`）。因此“API 拥有 mutation logic 定义”不等于“API 进程独占 runtime commit”。
 - **Ingestion**：API `process_ingestion_job` 编排 job，并把同一 SQLAlchemy `Session` / ORM `Asset` 传入 Worker adapter；模态行写入发生在该共享会话边界内。
 
-Worker 通过 service ports 调用账本 mutation 函数，不直接定义 ORM 或 migration。共享 provider/tool 锁序仍是 `Attempt -> Step -> Run -> call -> BudgetLedger`，并在锁查询后刷新 identity map。上述运行时边界的迁移属于架构跟进（见 `api-worker-boundary-follow-up-2026-08-18.md`），**不得写成 A1 已完成**。
+Worker 通过 service ports 调用账本 mutation 函数，不直接定义 ORM 或 migration。Package staging is A1 contracts -> A1b/A2-foundation persistence mappings -> A2a Research persistence behavior; A2a now has an implementer-complete package and compatibility facades, with independent Critical review pending. 当前 Research 多行 mutation 的锁获取顺序仍然混合：Worker attempt paths 多为 `Attempt -> Step -> Run`，claim 为 `Step -> Run`，API cancel/retry/decision paths 为 `Run -> Step`；claim-vs-cancel 存在反向死锁环。A2a 保持当前行为，R0 才将目标顺序统一为 `Run -> Step -> Attempt -> Call -> Ledger`，并要求真实 PostgreSQL `pg_locks`/timeout 证据。上述 ORM/mutation/session runtime boundary migration 属于架构跟进（见 `api-worker-boundary-follow-up-2026-08-18.md`）：A1 contracts implementation 已于 2026-08-20 独立 ACCEPT；A1b/A2-foundation 已于 2026-08-21 独立 ACCEPT（follow-up Critical review：High=0、Medium=0、Low=0）；A2a 已由实现者完成，独立 Critical review 待进行；R0/R1/R2/W1 仍未实现并保持 blocked。ORM/mutation/session boundary migration 属于 A1b/A2a/R0 及后续切片。No schema/API/save/replay/permission changes are authorized；A1b follow-up Critical review 已 ACCEPT，A2a 独立 Critical review 待进行，后续切片仍须各自通过命名 gate。
 
 完整字段、状态、唯一键和删除/保留语义以获批 V4 data contract、Alembic migration 与 ORM 为准；本文件不重复复制 30 余张表的字段清单。运行边界见 `research-workflow-runtime.md`。
 

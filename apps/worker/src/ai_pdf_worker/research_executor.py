@@ -1,6 +1,6 @@
 """Public production Research executor ports."""
 
-from ai_pdf_worker.research_executor_contracts import (
+from citeframe_contracts import (
     ApprovedResearchExecution,
     BranchResult,
     BranchTiming,

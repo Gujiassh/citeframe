@@ -137,7 +137,7 @@ def test_postgres_shm_covers_hnsw_build_memory() -> None:
 
 def test_production_and_capacity_hnsw_build_quality_match() -> None:
     repo_root = Path(__file__).resolve().parents[3]
-    model = (repo_root / "apps/api/src/ai_pdf_api/models/content_unit_embedding.py").read_text()
+    model = (repo_root / "packages/backend-persistence/src/citeframe_persistence/models/content_unit_embedding.py").read_text()
     migration = (
         repo_root
         / "apps/api/alembic/versions/f2a4c6e8b0d1_add_embedding_current_scope.py"
@@ -182,7 +182,7 @@ def test_capacity_measurement_gates_selected_scope_against_exact_locations() -> 
 
 def test_production_and_capacity_fts_use_stored_search_vector() -> None:
     repo_root = Path(__file__).resolve().parents[3]
-    model = (repo_root / "apps/api/src/ai_pdf_api/models/content_unit.py").read_text()
+    model = (repo_root / "packages/backend-persistence/src/citeframe_persistence/models/content_unit.py").read_text()
     migration = (
         repo_root
         / "apps/api/alembic/versions/e1f3a5c7d9b2_add_content_unit_search_vector.py"
@@ -230,8 +230,8 @@ def test_subset_capacity_runs_cannot_claim_release() -> None:
         "apps/api/alembic/versions/c9d1e2f3a4b5_migrate_documents_to_assets.py",
         "apps/api/alembic/versions/e1f3a5c7d9b2_add_content_unit_search_vector.py",
         "apps/api/alembic/versions/f2a4c6e8b0d1_add_embedding_current_scope.py",
-        "apps/api/src/ai_pdf_api/models/content_unit.py",
-        "apps/api/src/ai_pdf_api/models/content_unit_embedding.py",
+        "packages/backend-persistence/src/citeframe_persistence/models/content_unit.py",
+        "packages/backend-persistence/src/citeframe_persistence/models/content_unit_embedding.py",
         "apps/api/src/ai_pdf_api/services/ingestion.py",
         "apps/api/tests/test_dense_ann_retrieval.py",
         "apps/api/tests/test_embedding_current_scope.py",

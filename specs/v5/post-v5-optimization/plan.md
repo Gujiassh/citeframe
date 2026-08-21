@@ -2,19 +2,25 @@
 
 ## 1. Sequencing Principle
 
-Run governance and architecture decisions first, then install guards, then move code.
-Product depth follows a capability/quality matrix rather than preceding it.
+The owner-authorized architecture freeze and design re-audit are complete: the design audit
+accepted with `High=0`, `Medium=0`, `Low=0`. A1 implementation was independently accepted
+on `2026-08-20`. A1b/A2-foundation was independently accepted on `2026-08-21` by the
+follow-up Critical review (`High=0`, `Medium=0`, `Low=0`); A2a is implementer-complete; independent Critical review is pending; R0/R1/R2/W1 and downstream remain blocked. Product
+depth follows a capability/quality matrix rather than preceding it.
 
 ```text
-Wave 0: G0 governance decision + A0 ownership decision + M0/P0 baselines
-    -> Wave 1: required merge gates + contracts + first pure file splits + quality protocols
-        -> Wave 2: Research/ingestion boundary pilots + authorized evidence runs
-            -> Wave 3: all-modality migration + one evidence-selected depth investment
-                -> Wave 4: API-source-free Worker candidate and release review
+Wave 0: A0/R/W target freeze + design re-audit `ACCEPT` (`High=0`, `Medium=0`, `Low=0`) + M0/P0 baselines
+    -> Wave 1: A1 contracts -> A1b/A2-foundation neutral mappings -> A2a Research behavior extraction
+        -> Wave 2: R0 lock normalization -> R1 one-claimed-attempt dispatcher + R2 real PostgreSQL proof + W1 SSE
+            -> Wave 3: A3/A4 nine-modality migration and composition-root boundary proof
+                -> Wave 4: A5/A6 API-source-free Worker candidate and release review
 ```
 
-Wave numbers express dependencies, not authorization. Independent lanes may run in
-parallel only when their file ownership and contracts do not overlap.
+Wave numbers express dependencies, not authorization. A1 was independently accepted
+on `2026-08-20`; A1b/A2-foundation was independently accepted on `2026-08-21` by the
+follow-up Critical review (`High=0`, `Medium=0`, `Low=0`). A2a is implementer-complete; independent Critical review is pending; R0/R1/R2/W1 and downstream slices remain unstarted and blocked. No schema/API/save/
+replay/permission changes are authorized. G/M/P and GitHub settings remain separate
+unauthorized lanes.
 
 ## 2. Lane G: Delivery Governance (5.5 -> target 8.0)
 
@@ -35,28 +41,55 @@ conversations, and all six checks. Raise the rule to one real approval only afte
 second maintainer exists. CODEOWNERS and multiple approvals remain unnecessary at the
 current scale.
 
-## 3. Lane A: API / Worker Boundary (6.0 -> target 7.5)
+## 3. Lane A/R/W: API / Worker Boundary And Research Runtime
+
+Owner-authorized direction: same-DB adapter, API HTTP/auth/Alembic/schema governance,
+Worker orchestration, Worker-side Research UoW commit process, pure contracts, and one
+shared `citeframe_research_persistence` behavior implementation over neutral mappings. The
+design re-audit is accepted (`High=0`, `Medium=0`, `Low=0`). A1 implementation was
+independently accepted on `2026-08-20`; A1b/A2-foundation was independently accepted on
+`2026-08-21` by the follow-up Critical review (`High=0`, `Medium=0`, `Low=0`). A2a is the
+only next implementation step; R0/R1/R2/W1 and downstream implementation remains blocked; no
+schema/API/save/replay/permission changes are authorized.
 
 | Slice | Scope | Estimate | Exit gate |
 | --- | --- | ---: | --- |
-| A0 | Freeze the four ownership decisions and transport; sync architecture/database/V5 SSoT | 0.5-1 day | Owner-approved decision; zero production change |
-| A1 | Add Python-only versioned DTO/Protocol package with no ORM/settings/provider client | 2-3 days | Dependency test proves contracts are pure; legacy runtime retained |
-| A2 | Migrate Research port payloads to contracts and implement approved transaction adapter | 3-5 days | Old/new state, events, retry, cancel, recovery, and payload oracle equal |
-| A3 | Freeze ingestion result/object/hash/compensation contract; pilot PDF or Image | 4-7 days | Same Representation/ContentUnit/Locator/object and failure semantics |
-| A4 | Migrate the other eight adapters plus composition root | 10-20 days | Import baseline trends 28/96/12 to target/approved allowlist; all modality gates pass |
-| A5 | Add Worker candidate build without API source/editable dependency/PYTHONPATH | 2-3 days | import/compile/start/ingest/Research/recovery/version-mismatch smoke passes |
+| A0 | Freeze ownership, package boundaries, save semantics, lock/fencing contract, per-Run admission, and W1 boundary | 0.5-1 day | Owner authorization recorded; no production change; design re-audit `ACCEPT` |
+| A1 | Add only `citeframe-backend-contracts` (`citeframe_contracts`) pure DTO/Protocol package and necessary legacy re-exports | 2-3 days | API/Worker add only contracts path; contracts-only export, source-copy, PYTHONPATH, and import smoke; no ORM/Research package |
+| A1b / A2-foundation | On top of A1, add `citeframe-backend-persistence` (`citeframe_persistence`) as the unique Base/metadata and all-model mapping distribution | 1-2 days | Add only persistence to manifests/locks, source-copy, PYTHONPATH, and smoke; table/column/constraint/index zero drift; no Research package or schema/save change |
+| A2a | On top of A1b, add `citeframe-research-persistence` (`citeframe_research_persistence`) Research behavior/ports | 3-5 days | Only now add the third manifest/path/COPY/PYTHONPATH; preserve current multi-step `process_one` and mixed locks; old/new DB/payload/Event/retry/cancel/recovery snapshots equal; final three-package smoke |
+| R0 | Normalize all lock acquisition to `Run -> Step -> Attempt -> Call -> Ledger`; no save/API semantic change | 2-4 days | Real PostgreSQL `pg_locks`/timeout evidence for claim-vs-cancel/complete, reclaim-vs-provider, two claims; separate PR before R1/admission |
+| R1 | Change `process_one` to dispatch exactly one newly claimed and leased Attempt to one step-kind handler through bounded concurrent dispatcher loops | 3-5 days | Starts only after R0; production-shaped two-loop overlap/wall-time oracle, one-step handler, fencing, readiness/join, no in-memory cross-step state; separate PR from A2a/R0 |
+| R2 | Real PostgreSQL two-or-more Worker contention, per-Run cap, lease/reclaim/cancel/provider/join/recovery proof | 2-4 days | Immutable Critical report; SQLite-only evidence is insufficient |
+| A3 | Freeze ingestion result/object/hash/compensation contract and pilot one modality | 4-7 days | Same Representation/ContentUnit/Locator/object/failure semantics; pilot is not A5 entry |
+| A4 | Migrate the other eight adapters plus composition root | 10-20 days | Nine-modality import/behavior/recovery gates pass |
+| A5 | Candidate Worker build without API source/editable dependency/PYTHONPATH | 2-3 days | import/compile/start/ingest/Research/recovery/version-mismatch smoke |
 | A6 | Replace legacy Worker target only after A5 | 1 day | Deploy/restore regression passes; old dependency removed last |
+| W1 | Independent Research SSE single-flight, sequence gate, event-directed artifact cache, replay fallback | 2-4 days | Burst/stale/reconnect/lost-notify/gap/terminal/hash evidence; no API/save contract change |
 
-Required semantic oracle for A2-A6:
+Required semantic oracle for A2a/R0/R1/R2/A3-A6/W1:
 
-- same job state transitions, retry/lease behavior, error codes, and transaction outcome;
-- same Asset generation, Representation, ContentUnit, locator, Citation/NoteSource, and
-  Research save/replay meaning;
-- before/after payload and database snapshots on real fixtures;
-- candidate version mismatch fails closed.
+- same Step/Attempt/Claim/state-version transitions, retry/lease, cancel, reclaim, conflict,
+  artifact hash/provenance, budget, permission, and API payload meaning; R0 changes lock
+  acquisition order only; A2a Event rows/bytes
+  are equal; R1/R2 use the event projection/partial-order oracle below;
+- same provider/tool reserve/send/reconcile/cancel and object publication commit-unknown
+  compensation behavior;
+- before/after database and payload snapshots on real fixtures;
+- two or more Workers against real PostgreSQL for contention and recovery;
+- Research SSE stale-response, Run-switch, history-gap, terminal, lost-notify, and
+  `(artifactId, sha256)` cache scenarios; per-Run contiguous/unique seq and partial-order event oracle passes.
 
-Never use the single-modality A3 pilot as permission to enter A5. All nine adapters,
-Research runtime, startup composition, and recovery must satisfy the boundary gate first.
+Event oracle for R1/R2: within each Run, `seq` starts at 1, is contiguous and unique, and is allocated atomically across Workers; each Step has
+`queued < started < terminal`; Attempt/lease events are legal; all dependencies succeed
+before a dependent is queued; Run terminal is last; dedupe prevents duplicate terminal
+facts; payload schema/error meaning stays equal. Independent Researcher event interleaving
+may vary.
+
+A2a is not R0 or R1. A2a preserves the current behavior where one `process_one` call can drive
+multiple steps through LangGraph and retains current mixed lock behavior; R0 normalizes locks
+before R1/admission; R1 is the separate single-attempt dispatcher. A3/A4 cover all nine enabled
+modalities before A5 can claim an API-source-free Worker.
 
 ## 4. Lane M: Maintainability (6.5 -> target 7.5)
 
@@ -128,11 +161,12 @@ integration remain owned by the main controller and an independent reviewer.
 
 | Milestone | Included | Engineering estimate |
 | --- | --- | ---: |
-| O1 Control plane | G0-G3, A0, M0, P0 | 4-6 days |
-| O2 Safer codebase | A1-A2, M1-M3 | 10-16 days |
-| O3 Boundary proof | A3-A4, M4-M6 | 15-30 days |
-| O4 Product evidence/depth | P1 plus one of P2/P3/P4 | 7-15 engineering days plus M404 calendar time |
-| O5 API-source-free Worker build | A5-A6 | 3-4 days after all prior gates |
+| O1 Control plane | A0, M0, P0 | 1-3 days plus re-audit |
+| O2 Safer codebase | A1-A1b-A2a, M1-M3 | 11-18 days |
+| O3 Research runtime proof | R0-R2 and W1 | 9-17 days after A2a |
+| O4 Boundary proof | A3-A4, M4-M6 | 15-30 days |
+| O5 Product evidence/depth | P1 plus one of P2/P3/P4 | 7-15 engineering days plus M404 calendar time |
+| O6 API-source-free Worker build | A5-A6 | 3-4 days after all prior gates |
 
 These are planning ranges, not delivery commitments. A0/P0 evidence can stop or reorder
 later work. Do not schedule all milestones as one release.

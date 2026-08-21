@@ -33,7 +33,7 @@ M403A 的逐次优化假设、实验手段、通过/否决结果、指标和 art
 - 真实后端认证接口与 BFF session cookie 已接通
 - `users / workspaces / workspace_memberships` 最小真表链路已接通
 - 首页与工作区详情页的 workspace 可见范围、创建、归档已切到真实 BFF/API
-- API 侧已接入数据库结构版本步骤工具，当前数据库 head 为 `e8f1a2b3c4d5`；embedding current-chain、双 HNSW、生产 Image、Research/Evaluation ledger 与 Workflow/Prompt v2 已落地
+- API 侧已接入数据库结构版本步骤工具，当前数据库 head 为 `m7a8b9c0d1e2`；embedding current-chain、双 HNSW、九类生产模态目录、Research/Evaluation ledger 与 Workflow/Prompt v2 已落地
 - Asset、向量检索、Chat thread/message/citation、notes/tags 已进入真实链路
 - 生产运行时已移除 `/documents` 和 Document 业务模型，历史 PDF 数据已机械迁移到 Asset/Evidence 内核
 
@@ -313,7 +313,8 @@ Release review / Beta / 公开发布是上述证据齐备后的派生门禁，�
 - `apps/web`、`apps/api`、`apps/worker` 基础工程已初始化
 - Workspace 列表与详情的最小 API/BFF/页面链路已建立
 - `users / workspaces / workspace_memberships` 最小真表、查询、创建、归档链路已落地
-- API 侧已从启动时自动建表切换到显式数据库版本步骤；当前 head 版本为 `e8f1a2b3c4d5`
+- Research boundary design re-audit is accepted (`High=0`, `Medium=0`, `Low=0`). A1 contracts slice was independently accepted on 2026-08-20: neutral DTO/Protocol package, legacy identity re-exports, API/Worker path-source and export integration, Docker/CI import smoke, and focused tests are present. A1b/A2-foundation was independently accepted on 2026-08-21 by the follow-up Critical review (`High=0`, `Medium=0`, `Low=0`) after neutral mapping, DDL, M403A, R803, and checked-in fixture oracles were corrected. A2a is implementer-complete; independent Critical review is pending; R0/R1/R2/W1 and later slices remain unstarted and blocked. No schema/API/save/replay/permission changes are authorized; Research persistence implementation evidence is recorded in `reviews/a2a-persistence-implementation-2026-08-21.md`; independent Critical review is pending.
+- API 侧已从启动时自动建表切换到显式数据库版本步骤；当前 head 版本为 `m7a8b9c0d1e2`
 - `assets / ingestion_jobs` 真表、迁移、列表、upload-session、二进制上传、finalize-upload、job 查询与删除链路已落地；Worker 通过 `IngestionAdapterRegistry` 按 `asset_kind` dispatch，API 共享 orchestrator 不再理解 PDF/OCR/page/bbox
 - `pdf_pages / content_units / content_unit_embeddings` 真表和迁移已落地；Worker 会领取 queued ingest job、回收超时任务，先提取文本层，必要时用 RapidOCR + ONNX Runtime 渲染页面并识别，再按页生成 ContentUnit、批量调用 embedding provider、写入向量并推进 `chunking -> embedding -> ready`，同时支持 `embed_chunks` 回填已有 ContentUnit。
 - 原始 PDF 文件流已接通 API/BFF；`PdfViewer` 使用 PDF.js canvas 作为主页面、text layer 支持原生 PDF 文本选取、扫描 PDF 使用透明 OCR block 层支持划词、annotation layer 支持 PDF 内置链接/批注，OCR 文本不覆盖源页面视觉内容
@@ -368,7 +369,7 @@ Release review / Beta / 公开发布是上述证据齐备后的派生门禁，�
 
 - R200-R700 已完成 PostgreSQL/Alembic Research 与 Evaluation 账本、固定 typed executor、Evidence-only tools、HITL/Research SSE/retry/recovery、Web Research 体验、OTel/Prometheus 与 owner-only Evaluation Dashboard。
 - R800 v1/v2/v3 失败记录完整保留。v2 暴露 provider/tool completion 与 reservation 的反向锁序，v3 证明死锁消失后又暴露 scripted stub 的 Claim 状态误判；修复均有定向回归。
-- provider/tool 共享锁序统一为 `Attempt -> Step -> Run -> call -> BudgetLedger`，锁查询显式刷新 identity map；已发送调用在 Run 取消后继续结算，未发送 reservation 仍禁止发送。
+- R800 历史 provider/tool 回归路径曾验证 `Attempt -> Step -> Run -> call -> BudgetLedger` 的局部锁序、identity-map 刷新和取消后结算；这不是当前所有 Research mutation 的统一锁序。当前全路径仍是混合顺序，R0 的目标才是 `Run -> Step -> Attempt -> Call -> Ledger`，并需以真实 PostgreSQL `pg_locks`/timeout 证据验收。已发送调用在 Run 取消后继续结算，未发送 reservation 仍禁止发送。
 - canonical v4 结果：`engineeringGate=pass`、`releaseGatePassed=true`，provider `maxActive=2`，一次 transient failure/一次 retry，三个 unsupported Claims/零 final links，一个 conflict Decision，最终 Artifact API/DB 均唯一。
 - PostgreSQL/MinIO 空部署恢复前后语义 SHA 均为 `a60fa5eaf70a86e47d3de1b17a7c49561a2c6cfbc369554fc1d94a9567bab6a8`；容器、卷、网络和 secret env 零残留。
 - canonical 文档入口为 `docs/evals/r800-critical-review.md`、`docs/architecture/research-workflow-runtime.md` 与 `docs/evals/r800-demo-script.md`。
@@ -498,7 +499,7 @@ Release review / Beta / 公开发布是上述证据齐备后的派生门禁，�
 
 ## 2026-07-24：文档一致性审计与 V4 计划补强
 
-- 当前主入口已同步 M403B/V4 状态；当前数据库 head 为 `e8f1a2b3c4d5`，Image 已由 M403B 正式启用，R000-R800 确定性工程基线已完成。旧 Document/PDF-only 章节的逐段清单记录在 V4 `requirements-discovery.md` 第 11 节，R000 `RD003` 已关闭；历史 ER 与旧规划不得作为当前 Research 合同输入。
+- 当前主入口已同步 M403B/V4 状态；当前数据库 head 为 `m7a8b9c0d1e2`，Image 已由 M403B 正式启用，R000-R800 确定性工程基线已完成。旧 Document/PDF-only 章节的逐段清单记录在 V4 `requirements-discovery.md` 第 11 节，R000 `RD003` 已关闭；历史 ER 与旧规划不得作为当前 Research 合同输入。
 - 历史 V1/V2 规划、旧 Document 状态机、认证执行清单和 V3 Contract Draft 已加 legacy/历史状态说明，保留原始阶段证据但不再作为当前实现入口；Evidence RFC 与 migration impact 的 Image/restore 未完成项已同步关闭。
 - V4 方向、阶段和非目标已经明确，但 R000 仍未完成：新增字段级 schema、唯一/幂等键、状态迁移、事件 payload allowlist、API error matrix、provenance、删除/恢复和审批记录要求；在这些合同获批前不实现 Research 持久化或 API。
 

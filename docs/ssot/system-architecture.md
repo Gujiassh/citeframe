@@ -737,8 +737,8 @@ M402 的 21-case 工程执行、7-case 真实 BFF 全栈/像素 Evidence 与 7-c
 ### 已完成的 V4 确定性工程基线
 
 - `b4d6f8a0c2e4` 增加获批的 Research ledger，`c5e7a9b1d3f6` 增加独立 Evaluation ledger，`e8f1a2b3c4d5` 发布 append-only Workflow/Prompt v2。
-- Worker 使用固定 typed `BoundedResearchExecutor`，不引入动态 LangGraph checkpoint；PostgreSQL 是唯一业务事实源。
-- provider/tool 共享锁序为 `Attempt -> Step -> Run -> call -> BudgetLedger`，锁后刷新 identity map；不使用 deadlock retry 掩盖锁序错误。
+- Worker 当前由 `research_executor_engine.py` 使用固定 LangGraph `StateGraph(ResearchState)` 执行进程内图；PostgreSQL 状态与 immutable Artifact 是 persistence/checkpoint/business truth，LangGraph 不是持久化 checkpoint authority。
+- **当前事实**：Research 锁获取顺序混合且存在冲突：Worker attempt paths 多为 `Attempt -> Step -> Run`，claim 为 `Step -> Run`，API cancel/retry/decision paths 为 `Run -> Step`；claim-vs-cancel 存在真实 deadlock ring。A2a 保持当前锁行为，R0 才统一顺序；不得用 deadlock retry 掩盖问题。
 - R800 v4 在真实 PostgreSQL/MinIO、生产镜像和 scripted provider 上通过全部场景、空部署恢复和零残留清理。该证据只关闭工程门；R803 模型质量与 M404 用户价值仍为 `not_evaluable`。
 
 ## 16. 当前架构裁决
@@ -753,9 +753,103 @@ M402 的 21-case 工程执行、7-case 真实 BFF 全栈/像素 Evidence 与 7-c
 - `MinIO` 存文件，`pgvector` 存检索向量
 - `EmbeddingProvider` / generation / vision / ASR 走 capability profile，不能把模型写死进业务层
 - Research Workflow/Prompt/provider profile/Asset scope/预算在批准时冻结，Worker 不读取 latest 解释历史 Run
-- **当前边界事实（模块化双进程，非独立服务）**：API package 拥有 schema/migration 与 Research/ingestion **mutation logic** 定义；Research Worker `_ApiPort` **当前**在 Worker 进程内创建 Session 并 `commit`/`rollback`；ingestion 在 API orchestrator 与 Worker adapter 的**共享 Session/ORM** 边界内持久化。不得把“定义归属”写成“runtime commit 已由 API 进程独占”，也不得声称 contracts/transport 迁移（ADR A1）已完成。跟进见 [`docs/architecture/api-worker-boundary-follow-up-2026-08-18.md`](../architecture/api-worker-boundary-follow-up-2026-08-18.md)。
+- **当前边界事实（模块化双进程，非独立服务）**：API package 拥有 schema/migration 与 Research/ingestion **mutation logic** 定义；Research Worker `_ApiPort` **当前**在 Worker 进程内创建 Session 并 `commit`/`rollback`；ingestion 在 API orchestrator 与 Worker adapter 的**共享 Session/ORM** 边界内持久化。不得把“定义归属”写成“runtime commit 已由 API 进程独占”；A1 contracts extraction is independently accepted; A1b neutral persistence mapping was independently accepted on 2026-08-21 by the follow-up Critical review (`High=0`, `Medium=0`, `Low=0`). Research transport/mutation/session migration and A2a boundary work remain unimplemented. 不得声称其已完成。跟进见 [`docs/architecture/api-worker-boundary-follow-up-2026-08-18.md`](../architecture/api-worker-boundary-follow-up-2026-08-18.md)。
 - Quick Chat SSE 与 Research Event SSE 是独立合同
 - Workspace 视图状态只应在 workspace 实际切换时同步；重复选择当前 workspace 不能清空 active thread、文档或其他局部视图状态。
+
+### 16.1 Research boundary target (design re-audit and A1 implementation accepted)
+
+A1 contracts was independently accepted on **2026-08-20**. A1b/A2-foundation was
+independently accepted on **2026-08-21** by the follow-up Critical review
+(`High=0`, `Medium=0`, `Low=0`). A2a is implementer-complete; independent Critical review is pending; R0, R1, R2,
+W1, and downstream remain unstarted and blocked.
+The design re-audit is **ACCEPT (High=0, Medium=0, Low=0)**. No schema/API/save/replay/
+permission changes are authorized. For `internal_preview`, the owner-authorized target is a same-PostgreSQL-database
+adapter, not an internal HTTP or database split. API owns HTTP/authentication, Alembic
+execution, and schema governance. Worker owns Research orchestration and provider/tool
+execution; the Worker-side UoW is the Research job runtime commit-process owner.
+
+The Python build topology is staged, not created as three distributions in A1:
+
+- **A1:** create/version `citeframe-backend-contracts` (`citeframe_contracts`) for pure
+  DTO/Protocol only; API/Worker manifests and locks add only this local path, Docker and
+  PYTHONPATH expose only this package, and the pre-start smoke imports only it. Necessary
+  legacy re-exports remain during migration.
+- **A1b/A2-foundation:** after A1, add `citeframe-backend-persistence`
+  (`citeframe_persistence`) for the unique DeclarativeBase/Base.metadata and all ORM
+  mappings; only then extend manifests, source-copy, PYTHONPATH, and smoke with the second
+  package. No Research behavior or Research package exists in this slice.
+- **A2a:** after A1b/A2-foundation, add `citeframe-research-persistence`
+  (`citeframe_research_persistence`) for Research repositories/UoW/commands/locks; only
+  then reach the final three-package source-copy/PYTHONPATH/import smoke. A2a preserves
+  current multi-step LangGraph and mixed-lock behavior and does not implement R0/R1.
+
+No behavior-free Research persistence scaffold may appear before A2a. At each stage,
+`requirements.deploy.txt` remains hash-pinned third-party only; export omits only local
+packages that already exist at that stage (legacy Worker additionally omits `ai-pdf-api`).
+Each Docker image installs current third-party requirements first, copies only current
+package source trees and app source, sets the stage-specific PYTHONPATH, and runs its
+stage smoke in the final runtime filesystem before app startup. The final A2a smoke imports
+all three modules and asserts `citeframe_research_persistence.__file__` is not under
+`/app/apps/api`; local packages never pass through pip or `--require-hashes`. Exact
+stage commands and paths are canonical in
+[`research-boundary-runtime-design.md`](../../specs/v5/post-v5-optimization/research-boundary-runtime-design.md) §3.1.
+
+The target preserves one planned subproblem = one `ResearchStep`, one retry/lease = one
+`ResearchStepAttempt`, and one researcher attempt = zero-to-many `ResearchClaim`. The R1 target dispatcher claim
+operation creates and leases one Attempt, then executes exactly that leased Attempt; this is
+distinct from the persisted `ResearchClaim` entity and does not change
+A-DATA/schema/API/save/replay/permission semantics. PostgreSQL remains the persistence and business authority for dependencies/readiness/join/conflict/
+cancel/retry/reclaim, Event sequence, and budgets. The current LangGraph `StateGraph` is an
+in-process executor only, not a persisted checkpoint authority. A2a preserves the current behavior where one
+`process_one` call can drive multiple steps; R1 later changes this to one claimed Attempt
+per bounded dispatcher loop, with at least two loops in Research-enabled production so V4
+branch overlap remains observable.
+Handlers validate existing dependency/upstream persisted status, execution snapshot
+identity/hash, and artifact/claim/evidence provenance/hash from the DB; they carry no
+cross-step in-memory `ResearchState`. Existing `ResearchStep.input_sha256` keeps its
+current meaning; a canonical handler-input hash requires separate A-DATA.
+
+**R0 target, not implemented:** all multi-row paths use `Run -> Step -> Attempt -> Call -> Ledger`.
+Attempt/Call id paths read parent ids without locks only for location, then acquire and
+refresh the ordered chain and revalidate scope/status/token/expiry; changed locators fail
+closed. Claim selects candidate Runs with queued work using `FOR UPDATE SKIP LOCKED`,
+ordered by the minimum eligible Step tuple `(queued_at, created_at, step_id)` then Run id, locks Run first, rechecks status/cap,
+then locks the eligible Step using the existing `queued_at`, `created_at`, then Step ID ordering, and creates Attempt. Cancel locks Run
+first, then affected Steps; heartbeat, complete, reclaim, retry, decision, join,
+provider/tool, and publication follow the same order. R0 changes lock acquisition only;
+save/API/replay/permission semantics remain equal. R0 is required before R1 or per-Run
+admission and requires real PostgreSQL `pg_locks`/timeout evidence.
+
+Lease lifecycle remains exact: normal claim creates a new Attempt for a queued Step;
+heartbeat extends only that running Attempt; expiry reclaim marks the old Attempt
+`abandoned`, synchronizes Step through its existing failed/queued or cancellation path,
+and a later retry claim creates a new Attempt. An expired Attempt is never refreshed or
+revived. The formal R0 target preserves provider/tool outcome-unknown reconciliation and
+object-publication commit-unknown compensation.
+
+Per-Run `maxParallelResearchers` uses existing Attempt rows as durable slots after R0.
+A cap-full candidate Run rolls back the whole claim transaction, releases the Run lock,
+records local `excluded_run_ids`, and continues in a new transaction. It locks no Step and
+creates no Attempt, status change, or Event; only a Run that passes the locked cap check
+may lock an eligible Step. Query prefiltering is an optimization only. R2 covers the
+lock matrix, two Workers, cap-full plus other-Run fairness/no-starvation.
+
+Research Event oracle: A2a current runtime requires byte/row-equal event snapshots.
+R1/R2 require per-Run `seq` starting at 1, contiguous and unique within the Run, atomically allocated across Workers; per-Step `queued < started < terminal`;
+legal Attempt/lease event order; all dependencies succeed before dependent queued; Run
+terminal last; dedupe/unique terminal; equal payload schema/error meaning. Independent
+Researcher event interleaving may vary. Research SSE is an independent W1 slice with
+monotonic sequence gating, Run-switch abort/discard, event-directed `(artifactId, sha256)`
+caching, immediate terminal flush, full history-gap/cursor recovery, and LISTEN/NOTIFY
+only as post-commit wakeup.
+
+These are approved target rules, not shipped behavior. The design re-audit is
+`ACCEPT (High=0, Medium=0, Low=0)`. A1 was independently accepted on `2026-08-20`;
+A1b/A2-foundation was independently accepted on 2026-08-21 (follow-up Critical review ACCEPT; High=0, Medium=0, Low=0).
+A2a is implementer-complete; independent Critical review is pending; R0/R1/R2/W1 and downstream remain conditionally
+authorized, unstarted, and blocked. No schema/API/save/replay/permission changes are authorized. G/M/P and GitHub settings remain unauthorized.
+Detailed slice boundaries and semantic oracle: [`research-boundary-runtime-design.md`](../../specs/v5/post-v5-optimization/research-boundary-runtime-design.md).
 
 ## 17. 当前 Evidence 域与演进门禁
 
@@ -785,8 +879,7 @@ Document/Page/Chunk 已通过受控迁移切换为 Asset/Representation/ContentU
 
 ## Deploy and ownership invariants (architecture hardening)
 
-- **Same version**: API and Worker must be deployed from the same git SHA / image tag. Shared ORM models live in `ai_pdf_api.models`; Alembic migrations are owned only by `apps/api`.
+- **当前事实（未迁移）**：Same version: API and Worker must be deployed from the same git SHA / image tag. Shared ORM models currently live in `ai_pdf_api.models`; Alembic migrations are owned only by `apps/api`. The approved A1b/A2-foundation target re-exports the same classes from neutral `citeframe_persistence.models` without a second metadata set.
 - **Ingestion Worker** may import shared models and write Representations/ContentUnits under the modality adapter contract on the **shared Session** passed by the API orchestrator (current fact; not a completed process-isolated boundary).
 - **Research Worker** must call API service mutation functions via ports/ledger adapters and must not invent a second ledger schema; **today** `_ApiPort` still opens the Session and commits/rollbacks inside the Worker process. Schema/migration owner ≠ session/commit process owner.
 - **Chat** attaches generation images only via `modalities.visual_enrichment` (no direct kind-specific crop imports).
-

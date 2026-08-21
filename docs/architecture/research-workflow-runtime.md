@@ -9,6 +9,9 @@
 - Frozen formal campaign contracts: [`../evals/r803-v5-campaign-threshold.md`](../evals/r803-v5-campaign-threshold.md)
 - First formal campaign attempt: [`../evals/artifacts/r803-campaign-20260730-v1/`](../evals/artifacts/r803-campaign-20260730-v1/) (`failed`, 0/5 completed rounds; immutable)
 - Engineering gate: deterministic R800 baseline `pass`; R803 formal campaign v1 `fail`
+- Research boundary status: the design re-audit is **ACCEPT (High=0, Medium=0, Low=0)**; A1 was independently accepted on **2026-08-20**. A1b/A2-foundation was independently accepted on 2026-08-21 by the follow-up Critical review
+(`High=0`, `Medium=0`, `Low=0`). A2a is implementer-complete; independent Critical review is pending; R0/R1/R2/W1 and
+downstream remain unstarted and blocked. No schema/API/save/replay/permission changes are authorized; Research persistence implementation evidence is recorded in `reviews/a2a-persistence-implementation-2026-08-21.md`; independent Critical review is pending.
 - Latest interpretable paired diagnostic gates (v4): Quick `pass`; Research `fail` with 5/6 completed cases
 - Model-quality gate: `not_evaluable` because formal v1 interrupted before any round completed
 - User-value gate: `not_evaluable` until M404 contains qualified target-user evidence
@@ -26,10 +29,34 @@ The production path is split by ownership:
 - FastAPI owns every persistent Research contract: Workflow/Prompt versions,
   PlanRevision, ExecutionSnapshot, Run/Step/Attempt/Event, decisions, Artifact/Claim/
   Evidence provenance, provider/tool ledgers, budgets, idempotency, and Evaluation.
-- Worker owns typed orchestration and provider/tool execution. It accesses Research
-  state only through API service ports and does not own ORM models or migrations.
+- **Current fact:** Worker owns typed orchestration and provider/tool execution, and
+  currently accesses Research state through API service ports; `_ApiPort` still opens
+  and commits/rolls back its Session in the Worker process. API package still owns the
+  current ORM/migration definitions.
+- **Approved target, not implemented:** the Worker continues to own orchestration and
+  the Worker-side Research UoW is the runtime commit-process owner; API owns HTTP/auth,
+  Alembic execution, and schema governance. Package staging is A1 pure
+  `citeframe_contracts`, A1b/A2-foundation neutral `citeframe_persistence` mappings, then
+  A2a `citeframe_research_persistence` Research behavior. Each stage adds only its package
+  to manifests, source-copy paths, PYTHONPATH, and import smoke; A2a is the first stage
+  where the third package may exist. `citeframe_persistence` owns all mappings and the
+  unique Base/metadata; `citeframe_research_persistence` owns Research repositories/UoW/
+  commands/locks and must not import `ai_pdf_api` or non-DB service implementations.
+  API Alembic remains the executor and loads `citeframe_persistence.models` after A1b.
 - PostgreSQL is the Research business truth source. MinIO stores immutable plan,
   checkpoint, conflict, and final Artifact bytes. Redis is not a correctness source.
+
+The A2a transition slice must preserve the current behavior in which one `process_one` call
+can drive multiple steps through the fixed LangGraph StateGraph. After A2a is accepted,
+R0 first normalizes lock acquisition; the later R1 slice then changes runtime execution to
+one claimed Attempt per handler in a bounded pool of independent dispatcher loops and
+removes LangGraph from runtime step execution. Research-enabled production must run at
+least two loops; acceptance proves real branch overlap and wall time below the serialized
+sum while the persisted per-Run cap remains the concurrency authority. The implementation-ready target and its current/not-implemented status are recorded in
+[`../../specs/v5/post-v5-optimization/research-boundary-runtime-design.md`](../../specs/v5/post-v5-optimization/research-boundary-runtime-design.md). A1 implementation evidence and independent ACCEPT on 2026-08-20 are recorded.
+A1b/A2-foundation was independently accepted on 2026-08-21 (follow-up Critical review ACCEPT; High=0, Medium=0, Low=0);
+A2a is implementer-complete; independent Critical review is pending. R0/R1/R2/W1 and downstream implementation remain
+blocked. No schema/API/save/replay/permission changes are authorized.
 
 ## Orchestration Decision
 
@@ -52,8 +79,22 @@ Planner -> plan approval -> bounded Researcher fan-out -> join -> Verifier
         -> Critic -> optional conflict decision -> Synthesizer -> publisher
 ```
 
-The runtime uses a typed `BoundedResearchExecutor`, not LangGraph. This is an
-intentional bounded choice, not a generic agent framework:
+**Current fact:** `research_executor_engine.py` constructs and invokes a fixed LangGraph
+`StateGraph(ResearchState)` inside the Worker process. PostgreSQL state and immutable
+artifacts are the persistence/checkpoint/business truth; LangGraph is not the persisted
+checkpoint authority and is not allowed to replace the Research ledger.
+**Approved target, not implemented after A2a:** PostgreSQL remains the persistence and
+business authority during A2a; after A2a, R1 makes it the runtime orchestration authority.
+R1 removes LangGraph from runtime step execution or retains it only as a plan-approval
+topology validator. The target is a one-claimed-attempt dispatcher: claim one eligible
+queued Step, create one new Attempt lease, run one step-kind handler, atomically complete
+its Attempt/Step/Event and newly-ready dependents, then return to the claim loop. Handlers rebuild and validate existing StepDependency/upstream persisted status, execution
+snapshot identity/hash, and artifact/claim/evidence provenance/hash from PostgreSQL; they
+carry no cross-step in-memory `ResearchState`. Existing `ResearchStep.input_sha256` keeps
+its current meaning and is not reinterpreted as a canonical handler-input hash. Defining
+such a hash requires a separate A-DATA design.
+
+The current bounded executor rationale remains valid for the current checkout:
 
 - the graph is versioned and cannot be edited at runtime;
 - PostgreSQL state and immutable checkpoints already provide restart semantics;
@@ -88,21 +129,77 @@ pricing remains null/unavailable, and V5-C usage DTOs do not expose money.
 
 ## Concurrency And Locking
 
-Provider/tool reservation and completion serialize shared ledger updates through a
-single lock order:
+**Current fact:** lock acquisition is mixed and conflicting. Many Worker attempt paths use
+`Attempt -> Step -> Run`; claim uses `Step -> Run`; API cancel, retry, and decision paths
+use `Run -> Step`. Claim-versus-cancel therefore has a real reverse-order deadlock ring.
+A2a preserves this current lock behavior; it must not be described as one authoritative
+order or as a safe claim exception.
+
+**R0 target, not implemented:** normalize every multi-row mutation to the aggregate-root
+order:
 
 ```text
-ResearchStepAttempt -> ResearchStep -> ResearchRun -> call row -> ResearchBudgetLedger
+ResearchRun -> ResearchStep -> ResearchStepAttempt -> provider/tool Call -> ResearchBudgetLedger
 ```
 
-Every blocking query refreshes existing SQLAlchemy identity-map state. Completion
-may reconcile an already-sent provider call after Run cancellation because usage is
-still billable, while sending a reserved call after cancellation remains forbidden.
-Do not add deadlock retries to hide a lock-order regression.
+Attempt/Call id paths first read parent ids without locks only to locate the aggregate.
+They make no decisions from those reads. They then lock and refresh the full chain in
+Run -> Step -> Attempt -> Call -> Ledger order, revalidating scope, status, token, and
+expiry; any changed locator or status fails closed. Claim selects candidate Runs with
+queued work using `FOR UPDATE SKIP LOCKED`, ordered by the minimum eligible Step tuple `(queued_at, created_at, step_id)`, then
+Run id, locks Run first, rechecks status/cap, then locks one eligible Step using that exact existing
+`queued_at`, `created_at`, then Step ID ordering, and creates Attempt. Cancel also locks Run first, then affected Steps in stable
+Step id order. Heartbeat, complete, reclaim, retry, decision, join, provider/tool, and
+publication follow the same order. R0 changes lock acquisition only and preserves save,
+API, replay, permission, and payload semantics.
 
-Lease reclaim follows the same Attempt/Step/Run-before-call/ledger direction. New
-code that touches more than one of these records must document and test its lock
+R0 is a separate slice after A2a and before R1 or per-Run admission. It must not add
+deadlock retries. Real PostgreSQL `pg_locks` and lock-timeout evidence is required for
+claim-versus-cancel, claim-versus-complete, reclaim-versus-provider/tool, two claims on
+one Run, and claims on different Runs.
+
+Lease lifecycle remains exact: normal claim creates a new Attempt for a queued Step;
+heartbeat extends only that running Attempt; expiry reclaim marks the old Attempt
+`abandoned`, synchronizes Step through its existing retry or cancellation path, and a
+later retry creates a new Attempt. An expired Attempt is never refreshed or revived.
+Provider/tool outcome-unknown and object-publication commit-unknown compensation remain
+unchanged. Do not use deadlock retry to hide a lock-order regression.
+
+Per-Run `maxParallelResearchers` admission is implemented after R0 under the same Run
+lock. A candidate cap-full Run causes rollback of the whole claim transaction, releases
+Run locks, records local `excluded_run_ids`, and continues in a new transaction. No Step
+is locked and no Attempt, status, or Event mutation occurs for that Run. Only after the
+Run passes the cap check does the transaction lock an eligible Step and create Attempt.
+Query filtering is an efficiency prefilter, never correctness; another eligible Run must
+remain claimable without starvation.
+
+Required R0/R2 evidence includes cap=1 and cap=N, lease expiry/late completion, cancel and
+provider races, join/recovery, and the real-PostgreSQL lock matrix above. SQLite-only or
+in-memory evidence is insufficient.
+
+The Research Event oracle is byte/row equal for A2a current-runtime snapshots. R1/R2
+require per-Run `seq` starting at 1, contiguous and unique within the Run, atomically allocated
+across Workers; per-Step `queued < started < terminal`, legal
+Attempt/lease event order, dependencies succeeded before dependent queued, Run terminal
+last, dedupe/unique terminal, and equal payload schema/error meaning. Independent
+Researcher event interleaving may vary.
+
+New code that touches more than one of these records must document and test its lock
 order before entering the runtime path.
+
+## Research SSE target (W1, approved direction; not implemented)
+
+Research SSE remains independent from Quick Chat SSE. The client applies an event only
+when explicit schema-approved fields prove the transition, and discards a response whose
+`currentEventSeq` is below the locally applied sequence. A switched Run aborts or discards
+old requests. One active request per Run uses a dirty rerun and bounded coalescing window;
+terminal events flush immediately. Artifact lists refresh only for artifact/decision/terminal
+events or explicit gap recovery, and artifact content is cached by `(artifactId, sha256)`.
+
+History gaps/cursor conflicts trigger a full authoritative read. `LISTEN/NOTIFY` is only a
+post-commit wakeup; persisted events and periodic replay remain authoritative when notify
+is lost or duplicated. W1 is an independent slice and does not change the Research API,
+save, or event contract.
 
 ## Verification Runbook
 

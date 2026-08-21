@@ -126,16 +126,16 @@
 
 - 不在本次跟进中改 API payload、数据库 schema、Alembic、Asset generation、
   Evidence locator、Citation/NoteSource 或 Research save semantics。
-- **本轮 ADR 文档工作不创建 `packages/backend-contracts`，不改 production code，
-  不创建新 Docker/build target。** 创建/分发 contracts 与候选 build target 属于
-  后续获批切片的计划项。
+- **本轮 ADR 文档工作不创建目标 packages（包括 `packages/backend-contracts`），不改
+  production code，不创建新 Docker/build target。** 三个目标 distribution 的创建、
+  分发与候选 build target 属于后续获批切片的计划项；这不是对目标 topology 的否定。
 - 不把当前 PostgreSQL polling 直接替换为 Redis/Kafka；调度方案不是本记录的目标。
 - 不把 Research 改成动态 DAG、通用 agent framework 或新的 checkpoint authority。
 - 不要求一次性把 ingestion 全部改成 HTTP RPC。
 - **本轮不拆分** `evidence.py` / `assets.py` / `test_r803_campaign_v5.py` /
   `v5b_document_restore_acceptance.py`。
 - **Branch protection / GitHub 设置保持 unresolved**；本记录不调用仓库保护接口。
-- **不替用户批准**任何 transport/事务方案；推荐项仅供决策。
+- `internal_preview` 的 same-DB adapter、Worker orchestration、R0 lock-normalization target 与 Worker-side UoW commit-process target 已获 owner conditional authorization；API-process HTTP/RPC 仍未授权。修订设计的独立 Critical 复审已接受 (`High=0`, `Medium=0`, `Low=0`)；A1 已于 2026-08-20 独立 ACCEPT；A1b/A2-foundation 已于 2026-08-21 独立 ACCEPT（follow-up Critical review：High=0、Medium=0、Low=0），A2a 已由实现者完成；独立 Critical review 待进行；R0/R1/R2/W1 及后续切片保持阻塞；不授权 schema/API/save/replay/permission 变更。
 
 ## 4. Proposed Incremental Boundary
 
@@ -151,56 +151,125 @@ Transport 候选的 commit 含义不得混称：
 
 - **Same-DB adapter 跑在 Worker 进程内**：即使 mutation logic 仍是 API service 函数，
   **runtime commit process owner 仍是 Worker**（Session 在 Worker 内打开/提交）。
-  不能把它叫做“API-process commit”或笼统的 “API-owned transaction”。
-- **Internal HTTP（或其他 RPC）由 API 进程执行写入**：此时 **runtime commit process
-  owner 才是 API 进程**。这才是“API-process commit”。
-- 文档里的推荐方案 **“API-owned internal service transport”** 必须在 A0 决策门里
-  显式选择上述哪一种；**需 owner approval，本 ADR 不替用户批准。**
+  不能把它叫做“API-process commit”或笼统的 “API-owned transaction”。这是
+  `internal_preview` 已获 owner 授权的目标。
+- **Internal HTTP（或其他 RPC）由 API 进程执行写入**：此时 **runtime commit
+  process owner 才是 API 进程**。该方向仍未授权。
 
-### 4.1 目标依赖方向（推荐目标，需 owner approval 后才实现）
+### 4.1 目标依赖方向（owner 已授权方向；A1 已接受；A1b/A2-foundation 已通过独立复审；A2a 为唯一下一实现步骤）
+
+Owner 已授权 `internal_preview` 使用 same-DB adapter 的目标方向：API 负责
+HTTP/auth、Alembic 执行与 schema governance；Worker 负责 Research orchestration；
+Worker-side UoW 是 Research job runtime commit-process owner。
+`citeframe-backend-contracts` / `citeframe_contracts` 承载 DTO/Protocol；
+`citeframe-backend-persistence` / `citeframe_persistence` 物理持有 Research 与 API
+core/other 的全部 SQLAlchemy mappings 和唯一 Base/metadata；
+`citeframe-research-persistence` / `citeframe_research_persistence` 只持有 Research
+repositories/UoW/commands/locks，不复制 mappings 且不得 import `ai_pdf_api` 或
+Storage/Provider/Retrieval/Observability/agent registry 实现。API 与 Worker 必须调用
+同一 commands，禁止复制模型或 transition logic。当前 `ai_pdf_api.models` 是共享 ORM
+import surface；迁移期间可 re-export 同一 classes。A1b/A2-foundation 迁移三套
+pyproject/uv.lock path source 与 Docker 安装，Alembic 仍由 API 显式 import
+`citeframe_persistence.models` 并加载唯一 metadata；这项 foundation 是 A2a 显式前置。
+
+这是批准目标，不是当前事实，也不等于生产实现已开始。修订设计的独立 Critical 复审已接受 (`High=0`, `Medium=0`, `Low=0`)；A1 已于 2026-08-20 独立 ACCEPT；A1b/A2-foundation 已于 2026-08-21 独立 ACCEPT（follow-up Critical review：High=0、Medium=0、Low=0）；A2a 已由实现者完成；独立 Critical review 待进行；R0/R1/R2/W1 及后续切片仍保持阻塞，且不授权 schema/API/save/replay/permission 变更。详细的 R1/R2/W1、锁/fencing、per-Run admission、
+SSE 与语义 oracle 见
+[`research-boundary-runtime-design.md`](../../specs/v5/post-v5-optimization/research-boundary-runtime-design.md)。
 
 ```text
-packages/backend-contracts (纯 DTO / Protocol / 版本化 JSON；无 ORM/settings/provider client)
-        ^                         ^
-        |                         |
-API adapters + ORM/migrations   Worker runtime + modality parsers
-        ^                         ^
-        |                         |
-routers / API service         composition root / transport adapter
+Dependency direction (consumer -> dependency):
+
+API adapters/commands ───────────────┐
+Worker runtime/handlers ─────────────┼──> citeframe_research_persistence
+                                     │        (Research behavior/UoW/locks)
+                                     └──> citeframe_contracts (pure DTO/Protocol)
+
+citeframe_research_persistence ──────┬──> citeframe_persistence
+                                     └──> citeframe_contracts
+
+API adapters/commands and Worker runtime/handlers may also import
+citeframe_persistence only through the approved mapping/Session boundary.
 ```
 
-推荐目标（**不是当前事实，且未获本文件批准**）：
+推荐目标（**owner 已授权方向，但不是当前事实，也未开始生产实现**）：
 
 - 跨边界只交换 contracts 中的 DTO/Protocol。
-- 在 owner 批准的 transport 下，明确 **session/commit process owner**（见 §4.0）；
+- 在 `internal_preview` 已授权的 same-DB transport 下，明确 **session/commit process owner**（见 §4.0）；
   不得把 same-DB-in-Worker 与 API-process HTTP 混写成同一种 “API-owned transaction”。
 - Worker 负责解析、OCR、provider/tool execution 和 orchestration。
 - 共享 `packages/shared-types` 当前是 TypeScript 包，不应直接承载 Python runtime DTO。
 
 ### 4.2 可执行迁移顺序
 
-**A0：只冻结事实、DTO/Protocol 语义、三分 owner + transport 决策门（推荐下一切片）**
+**A0：只冻结事实、DTO/Protocol 语义、已授权 owner + same-DB transport 目标（当前文档切片）**
 
 1. 准确记录当前事实（并同步正式 SSoT，见 §7/§8）：API package 拥有
    **schema/migration** 与 **mutation logic** 定义；Research Worker `_ApiPort`
    **当前**创建 Session 并 `commit`/`rollback`；ingestion 在共享 Session/ORM 边界；
    系统是模块化双进程，不是独立服务边界。
 2. 文档冻结 Research port payload / Protocol **字段语义**。
-3. 设立 **决策门（需 owner approval）**，分开批准：
-   - schema/migration owner（通常保持 API）；
-   - mutation logic owner（通常保持 API service）；
-   - session/commit process owner + transport（same-DB-in-Worker vs API-process HTTP 等）。
+3. Owner 已授权的 A0 目标为：API 负责 HTTP/auth/Alembic/schema governance；Worker
+   负责 Research orchestration；Worker-side UoW 负责 Research runtime commit；
+   same-DB adapter 为 `internal_preview` transport；`citeframe_contracts` 纯 DTO/Protocol；
+   `citeframe_persistence` 持有唯一 ORM/metadata/mappings；`citeframe_research_persistence`
+   持有 Research repositories/UoW/commands/locks 且不得 import `ai_pdf_api`。
 4. A0 **禁止**：改生产行为、创建 contracts package、创建候选 build target、移除
    API editable dependency、改 schema/Alembic/save。
-5. **不得在 A0 声称事务 process owner 已改为 API。**
+5. **不得在 A0 声称事务 process owner 已改为 API；生产实现仅限于待独立复审确认的冻结边界，且尚未开始。**
 
-**A1：获批后创建/版本化/分发 Python backend contracts，再实现批准的 transport（需 owner approval）**
+**A1 -> A1b/A2-foundation -> A2a：唯一 staged package topology（A1 已于 2026-08-20 独立 ACCEPT；A1b 已于 2026-08-21 独立 ACCEPT；A2a 为唯一下一实现步骤）**
 
-1. 创建 Python-only `packages/backend-contracts`（纯 DTO/Protocol；无 ORM/settings/
-   provider client）。
-2. API mapper + Worker 只依赖 contracts 类型。
-3. 按批准方案实现 transport adapter；在**旧依赖仍存在**时完成行为 oracle。
-4. 旧 editable path / 镜像 API source / `PYTHONPATH` **此时仍保留**。
+三包不是同一阶段创建。每个阶段只创建、版本化、声明、复制和 smoke 当前已存在的
+package；禁止提前出现 behavior-free `citeframe-research-persistence` scaffold：
+
+| Slice | Newly introduced package | API/Worker manifest + lock | Docker/PYTHONPATH/import smoke | Must not include |
+| --- | --- | --- | --- | --- |
+| A1 | `citeframe-backend-contracts` / `citeframe_contracts`，纯 DTO/Protocol；必要 legacy re-export | 只增加 contracts local path source | 只复制/暴露 contracts；smoke 只 import `citeframe_contracts` | persistence、research-persistence、ORM/Research behavior |
+| A1b/A2-foundation | `citeframe-backend-persistence` / `citeframe_persistence`，唯一 Base/metadata + all ORM mappings | 在已有 contracts 上再增加 persistence | 在 A1 上再复制/暴露 persistence；smoke import contracts+persistence | research-persistence、Research behavior、R0/R1 |
+| A2a | `citeframe-research-persistence` / `citeframe_research_persistence`，Research repositories/UoW/commands/locks | 在已有两包上再增加 research-persistence | 此时才达到三包 COPY/PYTHONPATH；smoke import all 3 并断言路径不在 `/app/apps/api` | 提前 scaffold、mapping relocation、R0/R1 |
+
+A1 的 API/Worker export 只 omit `citeframe-backend-contracts`；legacy Worker 额外 omit
+`ai-pdf-api`。A1b 在各自 A1 命令上仅追加 `--no-emit-package
+citeframe-backend-persistence`。A2a 才追加 `--no-emit-package
+citeframe-research-persistence`，形成 implementation-ready design 中的最终三包命令。
+每阶段 `requirements.deploy.txt` 仍只包含 hash-pinned third-party；local packages
+不走 pip、wheel 或 `--require-hashes`。每阶段 Docker 都先安装当前第三方 requirements，
+再 source-copy 当前已有 packages 和 app source，设置当前阶段 `PYTHONPATH`，在最终
+runtime filesystem、应用启动前执行当前阶段 smoke。精确命令、路径矩阵和 smoke 见
+[`research-boundary-runtime-design.md` §3.1](../../specs/v5/post-v5-optimization/research-boundary-runtime-design.md)。
+
+A2a 必须保持当前一次 `process_one` 可通过固定 LangGraph StateGraph 驱动多 Step
+的 runtime 行为，只抽取 Research persistence behavior/ports；不得提前实施 R1
+single-attempt dispatcher。A2a 通过后，R1 才移除 LangGraph 的 runtime step execution
+职责并切换到 single-attempt dispatcher。现有 `ResearchStep.input_sha256` 含义保持不变；
+canonical handler-input hash 若未来定义，必须单独走 A-DATA。
+
+**R0：A2a 之后、R1/admission 之前统一锁协议（独立切片）**
+
+当前锁事实是混合/冲突的：Worker attempt paths 多为 `Attempt -> Step -> Run`，claim
+为 `Step -> Run`，API cancel/retry/decision paths 为 `Run -> Step`；claim-vs-cancel
+存在真实 deadlock ring。A2a 保持当前锁行为，不能把旧序写成全路径权威。R0 只改
+锁获取顺序，不改保存、API、replay、permission 或 payload 语义，目标统一为：
+
+```text
+ResearchRun -> ResearchStep -> ResearchStepAttempt -> provider/tool Call -> ResearchBudgetLedger
+```
+
+已知 Attempt/Call id 先无锁读取 parent ids 仅用于定位，不做决定；随后按
+`Run -> Step -> Attempt -> Call -> Ledger` 加锁、refresh 并重验 chain/scope/status/
+token/expiry，定位后任何变化都按重验失败处理。claim 从存在 queued work 的
+candidate Run 开始，以 `FOR UPDATE SKIP LOCKED` 按每个 Run 最小 eligible Step 元组 `(queued_at, created_at, step_id)`+Run ID 稳定
+排序，先锁 Run、复核 status/cap，再按现有 `queued_at`、`created_at`、再 Step ID 顺序锁该 Run
+内 eligible Step 并创建 Attempt；不再
+先锁 Step 再等待 Run。cancel 继续 Run-first，按稳定 Step ID 锁需要 mutate 的 Steps；
+heartbeat/complete/reclaim/provider/tool/join/decision/publication 全部迁到同一顺序。
+R0 禁止 deadlock retry 掩盖回归，必须用真实 PostgreSQL `pg_locks`/timeout 证明
+claim-vs-cancel、claim-vs-complete、reclaim-vs-provider/tool、两个 claim/不同 Run。
+
+cap-full 只在锁定 candidate Run 后复核；full 时 rollback 整个 claim transaction、
+释放 Run lock、记录 local `excluded_run_ids` 并以新 transaction 继续，未锁 Step、无
+Attempt/status/Event 变化；query prefilter 不是正确性依据。
+
 
 **B：Ingestion object/hash/compensation + 单模态 pilot（pilot ≠ C 入口）**
 
@@ -252,7 +321,7 @@ C 在 A0/A1 完成且 B 的合同方法已验证之后才评估，但 **进入 C
 
 详见 §4.0。一句话：**API package = schema/migration + mutation logic 定义；Research
 runtime commit process 当前 = Worker `_ApiPort`；ingestion = 共享 Session/ORM。**
-推荐 transport 需 owner approval，不在本文件批准。
+same-DB adapter 方向已获 owner 授权，但生产实现不在本文件中启动；API-process HTTP/RPC 仍未授权。
 
 明确禁止：在 A0 把目标写成当前事实；用 B pilot 顶替 C 前置门；在 import 归零/候选
 smoke 前删除 legacy 依赖；`contracts -> ORM/API settings`；把 same-DB-in-Worker
@@ -270,22 +339,31 @@ commit 混称为 API-process commit。
 
 ## 7. Acceptance Checks
 
-### A0（事实 + 语义 + 三分 owner 决策门；无 package、无生产改动、无新 build target）
+### A0（事实 + owner-authorized target + 三分 owner 记录；无 package、无生产改动、无新 build target）
+
+Implementation-ready target details live in
+[`specs/v5/post-v5-optimization/research-boundary-runtime-design.md`](../../specs/v5/post-v5-optimization/research-boundary-runtime-design.md).
 
 - 本 ADR 与下列**正式 SSoT** 同步当前事实（定义归属 vs `_ApiPort` commit vs 共享
-  ingestion session），且**不声称 A1 已完成**：
+  ingestion session）；A1 implementation status is recorded in the A1 evidence artifact；A1b/A2-foundation follow-up Critical review is ACCEPT，且不声称 A2a 或后续切片已完成：
   - [`docs/ssot/system-architecture.md`](../ssot/system-architecture.md)
   - [`docs/architecture/database-design.md`](./database-design.md)
   - [`specs/v5/multimodal-agent-product/v5b-detailed-spec.md`](../../specs/v5/multimodal-agent-product/v5b-detailed-spec.md)
-- Research port payload / Protocol 语义成文；transport 与 session/commit process
-  owner 仅作为 **需批准** 的决策门。
+- Research port payload / Protocol 语义成文；same-DB transport 与 session/commit process
+  owner 已按 A0 目标记录，API-process HTTP/RPC 仍保持未授权。
 - 行数事实正确：evidence=1587、assets=1526、r803 campaign test=2461、v5b restore
   script=2006。
-- 不创建 contracts package / 候选 build target；不改 production。
+- 本轮 docs-only 不创建目标 packages / 候选 build target；不改 production。目标 topology
+  已冻结；A1 已于 2026-08-20 独立 ACCEPT，创建与安装留给 A2a 这一唯一下一实现切片。
 
-### A1（获批后；旧依赖仍在）
+### A1（2026-08-20 独立 ACCEPT；旧依赖仍在；A1b/A2-foundation 已通过独立复审；A2a 为唯一下一实现步骤）
 
-- contracts 纯 DTO/Protocol；行为 oracle 通过；legacy API path 仍保留。
+- contracts 纯 DTO/Protocol、legacy identity-preserving re-export、API/Worker local
+  path source、contracts-only export/Docker/CI smoke and focused tests are present.
+- No schema/API/save/replay/permission/runtime behavior changed; A1 was independently
+  accepted on 2026-08-20. A1b/A2-foundation was independently accepted on 2026-08-21 by the
+  follow-up Critical review (`High=0`, `Medium=0`, `Low=0`); A2a is implementer-complete; independent Critical review is pending
+  step, while R0/R1/R2/W1 and later slices remain blocked.
 
 ### B（pilot 出口，非 C 入口）
 
@@ -307,19 +385,14 @@ commit 混称为 API-process commit。
 
 ## 8. Recommended Next Slice
 
-建议先做 **A0**，并点名同步正式文档：
+A0 目标方向已获 owner 授权，文档同步入口如下：
 
 1. 保持本 ADR 对 `_ApiPort` commit、共享 ingestion session、模块化而非独立服务的准确表述。
-2. 同步更新：
-   - `docs/ssot/system-architecture.md`
-   - `docs/architecture/database-design.md`
-   - `specs/v5/multimodal-agent-product/v5b-detailed-spec.md`
-3. 请 owner **分别**批准/否决：schema/migration owner、mutation logic owner、
-   session/commit process owner + transport（same-DB-in-Worker vs API-process HTTP）。
-   推荐方案保持未批准状态。
-4. 大文件拆分与 branch protection 保持后置 / unresolved。
+2. 以 [`specs/v5/post-v5-optimization/research-boundary-runtime-design.md`](../../specs/v5/post-v5-optimization/research-boundary-runtime-design.md) 作为 R0/R1/R2/W1 implementation-ready 细节入口。
+3. Implement A2a as the only next implementation slice, then continue with R0 -> R1/R2. A2a、R0 与 R1 必须分开实现和复审。
+4. 大文件拆分、G/M/P、provider spend、M404 与 branch protection 保持后置 / unauthorized。
 
-A0 获批后再进入 A1。不要把 B pilot、C 独立镜像、大文件拆分与 A0 混成一个大 PR。
+不要把 A2a、R1、B pilot、C 独立镜像、大文件拆分与 A0 文档冻结混成一个大 PR。
 
 ## 9. Evidence Snapshot
 

@@ -48,7 +48,7 @@ Import path: `ai_pdf_api.services.research.*`. Compatibility shims remain at `ai
 | `research_agent_schemas.py` | Agent result schemas |
 | `research_executor.py` | Executor entry wiring |
 | `research_executor_contracts.py` | Executor typed contracts |
-| `research_executor_engine.py` | BoundedResearchExecutor fixed graph |
+| `research_executor_engine.py` | Current fixed LangGraph `StateGraph(ResearchState)` / `BoundedResearchExecutor` engine; R1 target removes runtime step execution |
 | `research_executor_tools.py` | Executor-side tool adapters |
 | `research_runtime.py` | Runtime loop entry |
 | `research_runtime_agents.py` | Generation-backed role agents |
@@ -62,7 +62,13 @@ Import path: `ai_pdf_api.services.research.*`. Compatibility shims remain at `ai
 
 ## Freeze
 
-See topology freeze in [`research-workflow-runtime.md`](research-workflow-runtime.md).
+Package staging is A1 contracts (independently accepted on 2026-08-20) ->
+A1b/A2-foundation persistence mappings (independently accepted on 2026-08-21 by the
+follow-up Critical review: High=0, Medium=0, Low=0) -> A2a Research persistence behavior.
+A2a is implementer-complete; independent Critical review is pending; R0/R1/R2/W1 and downstream remain blocked,
+and no schema/API/save/replay/permission changes are authorized. No behavior-free
+`citeframe_research_persistence` scaffold is permitted before A2a; see topology freeze in
+[`research-workflow-runtime.md`](research-workflow-runtime.md).
 
 ## Phase 2 package move (2026-08-15)
 

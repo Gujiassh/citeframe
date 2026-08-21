@@ -122,8 +122,10 @@
     ],
     "evaluatorClosureSourceRoots": {
       "ai_pdf_worker": "apps/worker/src",
-      "ai_pdf_api": "apps/api/src"
+      "ai_pdf_api": "apps/api/src",
+      "citeframe_contracts": "packages/backend-contracts/src",
+      "citeframe_persistence": "packages/backend-persistence/src"
     },
-    "note": "Campaign plan freezes scorer implementation SHA, Quick/Research prompt-binding hashes, and a deterministic recursive AST import closure rooted at ai_pdf_worker.r803_evaluation_campaign. Closure includes repository-local ai_pdf_worker.* and ai_pdf_api.* runtime imports (skipping only if TYPE_CHECKING bodies), stores exact sorted path->SHA mapping, and digests that map. Tests and scripts are not frozen."
+    "note": "Campaign plan freezes scorer implementation SHA, Quick/Research prompt-binding hashes, and a deterministic recursive AST import closure rooted at ai_pdf_worker.r803_evaluation_campaign. Closure includes repository-local ai_pdf_worker.*, ai_pdf_api.*, citeframe_contracts.*, and citeframe_persistence.* runtime imports (skipping only if TYPE_CHECKING bodies), stores exact sorted path->SHA mapping, and digests that map. Tests and scripts are not frozen."
   }
 }

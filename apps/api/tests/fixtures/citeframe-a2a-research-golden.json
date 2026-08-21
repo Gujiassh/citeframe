@@ -1,0 +1,114 @@
+{
+  "cases": [
+    {
+      "dbRows": {
+        "attempts": [
+          {
+            "attemptNumber": 1,
+            "id": "attempt-a",
+            "status": "succeeded"
+          }
+        ],
+        "claims": [
+          {
+            "id": "claim-a",
+            "verificationStatus": "pending"
+          }
+        ],
+        "steps": [
+          {
+            "id": "step-planner",
+            "status": "succeeded"
+          },
+          {
+            "id": "step-researcher-a",
+            "status": "succeeded"
+          },
+          {
+            "id": "step-join",
+            "status": "queued"
+          }
+        ]
+      },
+      "events": [
+        {
+          "seq": 1,
+          "type": "step_started"
+        },
+        {
+          "seq": 2,
+          "type": "step_succeeded"
+        },
+        {
+          "seq": 3,
+          "type": "step_queued"
+        }
+      ],
+      "name": "multi_step_process_one",
+      "payloads": {
+        "processOne": {
+          "completedNodes": [
+            "researchers"
+          ],
+          "stateVersion": 4
+        }
+      }
+    },
+    {
+      "dbRows": {
+        "attempts": [
+          {
+            "attemptNumber": 1,
+            "id": "attempt-expired",
+            "status": "abandoned"
+          },
+          {
+            "attemptNumber": 2,
+            "id": "attempt-retry",
+            "status": "running"
+          }
+        ],
+        "claims": [],
+        "steps": [
+          {
+            "id": "step-retry",
+            "status": "queued"
+          },
+          {
+            "id": "step-cancel",
+            "status": "cancelled"
+          }
+        ]
+      },
+      "events": [
+        {
+          "seq": 1,
+          "type": "attempt_abandoned"
+        },
+        {
+          "seq": 2,
+          "type": "step_queued"
+        },
+        {
+          "seq": 3,
+          "type": "run_cancelled"
+        }
+      ],
+      "name": "retry_cancel_reclaim_recovery",
+      "payloads": {
+        "cancel": {
+          "status": "cancelled"
+        },
+        "reclaim": {
+          "reasonCode": "lease_expired"
+        },
+        "retry": {
+          "attemptNumber": 2,
+          "status": "queued"
+        }
+      }
+    }
+  ],
+  "runtimeInvariant": "fixed-langgraph-multi-step-process-one",
+  "schemaVersion": "a2a-research-persistence-golden-v1"
+}

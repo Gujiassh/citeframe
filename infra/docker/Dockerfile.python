@@ -15,12 +15,19 @@ FROM python-base AS api
 COPY apps/api/requirements.deploy.txt /app/apps/api/requirements.deploy.txt
 RUN pip install --no-cache-dir --require-hashes -r /app/apps/api/requirements.deploy.txt
 
+COPY packages/backend-contracts/pyproject.toml /app/packages/backend-contracts/pyproject.toml
+COPY packages/backend-contracts/src /app/packages/backend-contracts/src
+COPY packages/backend-persistence/pyproject.toml /app/packages/backend-persistence/pyproject.toml
+COPY packages/backend-persistence/src /app/packages/backend-persistence/src
+COPY packages/research-persistence/pyproject.toml /app/packages/research-persistence/pyproject.toml
+COPY packages/research-persistence/src /app/packages/research-persistence/src
 COPY apps/api /app/apps/api
 RUN chown -R app:app /app
 
 USER app
 WORKDIR /app/apps/api
-ENV PYTHONPATH=/app/apps/api/src
+ENV PYTHONPATH=/app/packages/backend-contracts/src:/app/packages/backend-persistence/src:/app/packages/research-persistence/src:/app/apps/api/src
+RUN python -c 'from pathlib import Path; import citeframe_contracts, citeframe_persistence, citeframe_research_persistence; p = Path(citeframe_research_persistence.__file__).resolve(); assert "/app/apps/api" not in str(p), p; print("backend-package-import-smoke=pass")'
 
 EXPOSE 8000
 CMD ["uvicorn", "ai_pdf_api.main:app", "--host", "0.0.0.0", "--port", "8000"]
@@ -31,6 +38,12 @@ RUN apt-get update \
     && apt-get install --yes --no-install-recommends libgl1 libglib2.0-0 libgomp1 \
     && rm -rf /var/lib/apt/lists/*
 
+COPY packages/backend-contracts/pyproject.toml /app/packages/backend-contracts/pyproject.toml
+COPY packages/backend-contracts/src /app/packages/backend-contracts/src
+COPY packages/backend-persistence/pyproject.toml /app/packages/backend-persistence/pyproject.toml
+COPY packages/backend-persistence/src /app/packages/backend-persistence/src
+COPY packages/research-persistence/pyproject.toml /app/packages/research-persistence/pyproject.toml
+COPY packages/research-persistence/src /app/packages/research-persistence/src
 COPY apps/api/pyproject.toml /app/apps/api/pyproject.toml
 COPY apps/api/src /app/apps/api/src
 COPY apps/worker/requirements.deploy.txt /app/apps/worker/requirements.deploy.txt
@@ -41,6 +54,7 @@ RUN chown -R app:app /app
 
 USER app
 WORKDIR /app/apps/worker
-ENV PYTHONPATH=/app/apps/api/src:/app/apps/worker/src
+ENV PYTHONPATH=/app/packages/backend-contracts/src:/app/packages/backend-persistence/src:/app/packages/research-persistence/src:/app/apps/api/src:/app/apps/worker/src
+RUN python -c 'from pathlib import Path; import citeframe_contracts, citeframe_persistence, citeframe_research_persistence; p = Path(citeframe_research_persistence.__file__).resolve(); assert "/app/apps/api" not in str(p), p; print("backend-package-import-smoke=pass")'
 
 CMD ["python", "-m", "ai_pdf_worker.main"]
