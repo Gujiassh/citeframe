@@ -19,8 +19,7 @@ A1 was implemented and independently accepted on 2026-08-20: the pure
 path-source integration, contracts-only Docker/CI smoke, and focused tests are present.
 The design re-audit is accepted (`High=0`, `Medium=0`, `Low=0`). A1b/A2-foundation was
 independently accepted on `2026-08-21` by the follow-up Critical review
-(`High=0`, `Medium=0`, `Low=0`). A2a is implementer-complete; independent Critical review is pending; R0/R1/R2/W1
-and downstream slices remain unstarted and blocked. No schema/API/save/replay/permission changes are authorized;
+(`High=0`, `Medium=0`, `Low=0`). A2a initial snapshot `20d411e` received independent Critical `REWORK` (`High=1`, `Medium=5`, `Low=1`). The bounded rework on `work/research-boundary-runtime-20260824` is implementer-complete but remains uncommitted and unpushed; a new independent Critical re-audit against an immutable repair snapshot is pending. No A2a `ACCEPT` is claimed. R0/R1/R2/W1 and downstream remain blocked. No schema/API/save/replay/permission changes are authorized;
 persistence and Research runtime semantics were not changed. A1 evidence: [`reviews/a1-contracts-implementation-2026-08-20.md`](reviews/a1-contracts-implementation-2026-08-20.md). A1b implementation evidence: [`reviews/a1b-persistence-implementation-2026-08-20.md`](reviews/a1b-persistence-implementation-2026-08-20.md); reviewer result: [`reviews/a1b-persistence-critical-audit-2026-08-20.md`](reviews/a1b-persistence-critical-audit-2026-08-20.md).
 
 ## 3. Verified Baseline
@@ -32,8 +31,9 @@ persistence and Research runtime semantics were not changed. A1 evidence: [`revi
   import SQLAlchemy.
 - API and Worker are separate processes but remain one versioned product with shared
   source, ORM, database, and transaction boundaries.
-- API owns schema/migration and mutation-logic definitions. Research Worker `_ApiPort`
-  currently creates sessions and commits/rolls back. Ingestion shares a Session/ORM
+- API owns HTTP/auth/Alembic/schema governance. In the unaccepted A2a repair worktree,
+  neutral Research persistence owns DB-only transitions and the Worker default composition
+  manages sessions through its neutral UoW/repository; ingestion still shares a Session/ORM
   boundary with modality adapters.
 
 ### 2.2 Maintainability
@@ -88,7 +88,7 @@ resulting module has one responsibility and the before/after behavior oracle is 
 - No GitHub branch/ruleset mutation without explicit owner authorization.
 - This plan does not authorize additional schema/API changes, G/M/P work, GitHub settings,
   provider spend, or user research. A1b/A2-foundation was independently accepted on 2026-08-21
-  by the follow-up Critical review (`High=0`, `Medium=0`, `Low=0`); A2a is implementer-complete; independent Critical review is pending; R0/R1/R2/W1 and downstream remain blocked;
+  by the follow-up Critical review (`High=0`, `Medium=0`, `Low=0`); A2a initial snapshot `20d411e` received independent Critical `REWORK` (`High=1`, `Medium=5`, `Low=1`). The bounded rework on `work/research-boundary-runtime-20260824` is implementer-complete but remains uncommitted and unpushed; a new independent Critical re-audit against an immutable repair snapshot is pending. No A2a `ACCEPT` is claimed. R0/R1/R2/W1 and downstream remain blocked;
   no schema/API/save/replay/permission changes are authorized.
 
 ## 5. Owner Decision Gates
@@ -121,13 +121,13 @@ same persistence commands; models and transition logic are not copied.
 
 This is an approved **target direction**, not a current implementation claim. The design
 re-audit is accepted (`High=0`, `Medium=0`, `Low=0`); A1 was independently accepted
-on `2026-08-20`. A1b/A2-foundation was independently accepted on 2026-08-21 (follow-up Critical review ACCEPT; High=0, Medium=0, Low=0). A2a is implementer-complete; independent Critical review is pending; R0/R1/R2/W1 and downstream remain blocked.
-Current Research `_ApiPort` and ingestion shared Session/ORM facts remain until their named
-slices land. Same-DB adapter must not be described as API-process commit.
+on `2026-08-20`. A1b/A2-foundation was independently accepted on 2026-08-21 (follow-up Critical review ACCEPT; High=0, Medium=0, Low=0). A2a initial snapshot `20d411e` received independent Critical `REWORK` (`High=1`, `Medium=5`, `Low=1`). The bounded rework on `work/research-boundary-runtime-20260824` is implementer-complete but remains uncommitted and unpushed; a new independent Critical re-audit against an immutable repair snapshot is pending. No A2a `ACCEPT` is claimed. R0/R1/R2/W1 and downstream remain blocked.
+The repair worktree uses the neutral Worker-side Research UoW for DB-only transitions;
+ingestion keeps its shared Session/ORM boundary until its named slices land. This is pending
+independent acceptance, and same-DB adapter must not be described as API-process commit.
 
 The implementation-ready contract is in
-[`research-boundary-runtime-design.md`](research-boundary-runtime-design.md). A2a/R0/R1/R2/W1
-and downstream implementation remains blocked. No schema/API/save/replay/permission changes
+[`research-boundary-runtime-design.md`](research-boundary-runtime-design.md). The new A2a Critical re-audit is pending; A2a/R0/R1/R2/W1 and downstream acceptance or implementation remains blocked. No schema/API/save/replay/permission changes
 are authorized.
 Internal HTTP/RPC, database split, Redis/Kafka scheduling, workspace/provider-wide capacity,
 G/M/P, and GitHub settings are outside this authorization.

@@ -1,11 +1,10 @@
 # Research Boundary And Distributed Runtime Design
 
-Status: **Design re-audit ACCEPT (High=0, Medium=0, Low=0); A1 independently accepted on 2026-08-20; A1b/A2-foundation independently accepted on 2026-08-21 (follow-up Critical review ACCEPT; High=0, Medium=0, Low=0); A2a is implementer-complete; independent Critical review is pending; R0/R1/R2/W1 and downstream remain blocked**
+Status: **Design re-audit and A1/A1b are accepted; A2a initial snapshot `20d411e` received independent Critical `REWORK` (`High=1`, `Medium=5`, `Low=1`). The bounded rework on `work/research-boundary-runtime-20260824` is implementer-complete but remains uncommitted and unpushed; a new independent Critical re-audit against an immutable repair snapshot is pending. No A2a `ACCEPT` is claimed. R0/R1/R2/W1 and downstream remain blocked**
 Date: 2026-08-20
 Owner decision: same-database adapter for `internal_preview`; A1b/A2-foundation was
 independently accepted on 2026-08-21 by the follow-up Critical review
-(`High=0`, `Medium=0`, `Low=0`). A2a is implementer-complete; independent Critical review is pending; R0/R1/R2/W1
-and downstream remain blocked. This document
+(`High=0`, `Medium=0`, `Low=0`). A2a initial snapshot `20d411e` received independent Critical `REWORK` (`High=1`, `Medium=5`, `Low=1`). The bounded rework on `work/research-boundary-runtime-20260824` is implementer-complete but remains uncommitted and unpushed; a new independent Critical re-audit against an immutable repair snapshot is pending. No A2a `ACCEPT` is claimed. R0/R1/R2/W1 and downstream remain blocked. This document
 does not authorize schema/API/save/replay/permission changes, G/M/P work, GitHub settings,
 paid provider runs, or user research.
 
@@ -14,8 +13,7 @@ neutral DTO/Protocol definitions, legacy identity-preserving re-exports, API/Wor
 path-source integration, contracts-only Docker/CI smoke, and focused verification. This
 A1 implementation was independently accepted on 2026-08-20. A1b/A2-foundation was
 independently accepted on 2026-08-21 by the follow-up Critical review
-(`High=0`, `Medium=0`, `Low=0`). A2a is implementer-complete; independent Critical review is pending; R0/R1/R2/W1 and
-later slices remain unstarted and blocked.
+(`High=0`, `Medium=0`, `Low=0`). A2a initial snapshot `20d411e` received independent Critical `REWORK` (`High=1`, `Medium=5`, `Low=1`). The bounded rework on `work/research-boundary-runtime-20260824` is implementer-complete but remains uncommitted and unpushed; a new independent Critical re-audit against an immutable repair snapshot is pending. No A2a `ACCEPT` is claimed. R0/R1/R2/W1 and downstream remain blocked.
 
 This is the implementation-ready detail for the Research portion of the Post-V5
 Optimization plan. It deliberately separates three states:
@@ -58,10 +56,7 @@ and must not import `ai_pdf_api` or define a second Base/metadata/model set.
 
 ### 1.2 Current fact and non-claims
 
-The current checkout still has API-owned model/service/migration definitions, Worker
-`_ApiPort` session creation and commit/rollback, and shared API/Worker ingestion
-Session/ORM paths. The target package split and dispatcher are **not implemented**. The current API/Worker
-imports and shared ORM surface remain until the named slices land.
+The repair checkout has the three staged packages. API still owns HTTP/auth/Alembic/schema governance, while the repaired Worker default composition uses the neutral Research UoW/repository for DB-only transitions; API modules remain compatibility/composition facades and ingestion still uses its shared API/Worker Session/ORM path. This repair state is implementer evidence, not an accepted or shipped boundary. R0/R1 and the later ingestion/composition slices are **not implemented**.
 Same-DB adapter means the runtime commit process remains in Worker; it must never be
 reported as API-process transaction ownership.
 
@@ -509,14 +504,15 @@ SSoT/spec synchronization.
 
 ## 10. Authorization And Current Status
 
+Delivery state on 2026-08-24: PR #20 merged at `origin/main@9f40241`; behavioral baseline `d1b5945`; rejected initial snapshot `20d411e`; initial review record `5a6ee38`; dirty repair branch `work/research-boundary-runtime-20260824`. The repair has implementer evidence (`71` exact-audit API, `122` API Research, `58` Worker Research, differential `equal=true` / `coverage=7`, deploy `6+2`, lock/export/YAML pass). Docker Hub timeout leaves clean-image runtime proof blocked, so no A2a `ACCEPT` is claimed.
+
 Owner authorization covers the A0 ownership/transport direction and conditionally authorizes
 A1/A1b/A2-foundation/A2a/R0/R1/R2/W1 within these boundaries. The design re-audit is
 `ACCEPT (High=0, Medium=0, Low=0)` and A1 was independently accepted on `2026-08-20`.
 A1b/A2-foundation was independently accepted on 2026-08-21 (follow-up Critical review ACCEPT; High=0, Medium=0, Low=0);
-A2a is implementer-complete; independent Critical review is pending; R0/R1/R2/W1 and downstream slices remain blocked. G/M/P and GitHub repository settings remain unapproved.
+A2a initial snapshot `20d411e` received independent Critical `REWORK` (`High=1`, `Medium=5`, `Low=1`). The bounded rework on `work/research-boundary-runtime-20260824` is implementer-complete but remains uncommitted and unpushed; a new independent Critical re-audit against an immutable repair snapshot is pending. No A2a `ACCEPT` is claimed. R0/R1/R2/W1 and downstream remain blocked. G/M/P and GitHub repository settings remain unapproved.
 
 This text itself does not authorize additional schema/API changes, G/M/P work, GitHub
 settings, provider spend, or user research. The implementation sequence is A1 ->
-A1b/A2-foundation -> A2a -> R0 -> R1/R2; A1b is independently accepted, A2a is the
-only next implementation step, and R0/R1/R2 remain blocked until their named gates. No schema/API/save/
+A1b/A2-foundation -> A2a -> R0 -> R1/R2. A2a repair implementation is complete but its next step is a new independent Critical re-audit against an immutable snapshot, including Docker clean-image runtime evidence; R0/R1/R2 remain blocked until their named gates. No schema/API/save/
 replay/permission changes are authorized; later slices remain blocked until their named gates.

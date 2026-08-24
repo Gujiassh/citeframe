@@ -102,7 +102,7 @@ def fail_research_step(
             },
             now=failed_at,
         )
-    db.commit()
+    db.flush()
     return FailureDisposition(
         reason_code=reason_code,
         retryable=retryable,

@@ -152,7 +152,7 @@ def reserve_provider_call(
     )
     ledger.state_version += 1
     ledger.updated_at = reserved_at
-    db.commit()
+    db.flush()
     return ProviderReservation(provider_call_id=call.id, budget_ledger_id=ledger.id)
 
 
@@ -223,7 +223,7 @@ def mark_provider_call_sent(db: Session, provider_call_id: str, now: datetime | 
     ledger.actual_provider_calls += 1
     ledger.state_version += 1
     ledger.updated_at = call.sent_at
-    db.commit()
+    db.flush()
 
 
 def cancel_provider_reservation(
@@ -248,7 +248,7 @@ def cancel_provider_reservation(
     )
     ledger.state_version += 1
     ledger.updated_at = cancelled_at
-    db.commit()
+    db.flush()
 
 
 def reconcile_provider_call(
@@ -322,4 +322,4 @@ def reconcile_provider_call(
     attempt.input_tokens += charged_input_tokens
     attempt.output_tokens += charged_output_tokens
     attempt.cost_microunits = add_optional_cost(attempt.cost_microunits, actual_cost_microunits)
-    db.commit()
+    db.flush()

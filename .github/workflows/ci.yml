@@ -34,6 +34,12 @@ jobs:
         with:
           enable-cache: true
           cache-dependency-glob: apps/api/uv.lock
+      - name: Check API and Worker locks
+        run: |
+          uv lock --project apps/api --check
+          uv lock --project apps/worker --check
+      - name: Run A2a deploy supply-chain and final-image gate
+        run: bash infra/scripts/a2a-deploy-gate.sh
       - name: Install PostgreSQL 17 client
         run: |
           sudo install -d -m 0755 /usr/share/postgresql-common/pgdg
@@ -46,14 +52,7 @@ jobs:
           sudo apt-get install --yes --no-install-recommends postgresql-client-17
           echo "/usr/lib/postgresql/17/bin" >> "$GITHUB_PATH"
           /usr/lib/postgresql/17/bin/pg_dump --version
-      - run: uv sync --project apps/api --extra dev
-      - run: >-
-          uv export --project apps/api --frozen --no-dev --format requirements.txt
-          --no-emit-project --no-emit-package citeframe-backend-contracts
-          --no-emit-package citeframe-backend-persistence
-          --no-emit-package citeframe-research-persistence
-          --output-file apps/api/requirements.deploy.txt
-      - run: git diff --exit-code -- apps/api/requirements.deploy.txt
+      - run: uv sync --project apps/api --frozen --extra dev
       - run: uv run --project apps/api python -c 'import citeframe_contracts, citeframe_persistence, citeframe_research_persistence; print("backend-contracts-persistence-research-import-smoke=pass")'
       - run: uv run --project apps/api pytest apps/api/tests
       - run: uv run --project apps/api alembic -c apps/api/alembic.ini upgrade head
@@ -67,15 +66,8 @@ jobs:
         with:
           enable-cache: true
           cache-dependency-glob: apps/worker/uv.lock
-      - run: uv sync --project apps/worker --dev
-      - run: >-
-          uv export --project apps/worker --frozen --no-dev --format requirements.txt
-          --no-emit-project --no-emit-package citeframe-backend-contracts
-          --no-emit-package citeframe-backend-persistence
-          --no-emit-package citeframe-research-persistence
-          --no-emit-package ai-pdf-api
-          --output-file apps/worker/requirements.deploy.txt
-      - run: git diff --exit-code -- apps/worker/requirements.deploy.txt
+      - run: uv lock --project apps/worker --check
+      - run: uv sync --project apps/worker --frozen --dev
       - run: uv run --project apps/worker python -c 'import citeframe_contracts, citeframe_persistence, citeframe_research_persistence; print("backend-contracts-persistence-research-import-smoke=pass")'
       - run: >-
           uv run --project apps/worker pytest --strict-markers
@@ -91,7 +83,8 @@ jobs:
         with:
           enable-cache: true
           cache-dependency-glob: apps/worker/uv.lock
-      - run: uv sync --project apps/worker --dev
+      - run: uv lock --project apps/worker --check
+      - run: uv sync --project apps/worker --frozen --dev
       - run: >-
           uv run --project apps/worker pytest --strict-markers
           -m acceptance apps/worker/tests
@@ -105,7 +98,8 @@ jobs:
         with:
           enable-cache: true
           cache-dependency-glob: apps/worker/uv.lock
-      - run: uv sync --project apps/worker --dev
+      - run: uv lock --project apps/worker --check
+      - run: uv sync --project apps/worker --frozen --dev
       - run: >-
           uv run --project apps/worker pytest --strict-markers
           -m evaluation apps/worker/tests

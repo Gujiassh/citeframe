@@ -10,8 +10,7 @@
 - First formal campaign attempt: [`../evals/artifacts/r803-campaign-20260730-v1/`](../evals/artifacts/r803-campaign-20260730-v1/) (`failed`, 0/5 completed rounds; immutable)
 - Engineering gate: deterministic R800 baseline `pass`; R803 formal campaign v1 `fail`
 - Research boundary status: the design re-audit is **ACCEPT (High=0, Medium=0, Low=0)**; A1 was independently accepted on **2026-08-20**. A1b/A2-foundation was independently accepted on 2026-08-21 by the follow-up Critical review
-(`High=0`, `Medium=0`, `Low=0`). A2a is implementer-complete; independent Critical review is pending; R0/R1/R2/W1 and
-downstream remain unstarted and blocked. No schema/API/save/replay/permission changes are authorized; Research persistence implementation evidence is recorded in `reviews/a2a-persistence-implementation-2026-08-21.md`; independent Critical review is pending.
+(`High=0`, `Medium=0`, `Low=0`). A2a initial snapshot `20d411e` received `REWORK (High=1, Medium=5, Low=1)`. The bounded repair on `work/research-boundary-runtime-20260824` is implementer-complete but uncommitted/unpushed; a new independent Critical re-audit is pending and no A2a `ACCEPT` is claimed. R0/R1/R2/W1 and downstream remain blocked. Current evidence is in `../../specs/v5/post-v5-optimization/reviews/a2a-persistence-rework-implementation-2026-08-24.md`.
 - Latest interpretable paired diagnostic gates (v4): Quick `pass`; Research `fail` with 5/6 completed cases
 - Model-quality gate: `not_evaluable` because formal v1 interrupted before any round completed
 - User-value gate: `not_evaluable` until M404 contains qualified target-user evidence
@@ -26,15 +25,17 @@ The production path is split by ownership:
 
 - Web selects Quick or Research, renders persisted Run/Step/Event state, and submits
   creator-only plan/conflict decisions through BFF routes.
-- FastAPI owns every persistent Research contract: Workflow/Prompt versions,
-  PlanRevision, ExecutionSnapshot, Run/Step/Attempt/Event, decisions, Artifact/Claim/
-  Evidence provenance, provider/tool ledgers, budgets, idempotency, and Evaluation.
-- **Current fact:** Worker owns typed orchestration and provider/tool execution, and
-  currently accesses Research state through API service ports; `_ApiPort` still opens
-  and commits/rolls back its Session in the Worker process. API package still owns the
-  current ORM/migration definitions.
-- **Approved target, not implemented:** the Worker continues to own orchestration and
-  the Worker-side Research UoW is the runtime commit-process owner; API owns HTTP/auth,
+- API owns HTTP/auth/Alembic/schema governance for persistent Research contracts. In the
+  repair worktree, neutral `citeframe_persistence` owns mappings/metadata and
+  `citeframe_research_persistence` owns DB-only Research transitions; API retains public
+  routes, compatibility facades, and external-adapter composition.
+- **Repair-worktree fact, pending independent acceptance:** Worker owns typed
+  orchestration/provider/tool execution and uses the neutral Research persistence service,
+  UoW, and repository for DB-only transitions. API owns HTTP/auth/Alembic/schema governance
+  and compatibility/external-adapter composition; ingestion retains its shared Session/ORM
+  boundary.
+- **Repair state, not accepted/shipped:** the Worker continues to own orchestration and
+  the repaired default composition uses the neutral Worker-side Research UoW as runtime commit-process owner; API owns HTTP/auth,
   Alembic execution, and schema governance. Package staging is A1 pure
   `citeframe_contracts`, A1b/A2-foundation neutral `citeframe_persistence` mappings, then
   A2a `citeframe_research_persistence` Research behavior. Each stage adds only its package
@@ -55,8 +56,7 @@ least two loops; acceptance proves real branch overlap and wall time below the s
 sum while the persisted per-Run cap remains the concurrency authority. The implementation-ready target and its current/not-implemented status are recorded in
 [`../../specs/v5/post-v5-optimization/research-boundary-runtime-design.md`](../../specs/v5/post-v5-optimization/research-boundary-runtime-design.md). A1 implementation evidence and independent ACCEPT on 2026-08-20 are recorded.
 A1b/A2-foundation was independently accepted on 2026-08-21 (follow-up Critical review ACCEPT; High=0, Medium=0, Low=0);
-A2a is implementer-complete; independent Critical review is pending. R0/R1/R2/W1 and downstream implementation remain
-blocked. No schema/API/save/replay/permission changes are authorized.
+A2a repair is implementer-complete but pending a new independent Critical re-audit; R0/R1/R2/W1 and downstream implementation remain blocked. No schema/API/save/replay/permission changes are authorized.
 
 ## Orchestration Decision
 
@@ -83,7 +83,7 @@ Planner -> plan approval -> bounded Researcher fan-out -> join -> Verifier
 `StateGraph(ResearchState)` inside the Worker process. PostgreSQL state and immutable
 artifacts are the persistence/checkpoint/business truth; LangGraph is not the persisted
 checkpoint authority and is not allowed to replace the Research ledger.
-**Approved target, not implemented after A2a:** PostgreSQL remains the persistence and
+**Approved R1 target, not implemented:** PostgreSQL remains the persistence and
 business authority during A2a; after A2a, R1 makes it the runtime orchestration authority.
 R1 removes LangGraph from runtime step execution or retains it only as a plan-approval
 topology validator. The target is a one-claimed-attempt dispatcher: claim one eligible

@@ -61,7 +61,7 @@ def begin_tool_call(
     ledger.reserved_tool_calls += 1
     ledger.state_version += 1
     ledger.updated_at = started_at
-    db.commit()
+    db.flush()
     return ToolCallReservation(tool_call_id=call.id, budget_ledger_id=ledger.id)
 
 
@@ -147,7 +147,7 @@ def complete_tool_call(
         ledger.state_version += 1
         ledger.updated_at = call.finished_at
         attempt.tool_call_count += 1
-        db.commit()
+        db.flush()
     except Exception:
         db.rollback()
         raise

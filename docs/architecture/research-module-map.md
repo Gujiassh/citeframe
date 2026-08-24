@@ -4,6 +4,8 @@ Date: 2026-08-15
 
 Canonical ownership for the fixed Research product path. Evaluation/R803 scripts are **not** the product path.
 
+Current delivery state: A2a repair on `work/research-boundary-runtime-20260824` is implementer-complete but uncommitted/unpushed and pending a new independent Critical re-audit. The initial snapshot was `REWORK`; no A2a `ACCEPT` is claimed.
+
 ## API package (`apps/api/src/ai_pdf_api/services/research/`)
 
 Import path: `ai_pdf_api.services.research.*`. Compatibility shims remain at `ai_pdf_api.services.research_*` (sys.modules aliases).
@@ -28,16 +30,16 @@ Import path: `ai_pdf_api.services.research.*`. Compatibility shims remain at `ai
 | `research_versions_service.py` | Workflow/prompt versions |
 | `research_views.py` | Read models / DTO assembly for Web |
 | `research_worker.py` | Facade re-exports for worker-facing ports |
-| `research_worker_completion.py` | Branch/verify/critique/synthesis completion |
+| `research_worker_completion.py` | Compatibility/composition facade for neutral completion commands |
 | `research_worker_evidence.py` | Frozen evidence search/load/restore |
 | `research_worker_failure.py` | Step failure recording |
-| `research_worker_lease.py` | Step lease claim/heartbeat/complete |
+| `research_worker_lease.py` | Compatibility facade for neutral lease commands |
 | `research_worker_membership.py` | Research subsystem support module — see source module docstring/imports |
-| `research_worker_plan.py` | Publish research plan drafts |
+| `research_worker_plan.py` | Compatibility/composition facade for neutral plan publication |
 | `research_worker_policy.py` | Research subsystem support module — see source module docstring/imports |
 | `research_worker_provider.py` | Provider call reserve/send/reconcile |
-| `research_worker_publication.py` | Final artifact publish + conflict wait |
-| `research_worker_state.py` | Execution state load/reclaim/control steps |
+| `research_worker_publication.py` | Compatibility/composition facade for neutral publication/conflict commands |
+| `research_worker_state.py` | Compatibility facade for neutral state/reclaim/control commands |
 | `research_worker_tools.py` | Tool call ledger begin/complete |
 | `research_worker_types.py` | Research subsystem support module — see source module docstring/imports |
 
@@ -55,8 +57,13 @@ Import path: `ai_pdf_api.services.research.*`. Compatibility shims remain at `ai
 | `research_runtime_core.py` | Shared runtime types/helpers |
 | `research_runtime_ports.py` | SQL/API ledger and tool ports |
 | `research_runtime_processor.py` | Claimed work processor |
+| `research_persistence_service.py` | Default Worker composition over neutral Research UoW/repository/commands |
 
 ## Not product Research path
+
+## Neutral Research persistence (`packages/research-persistence/`)
+
+`citeframe_research_persistence` is the repair worktree owner for DB-only plan, lease, completion, publication, retry, cancellation, state/reclaim, provider, and tool transitions plus repositories/UoW. API modules retain compatibility and external-adapter composition. This map describes the implementer-complete repair and remains subject to the new Critical re-audit.
 
 - `r803_*`, `r800_*` evaluation/acceptance packages: quality campaigns and engineering gates only.
 
@@ -65,7 +72,7 @@ Import path: `ai_pdf_api.services.research.*`. Compatibility shims remain at `ai
 Package staging is A1 contracts (independently accepted on 2026-08-20) ->
 A1b/A2-foundation persistence mappings (independently accepted on 2026-08-21 by the
 follow-up Critical review: High=0, Medium=0, Low=0) -> A2a Research persistence behavior.
-A2a is implementer-complete; independent Critical review is pending; R0/R1/R2/W1 and downstream remain blocked,
+A2a initial snapshot was rejected; the bounded repair is implementer-complete but pending a new independent Critical re-audit. R0/R1/R2/W1 and downstream remain blocked,
 and no schema/API/save/replay/permission changes are authorized. No behavior-free
 `citeframe_research_persistence` scaffold is permitted before A2a; see topology freeze in
 [`research-workflow-runtime.md`](research-workflow-runtime.md).

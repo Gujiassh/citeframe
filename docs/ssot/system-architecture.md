@@ -753,7 +753,7 @@ M402 的 21-case 工程执行、7-case 真实 BFF 全栈/像素 Evidence 与 7-c
 - `MinIO` 存文件，`pgvector` 存检索向量
 - `EmbeddingProvider` / generation / vision / ASR 走 capability profile，不能把模型写死进业务层
 - Research Workflow/Prompt/provider profile/Asset scope/预算在批准时冻结，Worker 不读取 latest 解释历史 Run
-- **当前边界事实（模块化双进程，非独立服务）**：API package 拥有 schema/migration 与 Research/ingestion **mutation logic** 定义；Research Worker `_ApiPort` **当前**在 Worker 进程内创建 Session 并 `commit`/`rollback`；ingestion 在 API orchestrator 与 Worker adapter 的**共享 Session/ORM** 边界内持久化。不得把“定义归属”写成“runtime commit 已由 API 进程独占”；A1 contracts extraction is independently accepted; A1b neutral persistence mapping was independently accepted on 2026-08-21 by the follow-up Critical review (`High=0`, `Medium=0`, `Low=0`). Research transport/mutation/session migration and A2a boundary work remain unimplemented. 不得声称其已完成。跟进见 [`docs/architecture/api-worker-boundary-follow-up-2026-08-18.md`](../architecture/api-worker-boundary-follow-up-2026-08-18.md)。
+- **当前 repair-worktree 边界（模块化双进程，非独立服务）**：API package 仍负责 HTTP/auth/Alembic/schema governance；未接受的 A2a repair 已把 DB-only Research transition 收口到 neutral `citeframe_research_persistence`，Worker default composition 通过 neutral UoW/repository 管理 Session/commit，API 保留 compatibility/external-adapter composition；ingestion 仍在 API orchestrator 与 Worker adapter 的共享 Session/ORM 边界。该 repair 未提交/推送且等待新 Critical re-audit，不得描述为已交付或 `ACCEPT`。跟进见 [`docs/architecture/api-worker-boundary-follow-up-2026-08-18.md`](../architecture/api-worker-boundary-follow-up-2026-08-18.md)。
 - Quick Chat SSE 与 Research Event SSE 是独立合同
 - Workspace 视图状态只应在 workspace 实际切换时同步；重复选择当前 workspace 不能清空 active thread、文档或其他局部视图状态。
 
@@ -761,8 +761,7 @@ M402 的 21-case 工程执行、7-case 真实 BFF 全栈/像素 Evidence 与 7-c
 
 A1 contracts was independently accepted on **2026-08-20**. A1b/A2-foundation was
 independently accepted on **2026-08-21** by the follow-up Critical review
-(`High=0`, `Medium=0`, `Low=0`). A2a is implementer-complete; independent Critical review is pending; R0, R1, R2,
-W1, and downstream remain unstarted and blocked.
+(`High=0`, `Medium=0`, `Low=0`). A2a initial snapshot `20d411e` was `REWORK (High=1, Medium=5, Low=1)`; the bounded repair is implementer-complete but uncommitted/unpushed and pending a new independent Critical re-audit. No A2a `ACCEPT` is claimed; R0, R1, R2, W1, and downstream remain blocked.
 The design re-audit is **ACCEPT (High=0, Medium=0, Low=0)**. No schema/API/save/replay/
 permission changes are authorized. For `internal_preview`, the owner-authorized target is a same-PostgreSQL-database
 adapter, not an internal HTTP or database split. API owns HTTP/authentication, Alembic
@@ -847,8 +846,7 @@ only as post-commit wakeup.
 These are approved target rules, not shipped behavior. The design re-audit is
 `ACCEPT (High=0, Medium=0, Low=0)`. A1 was independently accepted on `2026-08-20`;
 A1b/A2-foundation was independently accepted on 2026-08-21 (follow-up Critical review ACCEPT; High=0, Medium=0, Low=0).
-A2a is implementer-complete; independent Critical review is pending; R0/R1/R2/W1 and downstream remain conditionally
-authorized, unstarted, and blocked. No schema/API/save/replay/permission changes are authorized. G/M/P and GitHub settings remain unauthorized.
+A2a repair is implementer-complete but pending a new independent Critical re-audit; R0/R1/R2/W1 and downstream remain conditionally authorized, unstarted, and blocked. No schema/API/save/replay/permission changes are authorized. G/M/P and GitHub settings remain unauthorized.
 Detailed slice boundaries and semantic oracle: [`research-boundary-runtime-design.md`](../../specs/v5/post-v5-optimization/research-boundary-runtime-design.md).
 
 ## 17. 当前 Evidence 域与演进门禁
@@ -879,7 +877,7 @@ Document/Page/Chunk 已通过受控迁移切换为 Asset/Representation/ContentU
 
 ## Deploy and ownership invariants (architecture hardening)
 
-- **当前事实（未迁移）**：Same version: API and Worker must be deployed from the same git SHA / image tag. Shared ORM models currently live in `ai_pdf_api.models`; Alembic migrations are owned only by `apps/api`. The approved A1b/A2-foundation target re-exports the same classes from neutral `citeframe_persistence.models` without a second metadata set.
+- **当前 repair-worktree 事实（待新 Critical re-audit）**：API and Worker must be deployed from the same git SHA / image tag. Neutral `citeframe_persistence.models` owns the single mapping/metadata identity and `ai_pdf_api.models` preserves the compatibility surface; Alembic execution remains API-owned. This is implementer-complete evidence, not accepted delivery.
 - **Ingestion Worker** may import shared models and write Representations/ContentUnits under the modality adapter contract on the **shared Session** passed by the API orchestrator (current fact; not a completed process-isolated boundary).
-- **Research Worker** must call API service mutation functions via ports/ledger adapters and must not invent a second ledger schema; **today** `_ApiPort` still opens the Session and commits/rollbacks inside the Worker process. Schema/migration owner ≠ session/commit process owner.
+- **Research Worker** must use the neutral persistence commands through ports/adapters and must not invent a second ledger schema. In the repair worktree, the default Worker composition opens and commits through the neutral Research UoW; schema/migration owner remains API. This is pending independent acceptance.
 - **Chat** attaches generation images only via `modalities.visual_enrichment` (no direct kind-specific crop imports).

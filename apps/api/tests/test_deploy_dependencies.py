@@ -98,45 +98,65 @@ def test_contracts_dataclass_defaults_and_serialization_are_representative() -> 
     assert asdict(claim)["conflict_status"] == "none"
 
 
-def test_a2a_docker_stages_copy_and_expose_all_backend_packages() -> None:
-    dockerfile = (REPOSITORY_ROOT / "infra/docker/Dockerfile.python").read_text(encoding="utf-8")
-    api_stage = dockerfile.split("FROM python-base AS api\n", 1)[1].split("FROM python-base AS worker\n", 1)[0]
-    worker_stage = dockerfile.split("FROM python-base AS worker\n", 1)[1]
-    for stage in (api_stage, worker_stage):
-        assert "COPY packages/backend-contracts/pyproject.toml /app/packages/backend-contracts/pyproject.toml" in stage
-        assert "COPY packages/backend-contracts/src /app/packages/backend-contracts/src" in stage
-        assert "COPY packages/backend-persistence/pyproject.toml /app/packages/backend-persistence/pyproject.toml" in stage
-        assert "COPY packages/backend-persistence/src /app/packages/backend-persistence/src" in stage
-        assert "COPY packages/research-persistence/pyproject.toml /app/packages/research-persistence/pyproject.toml" in stage
-        assert "COPY packages/research-persistence/src /app/packages/research-persistence/src" in stage
-        assert "citeframe_research_persistence" in stage
-        assert "backend-package-import-smoke=pass" in stage
-    assert "ENV PYTHONPATH=/app/packages/backend-contracts/src:/app/packages/backend-persistence/src:/app/packages/research-persistence/src:/app/apps/api/src" in api_stage
-    assert "ENV PYTHONPATH=/app/packages/backend-contracts/src:/app/packages/backend-persistence/src:/app/packages/research-persistence/src:/app/apps/api/src:/app/apps/worker/src" in worker_stage
-    assert "COPY apps/worker /app/apps/worker" not in api_stage
-    assert "COPY apps/api /app/apps/api" not in worker_stage
-    assert "COPY apps/api/src /app/apps/api/src" in worker_stage
+def _docker_stages(path: Path) -> dict[str, list[str]]:
+    stages: dict[str, list[str]] = {}
+    current_stage: str | None = None
+    logical_line = ""
+
+    for raw_line in path.read_text(encoding="utf-8").splitlines():
+        stripped = raw_line.strip()
+        if not stripped or stripped.startswith("#"):
+            continue
+        logical_line = f"{logical_line} {stripped}".strip()
+        if logical_line.endswith("\\"):
+            logical_line = logical_line[:-1].rstrip()
+            continue
+
+        from_match = re.fullmatch(r"FROM\s+\S+(?:\s+AS\s+(\S+))?", logical_line, re.IGNORECASE)
+        if from_match:
+            current_stage = from_match.group(1)
+            if current_stage is not None:
+                stages[current_stage] = []
+        elif current_stage is not None:
+            stages[current_stage].append(logical_line)
+        logical_line = ""
+
+    assert not logical_line
+    return stages
 
 
-def test_ci_uses_a2a_export_format_and_research_persistence_smokes() -> None:
-    ci = (REPOSITORY_ROOT / ".github/workflows/ci.yml").read_text(encoding="utf-8")
-    api_job = ci.split("\n  api:\n", 1)[1].split("\n  worker-fast:\n", 1)[0]
-    worker_job = ci.split("\n  worker-fast:\n", 1)[1].split("\n  worker-acceptance:\n", 1)[0]
+def test_docker_stage_parser_ignores_commented_instructions(tmp_path: Path) -> None:
+    dockerfile = tmp_path / "Dockerfile"
+    dockerfile.write_text(
+        "FROM python:3.12-slim AS api\n"
+        "# COPY packages/backend-contracts/src /app/packages/backend-contracts/src\n",
+        encoding="utf-8",
+    )
+
+    assert _docker_stages(dockerfile) == {"api": []}
+
+
+def test_a2a_docker_stages_copy_backend_packages_as_effective_instructions() -> None:
+    stages = _docker_stages(REPOSITORY_ROOT / "infra/docker/Dockerfile.python")
+    backend_copy_instructions = {
+        "COPY packages/backend-contracts/pyproject.toml /app/packages/backend-contracts/pyproject.toml",
+        "COPY packages/backend-contracts/src /app/packages/backend-contracts/src",
+        "COPY packages/backend-persistence/pyproject.toml /app/packages/backend-persistence/pyproject.toml",
+        "COPY packages/backend-persistence/src /app/packages/backend-persistence/src",
+        "COPY packages/research-persistence/pyproject.toml /app/packages/research-persistence/pyproject.toml",
+        "COPY packages/research-persistence/src /app/packages/research-persistence/src",
+    }
+
+    assert backend_copy_instructions <= set(stages["api"])
+    assert backend_copy_instructions <= set(stages["worker"])
     assert (
-        "uv export --project apps/api --frozen --no-dev --format requirements.txt\n"
-        "          --no-emit-project --no-emit-package citeframe-backend-contracts\n"
-        "          --no-emit-package citeframe-backend-persistence\n"
-        "          --no-emit-package citeframe-research-persistence\n"
-        "          --output-file apps/api/requirements.deploy.txt"
-    ) in api_job
-    assert "--no-emit-package ai-pdf-api" not in api_job
-    assert 'import citeframe_contracts, citeframe_persistence, citeframe_research_persistence; print("backend-contracts-persistence-research-import-smoke=pass")' in api_job
+        "ENV PYTHONPATH=/app/packages/backend-contracts/src:/app/packages/backend-persistence/src:"
+        "/app/packages/research-persistence/src:/app/apps/api/src"
+    ) in stages["api"]
     assert (
-        "uv export --project apps/worker --frozen --no-dev --format requirements.txt\n"
-        "          --no-emit-project --no-emit-package citeframe-backend-contracts\n"
-        "          --no-emit-package citeframe-backend-persistence\n"
-        "          --no-emit-package citeframe-research-persistence\n"
-        "          --no-emit-package ai-pdf-api\n"
-        "          --output-file apps/worker/requirements.deploy.txt"
-    ) in worker_job
-    assert 'import citeframe_contracts, citeframe_persistence, citeframe_research_persistence; print("backend-contracts-persistence-research-import-smoke=pass")' in worker_job
+        "ENV PYTHONPATH=/app/packages/backend-contracts/src:/app/packages/backend-persistence/src:"
+        "/app/packages/research-persistence/src:/app/apps/api/src:/app/apps/worker/src"
+    ) in stages["worker"]
+    assert "COPY apps/worker /app/apps/worker" not in stages["api"]
+    assert "COPY apps/api /app/apps/api" not in stages["worker"]
+    assert "COPY apps/api/src /app/apps/api/src" in stages["worker"]

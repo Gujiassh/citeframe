@@ -1,6 +1,8 @@
 """API composition facade for neutral Research provider persistence commands."""
 from __future__ import annotations
 
+from functools import wraps
+
 from collections.abc import Callable
 from datetime import UTC, datetime
 
@@ -85,24 +87,53 @@ def reserve_provider_call(
     now: datetime | None = None,
 ) -> ProviderReservation:
     # Keep the legacy matcher patch point while the neutral command owns all DB transitions.
-    return _reserve_provider_call(
-        db,
-        attempt_id=attempt_id,
-        logical_call_key=logical_call_key,
-        request_sha256=request_sha256,
-        provider=provider,
-        model=model,
-        provider_config_fingerprint=provider_config_fingerprint,
-        reserved_input_tokens=reserved_input_tokens,
-        reserved_output_tokens=reserved_output_tokens,
-        now=now,
-        provider_config_matcher=frozen_provider_config_matches_actual,
-    )
+    try:
+        result = _reserve_provider_call(
+            db,
+            attempt_id=attempt_id,
+            logical_call_key=logical_call_key,
+            request_sha256=request_sha256,
+            provider=provider,
+            model=model,
+            provider_config_fingerprint=provider_config_fingerprint,
+            reserved_input_tokens=reserved_input_tokens,
+            reserved_output_tokens=reserved_output_tokens,
+            now=now,
+            provider_config_matcher=frozen_provider_config_matches_actual,
+        )
+        db.commit()
+        return result
+    except Exception:
+        db.rollback()
+        raise
 
 
-cancel_provider_reservation = _cancel_provider_reservation
-mark_provider_call_sent = _mark_provider_call_sent
-reconcile_provider_call = _reconcile_provider_call
+def _commit_command(db: Session, command, /, *args, **kwargs):
+    try:
+        result = command(db, *args, **kwargs)
+        db.commit()
+        return result
+    except Exception:
+        db.rollback()
+        raise
+
+
+@wraps(_cancel_provider_reservation)
+def cancel_provider_reservation(db: Session, *args, **kwargs):
+    return _commit_command(db, _cancel_provider_reservation, *args, **kwargs)
+
+
+@wraps(_mark_provider_call_sent)
+def mark_provider_call_sent(db: Session, *args, **kwargs):
+    return _commit_command(db, _mark_provider_call_sent, *args, **kwargs)
+
+
+@wraps(_reconcile_provider_call)
+def reconcile_provider_call(db: Session, *args, **kwargs):
+    return _commit_command(db, _reconcile_provider_call, *args, **kwargs)
+
+
+reserve_provider_call.__wrapped__ = _reserve_provider_call
 
 __all__ = [
     "ProviderReservation",

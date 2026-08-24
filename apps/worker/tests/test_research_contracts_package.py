@@ -57,7 +57,15 @@ def test_worker_default_service_exposes_neutral_research_commands() -> None:
     from ai_pdf_worker.research_runtime_processor import build_default_research_service
 
     service = build_default_research_service()
-    assert service.claim_next_research_step is research.claim_next_research_step
-    assert service.complete_research_step is research.complete_research_step
-    assert service.heartbeat_research_step is research.heartbeat_research_step
-    assert service.fail_research_step is research.fail_research_step
+    for name in (
+        "claim_next_research_step",
+        "claim_specific_research_step",
+        "complete_control_step",
+        "complete_research_critique",
+        "complete_research_step",
+        "complete_research_verification",
+        "fail_research_step",
+        "heartbeat_research_step",
+        "reclaim_expired_research_steps",
+    ):
+        assert getattr(service, name) is getattr(research, name), name

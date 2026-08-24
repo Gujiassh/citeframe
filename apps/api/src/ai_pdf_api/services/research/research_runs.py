@@ -16,7 +16,6 @@ from ai_pdf_api.models import (
     ResearchPlanRevisionAsset,
     ResearchRun,
     ResearchStep,
-    ResearchStepAttempt,
     WorkflowPromptBinding,
     Workspace,
 )
@@ -478,58 +477,9 @@ def list_research_runs(
         "nextCursor": _encode_cursor(runs[-1]) if has_more and runs else None,
     }
 
-def finalize_cancel_if_idle(db: Session, run: ResearchRun, *, now: datetime) -> bool:
-    active_attempts = db.scalar(
-        select(func.count())
-        .select_from(ResearchStepAttempt)
-        .join(ResearchStep, ResearchStep.id == ResearchStepAttempt.step_id)
-        .where(ResearchStep.run_id == run.id, ResearchStepAttempt.status == "running")
-    ) or 0
-    if active_attempts:
-        return False
-    steps = list(
-        db.scalars(
-            select(ResearchStep).where(
-                ResearchStep.run_id == run.id,
-                ResearchStep.workspace_id == run.workspace_id,
-            )
-        ).all()
-    )
-    for step in steps:
-        if step.status != "succeeded" and step.status not in {"cancelled", "skipped"}:
-            step.status = "cancelled"
-            step.state_version += 1
-            step.finished_at = now
-            step.updated_at = now
-    decisions = list(
-        db.scalars(
-            select(HumanDecision).where(
-                HumanDecision.run_id == run.id,
-                HumanDecision.workspace_id == run.workspace_id,
-                HumanDecision.status == "pending",
-            )
-        ).all()
-    )
-    for decision in decisions:
-        decision.status = "cancelled"
-        decision.state_version += 1
-    run.status = "cancelled"
-    run.finished_at = now
-    run.updated_at = now
-    run.state_version += 1
-    append_research_event(
-        db,
-        run,
-        event_type="run_cancelled",
-        dedupe_key=f"run-cancelled:{run.state_version}",
-        data={
-            "status": "cancelled",
-            "reasonCode": run.cancel_reason_code or "user_requested",
-            "runStateVersion": run.state_version,
-        },
-        now=now,
-    )
-    return True
+
+from citeframe_research_persistence.cancellation import cancel_research_run_transition
+from citeframe_research_persistence.membership import finalize_cancel_if_idle
 
 def cancel_research_run(
     db: Session,
@@ -547,30 +497,16 @@ def cancel_research_run(
     path = f"/v1/workspaces/{workspace_id}/research-runs/{run_id}/cancel"
 
     def execute() -> tuple[int, dict[str, object], str]:
-        run = _get_research_run_for_update(db, workspace_id, run_id)
-        if actor_user_id != run.created_by_user_id and not (actor_role == "owner" and reason_code in {"cost", "security"}):
-            raise ResearchError("research_permission_denied", "You cannot cancel this Research run.", 403)
-        if run.status in TERMINAL_RUN_STATUSES or run.status == "cancel_requested":
-            raise ResearchError("research_state_conflict", "Research run cannot be cancelled in its current state.", 409)
-        if run.state_version != expected_state_version:
-            raise ResearchError("stale_state_version", "Research run state version is stale.", 409)
-        now = datetime.now(UTC)
-        run.status = "cancel_requested"
-        run.cancel_requested_by_user_id = actor_user_id
-        run.cancel_reason_code = reason_code
-        run.cancel_requested_at = now
-        run.state_version += 1
-        run.updated_at = now
-        append_research_event(
+        run = cancel_research_run_transition(
             db,
-            run,
-            event_type="cancel_requested",
-            dedupe_key=f"cancel-requested:{run.state_version}",
-            data={"actorUserId": actor_user_id, "reasonCode": reason_code, "runStateVersion": run.state_version},
-            now=now,
+            workspace_id=workspace_id,
+            actor_user_id=actor_user_id,
+            actor_role=actor_role,
+            run_id=run_id,
+            expected_state_version=expected_state_version,
+            reason_code=reason_code,
+            now=datetime.now(UTC),
         )
-        finalize_cancel_if_idle(db, run, now=now)
-        db.flush()
         return 202, {"run": run_detail(db, run)}, run.id
 
     return _idempotent_mutation(

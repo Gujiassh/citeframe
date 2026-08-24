@@ -165,7 +165,7 @@ def _lease_step(
         },
         now=now,
     )
-    db.commit()
+    db.flush()
     return ResearchStepLease(
         workspace_id=step.workspace_id,
         run_id=run.id,
@@ -335,7 +335,7 @@ def heartbeat_research_step(
     )
     attempt.heartbeat_at = heartbeat_at
     attempt.lease_expires_at = heartbeat_at + timedelta(seconds=lease_seconds)
-    db.commit()
+    db.flush()
     return attempt.lease_expires_at
 
 
@@ -389,7 +389,7 @@ def complete_research_step(
             now=finished_at,
         )
         _queue_ready_dependents(db, run, step, finished_at)
-        db.commit()
+        db.flush()
     except Exception:
         db.rollback()
         raise

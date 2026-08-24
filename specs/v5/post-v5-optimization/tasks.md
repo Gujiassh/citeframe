@@ -2,8 +2,7 @@
 
 Status: **Design re-audit ACCEPT (High=0, Medium=0, Low=0); A1 independently accepted
 on 2026-08-20; A1b/A2-foundation independently accepted on 2026-08-21 by the follow-up
-Critical review (`High=0`, `Medium=0`, `Low=0`); A2a is implementer-complete; independent Critical review is pending;
-R0/R1/R2/W1 and downstream remain blocked**.
+Critical review (`High=0`, `Medium=0`, `Low=0`); A2a initial snapshot `20d411e` received independent Critical `REWORK` (`High=1`, `Medium=5`, `Low=1`). The bounded rework on `work/research-boundary-runtime-20260824` is implementer-complete but remains uncommitted and unpushed; a new independent Critical re-audit against an immutable repair snapshot is pending. No A2a `ACCEPT` is claimed. R0/R1/R2/W1 and downstream remain blocked**.
 
 Checkboxes distinguish authorization from implementation. The checked A1 item records
 implementer-complete code and evidence; later checked authorization items do not claim
@@ -38,11 +37,13 @@ G0-G3 and all GitHub repository settings remain unauthorized.
 - [x] R/W Freeze PostgreSQL-only orchestration, one-claimed-attempt dispatcher target, per-Run admission, and independent SSE target
 - [x] R0 Freeze Run-first lock normalization target; implementation remains conditional and separate from A2a/R1
 
-### Production implementation, A1b/A2-foundation unlocked; later slices remain blocked
+### Production implementation, A2a rework awaiting a new Critical gate; later slices blocked
 
 - [x] A1 Add only `citeframe-backend-contracts` / `citeframe_contracts` pure DTO/Protocol package; API/Worker add only its local path and stage-specific export/smoke; no persistence or Research package scaffold (independently accepted 2026-08-20)
 - [x] A1b / A2-foundation Add `citeframe-backend-persistence` / `citeframe_persistence` on top of A1 as unique Base/metadata and all-model mapping distribution; extend manifests, Docker COPY/PYTHONPATH, and smoke with zero DDL drift (implementer-complete 2026-08-20; independently accepted 2026-08-21 by follow-up Critical review: High=0, Medium=0, Low=0)
-- [x] A2a Add `citeframe-research-persistence` / `citeframe_research_persistence` after A1b; extract DB-only Research persistence commands with compatibility facades, extend manifests/Docker/PYTHONPATH to the final third package, preserve current multi-step `process_one` and mixed lock behavior, and run the three-package smoke (implementer-complete 2026-08-21; independent Critical review pending)
+- [x] A2a initial snapshot `20d411e` implemented the third package but failed independent Critical review (`REWORK`, High=1, Medium=5, Low=1)
+- [x] A2a bounded core/supply-chain rework on `work/research-boundary-runtime-20260824` restores compatibility, completes neutral ownership, adds executable differential/deploy gates, and preserves current multi-step `process_one` and mixed locks (implementer-complete; uncommitted/unpushed)
+- [ ] New independent A2a Critical re-audit against one immutable repair snapshot, including clean-image runtime proof
 - [ ] R0 Normalize all mutation lock acquisition to `Run -> Step -> Attempt -> Call -> Ledger`; prove real PostgreSQL lock/deadlock evidence without save/API semantic change
 - [ ] R1 Change `process_one` into bounded concurrent dispatcher loops; each loop creates one `ResearchStepAttempt` lease and executes exactly that newly claimed Attempt with its step-kind handler; prove production-shaped two-loop overlap; keep separate from A2a
 - [ ] R2 Prove two-or-more Worker contention, cap=1/N, cap-full Run skipping/fairness/no-starvation, equal-time Step ordering, lease expiry/late completion, cancel/provider races, join/conflict/recovery on real PostgreSQL
@@ -52,8 +53,9 @@ G0-G3 and all GitHub repository settings remain unauthorized.
 - [ ] A5 Prove candidate Worker import/compile/start/ingest/Research/recovery/version-mismatch without API source/editable dependency/PYTHONPATH
 - [ ] A6 Replace legacy Worker target only after A5 and pass deploy/restore regression
 
-A1b/A2-foundation was independently accepted on 2026-08-21 (follow-up Critical review ACCEPT; High=0, Medium=0, Low=0); A2a is implementer-complete; independent Critical review is pending; R0/R1/R2/W1 and downstream remain blocked. No schema/API/save/replay/permission changes are authorized. A2a may create the Research persistence package now that the independent A1b review has ACCEPTED; it must preserve the current multi-step `process_one` LangGraph
-behavior and current mixed lock behavior. R0 must complete next and only changes lock
+A1b/A2-foundation was independently accepted on 2026-08-21 (follow-up Critical review ACCEPT; High=0, Medium=0, Low=0). The initial A2a snapshot was rejected; the repair is implementer-complete but not accepted. R0/R1/R2/W1 and downstream remain blocked. No schema/API/save/replay/permission changes are authorized. A2a preserves the current multi-step `process_one` LangGraph
+behavior and current mixed lock behavior. After a new A2a Critical `ACCEPT`, R0 is the
+next implementation slice and only changes lock
 acquisition order; R1 is the later slice that removes LangGraph runtime step execution and
 introduces one-claimed-attempt dispatch. A5 cannot be claimed until A3/A4 cover all nine
 modalities and Research runtime, composition, and recovery gates pass.

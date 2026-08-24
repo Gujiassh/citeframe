@@ -5,7 +5,7 @@
 The owner-authorized architecture freeze and design re-audit are complete: the design audit
 accepted with `High=0`, `Medium=0`, `Low=0`. A1 implementation was independently accepted
 on `2026-08-20`. A1b/A2-foundation was independently accepted on `2026-08-21` by the
-follow-up Critical review (`High=0`, `Medium=0`, `Low=0`); A2a is implementer-complete; independent Critical review is pending; R0/R1/R2/W1 and downstream remain blocked. Product
+follow-up Critical review (`High=0`, `Medium=0`, `Low=0`); A2a initial snapshot `20d411e` received independent Critical `REWORK` (`High=1`, `Medium=5`, `Low=1`). The bounded rework on `work/research-boundary-runtime-20260824` is implementer-complete but remains uncommitted and unpushed; a new independent Critical re-audit against an immutable repair snapshot is pending. No A2a `ACCEPT` is claimed. R0/R1/R2/W1 and downstream remain blocked. Product
 depth follows a capability/quality matrix rather than preceding it.
 
 ```text
@@ -18,7 +18,7 @@ Wave 0: A0/R/W target freeze + design re-audit `ACCEPT` (`High=0`, `Medium=0`, `
 
 Wave numbers express dependencies, not authorization. A1 was independently accepted
 on `2026-08-20`; A1b/A2-foundation was independently accepted on `2026-08-21` by the
-follow-up Critical review (`High=0`, `Medium=0`, `Low=0`). A2a is implementer-complete; independent Critical review is pending; R0/R1/R2/W1 and downstream slices remain unstarted and blocked. No schema/API/save/
+follow-up Critical review (`High=0`, `Medium=0`, `Low=0`). A2a initial snapshot `20d411e` received independent Critical `REWORK` (`High=1`, `Medium=5`, `Low=1`). The bounded rework on `work/research-boundary-runtime-20260824` is implementer-complete but remains uncommitted and unpushed; a new independent Critical re-audit against an immutable repair snapshot is pending. No A2a `ACCEPT` is claimed. R0/R1/R2/W1 and downstream remain blocked. No schema/API/save/
 replay/permission changes are authorized. G/M/P and GitHub settings remain separate
 unauthorized lanes.
 
@@ -48,8 +48,7 @@ Worker orchestration, Worker-side Research UoW commit process, pure contracts, a
 shared `citeframe_research_persistence` behavior implementation over neutral mappings. The
 design re-audit is accepted (`High=0`, `Medium=0`, `Low=0`). A1 implementation was
 independently accepted on `2026-08-20`; A1b/A2-foundation was independently accepted on
-`2026-08-21` by the follow-up Critical review (`High=0`, `Medium=0`, `Low=0`). A2a is the
-only next implementation step; R0/R1/R2/W1 and downstream implementation remains blocked; no
+`2026-08-21` by the follow-up Critical review (`High=0`, `Medium=0`, `Low=0`). The initial A2a snapshot was rejected; its bounded repair is implementer-complete, uncommitted/unpushed, and pending a new independent Critical re-audit. R0/R1/R2/W1 and downstream implementation remains blocked; no
 schema/API/save/replay/permission changes are authorized.
 
 | Slice | Scope | Estimate | Exit gate |
@@ -66,6 +65,8 @@ schema/API/save/replay/permission changes are authorized.
 | A5 | Candidate Worker build without API source/editable dependency/PYTHONPATH | 2-3 days | import/compile/start/ingest/Research/recovery/version-mismatch smoke |
 | A6 | Replace legacy Worker target only after A5 | 1 day | Deploy/restore regression passes; old dependency removed last |
 | W1 | Independent Research SSE single-flight, sequence gate, event-directed artifact cache, replay fallback | 2-4 days | Burst/stale/reconnect/lost-notify/gap/terminal/hash evidence; no API/save contract change |
+
+Current A2a delivery ledger: PR #20 is merged at `origin/main@9f40241`; semantic baseline `d1b5945`; initial snapshot `20d411e`; initial review `REWORK (High=1, Medium=5, Low=1)` recorded by local commit `5a6ee38`; repair branch `work/research-boundary-runtime-20260824` is dirty, uncommitted, and unpushed. Core evidence is `71` exact-audit API tests, `122` API Research tests, `58` Worker Research tests, and an executable differential with `equal=true`, fingerprint `1e3c23856db39281ab4d4ba913ff9d1f8f40ee494856edd2f9377560e2406287`, and `coverage=7`. Deploy tests are API `6` + Worker `2`; lock/export/YAML gates pass. Docker clean-image is blocked by Docker Hub timeout and is required before acceptance.
 
 Required semantic oracle for A2a/R0/R1/R2/A3-A6/W1:
 

@@ -2,7 +2,7 @@
 
 Date: 2026-08-19
 
-Status: **Design re-audit ACCEPT (High=0, Medium=0, Low=0); A1 independently accepted on 2026-08-20; A1b/A2-foundation independently accepted on 2026-08-21 (follow-up Critical review ACCEPT; High=0, Medium=0, Low=0); A2a is implementer-complete; independent Critical review is pending; R0/R1/R2/W1 and downstream remain blocked**
+Status: **Design re-audit and A1/A1b are accepted; A2a initial snapshot `20d411e` received independent Critical `REWORK` (`High=1`, `Medium=5`, `Low=1`). The bounded rework on `work/research-boundary-runtime-20260824` is implementer-complete but remains uncommitted and unpushed; a new independent Critical re-audit against an immutable repair snapshot is pending. No A2a `ACCEPT` is claimed. R0/R1/R2/W1 and downstream remain blocked**
 
 Product stage: `internal_preview`
 
@@ -14,7 +14,7 @@ accepted with `High=0`, `Medium=0`, `Low=0`. A1 was independently accepted on `2
 accepted on `2026-08-21` by the follow-up Critical review (`High=0`, `Medium=0`, `Low=0`).
 Implementation evidence is recorded in `reviews/a1b-persistence-implementation-2026-08-20.md`;
 the reviewer-owned result is `reviews/a1b-persistence-critical-audit-2026-08-20.md`.
-A2a is implementer-complete; independent Critical review is pending. R0, R1, R2, W1, and downstream slices remain
+A2a initial snapshot `20d411e` received independent Critical `REWORK` (`High=1`, `Medium=5`, `Low=1`). The bounded rework on `work/research-boundary-runtime-20260824` is implementer-complete but remains uncommitted and unpushed; a new independent Critical re-audit against an immutable repair snapshot is pending. No A2a `ACCEPT` is claimed. R0, R1, R2, W1, and downstream slices remain
 conditionally authorized, unstarted, and blocked. No schema/API/save/replay/permission changes are authorized.
 G/M/P and GitHub repository settings remain unauthorized.
 
@@ -24,7 +24,7 @@ lanes. A1 was independently accepted on `2026-08-20`; its evidence is recorded i
 accepted on `2026-08-21` by the follow-up Critical review (`High=0`, `Medium=0`, `Low=0`).
 Implementation evidence is recorded in `reviews/a1b-persistence-implementation-2026-08-20.md`;
 the reviewer-owned result is `reviews/a1b-persistence-critical-audit-2026-08-20.md`.
-A2a is implementer-complete; independent Critical review is pending. R0, R1, R2, W1, and downstream slices remain
+A2a initial snapshot `20d411e` received independent Critical `REWORK` (`High=1`, `Medium=5`, `Low=1`). The bounded rework on `work/research-boundary-runtime-20260824` is implementer-complete but remains uncommitted and unpushed; a new independent Critical re-audit against an immutable repair snapshot is pending. No A2a `ACCEPT` is claimed. R0, R1, R2, W1, and downstream slices remain
 conditionally authorized, unstarted, and blocked. No schema/API/save/replay/permission changes are
 authorized, and G/M/P, GitHub settings, paid evaluation, and user study remain outside
 this status.
@@ -45,13 +45,15 @@ this status.
 | [`tasks.md`](tasks.md) | Slice state; authorization and implementation status are kept separate |
 | [`research-boundary-runtime-design.md`](research-boundary-runtime-design.md) | Implementation-ready Research boundary, dispatcher, locking, admission, SSE, and oracle design |
 | [`reviews/`](reviews/) | Independent plan/re-audit evidence |
-| [`reviews/a2a-persistence-implementation-2026-08-21.md`](reviews/a2a-persistence-implementation-2026-08-21.md) | A2a implementer evidence; independent Critical review pending |
+| [`reviews/a2a-persistence-implementation-2026-08-21.md`](reviews/a2a-persistence-implementation-2026-08-21.md) | Historical initial A2a snapshot evidence; superseded after Critical REWORK |
+| [`reviews/a2a-persistence-critical-audit-2026-08-24.md`](reviews/a2a-persistence-critical-audit-2026-08-24.md) | Initial A2a Critical REWORK (`High=1`, `Medium=5`, `Low=1`) |
+| [`reviews/a2a-persistence-rework-implementation-2026-08-24.md`](reviews/a2a-persistence-rework-implementation-2026-08-24.md) | Current bounded repair ledger; implementer-complete, uncommitted/unpushed, re-audit pending |
 
 ## Recommended Order
 
 1. Record the owner-authorized A0/R/W direction and the accepted design re-audit (`High=0`, `Medium=0`, `Low=0`).
 2. Preserve the final independent A1b follow-up Critical review ACCEPT (`High=0`, `Medium=0`, `Low=0`) and its clean-image evidence in the linked artifacts.
-3. A2a Research persistence extraction is implementer-complete; finish its independent Critical review before implementing R0 lock normalization, then keep R1 one-claimed-attempt dispatch in a separate PR.
+3. Form an immutable A2a repair snapshot, obtain the missing Docker clean-image runtime evidence, and run a new independent Critical re-audit. Do not claim acceptance or start R0 before that audit returns `ACCEPT`.
 4. Prove R1/R2 with real PostgreSQL and two or more Workers after R0; implement W1 as an independent SSE slice.
 5. Migrate all nine ingestion modalities in A3/A4 before claiming an API-source-free Worker candidate in A5.
 6. Keep G/M/P and GitHub settings behind their own authorization gates.

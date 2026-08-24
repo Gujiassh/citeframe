@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from functools import wraps
+
 import hashlib
 import secrets
 from datetime import UTC, datetime, timedelta
@@ -184,13 +186,15 @@ def load_approved_execution(db: Session, run_id: str) -> dict[str, object]:
 
 from citeframe_research_persistence.lease import (
     _active_attempt_chain as _neutral_active_attempt_chain,
+    _lease_step,
     _ledger_and_limits,
+    _queue_ready_dependents,
     _locked_attempt as _neutral_locked_attempt,
     _locked_attempt_chain as _neutral_locked_attempt_chain,
-    claim_next_research_step,
-    claim_specific_research_step,
-    complete_research_step,
-    heartbeat_research_step,
+    claim_next_research_step as _neutral_claim_next_research_step,
+    claim_specific_research_step as _neutral_claim_specific_research_step,
+    complete_research_step as _neutral_complete_research_step,
+    heartbeat_research_step as _neutral_heartbeat_research_step,
 )
 
 
@@ -198,7 +202,7 @@ def _locked_attempt_chain(db: Session, attempt_id: str):
     return _neutral_locked_attempt_chain(db, attempt_id)
 
 
-def _locked_attempt(*, db: Session, attempt_id: str, lease_token: str, now: datetime):
+def _locked_attempt(db: Session, *, attempt_id: str, lease_token: str, now: datetime):
     return _neutral_locked_attempt(
         db,
         attempt_id=attempt_id,
@@ -215,3 +219,33 @@ def _active_attempt_chain(db: Session, attempt_id: str, *, now: datetime):
         now=now,
         locked_chain=_locked_attempt_chain,
     )
+
+
+def _commit_command(db: Session, command, /, **kwargs):
+    try:
+        result = command(db, **kwargs)
+        db.commit()
+        return result
+    except Exception:
+        db.rollback()
+        raise
+
+
+@wraps(_neutral_claim_next_research_step)
+def claim_next_research_step(db: Session, **kwargs):
+    return _commit_command(db, _neutral_claim_next_research_step, **kwargs)
+
+
+@wraps(_neutral_claim_specific_research_step)
+def claim_specific_research_step(db: Session, **kwargs):
+    return _commit_command(db, _neutral_claim_specific_research_step, **kwargs)
+
+
+@wraps(_neutral_heartbeat_research_step)
+def heartbeat_research_step(db: Session, **kwargs):
+    return _commit_command(db, _neutral_heartbeat_research_step, **kwargs)
+
+
+@wraps(_neutral_complete_research_step)
+def complete_research_step(db: Session, **kwargs):
+    return _commit_command(db, _neutral_complete_research_step, **kwargs)

@@ -5,6 +5,8 @@
 审查分支：`work/docs-stale-honesty-20260817`
 审查范围：`apps/api`、`apps/worker`、Python 镜像和部署编排。
 
+> 2026-08-24 current-state override: PR #20 is merged at `origin/main@9f40241`. The initial A2a snapshot `20d411e` failed Critical review (`High=1`, `Medium=5`, `Low=1`). Bounded repair on `work/research-boundary-runtime-20260824` is implementer-complete but uncommitted/unpushed and awaits a new independent Critical re-audit; no A2a `ACCEPT` is claimed. R0/R1/R2/W1 remain blocked.
+
 这份记录只处理两个问题：API/Worker 的实际代码边界，以及
 `evidence.py` / `assets.py` 等中心文件的下一步拆分方向。它不是一次重写授权，
 也不改变当前 API、数据库、Evidence locator 或保存语义。
@@ -16,12 +18,10 @@
 当前是 **“部署分离、代码/事务共享的模块化系统”**，不是已经成立的独立服务边界：
 
 - Compose/镜像上 API 与 Worker 是两个进程，但 Worker 构建与运行仍依赖 API 源码包。
-- SQL model、service 实现、Alembic migration 的**定义**在 API package
-  （`ai_pdf_api`）中。
-- Research Worker 的 `_ApiPort` **当前会创建 Session，并在 write 路径上
-  `commit` / `rollback` / `close`**；因此运行时事务生命周期并不等于“已由 API
-  进程独占”。把“事务 owner = API”写成当前事实是错误的。
-  证据：[`research_runtime_core.py:192-217`](../../apps/worker/src/ai_pdf_worker/research_runtime_core.py#L192)。
+- Repair worktree 中 SQLAlchemy mappings/唯一 metadata 由 neutral
+  `citeframe_persistence` 定义，`ai_pdf_api.models` 保留 compatibility surface；
+  Alembic execution/schema governance 仍属于 API。
+- 初始审查事实是 Research Worker `_ApiPort` 创建 Session 并执行 write-path `commit` / `rollback` / `close`。当前未接受的 A2a repair worktree 已把默认 DB-only Research composition 切到 neutral `ResearchUnitOfWork` / `ResearchRepository`; 这仍不等于 API 进程独占事务，也不得在新 Critical `ACCEPT` 前描述为已交付。
 - Ingestion 路径由 API `process_ingestion_job` 编排并提交 job 状态，同时把同一
   SQLAlchemy `Session` 与 ORM `Asset` 传入 Worker adapter；模态解析与 ORM 写入仍
   混在同一会话里。
@@ -58,15 +58,13 @@
   [`image_ingestion.py:8-25`](../../apps/worker/src/ai_pdf_worker/image_ingestion.py#L8)、
   [`audio_ingestion.py:15-49`](../../apps/worker/src/ai_pdf_worker/audio_ingestion.py#L15)。
 
-### 1.4 Research 端口是“部分收口”，不是独立包边界
+### 1.4 Research 端口：初始事实与 A2a repair current state
 
-- Research runtime 已定义 `ResearchWorkerService`、`SessionFactory` 和 `_ApiPort`；
-  `SqlResearchLedgerAdapter` 只接受 service 返回的 payload，不接受 ORM 对象。这是
-  当前最清晰的 **payload 边界**，但 **不是** 已完成的事务/transport 边界。
-  证据：[`research_runtime_core.py:172-217`](../../apps/worker/src/ai_pdf_worker/research_runtime_core.py#L172)。
-- `_ApiPort._db()` 用 Worker 持有的 `SessionFactory` 开会话；`write=True` 时由
-  Worker 侧 port 提交或回滚。API package 拥有 SQL/service/migration **定义**，但
-  Research 写路径的 **运行时 commit owner 当前是 Worker `_ApiPort`**。
+- Initial reviewed state defined `ResearchWorkerService`, `SessionFactory`, `_ApiPort`,
+  and payload-only `SqlResearchLedgerAdapter`. The repair adds the installable neutral
+  Research persistence boundary and default Worker UoW composition, but that boundary is
+  not accepted or shipped until the new Critical re-audit.
+- 初始快照由 `_ApiPort._db()` 管理 Session/commit。返修 worktree 的默认 DB-only Research 写路径改由 Worker-side neutral persistence service/UoW 管理 Session/commit；API 保留 HTTP/auth/Alembic/schema governance 与非 DB adapter composition。此状态仍等待独立复审。
 - Research runtime 仍直接导入 API observability、provider、context policy、
   Agent I/O registry；Worker 启动时通过 `build_default_research_service()` lazy-load
   API `research_worker` 模块。lazy import 只改善测试隔离，不改变包耦合。
@@ -115,9 +113,10 @@
 
 1. Worker 不能独立升级 API 的模型、migration、provider 或 settings；API 内部重命名
    可能在 Worker 构建或运行时才暴露。
-2. Research 已有 port/adapter 意识，但 port 定义、DTO、provider policy 和 API
-   service 实现仍分散在两个 app；边界是约定，不是可安装/可检查的包合同。
-3. Research `_ApiPort` 与 ingestion adapter 都让 Worker 触及 Session/事务生命周期；
+2. Initial snapshot 的 port、DTO 与 transitions 仍分散；repair 已建立可安装的
+   DB-only neutral boundary，但 provider/retrieval/storage/observability composition 仍在
+   app 层，且整个 repair 仍需新的 Critical re-audit。
+3. Research 的 repair UoW 与 ingestion adapter 都让 Worker 触及 Session/事务生命周期；
    若把“schema owner”与“runtime commit process owner”混称，会掩盖真实故障面。
 4. `evidence.py`（1587）与 `assets.py`（1526）以及超 2000 行的评测/恢复脚本会提高
    冲突与回归成本；拆分必须独立切片。
@@ -135,7 +134,7 @@
 - **本轮不拆分** `evidence.py` / `assets.py` / `test_r803_campaign_v5.py` /
   `v5b_document_restore_acceptance.py`。
 - **Branch protection / GitHub 设置保持 unresolved**；本记录不调用仓库保护接口。
-- `internal_preview` 的 same-DB adapter、Worker orchestration、R0 lock-normalization target 与 Worker-side UoW commit-process target 已获 owner conditional authorization；API-process HTTP/RPC 仍未授权。修订设计的独立 Critical 复审已接受 (`High=0`, `Medium=0`, `Low=0`)；A1 已于 2026-08-20 独立 ACCEPT；A1b/A2-foundation 已于 2026-08-21 独立 ACCEPT（follow-up Critical review：High=0、Medium=0、Low=0），A2a 已由实现者完成；独立 Critical review 待进行；R0/R1/R2/W1 及后续切片保持阻塞；不授权 schema/API/save/replay/permission 变更。
+- `internal_preview` 的 same-DB adapter、Worker orchestration、R0 lock-normalization target 与 Worker-side UoW commit-process target 已获 owner conditional authorization；API-process HTTP/RPC 仍未授权。修订设计的独立 Critical 复审已接受 (`High=0`, `Medium=0`, `Low=0`)；A1 已于 2026-08-20 独立 ACCEPT；A1b/A2-foundation 已于 2026-08-21 独立 ACCEPT（follow-up Critical review：High=0、Medium=0、Low=0），A2a initial snapshot was rejected; bounded repair is implementer-complete but uncommitted/unpushed and awaits a new independent Critical re-audit; R0/R1/R2/W1 及后续切片保持阻塞；不授权 schema/API/save/replay/permission 变更。
 
 ## 4. Proposed Incremental Boundary
 
@@ -143,9 +142,9 @@
 
 | 维度 | 含义 | 当前事实 | 备注 |
 | --- | --- | --- | --- |
-| **Schema / migration owner** | 谁定义表结构、Alembic、ORM model | **API package**（`apps/api`） | 定义归属，不等于运行时 commit |
-| **Mutation logic owner** | 谁定义 Research/ingestion 业务写入函数与锁序 | **API package service 实现** | Worker 调用这些函数，不另起一套 ledger 语义 |
-| **Session / commit process owner** | 哪个**进程**创建 Session 并执行 commit/rollback | Research：**Worker `_ApiPort`**；Ingestion：共享 Session 边界（API orchestrator + Worker adapter 同会话） | 这是运行时事实 |
+| **Schema / migration owner** | 谁治理表结构与执行 Alembic | **API**；neutral `citeframe_persistence` 定义唯一 mappings/metadata | Schema governance 不等于 runtime commit |
+| **Mutation logic owner** | 谁定义 Research/ingestion 业务写入函数与锁序 | Repair worktree: DB-only Research transitions in `citeframe_research_persistence`; API compatibility/composition facades; ingestion remains API service-owned | Pending new A2a Critical re-audit |
+| **Session / commit process owner** | 哪个**进程**创建 Session 并执行 commit/rollback | Repair worktree Research: Worker-side neutral UoW; Ingestion: shared Session boundary | Implementer-complete, not accepted/shipped |
 
 Transport 候选的 commit 含义不得混称：
 
@@ -156,7 +155,7 @@ Transport 候选的 commit 含义不得混称：
 - **Internal HTTP（或其他 RPC）由 API 进程执行写入**：此时 **runtime commit
   process owner 才是 API 进程**。该方向仍未授权。
 
-### 4.1 目标依赖方向（owner 已授权方向；A1 已接受；A1b/A2-foundation 已通过独立复审；A2a 为唯一下一实现步骤）
+### 4.1 目标依赖方向（A2a repair implementer-complete；new Critical re-audit pending）
 
 Owner 已授权 `internal_preview` 使用 same-DB adapter 的目标方向：API 负责
 HTTP/auth、Alembic 执行与 schema governance；Worker 负责 Research orchestration；
@@ -172,7 +171,7 @@ import surface；迁移期间可 re-export 同一 classes。A1b/A2-foundation �
 pyproject/uv.lock path source 与 Docker 安装，Alembic 仍由 API 显式 import
 `citeframe_persistence.models` 并加载唯一 metadata；这项 foundation 是 A2a 显式前置。
 
-这是批准目标，不是当前事实，也不等于生产实现已开始。修订设计的独立 Critical 复审已接受 (`High=0`, `Medium=0`, `Low=0`)；A1 已于 2026-08-20 独立 ACCEPT；A1b/A2-foundation 已于 2026-08-21 独立 ACCEPT（follow-up Critical review：High=0、Medium=0、Low=0）；A2a 已由实现者完成；独立 Critical review 待进行；R0/R1/R2/W1 及后续切片仍保持阻塞，且不授权 schema/API/save/replay/permission 变更。详细的 R1/R2/W1、锁/fencing、per-Run admission、
+这是批准目标；repair worktree 已按该方向实现 DB-only A2a 边界，但尚未独立接受或交付。修订设计的独立 Critical 复审已接受 (`High=0`, `Medium=0`, `Low=0`)；A1 已于 2026-08-20 独立 ACCEPT；A1b/A2-foundation 已于 2026-08-21 独立 ACCEPT（follow-up Critical review：High=0、Medium=0、Low=0）；A2a initial snapshot was rejected; bounded repair is implementer-complete but uncommitted/unpushed and awaits a new independent Critical re-audit; R0/R1/R2/W1 及后续切片仍保持阻塞，且不授权 schema/API/save/replay/permission 变更。详细的 R1/R2/W1、锁/fencing、per-Run admission、
 SSE 与语义 oracle 见
 [`research-boundary-runtime-design.md`](../../specs/v5/post-v5-optimization/research-boundary-runtime-design.md)。
 
@@ -203,10 +202,10 @@ citeframe_persistence only through the approved mapping/Session boundary.
 
 **A0：只冻结事实、DTO/Protocol 语义、已授权 owner + same-DB transport 目标（当前文档切片）**
 
-1. 准确记录当前事实（并同步正式 SSoT，见 §7/§8）：API package 拥有
-   **schema/migration** 与 **mutation logic** 定义；Research Worker `_ApiPort`
-   **当前**创建 Session 并 `commit`/`rollback`；ingestion 在共享 Session/ORM 边界；
-   系统是模块化双进程，不是独立服务边界。
+1. 准确记录当前 repair-worktree 事实（并同步正式 SSoT，见 §7/§8）：API package
+   拥有 HTTP/auth/Alembic/schema governance；neutral package 持有 DB-only Research
+   transitions；Worker-side UoW 管理 Research Session/commit；ingestion 仍在共享
+   Session/ORM 边界；系统是模块化双进程，不是独立服务边界。
 2. 文档冻结 Research port payload / Protocol **字段语义**。
 3. Owner 已授权的 A0 目标为：API 负责 HTTP/auth/Alembic/schema governance；Worker
    负责 Research orchestration；Worker-side UoW 负责 Research runtime commit；
@@ -217,7 +216,7 @@ citeframe_persistence only through the approved mapping/Session boundary.
    API editable dependency、改 schema/Alembic/save。
 5. **不得在 A0 声称事务 process owner 已改为 API；生产实现仅限于待独立复审确认的冻结边界，且尚未开始。**
 
-**A1 -> A1b/A2-foundation -> A2a：唯一 staged package topology（A1 已于 2026-08-20 独立 ACCEPT；A1b 已于 2026-08-21 独立 ACCEPT；A2a 为唯一下一实现步骤）**
+**A1 -> A1b/A2-foundation -> A2a：唯一 staged package topology（A1/A1b 已 ACCEPT；A2a repair 待新 Critical re-audit）**
 
 三包不是同一阶段创建。每个阶段只创建、版本化、声明、复制和 smoke 当前已存在的
 package；禁止提前出现 behavior-free `citeframe-research-persistence` scaffold：
@@ -319,9 +318,10 @@ C 在 A0/A1 完成且 B 的合同方法已验证之后才评估，但 **进入 C
 
 ## 5. Dependency Direction And Ownership（摘要）
 
-详见 §4.0。一句话：**API package = schema/migration + mutation logic 定义；Research
-runtime commit process 当前 = Worker `_ApiPort`；ingestion = 共享 Session/ORM。**
-same-DB adapter 方向已获 owner 授权，但生产实现不在本文件中启动；API-process HTTP/RPC 仍未授权。
+详见 §4.0。一句话：**repair worktree 中 API = HTTP/auth/Alembic/schema governance；
+neutral package = DB-only Research transitions；Research runtime commit process =
+Worker-side UoW；ingestion = 共享 Session/ORM。** 该 repair 等待新 Critical re-audit；
+API-process HTTP/RPC 仍未授权。
 
 明确禁止：在 A0 把目标写成当前事实；用 B pilot 顶替 C 前置门；在 import 归零/候选
 smoke 前删除 legacy 依赖；`contracts -> ORM/API settings`；把 same-DB-in-Worker
@@ -344,8 +344,9 @@ commit 混称为 API-process commit。
 Implementation-ready target details live in
 [`specs/v5/post-v5-optimization/research-boundary-runtime-design.md`](../../specs/v5/post-v5-optimization/research-boundary-runtime-design.md).
 
-- 本 ADR 与下列**正式 SSoT** 同步当前事实（定义归属 vs `_ApiPort` commit vs 共享
-  ingestion session）；A1 implementation status is recorded in the A1 evidence artifact；A1b/A2-foundation follow-up Critical review is ACCEPT，且不声称 A2a 或后续切片已完成：
+- 本 ADR 与下列**正式 SSoT** 同步当前 repair-worktree 事实（schema governance vs
+  neutral Research UoW commit vs shared ingestion session）；A1/A1b acceptance remains
+  historical, while A2a repair is implementer-complete but not accepted:
   - [`docs/ssot/system-architecture.md`](../ssot/system-architecture.md)
   - [`docs/architecture/database-design.md`](./database-design.md)
   - [`specs/v5/multimodal-agent-product/v5b-detailed-spec.md`](../../specs/v5/multimodal-agent-product/v5b-detailed-spec.md)
@@ -353,17 +354,19 @@ Implementation-ready target details live in
   owner 已按 A0 目标记录，API-process HTTP/RPC 仍保持未授权。
 - 行数事实正确：evidence=1587、assets=1526、r803 campaign test=2461、v5b restore
   script=2006。
-- 本轮 docs-only 不创建目标 packages / 候选 build target；不改 production。目标 topology
-  已冻结；A1 已于 2026-08-20 独立 ACCEPT，创建与安装留给 A2a 这一唯一下一实现切片。
+- Historical A0 docs-only slice did not create packages or change production. A1/A1b
+  later received independent `ACCEPT`; A2a repair is now implementer-complete, and the
+  current next step is one immutable snapshot plus a new Critical re-audit.
 
-### A1（2026-08-20 独立 ACCEPT；旧依赖仍在；A1b/A2-foundation 已通过独立复审；A2a 为唯一下一实现步骤）
+### A1（2026-08-20 独立 ACCEPT；A1b/A2-foundation 已通过独立复审；A2a repair 待新 Critical re-audit）
 
 - contracts 纯 DTO/Protocol、legacy identity-preserving re-export、API/Worker local
   path source、contracts-only export/Docker/CI smoke and focused tests are present.
 - No schema/API/save/replay/permission/runtime behavior changed; A1 was independently
   accepted on 2026-08-20. A1b/A2-foundation was independently accepted on 2026-08-21 by the
-  follow-up Critical review (`High=0`, `Medium=0`, `Low=0`); A2a is implementer-complete; independent Critical review is pending
-  step, while R0/R1/R2/W1 and later slices remain blocked.
+  follow-up Critical review (`High=0`, `Medium=0`, `Low=0`). A2a repair is
+  implementer-complete but awaits a new independent Critical re-audit, while
+  R0/R1/R2/W1 and later slices remain blocked.
 
 ### B（pilot 出口，非 C 入口）
 
@@ -387,9 +390,9 @@ Implementation-ready target details live in
 
 A0 目标方向已获 owner 授权，文档同步入口如下：
 
-1. 保持本 ADR 对 `_ApiPort` commit、共享 ingestion session、模块化而非独立服务的准确表述。
-2. 以 [`specs/v5/post-v5-optimization/research-boundary-runtime-design.md`](../../specs/v5/post-v5-optimization/research-boundary-runtime-design.md) 作为 R0/R1/R2/W1 implementation-ready 细节入口。
-3. Implement A2a as the only next implementation slice, then continue with R0 -> R1/R2. A2a、R0 与 R1 必须分开实现和复审。
+1. Form one immutable A2a repair snapshot and reconcile code, tests, CI, docs, and workbench evidence.
+2. Retry API/Worker Docker builds and final-image runtime smokes after Docker Hub recovers; textual checks are insufficient.
+3. Run a new independent Critical re-audit against the exact repair SHA. Only `ACCEPT` may unblock a separate R0 slice, followed by separate R1/R2 work; W1 remains independent.
 4. 大文件拆分、G/M/P、provider spend、M404 与 branch protection 保持后置 / unauthorized。
 
 不要把 A2a、R1、B pilot、C 独立镜像、大文件拆分与 A0 文档冻结混成一个大 PR。
@@ -399,8 +402,8 @@ A0 目标方向已获 owner 授权，文档同步入口如下：
 - `apps/worker/pyproject.toml:6-18`：editable API dependency。
 - `infra/docker/Dockerfile.python:28-46`：Worker image copies API source / API
   `PYTHONPATH`。
-- `apps/worker/src/ai_pdf_worker/research_runtime_core.py:192-217`：`_ApiPort` creates
-  Session and commits/rollbacks on write。
+- `apps/worker/src/ai_pdf_worker/research_persistence_service.py`：repair default
+  composition over neutral Research UoW/repository/commands；pending new Critical re-audit。
 - `apps/api/src/ai_pdf_api/services/ingestion.py:141-224`：shared Session/ORM into
   Worker adapter。
 - Line counts（本机 `wc -l`）：`evidence.py` 1587；`assets.py` 1526；
