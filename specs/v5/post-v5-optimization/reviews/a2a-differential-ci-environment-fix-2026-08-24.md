@@ -1,9 +1,20 @@
 # A2a Differential CI Environment Fix Ledger
 
 Date: 2026-08-24
-Status: **CI environment REWORK closed and locally verified; no commit or push**
+Status: **implemented and pushed; independent follow-up ACCEPT; PR #21 CI rerun pending**
 Pull request context: `Gujiassh/citeframe#21`
 Behavioral baseline: `d1b5945e977445e4db6bf56ef54cf61607ead2e2`
+
+## Delivery Status
+
+- Implementation commit: `4b24181a3b2a5fbca3cbf6ee0cf0a3ac0d72ca96` (`4b24181`).
+- Push target: `origin/work/research-boundary-runtime-20260824`.
+- Pull request: `Gujiassh/citeframe#21`; CI rerun is pending. This ledger does not claim
+  CI pass or merge.
+- Independent follow-up review: **ACCEPT** with no remaining High or Medium finding for
+  this bounded CI-environment repair.
+- The exact non-recursive ledger-closure SHA is owned by the external/workbench delivery
+  record and is intentionally not self-recorded in this file.
 
 ## CI Symptom
 
@@ -199,5 +210,3 @@ candidate neutral command ownership, and real `ResearchUnitOfWork` execution evi
 This repair changes no production source, public API, schema, save/replay/permission
 semantics, manifest, lock, frozen export, or Docker dependency. LangGraph remains a Worker
 dependency only. The API environment remains intentionally free of LangGraph.
-
-No commit or push was performed in this repair lane.
