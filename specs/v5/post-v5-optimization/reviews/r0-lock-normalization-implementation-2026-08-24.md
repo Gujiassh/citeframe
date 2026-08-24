@@ -1,14 +1,15 @@
 # R0 Research Lock Normalization Implementation
 
 Date: 2026-08-24
-Status: **IMPLEMENTER COMPLETE; independent Critical review REWORK (High=0, Medium=1, Low=0); second documentation-only ledger closure pending**
+Status: **IMPLEMENTATION AND LEDGER CLOSURE COMMITTED LOCALLY; independent Critical re-audit pending**
 
 This record does not claim `ACCEPT`. The independent Critical review is
 [`REWORK (High=0, Medium=1, Low=0)`](r0-lock-normalization-critical-review-2026-08-24.md)
-with no production finding and one durable-ledger/hygiene finding. The first
-documentation-only closure is already a completed local commit; review remains `REWORK`
-pending this second current-state ledger closure and its independent re-audit. R1, R2, W1,
-per-Run admission, and downstream work remain blocked.
+with no production finding and one durable-ledger/hygiene finding. The latest docs-only
+ledger closure is committed locally atop `9500bd4`; production `39766c3` is unchanged. The
+exact latest documentation SHA is maintained externally by the reviewer and dev-workbench.
+Independent Critical re-audit is pending. R1, R2, W1, per-Run admission, and downstream
+work remain blocked.
 
 ## Delivery Ledger
 
@@ -21,12 +22,9 @@ per-Run admission, and downstream work remain blocked.
 - Production commit: `39766c374bd584b0cb834ef103de025d233c87c1`
 - Production commit state: local commit on `work/research-boundary-runtime-20260824`; the
   branch has no upstream, `origin` has no branch with this name, and the commit is not pushed
-- First documentation-only closure: completed as a local commit on top of production
-  `39766c3`; it is not pushed and does not rewrite the production commit
-- Documentation identity: the exact documentation commit SHA is recorded by the independent
-  reviewer and dev-workbench rather than embedded self-referentially in this file
-- Second documentation-only closure: current-state ledger correction pending its own local
-  commit and independent re-audit; production remains unchanged
+- Latest docs-only ledger closure: committed locally atop `9500bd4`; it is not pushed,
+  production `39766c3` remains unchanged, and the exact latest documentation SHA is
+  maintained externally by the independent reviewer and dev-workbench
 - Integration state: no merge, cherry-pick, or downstream branch update performed
 - Downstream targets: R1, R2, W1, and per-Run admission remain blocked behind the R0
   Critical gate; no downstream sync is authorized from this production candidate
@@ -124,9 +122,9 @@ evidence differs. Production-candidate semantic fingerprint:
 - semantic SHA-256 `f5057a39be0b2b4c823e31e2022358702df21273433198391bd572cdc6fd8d69`
 
 The dirty repair snapshot fingerprint recorded before the production commit is not the
-immutable commit identity. The canonical production identity is `39766c3`; the first
-documentation-only closure is a completed local commit whose exact SHA is tracked by the
-reviewer and dev-workbench. This second ledger closure remains separately reviewable.
+immutable commit identity. The canonical production identity is `39766c3`; the latest
+docs-only ledger closure is committed locally atop `9500bd4`, with its exact SHA maintained
+externally by the reviewer and dev-workbench.
 
 ## Real PostgreSQL Critical Evidence
 
@@ -177,8 +175,7 @@ the exact same immutable digest.
 | Locator refresh/fail-closed | pass | real concurrent Attempt reparent race |
 | Schema/dependencies | pass | no model/migration/lockfile/dependency change; API/Worker `uv lock --check` pass |
 | Production commit/push | pass | local production `39766c3`; no upstream; no remote branch; not pushed |
-| First documentation-only closure | pass | completed local commit; exact SHA recorded by reviewer/workbench; not pushed |
-| Second documentation-only closure | pending | current-state ledger correction requires local commit/re-audit |
+| Latest docs-only ledger closure | pass | committed locally atop `9500bd4`; exact SHA recorded by reviewer/workbench; not pushed |
 | Independent Critical review | blocked | `REWORK (High=0, Medium=1, Low=0)`; no production finding; no `ACCEPT` claimed |
 
 ## Residual Risks And Next Gate
@@ -192,10 +189,9 @@ the exact same immutable digest.
   Keep it stable for R0 review and split scenario fixtures, observation, and reporting before
   materially expanding it for R2 rather than growing the file further.
 - Production commit `39766c3` historically contains the trailing whitespace that caused
-  `git diff --check 7ee97471..39766c3` to fail. The completed first documentation-only commit
-  removes it and its start-to-documentation range passes hygiene. Do not describe the
+  `git diff --check 7ee97471..39766c3` to fail. The committed docs-only ledger closure
+  removes it and the start-to-documentation range passes hygiene. Do not describe the
   original immutable production range as having passed hygiene.
 - R1, R2, W1, per-Run admission, deadlock retry, schema/API changes, and downstream
-  integration remain blocked. The next action is the second documentation-only ledger
-  closure and independent re-audit; this implementer record must not be treated as an
-  acceptance verdict.
+  integration remain blocked. The next action is independent Critical re-audit; this
+  implementer record must not be treated as an acceptance verdict.
