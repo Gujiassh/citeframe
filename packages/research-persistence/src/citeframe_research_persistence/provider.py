@@ -160,25 +160,37 @@ def _provider_call_chain(
     db: Session,
     provider_call_id: str,
 ) -> tuple[ResearchProviderCall, ResearchBudgetLedger, ResearchStepAttempt, ResearchStep, ResearchRun]:
-    # Read attempt_id without locking the call row first so lock order stays:
-    # ResearchStepAttempt -> ResearchStep -> ResearchRun -> call -> ResearchBudgetLedger.
-    unlocked_call = db.scalar(
-        select(ResearchProviderCall).where(ResearchProviderCall.id == provider_call_id)
-    )
-    if unlocked_call is None:
+    # The first read is a location hint only. Every mutable row is refreshed after
+    # acquiring Run -> Step -> Attempt -> Call -> Ledger.
+    with db.no_autoflush:
+        locator = db.execute(
+            select(
+                ResearchProviderCall.run_id,
+                ResearchProviderCall.step_id,
+                ResearchProviderCall.attempt_id,
+                ResearchProviderCall.budget_ledger_id,
+            ).where(ResearchProviderCall.id == provider_call_id)
+        ).one_or_none()
+    if locator is None:
         raise ResearchError("research_state_conflict", "Provider call chain is invalid.", 409)
-    run, step, attempt = _locked_attempt_chain(db, unlocked_call.attempt_id)
+    run, step, attempt = _locked_attempt_chain(db, locator.attempt_id)
     call = db.scalar(
         select(ResearchProviderCall)
-        .where(ResearchProviderCall.id == provider_call_id)
-        .with_for_update()
+        .where(
+            ResearchProviderCall.id == provider_call_id,
+            ResearchProviderCall.run_id == locator.run_id,
+            ResearchProviderCall.step_id == locator.step_id,
+            ResearchProviderCall.attempt_id == locator.attempt_id,
+            ResearchProviderCall.budget_ledger_id == locator.budget_ledger_id,
+        )
+        .with_for_update(of=ResearchProviderCall)
         .execution_options(populate_existing=True)
     )
     ledger = (
         db.scalar(
             select(ResearchBudgetLedger)
             .where(ResearchBudgetLedger.id == call.budget_ledger_id)
-            .with_for_update()
+            .with_for_update(of=ResearchBudgetLedger)
             .execution_options(populate_existing=True)
         )
         if call
@@ -190,8 +202,13 @@ def _provider_call_chain(
         or attempt is None
         or step is None
         or run is None
+        or locator.run_id != run.id
+        or locator.step_id != step.id
+        or locator.attempt_id != attempt.id
+        or locator.budget_ledger_id != ledger.id
         or attempt.step_id != step.id
         or call.attempt_id != attempt.id
+        or call.step_id != step.id
         or step.run_id != run.id
         or call.run_id != run.id
         or call.workspace_id != run.workspace_id

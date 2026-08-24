@@ -12,14 +12,37 @@ def finalize_cancel_if_idle(db: Session, run: ResearchRun, *, now: datetime) -> 
     active_attempts = db.scalar(select(func.count()).select_from(ResearchStepAttempt).join(ResearchStep, ResearchStep.id == ResearchStepAttempt.step_id).where(ResearchStep.run_id == run.id, ResearchStepAttempt.status == "running")) or 0
     if active_attempts:
         return False
-    steps = list(db.scalars(select(ResearchStep).where(ResearchStep.run_id == run.id, ResearchStep.workspace_id == run.workspace_id)).all())
+    steps = list(
+        db.scalars(
+            select(ResearchStep)
+            .where(
+                ResearchStep.run_id == run.id,
+                ResearchStep.workspace_id == run.workspace_id,
+            )
+            .order_by(ResearchStep.id)
+            .with_for_update(of=ResearchStep)
+            .execution_options(populate_existing=True)
+        ).all()
+    )
     for step in steps:
         if step.status != "succeeded" and step.status not in {"cancelled", "skipped"}:
             step.status = "cancelled"
             step.state_version += 1
             step.finished_at = now
             step.updated_at = now
-    decisions = list(db.scalars(select(HumanDecision).where(HumanDecision.run_id == run.id, HumanDecision.workspace_id == run.workspace_id, HumanDecision.status == "pending")).all())
+    decisions = list(
+        db.scalars(
+            select(HumanDecision)
+            .where(
+                HumanDecision.run_id == run.id,
+                HumanDecision.workspace_id == run.workspace_id,
+                HumanDecision.status == "pending",
+            )
+            .order_by(HumanDecision.id)
+            .with_for_update(of=HumanDecision)
+            .execution_options(populate_existing=True)
+        ).all()
+    )
     for decision in decisions:
         decision.status = "cancelled"
         decision.state_version += 1

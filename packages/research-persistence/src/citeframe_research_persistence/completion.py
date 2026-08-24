@@ -226,7 +226,7 @@ def complete_research_verification(
             raise ResearchError("research_state_conflict", "Research verification result is invalid.", 409)
         claims = list(
             session.scalars(
-                select(ResearchClaim).where(
+                select(ResearchClaim).execution_options(populate_existing=True).where(
                     ResearchClaim.id.in_([item.claim_id for item in results]),
                     ResearchClaim.run_id == run.id,
                     ResearchClaim.workspace_id == run.workspace_id,
@@ -236,7 +236,7 @@ def complete_research_verification(
         by_id = {claim.id: claim for claim in claims}
         pending_claims = list(
             session.scalars(
-                select(ResearchClaim).where(
+                select(ResearchClaim).execution_options(populate_existing=True).where(
                     ResearchClaim.run_id == run.id,
                     ResearchClaim.workspace_id == run.workspace_id,
                     ResearchClaim.verification_status == "pending",
@@ -258,7 +258,7 @@ def complete_research_verification(
             claim.verified_at = completed_at
             relations = list(
                 session.scalars(
-                    select(ResearchClaimEvidence).where(ResearchClaimEvidence.claim_id == claim.id)
+                    select(ResearchClaimEvidence).execution_options(populate_existing=True).where(ResearchClaimEvidence.claim_id == claim.id)
                 ).all()
             )
             for relation in relations:
@@ -293,7 +293,7 @@ def complete_research_critique(
             raise ResearchError("research_state_conflict", "Research critique result is invalid.", 409)
         claims = list(
             session.scalars(
-                select(ResearchClaim).where(
+                select(ResearchClaim).execution_options(populate_existing=True).where(
                     ResearchClaim.id.in_(conflict_ids),
                     ResearchClaim.run_id == run.id,
                     ResearchClaim.workspace_id == run.workspace_id,
@@ -346,7 +346,7 @@ def complete_research_synthesis(
             raise ResearchError("research_state_conflict", "Research synthesis selection is invalid.", 409)
         claims = list(
             session.scalars(
-                select(ResearchClaim).where(
+                select(ResearchClaim).execution_options(populate_existing=True).where(
                     ResearchClaim.id.in_(selected),
                     ResearchClaim.run_id == run.id,
                     ResearchClaim.workspace_id == run.workspace_id,

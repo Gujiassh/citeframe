@@ -72,23 +72,36 @@ def _tool_call_chain(
     db: Session,
     tool_call_id: str,
 ) -> tuple[ResearchToolCall, ResearchBudgetLedger, ResearchStepAttempt, ResearchStep, ResearchRun]:
-    # Read attempt_id without locking the call row first so lock order stays:
-    # ResearchStepAttempt -> ResearchStep -> ResearchRun -> call -> ResearchBudgetLedger.
-    unlocked_call = db.scalar(select(ResearchToolCall).where(ResearchToolCall.id == tool_call_id))
-    if unlocked_call is None:
+    # Locate without locks, then refresh the complete aggregate chain in R0 order.
+    with db.no_autoflush:
+        locator = db.execute(
+            select(
+                ResearchToolCall.run_id,
+                ResearchToolCall.step_id,
+                ResearchToolCall.attempt_id,
+                ResearchToolCall.execution_snapshot_id,
+            ).where(ResearchToolCall.id == tool_call_id)
+        ).one_or_none()
+    if locator is None:
         raise ResearchError("research_state_conflict", "Research tool call chain is invalid.", 409)
-    run, step, attempt = _locked_attempt_chain(db, unlocked_call.attempt_id)
+    run, step, attempt = _locked_attempt_chain(db, locator.attempt_id)
     call = db.scalar(
         select(ResearchToolCall)
-        .where(ResearchToolCall.id == tool_call_id)
-        .with_for_update()
+        .where(
+            ResearchToolCall.id == tool_call_id,
+            ResearchToolCall.run_id == locator.run_id,
+            ResearchToolCall.step_id == locator.step_id,
+            ResearchToolCall.attempt_id == locator.attempt_id,
+            ResearchToolCall.execution_snapshot_id == locator.execution_snapshot_id,
+        )
+        .with_for_update(of=ResearchToolCall)
         .execution_options(populate_existing=True)
     )
     ledger = (
         db.scalar(
             select(ResearchBudgetLedger)
             .where(ResearchBudgetLedger.execution_snapshot_id == call.execution_snapshot_id)
-            .with_for_update()
+            .with_for_update(of=ResearchBudgetLedger)
             .execution_options(populate_existing=True)
         )
         if call
@@ -102,6 +115,10 @@ def _tool_call_chain(
         or step is None
         or run is None
         or snapshot is None
+        or locator.run_id != run.id
+        or locator.step_id != step.id
+        or locator.attempt_id != attempt.id
+        or locator.execution_snapshot_id != snapshot.id
         or attempt.step_id != step.id
         or call.attempt_id != attempt.id
         or call.step_id != step.id

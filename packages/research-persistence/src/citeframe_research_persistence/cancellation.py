@@ -3,7 +3,6 @@ from __future__ import annotations
 
 from datetime import datetime
 
-from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from citeframe_persistence.models import ResearchRun
@@ -11,6 +10,7 @@ from citeframe_persistence.models import ResearchRun
 from .constants import TERMINAL_RUN_STATUSES
 from .errors import ResearchError
 from .events import append_research_event
+from .locks import lock_run
 from .membership import finalize_cancel_if_idle
 
 
@@ -25,11 +25,7 @@ def cancel_research_run_transition(
     reason_code: str,
     now: datetime,
 ) -> ResearchRun:
-    run = db.scalar(
-        select(ResearchRun)
-        .where(ResearchRun.id == run_id, ResearchRun.workspace_id == workspace_id)
-        .with_for_update()
-    )
+    run = lock_run(db, run_id, workspace_id=workspace_id)
     if run is None:
         raise ResearchError("research_run_not_found", "Research run not found.", 404)
     if actor_user_id != run.created_by_user_id and not (

@@ -425,11 +425,9 @@ def get_research_run(db: Session, workspace_id: str, run_id: str) -> ResearchRun
     return run
 
 def _get_research_run_for_update(db: Session, workspace_id: str, run_id: str) -> ResearchRun:
-    run = db.scalar(
-        select(ResearchRun)
-        .where(ResearchRun.id == run_id, ResearchRun.workspace_id == workspace_id)
-        .with_for_update()
-    )
+    from citeframe_research_persistence.locks import lock_run
+
+    run = lock_run(db, run_id, workspace_id=workspace_id)
     if run is None:
         raise ResearchError("research_run_not_found", "Research run not found.", 404)
     return run

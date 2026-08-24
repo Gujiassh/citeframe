@@ -5,7 +5,7 @@ import hashlib
 import secrets
 from datetime import UTC, datetime, timedelta
 
-from sqlalchemy import select, func
+from sqlalchemy import exists, select, func
 from sqlalchemy.orm import Session
 from citeframe_persistence.models import (
     ResearchBudgetLedger, ResearchExecutionSnapshot, ResearchPlanRevision, ResearchRun,
@@ -13,6 +13,7 @@ from citeframe_persistence.models import (
 )
 from .errors import ResearchError
 from .events import append_research_event
+from .locks import locate_attempt, lock_attempt_chain, lock_attempt_chain_with_steps, lock_run, lock_step
 from .membership import ensure_creator_membership
 from .types import ResearchStepLease, StepCompletionCallback
 
@@ -25,9 +26,8 @@ def _queue_ready_dependents(db: Session, run: ResearchRun, completed_step: Resea
         ).all()
     )
     for dependent_id in dependent_ids:
-        dependent = db.scalar(
-            select(ResearchStep).where(ResearchStep.id == dependent_id).with_for_update()
-        )
+        # Completion pre-locks every dependent Step before its owning Attempt.
+        dependent = db.get(ResearchStep, dependent_id)
         if (
             dependent is None
             or dependent.status != "pending"
@@ -75,22 +75,20 @@ def _queue_ready_dependents(db: Session, run: ResearchRun, completed_step: Resea
         )
 
 
-def _lease_step(
+def _lease_locked_step(
     db: Session,
+    run: ResearchRun,
     step: ResearchStep,
     *,
     worker_instance_id: str,
     lease_seconds: int,
     now: datetime,
 ) -> ResearchStepLease:
-    run = db.scalar(select(ResearchRun).where(ResearchRun.id == step.run_id).with_for_update())
-    if run is None or run.status not in {"planning", "queued", "running"}:
+    if run.status not in {"planning", "queued", "running"}:
         raise ResearchError("research_state_conflict", "Research run cannot lease work.", 409)
     ensure_creator_membership(db, run, now=now)
-    step = db.scalar(select(ResearchStep).where(ResearchStep.id == step.id).with_for_update())
     if (
-        step is None
-        or step.status != "queued"
+        step.status != "queued"
         or step.run_id != run.id
         or step.workspace_id != run.workspace_id
     ):
@@ -180,6 +178,38 @@ def _lease_step(
     )
 
 
+def _lease_step(
+    db: Session,
+    step: ResearchStep,
+    *,
+    worker_instance_id: str,
+    lease_seconds: int,
+    now: datetime,
+) -> ResearchStepLease:
+    # ``step`` is a locator only. Refresh the mutable aggregate Run-first.
+    run = lock_run(db, step.run_id)
+    locked_step = (
+        lock_step(
+            db,
+            step.id,
+            run_id=run.id,
+            workspace_id=run.workspace_id,
+        )
+        if run is not None
+        else None
+    )
+    if run is None or locked_step is None:
+        raise ResearchError("research_state_conflict", "Research step is not queued.", 409)
+    return _lease_locked_step(
+        db,
+        run,
+        locked_step,
+        worker_instance_id=worker_instance_id,
+        lease_seconds=lease_seconds,
+        now=now,
+    )
+
+
 def claim_next_research_step(
     db: Session,
     *,
@@ -188,21 +218,48 @@ def claim_next_research_step(
     now: datetime | None = None,
 ) -> ResearchStepLease | None:
     claimed_at = now or datetime.now(UTC)
-    step = db.scalar(
-        select(ResearchStep)
-        .join(ResearchRun, ResearchRun.id == ResearchStep.run_id)
-        .where(
-            ResearchStep.status == "queued",
-            ResearchRun.status.in_(("planning", "queued", "running")),
-        )
-        .order_by(ResearchStep.queued_at, ResearchStep.created_at, ResearchStep.id)
-        .with_for_update(skip_locked=True)
-        .limit(1)
+    eligible = (
+        ResearchStep.status == "queued",
+        ResearchStep.run_id == ResearchRun.id,
     )
+    step_order = (ResearchStep.queued_at, ResearchStep.created_at, ResearchStep.id)
+    first_queued_at = (
+        select(ResearchStep.queued_at).where(*eligible).order_by(*step_order).limit(1).scalar_subquery()
+    )
+    first_created_at = (
+        select(ResearchStep.created_at).where(*eligible).order_by(*step_order).limit(1).scalar_subquery()
+    )
+    first_step_id = (
+        select(ResearchStep.id).where(*eligible).order_by(*step_order).limit(1).scalar_subquery()
+    )
+    with db.no_autoflush:
+        run = db.scalar(
+            select(ResearchRun)
+            .where(
+                ResearchRun.status.in_(("planning", "queued", "running")),
+                exists(select(ResearchStep.id).where(*eligible)),
+            )
+            .order_by(first_queued_at, first_created_at, first_step_id, ResearchRun.id)
+            .with_for_update(of=ResearchRun, skip_locked=True)
+            .execution_options(populate_existing=True)
+            .limit(1)
+        )
+    if run is None:
+        return None
+    with db.no_autoflush:
+        step = db.scalar(
+            select(ResearchStep)
+            .where(ResearchStep.run_id == run.id, ResearchStep.status == "queued")
+            .order_by(*step_order)
+            .with_for_update(of=ResearchStep, skip_locked=True)
+            .execution_options(populate_existing=True)
+            .limit(1)
+        )
     if step is None:
         return None
-    return _lease_step(
+    return _lease_locked_step(
         db,
+        run,
         step,
         worker_instance_id=worker_instance_id,
         lease_seconds=lease_seconds,
@@ -225,19 +282,32 @@ def claim_specific_research_step(
         if branch_key is None
         else ResearchStep.branch_key == branch_key
     )
-    step = db.scalar(
-        select(ResearchStep)
-        .where(
-            ResearchStep.run_id == run_id,
-            ResearchStep.step_key == step_key,
-            branch_predicate,
+    with db.no_autoflush:
+        step_id = db.scalar(
+            select(ResearchStep.id).where(
+                ResearchStep.run_id == run_id,
+                ResearchStep.step_key == step_key,
+                branch_predicate,
+            )
         )
-        .with_for_update()
-    )
-    if step is None:
+    if step_id is None:
         raise ResearchError("research_resource_not_found", "Research step not found.", 404)
-    return _lease_step(
+    run = lock_run(db, run_id)
+    step = (
+        lock_step(
+            db,
+            step_id,
+            run_id=run.id,
+            workspace_id=run.workspace_id,
+        )
+        if run is not None
+        else None
+    )
+    if run is None or step is None:
+        raise ResearchError("research_state_conflict", "Research step is not queued.", 409)
+    return _lease_locked_step(
         db,
+        run,
         step,
         worker_instance_id=worker_instance_id,
         lease_seconds=lease_seconds,
@@ -249,30 +319,8 @@ def _locked_attempt_chain(
     db: Session,
     attempt_id: str,
 ) -> tuple[ResearchRun | None, ResearchStep | None, ResearchStepAttempt | None]:
-    """Lock attempt -> step -> run without requiring active run/attempt state."""
-    attempt = db.scalar(
-        select(ResearchStepAttempt)
-        .where(ResearchStepAttempt.id == attempt_id)
-        .with_for_update()
-        .execution_options(populate_existing=True)
-    )
-    if attempt is None:
-        return None, None, None
-    step = db.scalar(
-        select(ResearchStep)
-        .where(ResearchStep.id == attempt.step_id)
-        .with_for_update()
-        .execution_options(populate_existing=True)
-    )
-    if step is None:
-        return None, None, attempt
-    run = db.scalar(
-        select(ResearchRun)
-        .where(ResearchRun.id == step.run_id)
-        .with_for_update()
-        .execution_options(populate_existing=True)
-    )
-    return run, step, attempt
+    """Locate parent ids, then lock and refresh Run -> Step -> Attempt."""
+    return lock_attempt_chain(db, attempt_id)
 
 
 def _locked_attempt(
@@ -349,12 +397,43 @@ def complete_research_step(
     now: datetime | None = None,
 ) -> None:
     finished_at = now or datetime.now(UTC)
+    locator = locate_attempt(db, attempt_id)
+    with db.no_autoflush:
+        dependent_ids = (
+            tuple(
+                db.scalars(
+                    select(ResearchStepDependency.step_id).where(
+                        ResearchStepDependency.depends_on_step_id == locator.step_id
+                    )
+                ).all()
+            )
+            if locator is not None
+            else ()
+        )
+
+    def completion_chain(session: Session, located_attempt_id: str):
+        return lock_attempt_chain_with_steps(
+            session,
+            located_attempt_id,
+            related_step_ids=dependent_ids,
+        )
+
     run, step, attempt = _locked_attempt(
         db,
         attempt_id=attempt_id,
         lease_token=lease_token,
         now=finished_at,
+        locked_chain=completion_chain,
     )
+    current_dependent_ids = tuple(
+        db.scalars(
+            select(ResearchStepDependency.step_id).where(
+                ResearchStepDependency.depends_on_step_id == step.id
+            )
+        ).all()
+    )
+    if set(current_dependent_ids) != set(dependent_ids):
+        raise ResearchError("research_state_conflict", "Research completion dependency chain changed.", 409)
     try:
         evidence_count, artifact_ids = complete(db, run, step, attempt) if complete else (0, [])
         if len(artifact_ids) != len(set(artifact_ids)):
@@ -404,7 +483,8 @@ def _ledger_and_limits(
         ledger = db.scalar(
             select(ResearchBudgetLedger)
             .where(ResearchBudgetLedger.plan_revision_id == step.plan_revision_id)
-            .with_for_update()
+            .with_for_update(of=ResearchBudgetLedger)
+            .execution_options(populate_existing=True)
         )
         if (
             revision is None
@@ -427,7 +507,8 @@ def _ledger_and_limits(
     ledger = db.scalar(
         select(ResearchBudgetLedger)
         .where(ResearchBudgetLedger.execution_snapshot_id == step.execution_snapshot_id)
-        .with_for_update()
+        .with_for_update(of=ResearchBudgetLedger)
+        .execution_options(populate_existing=True)
     )
     if (
         snapshot is None

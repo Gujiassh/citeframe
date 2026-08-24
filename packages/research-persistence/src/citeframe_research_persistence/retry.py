@@ -18,6 +18,7 @@ from citeframe_persistence.models import (
 from .constants import RETRYABLE_FAILURE_CODES
 from .errors import ResearchError
 from .events import append_research_event
+from .locks import lock_run, lock_step
 
 
 def retry_research_step_transition(
@@ -32,21 +33,16 @@ def retry_research_step_transition(
     expected_step_state_version: int,
     now: datetime,
 ) -> tuple[ResearchRun, ResearchStep]:
-    run = db.scalar(
-        select(ResearchRun)
-        .where(ResearchRun.id == run_id, ResearchRun.workspace_id == workspace_id)
-        .with_for_update()
-    )
+    run = lock_run(db, run_id, workspace_id=workspace_id)
     if run is None:
         raise ResearchError("research_run_not_found", "Research run not found.", 404)
     if actor_user_id != run.created_by_user_id:
         raise ResearchError("research_permission_denied", "Only the Run creator can retry a branch.", 403)
-    step = db.scalar(
-        select(ResearchStep).where(
-            ResearchStep.id == step_id,
-            ResearchStep.run_id == run.id,
-            ResearchStep.workspace_id == workspace_id,
-        )
+    step = lock_step(
+        db,
+        step_id,
+        run_id=run.id,
+        workspace_id=workspace_id,
     )
     if step is None:
         raise ResearchError("research_resource_not_found", "Research step not found.", 404)
@@ -58,10 +54,13 @@ def retry_research_step_transition(
     ):
         raise ResearchError("stale_state_version", "Research retry state is stale.", 409)
     attempt = db.scalar(
-        select(ResearchStepAttempt).where(
+        select(ResearchStepAttempt)
+        .where(
             ResearchStepAttempt.step_id == step.id,
             ResearchStepAttempt.attempt_number == failed_attempt,
         )
+        .with_for_update(of=ResearchStepAttempt)
+        .execution_options(populate_existing=True)
     )
     if attempt is None or attempt.status not in {"failed", "timed_out", "abandoned"}:
         raise ResearchError("research_state_conflict", "Failed attempt does not match.", 409)
@@ -71,9 +70,10 @@ def retry_research_step_transition(
         raise ResearchError("research_retry_forbidden", "This failure is not retryable.", 422)
     snapshot = db.get(ResearchExecutionSnapshot, run.approved_execution_snapshot_id)
     ledger = db.scalar(
-        select(ResearchBudgetLedger).where(
-            ResearchBudgetLedger.execution_snapshot_id == run.approved_execution_snapshot_id
-        )
+        select(ResearchBudgetLedger)
+        .where(ResearchBudgetLedger.execution_snapshot_id == run.approved_execution_snapshot_id)
+        .with_for_update(of=ResearchBudgetLedger)
+        .execution_options(populate_existing=True)
     )
     if snapshot is None or ledger is None or (
         ledger.actual_provider_calls + ledger.reserved_provider_calls >= snapshot.max_provider_calls

@@ -77,7 +77,7 @@ def publish_final_report(
     claims = (
         list(
             db.scalars(
-                select(ResearchClaim).where(
+                select(ResearchClaim).execution_options(populate_existing=True).where(
                     ResearchClaim.id.in_(selected_ids),
                     ResearchClaim.run_id == run.id,
                     ResearchClaim.workspace_id == run.workspace_id,
@@ -378,7 +378,7 @@ def wait_for_conflict_decision(
         raise ValueError("conflict Claim ids must be non-empty and unique")
     claims = list(
         db.scalars(
-            select(ResearchClaim).where(
+            select(ResearchClaim).execution_options(populate_existing=True).where(
                 ResearchClaim.id.in_(claim_ids),
                 ResearchClaim.run_id == run.id,
                 ResearchClaim.workspace_id == run.workspace_id,

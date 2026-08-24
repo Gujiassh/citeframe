@@ -2,9 +2,10 @@
 from __future__ import annotations
 
 import hashlib
+from collections.abc import Iterator
 from datetime import UTC, datetime
 
-from sqlalchemy import func, select
+from sqlalchemy import func, select, tuple_
 from sqlalchemy.orm import Session
 
 from citeframe_persistence.models import (
@@ -19,6 +20,7 @@ from citeframe_persistence.models import (
 from .errors import ResearchError
 from .events import append_research_event
 from .lease import complete_research_step
+from .locks import locate_attempt, lock_attempt, lock_run, lock_step
 from .policy import add_optional_cost, subtract_optional_cost
 
 def complete_control_step(
@@ -35,6 +37,47 @@ def complete_control_step(
     )
 
 
+
+def _expired_attempt_candidate_ids(
+    db: Session,
+    *,
+    reclaimed_at: datetime,
+    batch_size: int,
+) -> Iterator[str]:
+    """Yield the global expiry/id order while allowing locked Runs to be skipped."""
+    cursor: tuple[datetime, str] | None = None
+    while True:
+        query = select(
+            ResearchStepAttempt.id,
+            ResearchStepAttempt.lease_expires_at,
+        ).where(
+            ResearchStepAttempt.status == "running",
+            ResearchStepAttempt.lease_expires_at <= reclaimed_at,
+        )
+        if cursor is not None:
+            query = query.where(
+                tuple_(
+                    ResearchStepAttempt.lease_expires_at,
+                    ResearchStepAttempt.id,
+                ) > tuple_(*cursor)
+            )
+        with db.no_autoflush:
+            rows = list(
+                db.execute(
+                    query
+                    .order_by(ResearchStepAttempt.lease_expires_at, ResearchStepAttempt.id)
+                    .limit(batch_size)
+                ).all()
+            )
+        if not rows:
+            return
+        for row in rows:
+            yield row.id
+        last = rows[-1]
+        cursor = (last.lease_expires_at, last.id)
+        if len(rows) < batch_size:
+            return
+
 def reclaim_expired_research_steps(
     db: Session,
     *,
@@ -44,51 +87,181 @@ def reclaim_expired_research_steps(
     if not 1 <= limit <= 1000:
         raise ValueError("reclaim limit must be between 1 and 1000")
     reclaimed_at = now or datetime.now(UTC)
-    attempts = list(
-        db.scalars(
-            select(ResearchStepAttempt)
-            .where(
-                ResearchStepAttempt.status == "running",
-                ResearchStepAttempt.lease_expires_at <= reclaimed_at,
-            )
-            .order_by(ResearchStepAttempt.lease_expires_at, ResearchStepAttempt.id)
-            .with_for_update(skip_locked=True)
-            .limit(limit)
-        ).all()
+    candidate_ids = _expired_attempt_candidate_ids(
+        db,
+        reclaimed_at=reclaimed_at,
+        batch_size=max(100, limit),
     )
-    for attempt in attempts:
-        step = db.scalar(select(ResearchStep).where(ResearchStep.id == attempt.step_id).with_for_update())
-        run = (
-            db.scalar(select(ResearchRun).where(ResearchRun.id == step.run_id).with_for_update())
-            if step
+    reclaimed: list[tuple[ResearchRun, ResearchStep, ResearchStepAttempt]] = []
+    for attempt_id in candidate_ids:
+        if len(reclaimed) >= limit:
+            break
+        locator = locate_attempt(db, attempt_id)
+        if locator is None:
+            raise ResearchError("research_state_conflict", "Expired Research Attempt chain is invalid.", 409)
+        run = lock_run(db, locator.run_id, skip_locked=True)
+        if run is None:
+            continue
+        step = lock_step(
+            db,
+            locator.step_id,
+            run_id=run.id,
+            workspace_id=run.workspace_id,
+            skip_locked=True,
+        )
+        attempt = (
+            lock_attempt(
+                db,
+                attempt_id,
+                step_id=step.id,
+                workspace_id=run.workspace_id,
+                skip_locked=True,
+            )
+            if step is not None
             else None
         )
+        expires_at = attempt.lease_expires_at if attempt is not None else None
+        if expires_at is not None and expires_at.tzinfo is None:
+            expires_at = expires_at.replace(tzinfo=UTC)
         if (
             step is None
-            or run is None
+            or attempt is None
+            or locator.run_id != run.id
+            or locator.step_id != step.id
             or step.status != "running"
+            or attempt.status != "running"
+            or expires_at is None
+            or expires_at > reclaimed_at
             or attempt.workspace_id != step.workspace_id
             or step.workspace_id != run.workspace_id
         ):
             raise ResearchError("research_state_conflict", "Expired Research Attempt chain is invalid.", 409)
+
+        provider_locators = {
+            row.id: row
+            for row in db.execute(
+                select(
+                    ResearchProviderCall.id,
+                    ResearchProviderCall.run_id,
+                    ResearchProviderCall.step_id,
+                    ResearchProviderCall.attempt_id,
+                    ResearchProviderCall.budget_ledger_id,
+                ).where(
+                    ResearchProviderCall.attempt_id == attempt.id,
+                    ResearchProviderCall.status.in_(("reserved", "sent")),
+                )
+            ).all()
+        }
+        tool_locators = {
+            row.id: row
+            for row in db.execute(
+                select(
+                    ResearchToolCall.id,
+                    ResearchToolCall.run_id,
+                    ResearchToolCall.step_id,
+                    ResearchToolCall.attempt_id,
+                    ResearchToolCall.execution_snapshot_id,
+                ).where(
+                    ResearchToolCall.attempt_id == attempt.id,
+                    ResearchToolCall.status.in_(("requested", "running")),
+                )
+            ).all()
+        }
         provider_calls = list(
             db.scalars(
                 select(ResearchProviderCall)
                 .where(
+                    ResearchProviderCall.id.in_(provider_locators),
+                    ResearchProviderCall.run_id == run.id,
+                    ResearchProviderCall.step_id == step.id,
                     ResearchProviderCall.attempt_id == attempt.id,
-                    ResearchProviderCall.status.in_(("reserved", "sent")),
                 )
-                .with_for_update()
+                .order_by(ResearchProviderCall.id)
+                .with_for_update(of=ResearchProviderCall)
+                .execution_options(populate_existing=True)
             ).all()
+        ) if provider_locators else []
+        tool_calls = list(
+            db.scalars(
+                select(ResearchToolCall)
+                .where(
+                    ResearchToolCall.id.in_(tool_locators),
+                    ResearchToolCall.run_id == run.id,
+                    ResearchToolCall.step_id == step.id,
+                    ResearchToolCall.attempt_id == attempt.id,
+                    ResearchToolCall.execution_snapshot_id == step.execution_snapshot_id,
+                )
+                .order_by(ResearchToolCall.id)
+                .with_for_update(of=ResearchToolCall)
+                .execution_options(populate_existing=True)
+            ).all()
+        ) if tool_locators else []
+
+        if len(provider_calls) != len(provider_locators) or len(tool_calls) != len(tool_locators):
+            raise ResearchError("research_state_conflict", "Expired call chain is invalid.", 409)
+        if any(
+            provider_locators[call.id].budget_ledger_id != call.budget_ledger_id
+            for call in provider_calls
+        ) or any(
+            tool_locators[call.id].execution_snapshot_id != call.execution_snapshot_id
+            for call in tool_calls
+        ):
+            raise ResearchError("research_state_conflict", "Expired call locator changed.", 409)
+
+        provider_ledger_ids = {call.budget_ledger_id for call in provider_calls}
+        tool_snapshot_ids = {call.execution_snapshot_id for call in tool_calls}
+        ledger_query = select(ResearchBudgetLedger).where(
+            (ResearchBudgetLedger.id.in_(provider_ledger_ids))
+            | (ResearchBudgetLedger.execution_snapshot_id.in_(tool_snapshot_ids))
         )
+        ledgers = list(
+            db.scalars(
+                ledger_query
+                .order_by(ResearchBudgetLedger.id)
+                .with_for_update(of=ResearchBudgetLedger)
+                .execution_options(populate_existing=True)
+            ).all()
+        ) if provider_ledger_ids or tool_snapshot_ids else []
+        ledger_by_id = {ledger.id: ledger for ledger in ledgers}
+        ledger_by_snapshot = {ledger.execution_snapshot_id: ledger for ledger in ledgers}
+
         for call in provider_calls:
-            ledger = db.scalar(
-                select(ResearchBudgetLedger)
-                .where(ResearchBudgetLedger.id == call.budget_ledger_id)
-                .with_for_update()
-            )
-            if ledger is None or ledger.run_id != run.id or ledger.workspace_id != run.workspace_id:
+            hint = provider_locators[call.id]
+            ledger = ledger_by_id.get(call.budget_ledger_id)
+            if (
+                ledger is None
+                or hint.run_id != run.id
+                or hint.step_id != step.id
+                or hint.attempt_id != attempt.id
+                or hint.budget_ledger_id != ledger.id
+                or call.run_id != run.id
+                or call.step_id != step.id
+                or call.attempt_id != attempt.id
+                or call.workspace_id != run.workspace_id
+                or ledger.run_id != run.id
+                or ledger.workspace_id != run.workspace_id
+            ):
                 raise ResearchError("research_state_conflict", "Expired provider call chain is invalid.", 409)
+        for call in tool_calls:
+            hint = tool_locators[call.id]
+            ledger = ledger_by_snapshot.get(call.execution_snapshot_id)
+            if (
+                ledger is None
+                or hint.run_id != run.id
+                or hint.step_id != step.id
+                or hint.attempt_id != attempt.id
+                or hint.execution_snapshot_id != call.execution_snapshot_id
+                or call.run_id != run.id
+                or call.step_id != step.id
+                or call.attempt_id != attempt.id
+                or call.workspace_id != run.workspace_id
+                or ledger.run_id != run.id
+                or ledger.workspace_id != run.workspace_id
+            ):
+                raise ResearchError("research_state_conflict", "Expired tool call chain is invalid.", 409)
+
+        for call in provider_calls:
+            ledger = ledger_by_id[call.budget_ledger_id]
             if call.status == "reserved":
                 call.status = "cancelled"
                 call.usage_final = True
@@ -96,10 +269,9 @@ def reclaim_expired_research_steps(
                 ledger.reserved_input_tokens -= call.reserved_input_tokens
                 ledger.reserved_output_tokens -= call.reserved_output_tokens
                 ledger.reserved_cost_microunits = subtract_optional_cost(
-                    ledger.reserved_cost_microunits,
-                    call.reserved_cost_microunits,
+                    ledger.reserved_cost_microunits, call.reserved_cost_microunits
                 )
-            else:
+            elif call.status == "sent":
                 call.status = "outcome_unknown"
                 call.actual_input_tokens = call.reserved_input_tokens
                 call.actual_output_tokens = call.reserved_output_tokens
@@ -110,44 +282,29 @@ def reclaim_expired_research_steps(
                 ledger.reserved_input_tokens -= call.reserved_input_tokens
                 ledger.reserved_output_tokens -= call.reserved_output_tokens
                 ledger.reserved_cost_microunits = subtract_optional_cost(
-                    ledger.reserved_cost_microunits,
-                    call.reserved_cost_microunits,
+                    ledger.reserved_cost_microunits, call.reserved_cost_microunits
                 )
                 ledger.actual_input_tokens += call.reserved_input_tokens
                 ledger.actual_output_tokens += call.reserved_output_tokens
                 ledger.actual_cost_microunits = add_optional_cost(
-                    ledger.actual_cost_microunits,
-                    call.reserved_cost_microunits,
+                    ledger.actual_cost_microunits, call.reserved_cost_microunits
                 )
                 ledger.usage_final = False
                 attempt.provider_call_count += 1
                 attempt.input_tokens += call.reserved_input_tokens
                 attempt.output_tokens += call.reserved_output_tokens
                 attempt.cost_microunits = add_optional_cost(
-                    attempt.cost_microunits,
-                    call.reserved_cost_microunits,
+                    attempt.cost_microunits, call.reserved_cost_microunits
                 )
+            else:
+                raise ResearchError("research_state_conflict", "Expired provider call chain is invalid.", 409)
             call.finished_at = reclaimed_at
             ledger.state_version += 1
             ledger.updated_at = reclaimed_at
-        tool_calls = list(
-            db.scalars(
-                select(ResearchToolCall)
-                .where(
-                    ResearchToolCall.attempt_id == attempt.id,
-                    ResearchToolCall.status.in_(("requested", "running")),
-                )
-                .with_for_update()
-            ).all()
-        )
         for call in tool_calls:
-            ledger = db.scalar(
-                select(ResearchBudgetLedger)
-                .where(ResearchBudgetLedger.execution_snapshot_id == call.execution_snapshot_id)
-                .with_for_update()
-            )
-            if ledger is None or ledger.run_id != run.id or ledger.workspace_id != run.workspace_id:
+            if call.status not in {"requested", "running"}:
                 raise ResearchError("research_state_conflict", "Expired tool call chain is invalid.", 409)
+            ledger = ledger_by_snapshot[call.execution_snapshot_id]
             call.status = "abandoned"
             call.error_code = "lease_expired"
             call.error_message = "The owning Research Attempt lease expired."
@@ -157,6 +314,7 @@ def reclaim_expired_research_steps(
             ledger.state_version += 1
             ledger.updated_at = reclaimed_at
             attempt.tool_call_count += 1
+
         attempt.status = "abandoned"
         attempt.error_code = "lease_expired"
         attempt.error_message = "Research Attempt lease expired."
@@ -215,12 +373,13 @@ def reclaim_expired_research_steps(
             run.status = "awaiting_retry"
             run.failure_code = "lease_expired"
             run.failure_message = "A Research Step exhausted its automatic retry allowance."
-    if attempts:
+        reclaimed.append((run, step, attempt))
+
+    if reclaimed:
         db.flush()
-        cancel_run_ids = {db.get(ResearchStep, attempt.step_id).run_id for attempt in attempts}
-        for run_id in cancel_run_ids:
-            run = db.get(ResearchRun, run_id)
-            if run is None or run.status != "cancel_requested":
+        cancel_runs = {run.id: run for run, _step, _attempt in reclaimed}
+        for run in cancel_runs.values():
+            if run.status != "cancel_requested":
                 continue
             active_count = db.scalar(
                 select(func.count())
@@ -245,4 +404,4 @@ def reclaim_expired_research_steps(
                     now=reclaimed_at,
                 )
         db.flush()
-    return len(attempts)
+    return len(reclaimed)
