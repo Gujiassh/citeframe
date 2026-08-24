@@ -5,7 +5,7 @@
 The owner-authorized architecture freeze and design re-audit are complete: the design audit
 accepted with `High=0`, `Medium=0`, `Low=0`. A1 implementation was independently accepted
 on `2026-08-20`. A1b/A2-foundation was independently accepted on `2026-08-21` by the
-follow-up Critical review (`High=0`, `Medium=0`, `Low=0`); A2a was independently `ACCEPTED` on 2026-08-24 (`High=0`, `Medium=0`, `Low=0`) at production commit `215cd52565089138704c6b637350e18bc8705c8b`, documentation closure `95981a499521a28bfd9eb24480d54ef42f485528`, and review record `eb97adfa75660867eb31d46a4e7d7712909c348e`. All three commits are local and not pushed. R0 is the only next separately gated implementation slice; R1/R2/W1 and downstream remain blocked behind R0 or their named gates. Product
+follow-up Critical review (`High=0`, `Medium=0`, `Low=0`); A2a was independently `ACCEPTED` on 2026-08-24 (`High=0`, `Medium=0`, `Low=0`) at production commit `215cd52565089138704c6b637350e18bc8705c8b`, documentation closure `95981a499521a28bfd9eb24480d54ef42f485528`, and review record `eb97adfa75660867eb31d46a4e7d7712909c348e`. All three commits are local and not pushed. R0 was independently `ACCEPTED` on 2026-08-24 (`High=0`, `Medium=0`, `Low=0`) across start `7ee97471ffb7d7d23e941d75795ab21d8cb3032b`, production `39766c374bd584b0cb834ef103de025d233c87c1`, final ledger closure `6b8ab475c14a7bbfe90f59a635255ca3768edcf9`, and review record `9d4297f89451fe79b6d1c141613722f7749b11c0`. All four commits are local and not pushed; the branch has no upstream and no remote branch. R1 is the only next separately gated implementation slice; R2/W1 and downstream remain blocked. R0 acceptance authorizes no schema/API/save/replay/permission/admission change and does not claim R1 implementation. Product
 depth follows a capability/quality matrix rather than preceding it.
 
 ```text
@@ -18,7 +18,7 @@ Wave 0: A0/R/W target freeze + design re-audit `ACCEPT` (`High=0`, `Medium=0`, `
 
 Wave numbers express dependencies, not authorization. A1 was independently accepted
 on `2026-08-20`; A1b/A2-foundation was independently accepted on `2026-08-21` by the
-follow-up Critical review (`High=0`, `Medium=0`, `Low=0`). A2a was independently `ACCEPTED` on 2026-08-24 (`High=0`, `Medium=0`, `Low=0`) at production commit `215cd52565089138704c6b637350e18bc8705c8b`, documentation closure `95981a499521a28bfd9eb24480d54ef42f485528`, and review record `eb97adfa75660867eb31d46a4e7d7712909c348e`. All three commits are local and not pushed. R0 is the only next separately gated implementation slice; R1/R2/W1 and downstream remain blocked behind R0 or their named gates. No schema/API/save/
+follow-up Critical review (`High=0`, `Medium=0`, `Low=0`). A2a was independently `ACCEPTED` on 2026-08-24 (`High=0`, `Medium=0`, `Low=0`) at production commit `215cd52565089138704c6b637350e18bc8705c8b`, documentation closure `95981a499521a28bfd9eb24480d54ef42f485528`, and review record `eb97adfa75660867eb31d46a4e7d7712909c348e`. All three commits are local and not pushed. R0 was independently `ACCEPTED` on 2026-08-24 (`High=0`, `Medium=0`, `Low=0`) across start `7ee97471ffb7d7d23e941d75795ab21d8cb3032b`, production `39766c374bd584b0cb834ef103de025d233c87c1`, final ledger closure `6b8ab475c14a7bbfe90f59a635255ca3768edcf9`, and review record `9d4297f89451fe79b6d1c141613722f7749b11c0`. All four commits are local and not pushed; the branch has no upstream and no remote branch. R1 is the only next separately gated implementation slice; R2/W1 and downstream remain blocked. R0 acceptance authorizes no schema/API/save/replay/permission/admission change and does not claim R1 implementation. No schema/API/save/
 replay/permission changes are authorized. G/M/P and GitHub settings remain separate
 unauthorized lanes.
 
@@ -48,7 +48,7 @@ Worker orchestration, Worker-side Research UoW commit process, pure contracts, a
 shared `citeframe_research_persistence` behavior implementation over neutral mappings. The
 design re-audit is accepted (`High=0`, `Medium=0`, `Low=0`). A1 implementation was
 independently accepted on `2026-08-20`; A1b/A2-foundation was independently accepted on
-`2026-08-21` by the follow-up Critical review (`High=0`, `Medium=0`, `Low=0`). A2a was independently `ACCEPTED` on 2026-08-24 at production `215cd52`, documentation `95981a4`, and review record `eb97adf`; all remain local and not pushed. R0 is the only next separately gated implementation slice; R1/R2/W1 and downstream remain blocked behind R0 or their named gates; no
+`2026-08-21` by the follow-up Critical review (`High=0`, `Medium=0`, `Low=0`). A2a was independently `ACCEPTED` on 2026-08-24 at production `215cd52`, documentation `95981a4`, and review record `eb97adf`; all remain local and not pushed. R0 was independently `ACCEPTED` on 2026-08-24 (`High=0`, `Medium=0`, `Low=0`) across start `7ee97471ffb7d7d23e941d75795ab21d8cb3032b`, production `39766c374bd584b0cb834ef103de025d233c87c1`, final ledger closure `6b8ab475c14a7bbfe90f59a635255ca3768edcf9`, and review record `9d4297f89451fe79b6d1c141613722f7749b11c0`. All four commits are local and not pushed; the branch has no upstream and no remote branch. R1 is the only next separately gated implementation slice; R2/W1 and downstream remain blocked. R0 acceptance authorizes no schema/API/save/replay/permission/admission change and does not claim R1 implementation; no
 schema/API/save/replay/permission changes are authorized.
 
 | Slice | Scope | Estimate | Exit gate |
@@ -67,6 +67,8 @@ schema/API/save/replay/permission changes are authorized.
 | W1 | Independent Research SSE single-flight, sequence gate, event-directed artifact cache, replay fallback | 2-4 days | Burst/stale/reconnect/lost-notify/gap/terminal/hash evidence; no API/save contract change |
 
 Current A2a delivery ledger: PR #20 is merged at `origin/main@9f40241`; semantic baseline `d1b5945`; initial snapshot `20d411e`; initial review record `5a6ee38`; immutable production candidate `215cd52565089138704c6b637350e18bc8705c8b` on `work/research-boundary-runtime-20260824`, local and not pushed. Candidate production composition uses neutral commands/UoW with `uowEnterCount=38`; final differential/boundary is `8 passed`, `equal=true`, semantic SHA `119a36086bfb595ea0882deab719d530ebd0107296cf8033a4f348ef07e7d4c0`, report SHA `db1524a8a2604c60c98e1543eded1828cc8f9e23725287cb40d0056cace42bd7`. Controller evidence is API `650 passed, 6 skipped, 1 warning`; Worker fast `174 passed, 153 deselected`; acceptance `61 passed, 266 deselected`; evaluation `92 passed, 235 deselected`; deploy `6+2`; lock/export/YAML pass. Official Docker Hub timed out, but the same pinned base digest fetched through a mirror built controller pre-final API `b1b165f75d14`; the reviewer rebuilt immutable-SHA API `sha256:2437e95e909b2b6d941e58b58b28551f5a09c87d93594ac9e4c80ae9ba7fe70c`; final Worker remains `17e8f6645b4b`, and final non-root/path/import smokes passed. Final Critical review is `ACCEPT (High=0, Medium=0, Low=0)` at local review commit `eb97adf`; production, documentation, and review commits are not pushed, so remote push/PR/integration remains pending.
+
+Current R0 delivery ledger: start `7ee97471ffb7d7d23e941d75795ab21d8cb3032b`; production `39766c374bd584b0cb834ef103de025d233c87c1`; final ledger closure `6b8ab475c14a7bbfe90f59a635255ca3768edcf9`; final Critical `ACCEPT (High=0, Medium=0, Low=0)` at review commit `9d4297f89451fe79b6d1c141613722f7749b11c0`. All four are local/not pushed; the branch has no upstream and no remote branch. PostgreSQL 17.10 contention is `7/7`, report SHA `95f2608e3455a7c0a1272fddc727c0339cdc65d28384c13d6d29318d5dbdf91d`, deadlocks `0 -> 0`, no `40P01`/`55P03`; official Docker Hub timed out before start, while the same immutable pgvector digest through the mirror completed all evidence; focused `8`, affected API `90`, supplementary API `49`, Worker `43`, A2a differential `equal=true` coverage `7/7`. R1 is the only next separately gated implementation slice; R2/W1/downstream remain blocked.
 
 Required semantic oracle for A2a/R0/R1/R2/A3-A6/W1:
 
@@ -87,9 +89,9 @@ before a dependent is queued; Run terminal is last; dedupe prevents duplicate te
 facts; payload schema/error meaning stays equal. Independent Researcher event interleaving
 may vary.
 
-A2a is not R0 or R1. A2a preserves the current behavior where one `process_one` call can drive
-multiple steps through LangGraph and retains current mixed lock behavior; R0 normalizes locks
-before R1/admission; R1 is the separate single-attempt dispatcher. A3/A4 cover all nine enabled
+A2a is not R0 or R1. A2a preserves the fixed behavior where one `process_one` call can drive
+multiple steps through LangGraph and retained the historical mixed lock behavior; accepted
+R0 later normalized locks. R1/admission remain separate; R1 is the separate single-attempt dispatcher. A3/A4 cover all nine enabled
 modalities before A5 can claim an API-source-free Worker.
 
 ## 4. Lane M: Maintainability (6.5 -> target 7.5)

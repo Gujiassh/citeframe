@@ -19,7 +19,7 @@ Date: 2026-08-24
 | Final reviewer artifact | [`a2a-persistence-critical-reaudit-2026-08-24.md`](a2a-persistence-critical-reaudit-2026-08-24.md), local review commit `eb97adfa75660867eb31d46a4e7d7712909c348e` |
 | Final verdict | `ACCEPT (High=0, Medium=0, Low=0)` |
 | Push state | Production `215cd52`, docs `95981a4`, and review `eb97adf` are all local and not pushed |
-| Downstream gates | R0 is the only next separately gated implementation slice; R1/R2/W1 and downstream remain blocked behind R0 or their named gates |
+| Downstream gates | R0 later received independent `ACCEPT` at local review `9d4297f8`; R1 is the only next separately gated implementation slice; R2/W1/downstream remain blocked |
 
 PR #20 merged the prerequisite branch into `main`; it did not accept the A2a repair. The
 production candidate is now immutable by commit SHA. Documentation and review commits do not rewrite that production snapshot. Final independent acceptance is recorded in review commit `eb97adf`; remote delivery remains pending.
@@ -134,8 +134,7 @@ non-root UID. The mirror did not substitute a different base digest.
 2. Push all three local commits, record their remote SHAs in the workbench delivery ledger,
    and integrate through the repository review flow. Do not push directly to `main` outside
    that flow.
-3. R0 is the only next separately gated implementation slice. R1/R2 remain behind R0; W1
-   stays an independent named slice. None may be folded into the accepted A2a repair.
+3. R0 was later independently accepted at review `9d4297f8`. R1 is the only next separately gated implementation slice; R2/W1 remain blocked behind their named gates. No downstream slice may be folded into A2a or R0.
 
 Final verdict: **ACCEPT (High=0, Medium=0, Low=0)** at local review commit `eb97adf`.
 Remote push/PR/integration remains pending.

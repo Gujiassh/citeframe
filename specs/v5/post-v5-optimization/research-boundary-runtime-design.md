@@ -1,10 +1,10 @@
 # Research Boundary And Distributed Runtime Design
 
-Status: **Design re-audit and A1/A1b are accepted; A2a was independently `ACCEPTED` on 2026-08-24 (`High=0`, `Medium=0`, `Low=0`) at production commit `215cd52565089138704c6b637350e18bc8705c8b`, documentation closure `95981a499521a28bfd9eb24480d54ef42f485528`, and review record `eb97adfa75660867eb31d46a4e7d7712909c348e`. All three commits are local and not pushed. R0 is the only next separately gated implementation slice; R1/R2/W1 and downstream remain blocked behind R0 or their named gates**
+Status: **Design re-audit and A1/A1b are accepted; A2a was independently `ACCEPTED` on 2026-08-24 (`High=0`, `Medium=0`, `Low=0`) at production commit `215cd52565089138704c6b637350e18bc8705c8b`, documentation closure `95981a499521a28bfd9eb24480d54ef42f485528`, and review record `eb97adfa75660867eb31d46a4e7d7712909c348e`. All three commits are local and not pushed. R0 was independently `ACCEPTED` on 2026-08-24 (`High=0`, `Medium=0`, `Low=0`) across start `7ee97471ffb7d7d23e941d75795ab21d8cb3032b`, production `39766c374bd584b0cb834ef103de025d233c87c1`, final ledger closure `6b8ab475c14a7bbfe90f59a635255ca3768edcf9`, and review record `9d4297f89451fe79b6d1c141613722f7749b11c0`. All four commits are local and not pushed; the branch has no upstream and no remote branch. R1 is the only next separately gated implementation slice; R2/W1 and downstream remain blocked. R0 acceptance authorizes no schema/API/save/replay/permission/admission change and does not claim R1 implementation**
 Date: 2026-08-20
 Owner decision: same-database adapter for `internal_preview`; A1b/A2-foundation was
 independently accepted on 2026-08-21 by the follow-up Critical review
-(`High=0`, `Medium=0`, `Low=0`). A2a was independently `ACCEPTED` on 2026-08-24 (`High=0`, `Medium=0`, `Low=0`) at production commit `215cd52565089138704c6b637350e18bc8705c8b`, documentation closure `95981a499521a28bfd9eb24480d54ef42f485528`, and review record `eb97adfa75660867eb31d46a4e7d7712909c348e`. All three commits are local and not pushed. R0 is the only next separately gated implementation slice; R1/R2/W1 and downstream remain blocked behind R0 or their named gates. This document
+(`High=0`, `Medium=0`, `Low=0`). A2a was independently `ACCEPTED` on 2026-08-24 (`High=0`, `Medium=0`, `Low=0`) at production commit `215cd52565089138704c6b637350e18bc8705c8b`, documentation closure `95981a499521a28bfd9eb24480d54ef42f485528`, and review record `eb97adfa75660867eb31d46a4e7d7712909c348e`. All three commits are local and not pushed. R0 was independently `ACCEPTED` on 2026-08-24 (`High=0`, `Medium=0`, `Low=0`) across start `7ee97471ffb7d7d23e941d75795ab21d8cb3032b`, production `39766c374bd584b0cb834ef103de025d233c87c1`, final ledger closure `6b8ab475c14a7bbfe90f59a635255ca3768edcf9`, and review record `9d4297f89451fe79b6d1c141613722f7749b11c0`. All four commits are local and not pushed; the branch has no upstream and no remote branch. R1 is the only next separately gated implementation slice; R2/W1 and downstream remain blocked. R0 acceptance authorizes no schema/API/save/replay/permission/admission change and does not claim R1 implementation. This document
 does not authorize schema/API/save/replay/permission changes, G/M/P work, GitHub settings,
 paid provider runs, or user research.
 
@@ -13,7 +13,7 @@ neutral DTO/Protocol definitions, legacy identity-preserving re-exports, API/Wor
 path-source integration, contracts-only Docker/CI smoke, and focused verification. This
 A1 implementation was independently accepted on 2026-08-20. A1b/A2-foundation was
 independently accepted on 2026-08-21 by the follow-up Critical review
-(`High=0`, `Medium=0`, `Low=0`). A2a was independently `ACCEPTED` on 2026-08-24 (`High=0`, `Medium=0`, `Low=0`) at production commit `215cd52565089138704c6b637350e18bc8705c8b`, documentation closure `95981a499521a28bfd9eb24480d54ef42f485528`, and review record `eb97adfa75660867eb31d46a4e7d7712909c348e`. All three commits are local and not pushed. R0 is the only next separately gated implementation slice; R1/R2/W1 and downstream remain blocked behind R0 or their named gates.
+(`High=0`, `Medium=0`, `Low=0`). A2a was independently `ACCEPTED` on 2026-08-24 (`High=0`, `Medium=0`, `Low=0`) at production commit `215cd52565089138704c6b637350e18bc8705c8b`, documentation closure `95981a499521a28bfd9eb24480d54ef42f485528`, and review record `eb97adfa75660867eb31d46a4e7d7712909c348e`. All three commits are local and not pushed. R0 was independently `ACCEPTED` on 2026-08-24 (`High=0`, `Medium=0`, `Low=0`) across start `7ee97471ffb7d7d23e941d75795ab21d8cb3032b`, production `39766c374bd584b0cb834ef103de025d233c87c1`, final ledger closure `6b8ab475c14a7bbfe90f59a635255ca3768edcf9`, and review record `9d4297f89451fe79b6d1c141613722f7749b11c0`. All four commits are local and not pushed; the branch has no upstream and no remote branch. R1 is the only next separately gated implementation slice; R2/W1 and downstream remain blocked. R0 acceptance authorizes no schema/API/save/replay/permission/admission change and does not claim R1 implementation.
 
 This is the implementation-ready detail for the Research portion of the Post-V5
 Optimization plan. It deliberately separates three states:
@@ -56,7 +56,7 @@ and must not import `ai_pdf_api` or define a second Base/metadata/model set.
 
 ### 1.2 Current fact and non-claims
 
-The repair checkout has the three staged packages. API still owns HTTP/auth/Alembic/schema governance, while the repaired Worker default composition uses the neutral Research UoW/repository for DB-only transitions; API modules remain compatibility/composition facades and ingestion still uses its shared API/Worker Session/ORM path. This repair state is implementer evidence, not an accepted or shipped boundary. R0/R1 and the later ingestion/composition slices are **not implemented**.
+The repair checkout has the three staged packages. API still owns HTTP/auth/Alembic/schema governance, while the repaired Worker default composition uses the neutral Research UoW/repository for DB-only transitions; API modules remain compatibility/composition facades and ingestion still uses its shared API/Worker Session/ORM path. A2a and R0 are independently accepted locally; remote delivery is pending. R1, admission, and the later ingestion/composition slices are **not implemented**.
 Same-DB adapter means the runtime commit process remains in Worker; it must never be
 reported as API-process transaction ownership.
 
@@ -120,10 +120,10 @@ HTTP-facing mutations; Worker handlers use it for job mutations. No API-only hel
 reimplemented in Worker.
 
 A2a is **Research persistence/ports behavior extraction only** after A1b/A2-foundation.
-Its exit requires old runtime behavior and database/payload snapshots to match. A2a must
-keep the current behavior in which one `process_one` call can drive multiple steps through
-the fixed LangGraph StateGraph; it must not prematurely implement R1 single-attempt
-dispatch. Mapping relocation belongs to A1b/A2-foundation, not hidden inside A2a.
+Its accepted exit kept old runtime behavior and database/payload snapshots equal, including
+one `process_one` call driving multiple steps through the fixed LangGraph StateGraph and the
+then-current mixed lock behavior. It did not implement R1 single-attempt dispatch. Accepted
+R0 later changed lock order only. Mapping relocation belongs to A1b/A2-foundation, not A2a.
 
 ## 3.1 Staged Python distributions, manifests, and runtime images
 
@@ -145,11 +145,10 @@ persistence and contracts; no package imports `ai_pdf_api` or defines a second m
 The current `ai_pdf_api.models` surface may re-export the same classes during migration.
 
 A2a is **Research persistence/ports behavior extraction only** after A1b/A2-foundation.
-Its exit requires old runtime behavior and database/payload snapshots to match. A2a must
-keep the current behavior in which one `process_one` call can drive multiple steps through
-the fixed LangGraph StateGraph and current mixed lock behavior; it must not prematurely
-implement R0 or R1 single-attempt dispatch. Mapping relocation belongs to A1b/A2-foundation,
-not hidden inside A2a.
+Its accepted exit kept old runtime behavior and database/payload snapshots equal, including
+one `process_one` call driving multiple steps through the fixed LangGraph StateGraph and the
+then-current mixed lock behavior. It did not implement R0 or R1. Accepted R0 later changed
+lock order only. Mapping relocation belongs to A1b/A2-foundation, not A2a.
 
 ### Stage export and runtime matrix
 
@@ -326,8 +325,7 @@ API optimistic contract requires it; it is not a blanket Worker completion fence
 or late worker gets a deterministic lease/status fenced rejection and cannot advance a
 Step, Event, dependent, or Artifact.
 
-R0 is a separate implementation slice after A2a. A2a must be accepted before R0, and R0
-must be accepted before R1 or per-Run admission; no slice may hide another in a shared PR.
+R0 was implemented separately after A2a and independently accepted at production `39766c37` / review `9d4297f8`. R1 is the only next separately gated implementation slice; per-Run admission remains unauthorized and no slice may hide another in a shared PR.
 
 ### 4.2 R2 real multi-worker proof
 
@@ -339,16 +337,11 @@ is insufficient for the Critical gate.
 
 ## 5. R0 Lock Normalization, Identity Refresh, And Fencing
 
-**Current runtime fact:** lock acquisition is mixed and conflicting. Many Worker attempt
-paths acquire `Attempt -> Step -> Run`; claim acquires `Step -> Run`; API cancel, retry,
-and decision paths acquire `Run -> Step`. Claim-versus-cancel therefore has a real
-reverse-order deadlock ring. The current A2a behavior retains this fact until R0; it must
-not be described as one authoritative lock order or as a safe claim exception.
-
-R0 is a separate implementation slice after A2a and before R1 or per-Run admission.
-R0 changes lock acquisition order only. It does not change persistence, API, save,
-replay, permission, transition, or payload semantics. The frozen target aggregate-root
-order is:
+**Accepted current fact:** The A2a snapshot historically mixed `Attempt -> Step -> Run`,
+`Step -> Run`, and `Run -> Step`, including a claim-versus-cancel reverse-order deadlock
+ring. Accepted R0 production `39766c37` changes lock acquisition order only and preserves
+persistence, API, save, replay, permission, transition, and payload semantics. The current
+aggregate-root order is:
 
 ```text
 ResearchRun -> ResearchStep -> ResearchStepAttempt -> provider/tool Call -> ResearchBudgetLedger
@@ -394,9 +387,7 @@ later retry claim creates a new Attempt. An expired Attempt is never refreshed o
 
 ## 6. Per-Run Researcher Admission Without Schema Change
 
-No slot table or schema change is authorized. Existing `ResearchStepAttempt` rows are
-the durable slot records. R1 admission is implemented only after R0 and serializes on
-the same `ResearchRun` row under the target Run-first order.
+No slot table, schema change, or per-Run admission implementation is authorized. Existing `ResearchStepAttempt` rows remain the proposed durable slot records only. Admission requires its own later gate and would serialize on the accepted `ResearchRun` lock root.
 
 Within that Run-row critical section:
 
@@ -478,9 +469,9 @@ case, capture old/new database snapshots and API/Worker payload snapshots, then 
 | Area | Invariant/evidence |
 | --- | --- |
 | Save contracts | `Step`, `Attempt`, `Claim`, `Event.seq`, `state_version`, retry, cancel, reclaim, conflict, artifact hash/provenance, budget, permission, and API response meaning are equal |
-| Scheduler | A2a preserves one `process_one` call's current multi-step LangGraph behavior and current mixed lock behavior; R0 changes lock order only; R1 changes runtime dispatch after R0 through bounded concurrent loops; production two-loop overlap/wall-time evidence passes; no duplicate Step completion; readiness/join follows committed DB state |
-| Locks/fencing | R0 target order `Run -> Step -> Attempt -> Call -> Ledger`; location reads never decide; ordered lock/refresh/revalidate rejects changed chains; stale Attempt status/token/expiry has no late side effects; existing state_version command contracts remain equal |
-| Admission | After R0, cap=1 and cap=N never exceed effective unexpired researcher attempts; cap-full rollback releases Run lock and mutates no Step/Event; expired lease recovery is atomic |
+| Scheduler | A2a preserves one `process_one` call's fixed multi-step LangGraph behavior; accepted R0 changes lock order only; R1 remains the separate, unimplemented bounded-dispatch target; no duplicate Step completion; readiness/join follows committed DB state |
+| Locks/fencing | Accepted R0 order `Run -> Step -> Attempt -> Call -> Ledger`; location reads never decide; ordered lock/refresh/revalidate rejects changed chains; stale Attempt status/token/expiry has no late side effects; existing state_version command contracts remain equal |
+| Admission | Unimplemented/unauthorized target: after a separate gate, cap=1 and cap=N never exceed effective unexpired researcher attempts; cap-full rollback releases Run lock and mutates no Step/Event; expired lease recovery is atomic |
 | Provider/tool | reserve/send/reconcile/cancel and billable outcome-unknown behavior remains equal; budget ledger is atomic |
 | Object publication | commit-unknown path preserves publication hash, compensation, retry, and final artifact meaning |
 | Event oracle | A2a current runtime requires byte/row-equal event snapshots. R1/R2 require a per-Run `seq` that starts at 1, is contiguous and unique within that Run, and is allocated atomically across Workers; per-Step `queued < started < terminal`; legal Attempt/lease event order; dependencies succeeded before dependent queued; Run terminal last; dedupe/unique terminal; equal payload schema/error meaning. Independent researcher event interleaving may differ. |
@@ -504,15 +495,17 @@ SSoT/spec synchronization.
 
 ## 10. Authorization And Current Status
 
+R0 acceptance ledger (2026-08-24): start `7ee97471`; production `39766c374bd584b0cb834ef103de025d233c87c1`; final ledger closure `6b8ab475c14a7bbfe90f59a635255ca3768edcf9`; final Critical `ACCEPT (High=0, Medium=0, Low=0)` at review `9d4297f89451fe79b6d1c141613722f7749b11c0`. All four are local/not pushed; the branch has no upstream and no remote branch. PostgreSQL 17.10 `7/7`, report `95f2608e...`, deadlocks `0 -> 0`, no `40P01`/`55P03`; official Docker Hub timed out, while the same immutable pgvector digest through the mirror passed; focused `8`, API `90+49`, Worker `43`, A2a equal `7/7`. R1 is the only next separately gated implementation slice.
+
 Delivery state on 2026-08-24: PR #20 merged at `origin/main@9f40241`; behavioral baseline `d1b5945`; rejected initial snapshot `20d411e`; initial review record `5a6ee38`; immutable local repair commit `215cd52565089138704c6b637350e18bc8705c8b` on `work/research-boundary-runtime-20260824`, not pushed. Candidate production composition uses neutral commands/UoW (`uowEnterCount=38`). Final differential/boundary `8 passed`, `equal=true`, semantic SHA `119a36086bfb595ea0882deab719d530ebd0107296cf8033a4f348ef07e7d4c0`; full API/Worker partitions and deploy `6+2` pass. Official Docker Hub timed out, but mirror retrieval of the same pinned base digest produced controller pre-final API `b1b165f75d14`; the reviewer rebuilt immutable-SHA API `sha256:2437e95e909b2b6d941e58b58b28551f5a09c87d93594ac9e4c80ae9ba7fe70c`; final Worker remains `17e8f6645b4b`; final non-root/path/import smokes passed. Final Critical review is `ACCEPT (High=0, Medium=0, Low=0)` at local review commit `eb97adf`; production `215cd52`, documentation `95981a4`, and review `eb97adf` remain unpushed.
 
 Owner authorization covers the A0 ownership/transport direction and conditionally authorizes
 A1/A1b/A2-foundation/A2a/R0/R1/R2/W1 within these boundaries. The design re-audit is
 `ACCEPT (High=0, Medium=0, Low=0)` and A1 was independently accepted on `2026-08-20`.
 A1b/A2-foundation was independently accepted on 2026-08-21 (follow-up Critical review ACCEPT; High=0, Medium=0, Low=0);
-A2a was independently `ACCEPTED` on 2026-08-24 (`High=0`, `Medium=0`, `Low=0`) at production commit `215cd52565089138704c6b637350e18bc8705c8b`, documentation closure `95981a499521a28bfd9eb24480d54ef42f485528`, and review record `eb97adfa75660867eb31d46a4e7d7712909c348e`. All three commits are local and not pushed. R0 is the only next separately gated implementation slice; R1/R2/W1 and downstream remain blocked behind R0 or their named gates. G/M/P and GitHub repository settings remain unapproved.
+A2a was independently `ACCEPTED` on 2026-08-24 (`High=0`, `Medium=0`, `Low=0`) at production commit `215cd52565089138704c6b637350e18bc8705c8b`, documentation closure `95981a499521a28bfd9eb24480d54ef42f485528`, and review record `eb97adfa75660867eb31d46a4e7d7712909c348e`. All three commits are local and not pushed. R0 was independently `ACCEPTED` on 2026-08-24 (`High=0`, `Medium=0`, `Low=0`) across start `7ee97471ffb7d7d23e941d75795ab21d8cb3032b`, production `39766c374bd584b0cb834ef103de025d233c87c1`, final ledger closure `6b8ab475c14a7bbfe90f59a635255ca3768edcf9`, and review record `9d4297f89451fe79b6d1c141613722f7749b11c0`. All four commits are local and not pushed; the branch has no upstream and no remote branch. R1 is the only next separately gated implementation slice; R2/W1 and downstream remain blocked. R0 acceptance authorizes no schema/API/save/replay/permission/admission change and does not claim R1 implementation. G/M/P and GitHub repository settings remain unapproved.
 
 This text itself does not authorize additional schema/API changes, G/M/P work, GitHub
 settings, provider spend, or user research. The implementation sequence is A1 ->
-A1b/A2-foundation -> A2a -> R0 -> R1/R2. A2a is independently accepted at production `215cd52`, documentation `95981a4`, and review `eb97adf`; all are local and not pushed. R0 is the only next separately gated implementation slice; R1/R2/W1 and downstream remain blocked behind R0 or their named gates. No schema/API/save/
+A1b/A2-foundation -> A2a -> R0 -> R1/R2. A2a is independently accepted at production `215cd52`, documentation `95981a4`, and review `eb97adf`; all are local and not pushed. R0 was independently `ACCEPTED` on 2026-08-24 (`High=0`, `Medium=0`, `Low=0`) across start `7ee97471ffb7d7d23e941d75795ab21d8cb3032b`, production `39766c374bd584b0cb834ef103de025d233c87c1`, final ledger closure `6b8ab475c14a7bbfe90f59a635255ca3768edcf9`, and review record `9d4297f89451fe79b6d1c141613722f7749b11c0`. All four commits are local and not pushed; the branch has no upstream and no remote branch. R1 is the only next separately gated implementation slice; R2/W1 and downstream remain blocked. R0 acceptance authorizes no schema/API/save/replay/permission/admission change and does not claim R1 implementation. No schema/API/save/
 replay/permission changes are authorized; later slices remain blocked until their named gates.

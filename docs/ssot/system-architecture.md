@@ -738,7 +738,7 @@ M402 的 21-case 工程执行、7-case 真实 BFF 全栈/像素 Evidence 与 7-c
 
 - `b4d6f8a0c2e4` 增加获批的 Research ledger，`c5e7a9b1d3f6` 增加独立 Evaluation ledger，`e8f1a2b3c4d5` 发布 append-only Workflow/Prompt v2。
 - Worker 当前由 `research_executor_engine.py` 使用固定 LangGraph `StateGraph(ResearchState)` 执行进程内图；PostgreSQL 状态与 immutable Artifact 是 persistence/checkpoint/business truth，LangGraph 不是持久化 checkpoint authority。
-- **当前事实**：Research 锁获取顺序混合且存在冲突：Worker attempt paths 多为 `Attempt -> Step -> Run`，claim 为 `Step -> Run`，API cancel/retry/decision paths 为 `Run -> Step`；claim-vs-cancel 存在真实 deadlock ring。A2a 保持当前锁行为，R0 才统一顺序；不得用 deadlock retry 掩盖问题。
+- **当前事实**：Accepted R0 production `39766c37` 已将 Research 多行 mutation 统一为 `Run -> Step -> Attempt -> Call -> Ledger`；PostgreSQL 17.10 七场景通过，deadlocks `0 -> 0`，无 `40P01`/`55P03`。不得用 deadlock retry 掩盖锁序问题；R0 未加入该重试。
 - R800 v4 在真实 PostgreSQL/MinIO、生产镜像和 scripted provider 上通过全部场景、空部署恢复和零残留清理。该证据只关闭工程门；R803 模型质量与 M404 用户价值仍为 `not_evaluable`。
 
 ## 16. 当前架构裁决
@@ -761,7 +761,7 @@ M402 的 21-case 工程执行、7-case 真实 BFF 全栈/像素 Evidence 与 7-c
 
 A1 contracts was independently accepted on **2026-08-20**. A1b/A2-foundation was
 independently accepted on **2026-08-21** by the follow-up Critical review
-(`High=0`, `Medium=0`, `Low=0`). A2a initial snapshot `20d411e` was `REWORK (High=1, Medium=5, Low=1)`; A2a is independently `ACCEPTED (High=0, Medium=0, Low=0)` at local production `215cd52565089138704c6b637350e18bc8705c8b`, documentation `95981a499521a28bfd9eb24480d54ef42f485528`, and review `eb97adfa75660867eb31d46a4e7d7712909c348e`; none is pushed. R0 is the only next separately gated implementation slice; R1/R2/W1 and downstream remain blocked.
+(`High=0`, `Medium=0`, `Low=0`). A2a initial snapshot `20d411e` was `REWORK (High=1, Medium=5, Low=1)`; A2a is independently `ACCEPTED (High=0, Medium=0, Low=0)` at local production `215cd52565089138704c6b637350e18bc8705c8b`, documentation `95981a499521a28bfd9eb24480d54ef42f485528`, and review `eb97adfa75660867eb31d46a4e7d7712909c348e`; none is pushed. R0 is independently accepted at local chain `7ee97471 -> 39766c37 -> 6b8ab475 -> 9d4297f8`. R1 is the only next separately gated implementation slice; R2/W1 and downstream remain blocked; admission is unauthorized.
 The design re-audit is **ACCEPT (High=0, Medium=0, Low=0)**. No schema/API/save/replay/
 permission changes are authorized. For `internal_preview`, the owner-authorized target is a same-PostgreSQL-database
 adapter, not an internal HTTP or database split. API owns HTTP/authentication, Alembic
@@ -809,25 +809,23 @@ identity/hash, and artifact/claim/evidence provenance/hash from the DB; they car
 cross-step in-memory `ResearchState`. Existing `ResearchStep.input_sha256` keeps its
 current meaning; a canonical handler-input hash requires separate A-DATA.
 
-**R0 target, not implemented:** all multi-row paths use `Run -> Step -> Attempt -> Call -> Ledger`.
+**Accepted R0 current fact:** all multi-row paths use `Run -> Step -> Attempt -> Call -> Ledger`.
 Attempt/Call id paths read parent ids without locks only for location, then acquire and
 refresh the ordered chain and revalidate scope/status/token/expiry; changed locators fail
 closed. Claim selects candidate Runs with queued work using `FOR UPDATE SKIP LOCKED`,
 ordered by the minimum eligible Step tuple `(queued_at, created_at, step_id)` then Run id, locks Run first, rechecks status/cap,
 then locks the eligible Step using the existing `queued_at`, `created_at`, then Step ID ordering, and creates Attempt. Cancel locks Run
 first, then affected Steps; heartbeat, complete, reclaim, retry, decision, join,
-provider/tool, and publication follow the same order. R0 changes lock acquisition only;
-save/API/replay/permission semantics remain equal. R0 is required before R1 or per-Run
-admission and requires real PostgreSQL `pg_locks`/timeout evidence.
+provider/tool, and publication follow the same order. R0 changed lock acquisition only; save/API/replay/permission semantics remain equal. Its prerequisite is satisfied for a separately gated R1; per-Run admission remains unauthorized. Real PostgreSQL `pg_locks`/timeout evidence is accepted at review `9d4297f8`.
 
 Lease lifecycle remains exact: normal claim creates a new Attempt for a queued Step;
 heartbeat extends only that running Attempt; expiry reclaim marks the old Attempt
 `abandoned`, synchronizes Step through its existing failed/queued or cancellation path,
 and a later retry claim creates a new Attempt. An expired Attempt is never refreshed or
-revived. The formal R0 target preserves provider/tool outcome-unknown reconciliation and
+revived. Accepted R0 preserves provider/tool outcome-unknown reconciliation and
 object-publication commit-unknown compensation.
 
-Per-Run `maxParallelResearchers` uses existing Attempt rows as durable slots after R0.
+Per-Run `maxParallelResearchers` admission remains unimplemented and unauthorized. If separately gated later, it uses existing Attempt rows as durable slots under the accepted R0 lock root.
 A cap-full candidate Run rolls back the whole claim transaction, releases the Run lock,
 records local `excluded_run_ids`, and continues in a new transaction. It locks no Step and
 creates no Attempt, status change, or Event; only a Run that passes the locked cap check
@@ -846,7 +844,7 @@ only as post-commit wakeup.
 These are approved target rules, not shipped behavior. The design re-audit is
 `ACCEPT (High=0, Medium=0, Low=0)`. A1 was independently accepted on `2026-08-20`;
 A1b/A2-foundation was independently accepted on 2026-08-21 (follow-up Critical review ACCEPT; High=0, Medium=0, Low=0).
-A2a is independently accepted locally. R0 is the only next separately gated implementation slice; R1/R2/W1 and downstream remain blocked behind R0 or their named gates. No schema/API/save/replay/permission changes are authorized. G/M/P and GitHub settings remain unauthorized.
+A2a is independently accepted locally. R0 was independently `ACCEPTED` on 2026-08-24 (`High=0`, `Medium=0`, `Low=0`) across start `7ee97471ffb7d7d23e941d75795ab21d8cb3032b`, production `39766c374bd584b0cb834ef103de025d233c87c1`, final ledger closure `6b8ab475c14a7bbfe90f59a635255ca3768edcf9`, and review record `9d4297f89451fe79b6d1c141613722f7749b11c0`. All four commits are local and not pushed; the branch has no upstream and no remote branch. R1 is the only next separately gated implementation slice; R2/W1 and downstream remain blocked. R0 acceptance authorizes no schema/API/save/replay/permission/admission change and does not claim R1 implementation. No schema/API/save/replay/permission changes are authorized. G/M/P and GitHub settings remain unauthorized.
 Detailed slice boundaries and semantic oracle: [`research-boundary-runtime-design.md`](../../specs/v5/post-v5-optimization/research-boundary-runtime-design.md).
 
 ## 17. 当前 Evidence 域与演进门禁

@@ -5,7 +5,7 @@
 审查分支：`work/docs-stale-honesty-20260817`
 审查范围：`apps/api`、`apps/worker`、Python 镜像和部署编排。
 
-> 2026-08-24 current-state override: A2a is independently `ACCEPTED (High=0, Medium=0, Low=0)` at production `215cd52565089138704c6b637350e18bc8705c8b`, documentation closure `95981a499521a28bfd9eb24480d54ef42f485528`, and review record `eb97adfa75660867eb31d46a4e7d7712909c348e`. All three commits are local and not pushed. R0 is the only next separately gated implementation slice; R1/R2/W1 remain blocked.
+> 2026-08-24 current-state override: A2a and R0 are independently accepted. R0 chain: start `7ee97471`, production `39766c37`, final ledger `6b8ab475`, review `9d4297f8` (`High=0`, `Medium=0`, `Low=0`). All R0 commits are local/not pushed; the branch has no upstream and no remote branch. R1 is the only next separately gated implementation slice; R2/W1 remain blocked. No admission or R1 implementation is authorized.
 
 这份记录只处理两个问题：API/Worker 的实际代码边界，以及
 `evidence.py` / `assets.py` 等中心文件的下一步拆分方向。它不是一次重写授权，
@@ -133,7 +133,7 @@
 - **本轮不拆分** `evidence.py` / `assets.py` / `test_r803_campaign_v5.py` /
   `v5b_document_restore_acceptance.py`。
 - **Branch protection / GitHub 设置保持 unresolved**；本记录不调用仓库保护接口。
-- `internal_preview` 的 same-DB adapter、Worker orchestration、R0 lock-normalization target 与 Worker-side UoW commit-process target 已获 owner conditional authorization；API-process HTTP/RPC 仍未授权。修订设计的独立 Critical 复审已接受 (`High=0`, `Medium=0`, `Low=0`)；A1 已于 2026-08-20 独立 ACCEPT；A1b/A2-foundation 已于 2026-08-21 独立 ACCEPT（follow-up Critical review：High=0、Medium=0、Low=0），A2a was independently accepted at local production `215cd52`, documentation `95981a4`, and review `eb97adf`; none is pushed; R0/R1/R2/W1 及后续切片保持阻塞；不授权 schema/API/save/replay/permission 变更。
+- `internal_preview` 的 same-DB adapter、Worker orchestration、R0 lock-normalization target 与 Worker-side UoW commit-process target 已获 owner conditional authorization；API-process HTTP/RPC 仍未授权。修订设计的独立 Critical 复审已接受 (`High=0`, `Medium=0`, `Low=0`)；A1 已于 2026-08-20 独立 ACCEPT；A1b/A2-foundation 已于 2026-08-21 独立 ACCEPT（follow-up Critical review：High=0、Medium=0、Low=0），A2a was independently accepted at local production `215cd52`, documentation `95981a4`, and review `eb97adf`; none is pushed; R0 已在本地 review `9d4297f8` 独立 ACCEPT；R1 是唯一下一门控切片，R2/W1 继续 blocked，admission 未授权；不授权 schema/API/save/replay/permission 变更。
 
 ## 4. Proposed Incremental Boundary
 
@@ -170,7 +170,7 @@ import surface；迁移期间可 re-export 同一 classes。A1b/A2-foundation �
 pyproject/uv.lock path source 与 Docker 安装，Alembic 仍由 API 显式 import
 `citeframe_persistence.models` 并加载唯一 metadata；这项 foundation 是 A2a 显式前置。
 
-这是批准目标；A2a 已按该方向实现 DB-only boundary 并通过独立 Critical ACCEPT；三笔本地提交仍待远端交付。修订设计的独立 Critical 复审已接受 (`High=0`, `Medium=0`, `Low=0`)；A1 已于 2026-08-20 独立 ACCEPT；A1b/A2-foundation 已于 2026-08-21 独立 ACCEPT（follow-up Critical review：High=0、Medium=0、Low=0）；A2a was independently accepted at local production `215cd52`, documentation `95981a4`, and review `eb97adf`; none is pushed; R0/R1/R2/W1 及后续切片仍保持阻塞，且不授权 schema/API/save/replay/permission 变更。详细的 R1/R2/W1、锁/fencing、per-Run admission、
+这是批准目标；A2a 已按该方向实现 DB-only boundary 并通过独立 Critical ACCEPT；三笔本地提交仍待远端交付。修订设计的独立 Critical 复审已接受 (`High=0`, `Medium=0`, `Low=0`)；A1 已于 2026-08-20 独立 ACCEPT；A1b/A2-foundation 已于 2026-08-21 独立 ACCEPT（follow-up Critical review：High=0、Medium=0、Low=0）；A2a was independently accepted at local production `215cd52`, documentation `95981a4`, and review `eb97adf`; none is pushed; R0 已在本地 review `9d4297f8` 独立 ACCEPT；R1 是唯一下一门控切片，R2/W1 继续 blocked，admission 未授权，且不授权 schema/API/save/replay/permission 变更。详细的 R1/R2/W1、锁/fencing、per-Run admission、
 SSE 与语义 oracle 见
 [`research-boundary-runtime-design.md`](../../specs/v5/post-v5-optimization/research-boundary-runtime-design.md)。
 
@@ -242,12 +242,11 @@ single-attempt dispatcher。A2a 通过后，R1 才移除 LangGraph 的 runtime s
 职责并切换到 single-attempt dispatcher。现有 `ResearchStep.input_sha256` 含义保持不变；
 canonical handler-input hash 若未来定义，必须单独走 A-DATA。
 
-**R0：A2a 之后、R1/admission 之前统一锁协议（独立切片）**
+**R0：已独立 ACCEPT 的 Run-first 锁协议**
 
-当前锁事实是混合/冲突的：Worker attempt paths 多为 `Attempt -> Step -> Run`，claim
-为 `Step -> Run`，API cancel/retry/decision paths 为 `Run -> Step`；claim-vs-cancel
-存在真实 deadlock ring。A2a 保持当前锁行为，不能把旧序写成全路径权威。R0 只改
-锁获取顺序，不改保存、API、replay、permission 或 payload 语义，目标统一为：
+A2a 历史锁序混合/冲突。Accepted R0 production `39766c37` 已将所有多行 Research
+mutation 统一为 Run-first，且只改锁获取顺序，不改保存、API、replay、permission
+或 payload 语义。当前顺序为：
 
 ```text
 ResearchRun -> ResearchStep -> ResearchStepAttempt -> provider/tool Call -> ResearchBudgetLedger
@@ -363,7 +362,7 @@ Implementation-ready target details live in
   path source、contracts-only export/Docker/CI smoke and focused tests are present.
 - No schema/API/save/replay/permission/runtime behavior changed; A1 was independently
   accepted on 2026-08-20. A1b/A2-foundation was independently accepted on 2026-08-21 by the
-  follow-up Critical review (`High=0`, `Medium=0`, `Low=0`). A2a is independently accepted at production `215cd52`, docs `95981a4`, and review `eb97adf`. R0 is the only next separately gated implementation slice; R1/R2/W1 remain blocked.
+  follow-up Critical review (`High=0`, `Medium=0`, `Low=0`). A2a and R0 are independently accepted locally. R1 is the only next separately gated implementation slice; R2/W1 remain blocked.
 
 ### B（pilot 出口，非 C 入口）
 
@@ -387,9 +386,9 @@ Implementation-ready target details live in
 
 A0 目标方向已获 owner 授权，文档同步入口如下：
 
-1. Preserve production `215cd52`, documentation `95981a4`, and final review `eb97adf` as the accepted local A2a chain.
-2. Push all three commits and integrate them through the repository review flow; record remote SHAs without rewriting the accepted production snapshot.
-3. R0 is the only next separately gated implementation slice. Keep R1/R2 behind R0 and W1 behind its independent named gate; do not fold them into A2a.
+1. Preserve the accepted A2a chain and R0 chain `7ee97471 -> 39766c37 -> 6b8ab475 -> 9d4297f8`.
+2. Push/integrate through the repository review flow and record remote SHAs; the branch currently has no upstream or remote counterpart.
+3. R1 is the only next separately gated implementation slice. Keep R2/W1 behind their named gates and admission unauthorized; do not fold R1 into R0.
 4. 大文件拆分、G/M/P、provider spend、M404 与 branch protection 保持后置 / unauthorized。
 
 不要把 A2a、R1、B pilot、C 独立镜像、大文件拆分与 A0 文档冻结混成一个大 PR。

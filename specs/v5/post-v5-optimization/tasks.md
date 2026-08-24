@@ -2,7 +2,7 @@
 
 Status: **Design re-audit ACCEPT (High=0, Medium=0, Low=0); A1 independently accepted
 on 2026-08-20; A1b/A2-foundation independently accepted on 2026-08-21 by the follow-up
-Critical review (`High=0`, `Medium=0`, `Low=0`); A2a was independently `ACCEPTED` on 2026-08-24 (`High=0`, `Medium=0`, `Low=0`) at production commit `215cd52565089138704c6b637350e18bc8705c8b`, documentation closure `95981a499521a28bfd9eb24480d54ef42f485528`, and review record `eb97adfa75660867eb31d46a4e7d7712909c348e`. All three commits are local and not pushed. R0 is the only next separately gated implementation slice; R1/R2/W1 and downstream remain blocked behind R0 or their named gates**.
+Critical review (`High=0`, `Medium=0`, `Low=0`); A2a was independently `ACCEPTED` on 2026-08-24 (`High=0`, `Medium=0`, `Low=0`) at production commit `215cd52565089138704c6b637350e18bc8705c8b`, documentation closure `95981a499521a28bfd9eb24480d54ef42f485528`, and review record `eb97adfa75660867eb31d46a4e7d7712909c348e`. All three commits are local and not pushed. R0 was independently `ACCEPTED` on 2026-08-24 (`High=0`, `Medium=0`, `Low=0`) across start `7ee97471ffb7d7d23e941d75795ab21d8cb3032b`, production `39766c374bd584b0cb834ef103de025d233c87c1`, final ledger closure `6b8ab475c14a7bbfe90f59a635255ca3768edcf9`, and review record `9d4297f89451fe79b6d1c141613722f7749b11c0`. All four commits are local and not pushed; the branch has no upstream and no remote branch. R1 is the only next separately gated implementation slice; R2/W1 and downstream remain blocked. R0 acceptance authorizes no schema/API/save/replay/permission/admission change and does not claim R1 implementation**.
 
 Checkboxes distinguish authorization from implementation. The checked A1 item records
 implementer-complete code and evidence; later checked authorization items do not claim
@@ -34,10 +34,10 @@ G0-G3 and all GitHub repository settings remain unauthorized.
 - [x] A0 Freeze same-DB adapter; API HTTP/auth/Alembic/schema governance; Worker orchestration; Worker-side Research UoW commit-process ownership
 - [x] A0 Freeze `citeframe_contracts` / `citeframe_persistence` / `citeframe_research_persistence` ownership; prohibit copied mappings/transitions and `citeframe_research_persistence -> ai_pdf_api` imports
 - [x] A0 Freeze unchanged Step/Attempt/Claim/Event/save/replay/permission semantics and the existing lock/fencing contract
-- [x] R/W Freeze PostgreSQL-only orchestration, one-claimed-attempt dispatcher target, per-Run admission, and independent SSE target
-- [x] R0 Freeze Run-first lock normalization target; implementation remains conditional and separate from A2a/R1
+- [x] R/W Freeze PostgreSQL-only orchestration, one-claimed-attempt dispatcher target, admission target semantics, and independent SSE target; freeze does not authorize admission implementation
+- [x] R0 Freeze Run-first lock normalization target; accepted implementation remains separate from A2a/R1
 
-### Production implementation, A2a rework awaiting a new Critical gate; later slices blocked
+### Production implementation, R0 independently accepted; R1 is the only next gated slice
 
 - [x] A1 Add only `citeframe-backend-contracts` / `citeframe_contracts` pure DTO/Protocol package; API/Worker add only its local path and stage-specific export/smoke; no persistence or Research package scaffold (independently accepted 2026-08-20)
 - [x] A1b / A2-foundation Add `citeframe-backend-persistence` / `citeframe_persistence` on top of A1 as unique Base/metadata and all-model mapping distribution; extend manifests, Docker COPY/PYTHONPATH, and smoke with zero DDL drift (implementer-complete 2026-08-20; independently accepted 2026-08-21 by follow-up Critical review: High=0, Medium=0, Low=0)
@@ -46,7 +46,10 @@ G0-G3 and all GitHub repository settings remain unauthorized.
 - [x] Candidate neutral production composition (`uowEnterCount=38`), final differential/boundary `8 passed`, full API/Worker partitions, deploy `6+2`, and same-pinned-digest mirror image/runtime smokes recorded
 - [x] Final independent A2a Critical `ACCEPT (High=0, Medium=0, Low=0)` in [`reviews/a2a-persistence-critical-reaudit-2026-08-24.md`](reviews/a2a-persistence-critical-reaudit-2026-08-24.md), local review commit `eb97adf`
 - [ ] Push production `215cd52`, documentation `95981a4`, and review `eb97adf`, then integrate through the repository review flow
-- [ ] R0 Normalize all mutation lock acquisition to `Run -> Step -> Attempt -> Call -> Ledger`; prove real PostgreSQL lock/deadlock evidence without save/API semantic change
+- [x] R0 Normalize all mutation lock acquisition to `Run -> Step -> Attempt -> Call -> Ledger` at production `39766c37`, preserving save/API semantics
+- [x] R0 final ledger closure `6b8ab475` and independent Critical [`ACCEPT (High=0, Medium=0, Low=0)`](reviews/r0-lock-normalization-critical-review-2026-08-24.md) at local review `9d4297f8`; start `7ee97471`; no upstream/remote branch/push
+- [x] R0 evidence: PostgreSQL 17.10 `7/7`, report `95f2608e...`, deadlocks `0 -> 0`, no `40P01`/`55P03`, focused `8`, API `90+49`, Worker `43`, A2a equal `7/7`
+- [ ] Push/integrate the accepted R0 chain through the repository review flow
 - [ ] R1 Change `process_one` into bounded concurrent dispatcher loops; each loop creates one `ResearchStepAttempt` lease and executes exactly that newly claimed Attempt with its step-kind handler; prove production-shaped two-loop overlap; keep separate from A2a
 - [ ] R2 Prove two-or-more Worker contention, cap=1/N, cap-full Run skipping/fairness/no-starvation, equal-time Step ordering, lease expiry/late completion, cancel/provider races, join/conflict/recovery on real PostgreSQL
 - [ ] W1 Implement single-flight/dirty rerun, monotonic event gate, Run-switch abort/discard, event-directed artifact cache, terminal flush, and replay fallback
@@ -55,10 +58,9 @@ G0-G3 and all GitHub repository settings remain unauthorized.
 - [ ] A5 Prove candidate Worker import/compile/start/ingest/Research/recovery/version-mismatch without API source/editable dependency/PYTHONPATH
 - [ ] A6 Replace legacy Worker target only after A5 and pass deploy/restore regression
 
-A1b/A2-foundation was independently accepted on 2026-08-21 (follow-up Critical review ACCEPT; High=0, Medium=0, Low=0). A2a is independently accepted at local production `215cd52`, documentation `95981a4`, and review `eb97adf`; none is pushed. No schema/API/save/replay/permission changes are authorized. A2a preserves the current multi-step `process_one` LangGraph
-behavior and current mixed lock behavior. R0 is the only next separately gated
-implementation slice and only changes lock
-acquisition order; R1 is the later slice that removes LangGraph runtime step execution and
+A1b/A2-foundation was independently accepted on 2026-08-21 (follow-up Critical review ACCEPT; High=0, Medium=0, Low=0). A2a is independently accepted at local production `215cd52`, documentation `95981a4`, and review `eb97adf`; none is pushed. No schema/API/save/replay/permission changes are authorized. A2a preserved the fixed multi-step `process_one` LangGraph behavior and its historical mixed lock behavior; accepted R0 later changed lock acquisition order only. R1 is the only
+next separately gated implementation slice and is not implemented. R2/W1 remain blocked;
+per-Run admission is not authorized. R1 is the later slice that removes LangGraph runtime step execution and
 introduces one-claimed-attempt dispatch. A5 cannot be claimed until A3/A4 cover all nine
 modalities and Research runtime, composition, and recovery gates pass.
 

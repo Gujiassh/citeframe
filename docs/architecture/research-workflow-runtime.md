@@ -10,7 +10,7 @@
 - First formal campaign attempt: [`../evals/artifacts/r803-campaign-20260730-v1/`](../evals/artifacts/r803-campaign-20260730-v1/) (`failed`, 0/5 completed rounds; immutable)
 - Engineering gate: deterministic R800 baseline `pass`; R803 formal campaign v1 `fail`
 - Research boundary status: the design re-audit is **ACCEPT (High=0, Medium=0, Low=0)**; A1 was independently accepted on **2026-08-20**. A1b/A2-foundation was independently accepted on 2026-08-21 by the follow-up Critical review
-(`High=0`, `Medium=0`, `Low=0`). A2a initial snapshot `20d411e` received `REWORK (High=1, Medium=5, Low=1)`. A2a is independently `ACCEPTED (High=0, Medium=0, Low=0)` at local production `215cd52565089138704c6b637350e18bc8705c8b`, documentation `95981a499521a28bfd9eb24480d54ef42f485528`, and review `eb97adfa75660867eb31d46a4e7d7712909c348e`; none is pushed. R0 is the only next separately gated implementation slice; R1/R2/W1 and downstream remain blocked. Current evidence is in `../../specs/v5/post-v5-optimization/reviews/a2a-persistence-rework-implementation-2026-08-24.md`.
+(`High=0`, `Medium=0`, `Low=0`). A2a initial snapshot `20d411e` received `REWORK (High=1, Medium=5, Low=1)`. A2a is independently `ACCEPTED (High=0, Medium=0, Low=0)` at local production `215cd52565089138704c6b637350e18bc8705c8b`, documentation `95981a499521a28bfd9eb24480d54ef42f485528`, and review `eb97adfa75660867eb31d46a4e7d7712909c348e`; none is pushed. R0 is independently accepted at local chain `7ee97471 -> 39766c37 -> 6b8ab475 -> 9d4297f8`. R1 is the only next separately gated implementation slice; R2/W1 and downstream remain blocked; admission is unauthorized. A2a evidence is in `../../specs/v5/post-v5-optimization/reviews/a2a-persistence-rework-implementation-2026-08-24.md`; R0 acceptance is in `../../specs/v5/post-v5-optimization/reviews/r0-lock-normalization-critical-review-2026-08-24.md`.
 - Latest interpretable paired diagnostic gates (v4): Quick `pass`; Research `fail` with 5/6 completed cases
 - Model-quality gate: `not_evaluable` because formal v1 interrupted before any round completed
 - User-value gate: `not_evaluable` until M404 contains qualified target-user evidence
@@ -51,12 +51,12 @@ The A2a transition slice must preserve the current behavior in which one `proces
 can drive multiple steps through the fixed LangGraph StateGraph. After A2a is accepted,
 R0 first normalizes lock acquisition; the later R1 slice then changes runtime execution to
 one claimed Attempt per handler in a bounded pool of independent dispatcher loops and
-removes LangGraph from runtime step execution. Research-enabled production must run at
-least two loops; acceptance proves real branch overlap and wall time below the serialized
-sum while the persisted per-Run cap remains the concurrency authority. The implementation-ready target and its current/not-implemented status are recorded in
+removes LangGraph from runtime step execution. The separately gated R1 target requires at
+least two loops and real branch overlap. R1 is unimplemented; per-Run admission remains a
+separate unauthorized target. The implementation-ready target and its current/not-implemented status are recorded in
 [`../../specs/v5/post-v5-optimization/research-boundary-runtime-design.md`](../../specs/v5/post-v5-optimization/research-boundary-runtime-design.md). A1 implementation evidence and independent ACCEPT on 2026-08-20 are recorded.
 A1b/A2-foundation was independently accepted on 2026-08-21 (follow-up Critical review ACCEPT; High=0, Medium=0, Low=0);
-A2a is independently accepted locally. R0 is the only next separately gated implementation slice; R1/R2/W1 and downstream remain blocked behind R0 or their named gates. No schema/API/save/replay/permission changes are authorized.
+A2a is independently accepted locally. R0 was independently `ACCEPTED` on 2026-08-24 (`High=0`, `Medium=0`, `Low=0`) across start `7ee97471ffb7d7d23e941d75795ab21d8cb3032b`, production `39766c374bd584b0cb834ef103de025d233c87c1`, final ledger closure `6b8ab475c14a7bbfe90f59a635255ca3768edcf9`, and review record `9d4297f89451fe79b6d1c141613722f7749b11c0`. All four commits are local and not pushed; the branch has no upstream and no remote branch. R1 is the only next separately gated implementation slice; R2/W1 and downstream remain blocked. R0 acceptance authorizes no schema/API/save/replay/permission/admission change and does not claim R1 implementation. No schema/API/save/replay/permission changes are authorized.
 
 ## Orchestration Decision
 
@@ -129,14 +129,9 @@ pricing remains null/unavailable, and V5-C usage DTOs do not expose money.
 
 ## Concurrency And Locking
 
-**Current fact:** lock acquisition is mixed and conflicting. Many Worker attempt paths use
-`Attempt -> Step -> Run`; claim uses `Step -> Run`; API cancel, retry, and decision paths
-use `Run -> Step`. Claim-versus-cancel therefore has a real reverse-order deadlock ring.
-A2a preserves this current lock behavior; it must not be described as one authoritative
-order or as a safe claim exception.
-
-**R0 target, not implemented:** normalize every multi-row mutation to the aggregate-root
-order:
+**Accepted current fact:** A2a historically mixed `Attempt -> Step -> Run`, `Step -> Run`,
+and `Run -> Step`, including a claim-versus-cancel reverse-order ring. Accepted R0 production
+`39766c37` now normalizes every multi-row mutation to the aggregate-root order:
 
 ```text
 ResearchRun -> ResearchStep -> ResearchStepAttempt -> provider/tool Call -> ResearchBudgetLedger
@@ -153,10 +148,7 @@ Step id order. Heartbeat, complete, reclaim, retry, decision, join, provider/too
 publication follow the same order. R0 changes lock acquisition only and preserves save,
 API, replay, permission, and payload semantics.
 
-R0 is a separate slice after A2a and before R1 or per-Run admission. It must not add
-deadlock retries. Real PostgreSQL `pg_locks` and lock-timeout evidence is required for
-claim-versus-cancel, claim-versus-complete, reclaim-versus-provider/tool, two claims on
-one Run, and claims on different Runs.
+R0 was implemented separately and independently accepted at review `9d4297f8`. PostgreSQL 17.10 `pg_locks`/blocking evidence passes all seven scenarios with deadlocks `0 -> 0` and no `40P01`/`55P03`. No deadlock retry or admission behavior was added.
 
 Lease lifecycle remains exact: normal claim creates a new Attempt for a queued Step;
 heartbeat extends only that running Attempt; expiry reclaim marks the old Attempt
@@ -165,8 +157,7 @@ later retry creates a new Attempt. An expired Attempt is never refreshed or revi
 Provider/tool outcome-unknown and object-publication commit-unknown compensation remain
 unchanged. Do not use deadlock retry to hide a lock-order regression.
 
-Per-Run `maxParallelResearchers` admission is implemented after R0 under the same Run
-lock. A candidate cap-full Run causes rollback of the whole claim transaction, releases
+Per-Run `maxParallelResearchers` admission remains unimplemented and unauthorized. If separately gated later, it uses the accepted Run lock root. A candidate cap-full Run causes rollback of the whole claim transaction, releases
 Run locks, records local `excluded_run_ids`, and continues in a new transaction. No Step
 is locked and no Attempt, status, or Event mutation occurs for that Run. Only after the
 Run passes the cap check does the transaction lock an eligible Step and create Attempt.
