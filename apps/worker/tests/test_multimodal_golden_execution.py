@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 import os
 import sys
+import uuid
 from datetime import UTC, datetime
 from hashlib import sha256
 from pathlib import Path
@@ -46,11 +47,54 @@ from ai_pdf_api.services.retrieval import retrieve_query_content
 from ai_pdf_worker.image_ingestion import ImageIngestionAdapter, extract_image_text_with_ocr
 from ai_pdf_worker.pdf_ingestion import PdfIngestionAdapter
 
+pytestmark = pytest.mark.acceptance
 
 REPOSITORY_ROOT = Path(__file__).resolve().parents[3]
 EVAL_ROOT = REPOSITORY_ROOT / "docs/evals"
 TEST_FILE = "apps/worker/tests/test_multimodal_golden_execution.py"
 TEST_NODE = f"{TEST_FILE}::test_m402_worker_executes_every_golden_evidence_target"
+
+# ORM defaults and chat/citation clone paths call uuid4() for entity PKs. Production
+# retrieval tie-breaks on ContentUnit.id / EvidenceLocator.id (and embedding.id on
+# ANN paths). Random fixture IDs therefore change truncated retrieval sets under
+# equal topic-vector distances. Patch only inside this harness so golden ranking
+# is repeatable without changing production semantics.
+_M402_UUID4_PATCH_TARGETS = (
+    "ai_pdf_api.models.asset_representation.uuid4",
+    "ai_pdf_api.models.chat_message.uuid4",
+    "ai_pdf_api.models.content_unit.uuid4",
+    "ai_pdf_api.models.content_unit_embedding.uuid4",
+    "ai_pdf_api.models.evidence_locator.uuid4",
+    "ai_pdf_api.models.message_citation.uuid4",
+    "ai_pdf_api.models.message_input_evidence.uuid4",
+    "ai_pdf_api.models.pdf_page.uuid4",
+    "ai_pdf_api.models.workspace_membership.uuid4",
+    "ai_pdf_api.modalities.evidence.uuid4",
+    "ai_pdf_api.services.chat.uuid4",
+)
+
+
+class _DeterministicUuid4:
+    """Stable, unique, UUID-shaped IDs for one M402 harness session."""
+
+    def __init__(self, *, namespace: str) -> None:
+        self._namespace = namespace
+        self._counter = 0
+
+    def __call__(self) -> uuid.UUID:
+        self._counter += 1
+        return uuid.uuid5(uuid.NAMESPACE_URL, f"{self._namespace}:{self._counter}")
+
+
+def _install_deterministic_m402_ids(
+    monkeypatch: pytest.MonkeyPatch,
+    *,
+    namespace: str = "m402-golden",
+) -> _DeterministicUuid4:
+    factory = _DeterministicUuid4(namespace=namespace)
+    for target in _M402_UUID4_PATCH_TARGETS:
+        monkeypatch.setattr(target, factory)
+    return factory
 
 
 class GoldenCaptionProvider:
@@ -166,6 +210,43 @@ def _asset(
         created_at=now,
         updated_at=now,
     )
+
+
+def _fixture_object_store(fixtures) -> dict[str, bytes]:
+    """Map Asset.object_key values used by M402 fixtures to local source bytes.
+
+    complete_chat visual enrichment defaults to MinIO download_bytes. CI has no
+    MinIO service, so the golden harness must stay fully offline.
+    """
+    store: dict[str, bytes] = {}
+    for fixture in fixtures:
+        source_path = REPOSITORY_ROOT / fixture.source_path
+        store[f"m402/{source_path.name}"] = source_path.read_bytes()
+    return store
+
+
+def _offline_image_bytes_loader(store: dict[str, bytes]):
+    def load(object_key: str) -> bytes:
+        try:
+            return store[object_key]
+        except KeyError as error:
+            raise KeyError(f"m402 offline store missing object_key={object_key}") from error
+
+    return load
+
+
+def _forbid_live_object_storage(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Fail closed if any code path tries to reach the default MinIO endpoint."""
+
+    def _blocked(*_args, **_kwargs):
+        raise AssertionError(
+            "M402 golden acceptance must stay offline; live object storage was invoked"
+        )
+
+    monkeypatch.setattr("ai_pdf_api.services.storage.build_storage_client", _blocked)
+    monkeypatch.setattr("ai_pdf_api.services.storage.download_bytes", _blocked)
+    monkeypatch.setattr("ai_pdf_api.services.storage.upload_bytes", _blocked)
+    monkeypatch.setattr("ai_pdf_api.services.chat.download_bytes", _blocked)
 
 
 def _persist_fixture_assets(db: Session, fixtures) -> dict[str, Asset]:
@@ -424,6 +505,7 @@ def _execute_real_model_cases(
     workspace: Workspace,
     user: User,
     embedding_provider: GoldenEmbeddingProvider,
+    image_bytes_loader: Callable[[str], bytes] | None = None,
 ) -> None:
     oracle = load_multimodal_answer_oracle(
         REPOSITORY_ROOT,
@@ -468,6 +550,7 @@ def _execute_real_model_cases(
                 asset_scope=_case_scope(case, assets),
                 embedding_provider=embedding_provider,
                 generation_provider=generation_provider,
+                image_bytes_loader=image_bytes_loader,
             )
             messages = json.loads(json.dumps(prepared.generation_messages))
             try:
@@ -551,7 +634,14 @@ def _execute_real_model_cases(
     assert not failed_case_ids, f"M402 real-model oracle failed: {failed_case_ids}"
 
 
-def test_m402_worker_executes_every_golden_evidence_target() -> None:
+def _run_m402_golden_acceptance(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Offline M402 golden acceptance body shared by pytest nodes.
+
+    Not a pytest test: callers must be ordinary test functions so fixtures are
+    not invoked by one test calling another.
+    """
+    _forbid_live_object_storage(monkeypatch)
+    _install_deterministic_m402_ids(monkeypatch, namespace="m402-golden-acceptance")
     golden, _failures, _report = load_multimodal_quality_suite(
         REPOSITORY_ROOT,
         EVAL_ROOT / "multimodal-golden-v1.json",
@@ -565,6 +655,8 @@ def test_m402_worker_executes_every_golden_evidence_target() -> None:
     )
     Base.metadata.create_all(engine)
     fixtures = {fixture.id: fixture for fixture in golden.fixtures}
+    offline_store = _fixture_object_store(golden.fixtures)
+    image_bytes_loader = _offline_image_bytes_loader(offline_store)
     with Session(engine) as db:
         user, workspace = _persist_identity(db)
         assets = _persist_fixture_assets(db, golden.fixtures)
@@ -661,6 +753,7 @@ def test_m402_worker_executes_every_golden_evidence_target() -> None:
                 asset_scope=_case_scope(case, assets),
                 embedding_provider=provider,
                 generation_provider=generation,
+                image_bytes_loader=image_bytes_loader,
             )
             if case.expected_disposition == "refuse":
                 assert "do not contain supporting evidence" in completed.assistant_message.content
@@ -733,8 +826,91 @@ def test_m402_worker_executes_every_golden_evidence_target() -> None:
                 workspace=workspace,
                 user=user,
                 embedding_provider=provider,
+                image_bytes_loader=image_bytes_loader,
             )
         )
+
+
+def test_m402_worker_executes_every_golden_evidence_target(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    _run_m402_golden_acceptance(monkeypatch)
+
+
+def test_m402_answer_mixed_compare_stays_offline_without_minio(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Regression for CI run 32010694251: answer-mixed-compare hit MinIO retries.
+
+    Persist the full golden fixture set (same as the acceptance node) so retrieval
+    ranking matches production acceptance; only execute the historically failing
+    answer case, and prove chat never touches live object storage.
+    """
+    _forbid_live_object_storage(monkeypatch)
+    _install_deterministic_m402_ids(monkeypatch, namespace="m402-golden-mixed-compare")
+    golden, _failures, _report = load_multimodal_quality_suite(
+        REPOSITORY_ROOT,
+        EVAL_ROOT / "multimodal-golden-v1.json",
+        EVAL_ROOT / "multimodal-failures-v1.json",
+    )
+    case = next(item for item in golden.cases if item.id == "answer-mixed-compare")
+    fixtures = {fixture.id: fixture for fixture in golden.fixtures}
+    offline_store = _fixture_object_store(golden.fixtures)
+    image_bytes_loader = _offline_image_bytes_loader(offline_store)
+    loader_hits: list[str] = []
+
+    def tracked_loader(object_key: str) -> bytes:
+        loader_hits.append(object_key)
+        return image_bytes_loader(object_key)
+
+    engine = create_engine(
+        "sqlite://",
+        connect_args={"check_same_thread": False},
+        poolclass=StaticPool,
+        future=True,
+    )
+    Base.metadata.create_all(engine)
+    with Session(engine) as db:
+        user, workspace = _persist_identity(db)
+        assets = _persist_fixture_assets(db, golden.fixtures)
+        provider = _add_embeddings(db, assets)
+        generation = GoldenGenerationProvider(
+            {case.question: " ".join(case.expected_answer_points)}
+        )
+        thread = ChatThread(
+            id="m402-thread-mixed-compare",
+            workspace_id=workspace.id,
+            created_by_user_id=user.id,
+            last_message_at=datetime.now(UTC),
+            created_at=datetime.now(UTC),
+            updated_at=datetime.now(UTC),
+        )
+        db.add(thread)
+        db.commit()
+        completed = complete_chat(
+            db,
+            workspace_id=workspace.id,
+            user_id=user.id,
+            thread=thread,
+            question=case.question,
+            asset_scope=_case_scope(case, assets),
+            embedding_provider=provider,
+            generation_provider=generation,
+            image_bytes_loader=tracked_loader,
+        )
+        assert all(
+            point in completed.assistant_message.content for point in case.expected_answer_points
+        )
+        for target in case.evidence_targets:
+            assert _citations_cover_target(
+                db,
+                completed.citations,
+                assets[target.fixture_id],
+                fixtures[target.fixture_id],
+                target,
+            ), (case.id, target.fixture_id)
+        assert loader_hits, "visual enrichment should load offline PDF bytes"
+        assert all(key.startswith("m402/") for key in loader_hits)
 
 
 def test_m402_real_model_runner_is_opt_in(monkeypatch: pytest.MonkeyPatch) -> None:
@@ -785,7 +961,7 @@ def test_m402_real_model_runner_preserves_all_results_before_failure(
     )
 
     with pytest.raises(AssertionError, match="answer-pdf-table"):
-        test_m402_worker_executes_every_golden_evidence_target()
+        _run_m402_golden_acceptance(monkeypatch)
 
     payload = json.loads(output_path.read_text(encoding="utf-8"))
     assert payload["passed"] is False

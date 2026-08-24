@@ -208,6 +208,91 @@ class PromptEvidenceEntry:
     excerpt: str
 
 
+class ExecutionSourceProvenanceEntry(StrictModel):
+    id: str = Field(min_length=1)
+    execution_schema_version: str = Field(alias="executionSchemaVersion", min_length=1)
+    test_file: str = Field(alias="testFile", min_length=1)
+    test_file_sha256: str = Field(alias="testFileSha256", pattern=r"^[0-9a-f]{64}$")
+    execution_artifact_path: str = Field(alias="executionArtifactPath", min_length=1)
+    artifact_sha256: str = Field(alias="artifactSha256", pattern=r"^[0-9a-f]{64}$")
+    original_artifact_commit: str = Field(alias="originalArtifactCommit", pattern=r"^[0-9a-f]{40}$")
+    original_embedded_test_file_sha256: str = Field(
+        alias="originalEmbeddedTestFileSha256",
+        pattern=r"^[0-9a-f]{64}$",
+    )
+    original_embedded_runner_commit: str = Field(
+        alias="originalEmbeddedRunnerCommit",
+        pattern=r"^([0-9a-f]{40}|not-attested)$",
+    )
+    approved_runner_commit: str = Field(alias="approvedRunnerCommit", pattern=r"^[0-9a-f]{40}$")
+    identity_repin_commit: str = Field(alias="identityRepinCommit", pattern=r"^[0-9a-f]{40}$")
+    approval_kind: Literal["manual_runner_identity_repin"] = Field(alias="approvalKind")
+    rationale: str = Field(min_length=1)
+
+
+class ExecutionSourceProvenance(StrictModel):
+    schema_version: Literal["m402-execution-source-provenance-v1"] = Field(alias="schemaVersion")
+    entries: list[ExecutionSourceProvenanceEntry] = Field(min_length=1)
+
+    @model_validator(mode="after")
+    def validate_unique_entries(self) -> "ExecutionSourceProvenance":
+        ids = [entry.id for entry in self.entries]
+        if len(ids) != len(set(ids)):
+            raise ValueError("provenance entry ids must be unique")
+        identities = [
+            (
+                entry.execution_schema_version,
+                entry.test_file,
+                entry.test_file_sha256,
+                entry.execution_artifact_path,
+                entry.artifact_sha256,
+            )
+            for entry in self.entries
+        ]
+        if len(identities) != len(set(identities)):
+            raise ValueError(
+                "provenance (schemaVersion, testFile, testFileSha256, "
+                "executionArtifactPath, artifactSha256) identities must be unique"
+            )
+        artifact_paths = [entry.execution_artifact_path for entry in self.entries]
+        if len(artifact_paths) != len(set(artifact_paths)):
+            raise ValueError("provenance executionArtifactPath values must be unique")
+        return self
+
+
+@dataclass(frozen=True)
+class LoadedExecution:
+    """One execution artifact loaded from a single bytes read.
+
+    Repository-relative paths keep their canonical posix identity. Outside-repo
+    test inputs are allowed for early semantic rejection and are labeled with an
+    absolute sentinel that can never match historical provenance entries.
+    """
+
+    relative_path: str
+    raw_bytes: bytes
+    sha256: str
+    model: object
+    inside_repository: bool
+
+
+@dataclass(frozen=True)
+class LoadedProvenance:
+    """One provenance contract snapshot loaded from a single bytes read."""
+
+    relative_path: str
+    raw_bytes: bytes
+    sha256: str
+    model: ExecutionSourceProvenance
+
+
+_OUTSIDE_REPOSITORY_ARTIFACT_PREFIX = "<outside-repository>/"
+
+_DEFAULT_EXECUTION_SOURCE_PROVENANCE_PATH = Path(
+    "docs/evals/m402-execution-source-provenance-v1.json"
+)
+
+
 def canonical_generation_messages_sha256(
     messages: list[RealModelGenerationMessage] | list[dict[str, object]],
 ) -> str:
@@ -229,6 +314,14 @@ def load_multimodal_answer_oracle(
     oracle_path: Path,
     golden: GoldenSet,
 ) -> AnswerOracle:
+    return _load_multimodal_answer_oracle(repository_root, oracle_path, golden).model
+
+
+def _load_multimodal_answer_oracle(
+    repository_root: Path,
+    oracle_path: Path,
+    golden: GoldenSet,
+) -> LoadedExecution:
     root = repository_root.resolve()
     candidate = oracle_path if oracle_path.is_absolute() else root / oracle_path
     try:
@@ -236,7 +329,12 @@ def load_multimodal_answer_oracle(
     except ValueError as error:
         raise QualityDataError("M402 answer oracle must be stored inside the repository.") from error
     canonical_path = _repository_artifact(root, relative_path)
-    oracle = _load_execution(canonical_path, AnswerOracle)
+    oracle_loaded = _load_execution(root, canonical_path, AnswerOracle)
+    oracle = oracle_loaded.model
+    if not isinstance(oracle, AnswerOracle):
+        raise QualityDataError("M402 answer oracle payload has the wrong schema.")
+    if not oracle_loaded.inside_repository:
+        raise QualityDataError("M402 answer oracle must be stored inside the repository.")
     expected_cases = [case for case in golden.cases if case.layer == "answer"]
     if [case.case_id for case in oracle.cases] != [case.id for case in expected_cases]:
         raise QualityDataError("M402 answer oracle must bind every golden answer case in canonical order.")
@@ -245,7 +343,7 @@ def load_multimodal_answer_oracle(
             raise QualityDataError(f"M402 answer oracle disposition drifted for {golden_case.id!r}.")
         if oracle_case.answer_points != golden_case.expected_answer_points:
             raise QualityDataError(f"M402 answer oracle points drifted for {golden_case.id!r}.")
-    return oracle
+    return oracle_loaded
 
 
 def evaluate_real_model_output(oracle_case: AnswerOracleCase, output: str) -> RealModelEvaluation:
@@ -375,16 +473,46 @@ def build_multimodal_execution_report(
 ) -> dict[str, object]:
     root = repository_root.resolve()
     oracle_path = answer_oracle_path or root / "docs/evals/multimodal-answer-oracle-v1.json"
-    oracle = load_multimodal_answer_oracle(root, oracle_path, golden)
-    worker = _load_execution(worker_path, WorkerExecution)
-    desktop = _load_execution(desktop_path, PlaywrightExecution)
-    mobile = _load_execution(mobile_path, PlaywrightExecution)
-    real_model = _load_execution(real_model_path, RealModelExecution) if real_model_path else None
+    oracle_loaded = _load_multimodal_answer_oracle(root, oracle_path, golden)
+    oracle = oracle_loaded.model
+    worker_loaded = _load_execution(root, worker_path, WorkerExecution)
+    desktop_loaded = _load_execution(root, desktop_path, PlaywrightExecution)
+    mobile_loaded = _load_execution(root, mobile_path, PlaywrightExecution)
+    real_model_loaded = (
+        _load_execution(root, real_model_path, RealModelExecution)
+        if real_model_path is not None
+        else None
+    )
+    worker = worker_loaded.model
+    desktop = desktop_loaded.model
+    mobile = mobile_loaded.model
+    real_model = real_model_loaded.model if real_model_loaded is not None else None
+    if not isinstance(worker, WorkerExecution):
+        raise QualityDataError("M402 Worker execution payload has the wrong schema.")
+    if not isinstance(desktop, PlaywrightExecution) or not isinstance(mobile, PlaywrightExecution):
+        raise QualityDataError("M402 Playwright execution payload has the wrong schema.")
+    if real_model is not None and not isinstance(real_model, RealModelExecution):
+        raise QualityDataError("M402 real-model execution payload has the wrong schema.")
+    if not isinstance(oracle, AnswerOracle):
+        raise QualityDataError("M402 answer oracle payload has the wrong schema.")
+
+    # One provenance snapshot per report: every historical source check must use
+    # the same bytes/path/SHA/model, and that exact snapshot is registered below.
+    provenance_loaded = _load_execution_source_provenance(root)
 
     golden_by_id = {case.id: case for case in golden.cases}
     answer_cases = {case.id: case for case in golden.cases if case.layer == "answer"}
     worker_by_id = _unique_cases("worker", worker.cases)
-    _validate_test_source(root, worker.test_file, worker.test_file_sha256)
+    _validate_test_source(
+        root,
+        worker.test_file,
+        worker.test_file_sha256,
+        execution_schema_version=worker.schema_version,
+        execution_artifact_path=worker_loaded.relative_path,
+        execution_artifact_sha256=worker_loaded.sha256,
+        execution_artifact_inside_repository=worker_loaded.inside_repository,
+        provenance=provenance_loaded,
+    )
     if set(worker_by_id) != set(golden_by_id) or not worker.passed:
         raise QualityDataError("M402 Worker execution must pass every golden case exactly once.")
     for case_id, result in worker_by_id.items():
@@ -405,15 +533,37 @@ def build_multimodal_execution_report(
         ):
             raise QualityDataError(f"M402 Worker did not execute scripted Chat orchestration for {case_id!r}.")
 
-    desktop_by_id = _validate_playwright(root, golden, desktop, "desktop")
-    mobile_by_id = _validate_playwright(root, golden, mobile, "mobile")
+    desktop_by_id = _validate_playwright(
+        root,
+        golden,
+        desktop_loaded,
+        "desktop",
+        provenance=provenance_loaded,
+    )
+    mobile_by_id = _validate_playwright(
+        root,
+        golden,
+        mobile_loaded,
+        "mobile",
+        provenance=provenance_loaded,
+    )
     if desktop.run_id != mobile.run_id:
         raise QualityDataError("M402 desktop and mobile evidence must come from the same live run.")
 
     real_model_by_id: dict[str, RealModelExecutionCase] = {}
     real_model_evaluations: dict[str, RealModelEvaluation] = {}
     if real_model is not None:
-        _validate_test_source(root, real_model.test_file, real_model.test_file_sha256)
+        assert real_model_loaded is not None
+        _validate_test_source(
+            root,
+            real_model.test_file,
+            real_model.test_file_sha256,
+            execution_schema_version=real_model.schema_version,
+            execution_artifact_path=real_model_loaded.relative_path,
+            execution_artifact_sha256=real_model_loaded.sha256,
+            execution_artifact_inside_repository=real_model_loaded.inside_repository,
+            provenance=provenance_loaded,
+        )
         expected_test_node = (
             "apps/worker/tests/test_multimodal_golden_execution.py::"
             "test_m402_worker_executes_every_golden_evidence_target"
@@ -453,16 +603,25 @@ def build_multimodal_execution_report(
                 raise QualityDataError(f"M402 real-model answer oracle failed for {case_id!r}.")
             real_model_evaluations[case_id] = evaluation
 
-    artifact_paths = [worker_path, desktop_path, mobile_path, oracle_path]
-    for execution in (desktop, mobile):
-        artifact_paths.extend(
-            root / target.screenshot_path
-            for case in execution.cases
-            for target in case.targets
-        )
-    if real_model_path is not None:
-        artifact_paths.append(real_model_path)
-    artifacts = _artifact_records(root, artifact_paths)
+    loaded_execution_inputs = [worker_loaded, desktop_loaded, mobile_loaded, oracle_loaded]
+    if real_model_loaded is not None:
+        loaded_execution_inputs.append(real_model_loaded)
+    for loaded in loaded_execution_inputs:
+        if not loaded.inside_repository:
+            raise QualityDataError(
+                f"M402 report input or artifact is outside the repository: {loaded.relative_path}."
+            )
+    screenshot_paths = [
+        root / target.screenshot_path
+        for execution in (desktop, mobile)
+        for case in execution.cases
+        for target in case.targets
+    ]
+    artifacts = _merge_artifact_records(
+        [_loaded_execution_artifact_record(loaded) for loaded in loaded_execution_inputs],
+        [_loaded_provenance_artifact_record(provenance_loaded)],
+        _artifact_records(root, screenshot_paths),
+    )
 
     case_reports: list[dict[str, object]] = []
     for case in golden.cases:
@@ -519,7 +678,7 @@ def build_multimodal_execution_report(
             "fullStackEvidenceCaseCount": len(desktop_by_id),
             "desktopTargetCount": sum(len(case.targets) for case in desktop.cases),
             "mobileTargetCount": sum(len(case.targets) for case in mobile.cases),
-            "screenshotCount": sum(path.suffix == ".png" for path in artifact_paths),
+            "screenshotCount": sum(path.suffix == ".png" for path in screenshot_paths),
             "minimumApprovedCoverageRatio": min(overlap_values),
             "desktopRealBffResponseCount": desktop.real_bff_response_count,
             "mobileRealBffResponseCount": mobile.real_bff_response_count,
@@ -543,9 +702,14 @@ def build_multimodal_execution_report(
 def _validate_playwright(
     repository_root: Path,
     golden: GoldenSet,
-    execution: PlaywrightExecution,
+    loaded: LoadedExecution,
     viewport_name: Literal["desktop", "mobile"],
+    *,
+    provenance: LoadedProvenance | None = None,
 ) -> dict[str, PlaywrightCase]:
+    execution = loaded.model
+    if not isinstance(execution, PlaywrightExecution):
+        raise QualityDataError(f"M402 {viewport_name} execution payload has the wrong schema.")
     if execution.viewport.name != viewport_name:
         raise QualityDataError(f"M402 {viewport_name} report has the wrong viewport name.")
     if viewport_name == "desktop" and execution.viewport.width < 1280:
@@ -556,6 +720,11 @@ def _validate_playwright(
         repository_root,
         execution.test_file,
         execution.test_file_sha256,
+        execution_schema_version=execution.schema_version,
+        execution_artifact_path=loaded.relative_path,
+        execution_artifact_sha256=loaded.sha256,
+        execution_artifact_inside_repository=loaded.inside_repository,
+        provenance=provenance,
     )
     if re.search(r"\.\s*route\s*\(", test_source):
         raise QualityDataError("M402 Playwright execution test must not intercept routes.")
@@ -602,14 +771,40 @@ def _validate_playwright(
     return actual
 
 
-def _load_execution(path: Path | None, model_type):
+def _load_execution(repository_root: Path, path: Path | None, model_type) -> LoadedExecution:
     if path is None:
         raise QualityDataError("M402 execution input path is required.")
+    root = repository_root.resolve()
+    candidate = path.resolve()
+    if not candidate.is_file():
+        raise QualityDataError(f"M402 artifact is missing: {path}.")
     try:
-        payload = json.loads(path.resolve().read_text(encoding="utf-8"))
-        return model_type.model_validate(payload)
-    except (OSError, json.JSONDecodeError, ValueError) as error:
+        relative_path = candidate.relative_to(root).as_posix()
+        inside_repository = True
+    except ValueError:
+        # Temporary/outside-repo inputs are allowed so early semantic assertions
+        # can run; their identity can never match historical provenance.
+        relative_path = f"{_OUTSIDE_REPOSITORY_ARTIFACT_PREFIX}{candidate.as_posix()}"
+        inside_repository = False
+    if inside_repository and (
+        PurePosixPath(relative_path).is_absolute()
+        or "\\" in relative_path
+        or any(part in {".", ".."} for part in PurePosixPath(relative_path).parts)
+    ):
+        raise QualityDataError(f"M402 artifact path is not canonical: {relative_path!r}.")
+    try:
+        raw_bytes = candidate.read_bytes()
+        payload = json.loads(raw_bytes.decode("utf-8"))
+        model = model_type.model_validate(payload)
+    except (OSError, UnicodeDecodeError, json.JSONDecodeError, ValueError) as error:
         raise QualityDataError(f"Invalid M402 execution data {path}: {error}") from error
+    return LoadedExecution(
+        relative_path=relative_path,
+        raw_bytes=raw_bytes,
+        sha256=hashlib.sha256(raw_bytes).hexdigest(),
+        model=model,
+        inside_repository=inside_repository,
+    )
 
 
 def _unique_cases(label: str, cases) -> dict[str, object]:
@@ -629,13 +824,114 @@ def _repository_artifact(repository_root: Path, relative_path: str) -> Path:
     return candidate
 
 
-def _validate_test_source(repository_root: Path, relative_path: str, expected_sha256: str) -> str:
+def _validate_test_source(
+    repository_root: Path,
+    relative_path: str,
+    expected_sha256: str,
+    *,
+    execution_schema_version: str,
+    execution_artifact_path: str,
+    execution_artifact_sha256: str,
+    execution_artifact_inside_repository: bool = True,
+    provenance: LoadedProvenance | None = None,
+    provenance_path: Path | None = None,
+) -> str:
+    """Bind an execution payload to its runner source.
+
+    Current tree bytes always pass when expected_sha256 matches the live file.
+    A non-current hash is accepted only when the exact
+    (executionSchemaVersion, testFile, testFileSha256, executionArtifactPath,
+    artifactSha256) identity is listed in the versioned provenance contract and
+    the caller-supplied artifact path/hash (from the same bytes read used to
+    parse the model) match that entry. Outside-repository execution inputs never
+    take the historical route. Path-only or hash-only matches fail closed.
+    """
     candidate = _repository_artifact(repository_root, relative_path)
     payload = candidate.read_bytes()
     actual_sha256 = hashlib.sha256(payload).hexdigest()
-    if actual_sha256 != expected_sha256:
-        raise QualityDataError(f"M402 test source hash drifted: {relative_path!r}.")
-    return payload.decode("utf-8")
+    if actual_sha256 == expected_sha256:
+        return payload.decode("utf-8")
+    if execution_artifact_inside_repository and _approved_historical_execution_source(
+        repository_root,
+        execution_schema_version=execution_schema_version,
+        test_file=relative_path,
+        test_file_sha256=expected_sha256,
+        execution_artifact_path=execution_artifact_path,
+        execution_artifact_sha256=execution_artifact_sha256,
+        provenance=provenance,
+        provenance_path=provenance_path,
+    ):
+        return payload.decode("utf-8")
+    raise QualityDataError(f"M402 test source hash drifted: {relative_path!r}.")
+
+
+def _resolve_provenance_path(
+    repository_root: Path,
+    provenance_path: Path | None = None,
+) -> Path:
+    relative = (
+        provenance_path
+        if provenance_path is not None
+        else _DEFAULT_EXECUTION_SOURCE_PROVENANCE_PATH
+    )
+    if relative.is_absolute():
+        try:
+            candidate = relative.resolve()
+            candidate.relative_to(repository_root.resolve())
+        except ValueError as error:
+            raise QualityDataError(
+                "M402 execution source provenance must be stored inside the repository."
+            ) from error
+        if not candidate.is_file():
+            raise QualityDataError(
+                f"M402 execution source provenance is missing: {candidate}."
+            )
+        return candidate
+    return _repository_artifact(repository_root, relative.as_posix())
+
+
+def _load_execution_source_provenance(
+    repository_root: Path,
+    provenance_path: Path | None = None,
+) -> LoadedProvenance:
+    path = _resolve_provenance_path(repository_root, provenance_path)
+    try:
+        raw_bytes = path.read_bytes()
+        payload = json.loads(raw_bytes.decode("utf-8"))
+        model = ExecutionSourceProvenance.model_validate(payload)
+    except (OSError, UnicodeDecodeError, json.JSONDecodeError, ValueError) as error:
+        raise QualityDataError(
+            f"Invalid M402 execution source provenance {path}: {error}"
+        ) from error
+    relative_path = path.resolve().relative_to(repository_root.resolve()).as_posix()
+    return LoadedProvenance(
+        relative_path=relative_path,
+        raw_bytes=raw_bytes,
+        sha256=hashlib.sha256(raw_bytes).hexdigest(),
+        model=model,
+    )
+
+
+def _approved_historical_execution_source(
+    repository_root: Path,
+    *,
+    execution_schema_version: str,
+    test_file: str,
+    test_file_sha256: str,
+    execution_artifact_path: str,
+    execution_artifact_sha256: str,
+    provenance: LoadedProvenance | None = None,
+    provenance_path: Path | None = None,
+) -> bool:
+    loaded = provenance or _load_execution_source_provenance(repository_root, provenance_path)
+    return any(
+        entry.execution_schema_version == execution_schema_version
+        and entry.test_file == test_file
+        and entry.test_file_sha256 == test_file_sha256
+        and entry.execution_artifact_path == execution_artifact_path
+        and entry.artifact_sha256 == execution_artifact_sha256
+        for entry in loaded.model.entries
+    )
 
 
 def _approved_regions(repository_root: Path, fixture, target) -> list[RenderedRegion]:
@@ -678,6 +974,39 @@ def _approved_coverage_ratio(approved: RenderedRegion, rendered: RenderedRegion)
     return min(1.0, width * height / approved_area) if approved_area > 0 else 0.0
 
 
+def _loaded_execution_artifact_record(loaded: LoadedExecution) -> dict[str, object]:
+    return {
+        "path": loaded.relative_path,
+        "sha256": loaded.sha256,
+        "byteSize": len(loaded.raw_bytes),
+    }
+
+
+def _loaded_provenance_artifact_record(loaded: LoadedProvenance) -> dict[str, object]:
+    return {
+        "path": loaded.relative_path,
+        "sha256": loaded.sha256,
+        "byteSize": len(loaded.raw_bytes),
+    }
+
+
+def _merge_artifact_records(
+    *record_groups: list[dict[str, object]],
+) -> list[dict[str, object]]:
+    records: dict[str, dict[str, object]] = {}
+    for group in record_groups:
+        for record in group:
+            path = record["path"]
+            if not isinstance(path, str):
+                raise QualityDataError("M402 artifact record path must be a string.")
+            if path in records:
+                raise QualityDataError(
+                    f"M402 artifact path collision: duplicate artifact path {path!r}."
+                )
+            records[path] = record
+    return [records[key] for key in sorted(records)]
+
+
 def _artifact_records(repository_root: Path, paths: list[Path]) -> list[dict[str, object]]:
     records: dict[str, dict[str, object]] = {}
     for path in paths:
@@ -685,9 +1014,14 @@ def _artifact_records(repository_root: Path, paths: list[Path]) -> list[dict[str
         if repository_root not in candidate.parents or not candidate.is_file():
             raise QualityDataError(f"M402 report input or artifact is outside the repository: {path}.")
         relative = candidate.relative_to(repository_root).as_posix()
+        if relative in records:
+            raise QualityDataError(
+                f"M402 artifact path collision: duplicate artifact path {relative!r}."
+            )
+        payload = candidate.read_bytes()
         records[relative] = {
             "path": relative,
-            "sha256": hashlib.sha256(candidate.read_bytes()).hexdigest(),
-            "byteSize": candidate.stat().st_size,
+            "sha256": hashlib.sha256(payload).hexdigest(),
+            "byteSize": len(payload),
         }
     return [records[key] for key in sorted(records)]

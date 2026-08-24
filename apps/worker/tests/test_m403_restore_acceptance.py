@@ -7,6 +7,8 @@ from pathlib import Path
 
 import pytest
 
+pytestmark = pytest.mark.acceptance
+
 SCRIPT_PATH = Path(__file__).resolve().parents[1] / "scripts/m403_restore_acceptance.py"
 RUNNER_PATH = Path(__file__).resolve().parents[3] / "infra/scripts/run-m403-acceptance.sh"
 SCRIPT_SPEC = importlib.util.spec_from_file_location("m403_restore_acceptance", SCRIPT_PATH)

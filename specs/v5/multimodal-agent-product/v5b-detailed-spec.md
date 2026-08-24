@@ -43,7 +43,7 @@ upload-session
 |---|---|---|
 | Registry/catalog | `modalities/registry.py`, `models/catalog.py` | 代码 module、catalog rows、contract version 必须同时一致 |
 | Ingestion orchestration | `services/ingestion.py` | orchestrator 负责 claim/lease、状态、事务、generation、上传/清理和 embedding；不解析模态内容 |
-| Worker adapter seam | `modalities/ingestion.py`, `apps/worker/src/ai_pdf_worker/{pdf,image}_ingestion.py` | 当前 adapter 接收 `Session` 并在 orchestrator 事务内持久化 typed rows，返回 `IngestionResult.generated_objects`；新 adapter 必须匹配这个实际 seam，不能假定 manifest-only 的新接口 |
+| Worker adapter seam | `modalities/ingestion.py`, `apps/worker/src/ai_pdf_worker/{pdf,image}_ingestion.py` | 当前 adapter 接收共享 `Session`/`Asset`，在 API orchestrator 提供的会话边界内持久化 typed rows，返回 `IngestionResult.generated_objects`；新 adapter 必须匹配这个实际 seam，不能假定 manifest-only 或已完成的进程隔离事务 |
 | Locator | `modalities/evidence.py` | 新增 typed codec/detail table，不写任意 JSON |
 | Retrieval | `services/retrieval.py` | 只消费 `EvidenceCandidate` 和 registered channel signature |
 | Citation/NoteSource | `schemas/chat.py`, citation/note services | 公共 envelope、clone 和保存语义保持不变 |
@@ -59,7 +59,7 @@ upload-session
 - Citation/NoteSource 的 `assetId/assetKind/assetTitle/excerpt/sourceAvailable/sourceVersions/locator` 含义不变。
 - `content_unit_embeddings` 仍是可重建投影；V5-B 不自动补建、不自动换 provider。
 - V5-A embedding index contract 继续 fail-closed；只有 mismatched vector 时不能静默返回空结果。
-- DB 是业务真相，MinIO/object storage 保存 immutable bytes，Worker 不拥有 ORM 事务。
+- DB 是业务真相，MinIO/object storage 保存 immutable bytes。**当前运行时事实**：API package 拥有 schema/migration 与 mutation logic **定义**；ingestion adapter 在 orchestrator 提供的**共享 SQLAlchemy Session** 内写 typed rows；Research Worker `_ApiPort` 另在 Worker 进程内创建 Session 并 commit/rollback。V5-B 不得把“Worker 不定义 ORM/migration”误写成“Worker 进程从不 commit”，也不得假定 manifest-only / 进程隔离事务已落地（见 `docs/architecture/api-worker-boundary-follow-up-2026-08-18.md`）。
 
 ## 3. 共享接入合同
 

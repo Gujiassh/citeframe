@@ -13,6 +13,8 @@ from sqlalchemy.pool import StaticPool
 from ai_pdf_api.db.base import Base
 from ai_pdf_api.models import Asset, ChatThread, User, Workspace
 
+pytestmark = pytest.mark.acceptance
+
 SCRIPT_PATH = Path(__file__).resolve().parents[1] / "scripts/m402_acceptance.py"
 SCRIPT_SPEC = importlib.util.spec_from_file_location("m402_acceptance", SCRIPT_PATH)
 assert SCRIPT_SPEC is not None and SCRIPT_SPEC.loader is not None

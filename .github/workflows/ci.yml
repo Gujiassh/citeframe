@@ -55,7 +55,7 @@ jobs:
       - run: uv run --project apps/api alembic -c apps/api/alembic.ini upgrade head
       - run: uv run --project apps/api alembic -c apps/api/alembic.ini check
 
-  worker:
+  worker-fast:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -69,8 +69,38 @@ jobs:
           --no-emit-package ai-pdf-api --format requirements-txt
           --output-file apps/worker/requirements.deploy.txt
       - run: git diff --exit-code -- apps/worker/requirements.deploy.txt
-      - run: uv run --project apps/worker pytest apps/worker/tests
+      - run: >-
+          uv run --project apps/worker pytest --strict-markers
+          -m "not acceptance and not evaluation" apps/worker/tests
       - run: uv run --project apps/worker python -m compileall -q apps/worker/src apps/worker/tests
+
+  worker-acceptance:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+          cache-dependency-glob: apps/worker/uv.lock
+      - run: uv sync --project apps/worker --dev
+      - run: >-
+          uv run --project apps/worker pytest --strict-markers
+          -m acceptance apps/worker/tests
+
+  worker-evaluation:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+          cache-dependency-glob: apps/worker/uv.lock
+      - run: uv sync --project apps/worker --dev
+      - run: >-
+          uv run --project apps/worker pytest --strict-markers
+          -m evaluation apps/worker/tests
 
   web:
     runs-on: ubuntu-latest

@@ -1,15 +1,18 @@
 # V5 多模态 AI 知识工作台与 Agent 协作任务
 
-## 状态
+## 状态（2026-08-18）
 
 - [x] 完成 capability-first 方向裁决
 - [x] 创建 V5 主规格、实施计划和任务清单
 - [x] V5-A Provider 与模型能力层（A002-A007 已完成；A007 跨层回归已验收）
-- [x] V5-B 多模态资料扩展（Markdown-only `document` v1：isolated/canonical implementation、前序 Critical review、online migration、live scoped PostgreSQL/MinIO restore、standalone browser `4 passed` 与 B008 formal isolated deployment Critical closure 已通过；accepted deployment artifact=`docs/evals/artifacts/v5b-document-deployment-v4/`；HTML/Audio/Video 仍受 OD-B5/B6/B7 独立 gate 阻塞）
+- [x] V5-B 多模态资料扩展（Markdown-only `document` v1：isolated/canonical implementation、前序 Critical review、online migration、live scoped PostgreSQL/MinIO restore、standalone browser `4 passed` 与 B008 formal isolated deployment Critical closure 已通过；accepted deployment artifact=`docs/evals/artifacts/v5b-document-deployment-v4/`）
 - [x] V5-C 多 Agent 协作产品化（2026-08-10 工程/发布门 `ACCEPT`；严格版本化 production Agent I/O、usage/context、Web projection、production-start Research、online migration 与 R800 v6 已通过；F1/F5 为 Medium 后续风险）
-- [x] V5-D 端到端整合与工程稳定（2026-08-12 D-G7 全量回归通过：API 562 / Worker 296 / Web 131；Critical `ACCEPT` with residuals；internal-preview；R803/M404 仍后置；未 commit/push）
-- [ ] V5-E 模型质量与用户价值（E001 已落地；付费 R803 暂缓；M404 blocked）
-- [x] V5-F 模态补全 + Agent 协作完善（2026-08-13：模态切片+S0+F-AGENT closeout；R803/M404 仍不宣称）
+- [x] V5-D 端到端整合与工程稳定（2026-08-12 D-G7 全量回归通过；Critical `ACCEPT` with residuals；产品保持 `internal_preview`）
+- [ ] V5-E 模型质量与用户价值（E001 计划已完成；R803/M404 当前均 `not_evaluable`，需独立授权/协议/环境证据）
+- [x] V5-F 模态补全 + Agent 协作完善（工程切片、S0、F-AGENT、PV-4/PPTX layout 已完成；main 已合入）
+- [x] Architecture hardening（PR #14/#15；边界、模态纯度、Research freeze 和叙事收口已完成）
+
+当前唯一执行入口：[`current-execution-plan.md`](current-execution-plan.md)。当前没有 W1“启动中”或新的 V5-F 功能实现任务；剩余工作只按该入口的 OPS/V5-E residual 状态推进。
 
 ### V5-B/C 详细规格状态
 
@@ -100,7 +103,7 @@ V5-C implementation status (2026-08-10): `C-API-WORKER`, `C-BOUNDARY` and Web us
 - [x] B006 Markdown retrieval/Citation/NoteSource/Viewer path implemented without changing existing save columns
 - [x] B007 Markdown mixed Workspace upload/processing/retry/delete/recovery integration suite and scoped restore oracle implemented
 - [x] B008 formal isolated deployment gate: one project records built API/Worker/Web image IDs, dual-Document PostgreSQL/MinIO backup/restore oracles, live API/DOM replay and teardown/zero residue; accepted artifact is `docs/evals/artifacts/v5b-document-deployment-v4/` (v1 historical early pass, v2 Worker-health-predicate failure evidence, v3 interrupted partial evidence retained)
-- [ ] HTML/Office/Audio/Video extensions remain outside this slice and require their own owner decisions/gates
+- [x] HTML/Office/Audio/Video extensions remain outside the original V5-B slice; their approved V5-F implementation is recorded below
 
 
 - [x] B002 收口 PDF/Image 共用 Asset/Evidence、检索和 Viewer 入口
@@ -164,22 +167,22 @@ V5-C implementation status (2026-08-10): `C-API-WORKER`, `C-BOUNDARY` and Web us
 
 ## V5-F 模态补全 + Agent 协作完善
 
-规格入口：[`current-execution-plan.md`](current-execution-plan.md)（SSOT）、[`pdf-in-page-visual-v1.md`](pdf-in-page-visual-v1.md)、[`decision-2026-08-13-v5f-scope.md`](decision-2026-08-13-v5f-scope.md)、[`parallel-execution-plan-v5f.md`](parallel-execution-plan-v5f.md)、[`v5f-detailed-spec.md`](v5f-detailed-spec.md)。
+历史规格入口：[`current-execution-plan.md`](current-execution-plan.md)（当前 residual SSOT；本节其余链接为已关闭 V5-F 合同）、[`pdf-in-page-visual-v1.md`](pdf-in-page-visual-v1.md)、[`decision-2026-08-13-v5f-scope.md`](decision-2026-08-13-v5f-scope.md)、[`parallel-execution-plan-v5f.md`](parallel-execution-plan-v5f.md)、[`v5f-detailed-spec.md`](v5f-detailed-spec.md)。
 
 ### 决策与基线
 
-- [x] F0 主人批准 V5-F scope decision（2026-08-13；实现仍暂停直至开工令）
+- [x] F0 主人批准 V5-F scope decision（2026-08-13；实现已完成并在 main 关闭）
 - [x] F0-parallel 并行分线收尾计划已成文（`parallel-execution-plan-v5f.md`）
 - [x] F0b OD-B5 HTML sanitizer/resource policy 正式 `approved`
-- [x] F0c OD-B6 ASR capability contract 正式 `approved`（Audio catalog 仍禁用）
+- [x] F0c OD-B6 ASR capability contract 正式 `approved`（Audio catalog 已启用；未配置 ASR 时保持显式 fail-closed）
 - [x] F0d OD-B7 Video temporal/keyframe contract 正式 `approved`
 
 ### 模态纵向闭环
 
 - [x] F-HTML 生产启用（sanitize + locator + viewer + restore）
-- [x] F-DOCX 生产启用（2026-08-13 office lane: parse/locator/ingest/tests landed; production registry+catalog blocked on S0_HANDOFF.md）
-- [x] F-XLSX 生产启用（adapter+`xlsx_range`+tests landed; not registry-enabled）
-- [x] F-PPTX 生产启用（adapter+`pptx_shape`+tests landed; not registry-enabled）
+- [x] F-DOCX 生产启用（parse/locator/ingest/tests 与 production registry+catalog 已完成并关闭）
+- [x] F-XLSX 生产启用（adapter、`xlsx_range`、tests 与 production registry+catalog 已完成并关闭）
+- [x] F-PPTX 生产启用（adapter、`pptx_shape`、tests 与 production registry+catalog 已完成并关闭）
 - [x] F-PPTX layout depth: `pptx-layout-v1` geometry+pictures+canvas viewer; content API slides; media BFF (2026-08-17)
 - [x] F-ASR capability fail-closed + configured path
 - [x] F-AUDIO 生产启用（`audio_range` + transcript + player）
@@ -193,7 +196,7 @@ V5-C implementation status (2026-08-10): `C-API-WORKER`, `C-BOUNDARY` and Web us
 
 ### 整合与验收
 
-- [x] F-MIX 全启用模态混合 Workspace seed/restore/compose（S0 all kinds enabled; mixed pdf/image/document chat retained; full seed suite residual for ops）
+- [x] F-MIX 全启用模态混合 Workspace seed/restore/compose（已完成合同：S0 九类启用、mixed pdf/image/document chat、restore/compose 证据已关闭；更强 full mixed Research seed 套件属于非 active 产品债/独立决策，不是 ops residual）
 - [x] F-ACCEPT 全量 API/Worker/Web + Critical engineering ACCEPT（2026-08-13 closeout; quality not_evaluable without R803）
 - [x] 明确不宣称 R803/M404 通过
 
@@ -220,3 +223,14 @@ Engineering residual package (boundaries / modality purity / Research freeze / n
 - Plan audit: **ACCEPT** ([`../architecture-hardening/reviews/2026-08-15-plan-audit.md`](../architecture-hardening/reviews/2026-08-15-plan-audit.md))
 - Implementation: **done on main** (PR #14/#15, 2026-08-15); package closed except intentional non-goals
 - [x] Office/PPTX true layout + picture canvas (`pptx-layout-v1`, geometry EMU, media stream); preview embedding default real Ollama (no stub default); generation key optional fail-closed for open-source (2026-08-17)
+
+## 当前 residual execution（2026-08-18）
+
+以下是当前唯一 active residual；完成状态和证据必须回写 [`current-execution-plan.md`](current-execution-plan.md)。
+
+- [ ] OPS-1：真实 Ollama reindex、preview 真 key 冒烟、多 provider live E2E（环境就绪后执行）
+- [ ] V5-E-1 / R803：经 owner 授权创建新的 R803 campaign；不得恢复或覆盖冻结的 v1 失败目录
+- [ ] V5-E-2 / M404：协议、目标用户和执行证据未齐前保持 `not_evaluable`
+
+派生门禁：Release review 只在 OPS-1/R803/M404 证据齐备后裁决，不是并列 residual。
+非 active residual：动态 Research DAG、`ai_pdf_*` 重命名、新模态、mixed Research seed、Office/PPT 深度 WYSIWYG 需独立决策包。
