@@ -7,6 +7,7 @@ import argparse
 import hashlib
 import json
 import os
+import shutil
 import subprocess
 import sys
 import tarfile
@@ -34,7 +35,7 @@ def _run_probe(
     root: Path,
     probe: Path,
     output: Path,
-    python: Path,
+    uv: Path,
     label: str,
     mutation: str | None = None,
 ) -> None:
@@ -64,16 +65,41 @@ def _run_probe(
         }
     )
     env.pop("AI_PDF_WORKER_INSTANCE_ID", None)
+    for inherited in (
+        "PYTEST_ADDOPTS",
+        "PYTEST_PLUGINS",
+        "UV_INEXACT",
+        "UV_NO_SYNC",
+        "UV_PROJECT_ENVIRONMENT",
+        "VIRTUAL_ENV",
+    ):
+        env.pop(inherited, None)
     if mutation is not None:
         env["A2A_DIFFERENTIAL_MUTATION"] = mutation
+    worker_project = root / "apps/worker"
     completed = subprocess.run(
-        [str(python), "-m", "pytest", "-q", "-s", str(probe)],
+        [
+            str(uv),
+            "run",
+            "--project",
+            str(worker_project),
+            "--frozen",
+            "--exact",
+            "--python",
+            "3.12",
+            "python",
+            "-m",
+            "pytest",
+            "-q",
+            "-s",
+            str(probe),
+        ],
         cwd=root / "apps/api",
         env=env,
         text=True,
         stdout=subprocess.PIPE,
         stderr=subprocess.STDOUT,
-        timeout=120,
+        timeout=300,
     )
     if completed.returncode:
         raise RuntimeError(f"{label} probe failed ({completed.returncode})\n{completed.stdout}")
@@ -176,6 +202,41 @@ def _validate_composition(label: str, payload: object) -> dict[str, object]:
     return payload
 
 
+def _validate_worker_environment(
+    label: str,
+    payload: object,
+    *,
+    expected_root: Path,
+) -> dict[str, object]:
+    if not isinstance(payload, dict):
+        raise RuntimeError(f"{label} probe has no Worker environment evidence")
+    executable = payload.get("pythonExecutable")
+    python_prefix = payload.get("pythonPrefix")
+    langgraph_module = payload.get("langgraphModule")
+    worker_module = payload.get("workerModule")
+    if not all(
+        isinstance(value, str)
+        for value in (executable, python_prefix, langgraph_module, worker_module)
+    ):
+        raise RuntimeError(f"{label} probe Worker environment fields are invalid: {payload}")
+    expected_prefix = (expected_root / "apps/worker/.venv").absolute()
+    expected_worker_source = (expected_root / "apps/worker/src").absolute()
+    prefix_path = Path(python_prefix).absolute()
+    executable_path = Path(executable).absolute()
+    langgraph_path = Path(langgraph_module).absolute()
+    worker_path = Path(worker_module).absolute()
+    if (
+        prefix_path != expected_prefix
+        or not executable_path.is_relative_to(prefix_path)
+        or not langgraph_path.is_relative_to(prefix_path)
+        or not worker_path.is_relative_to(expected_worker_source)
+    ):
+        raise RuntimeError(
+            f"{label} probe did not use its snapshot Worker environment: {payload}"
+        )
+    return payload
+
+
 def run(
     root: Path,
     *,
@@ -185,11 +246,12 @@ def run(
 ) -> dict[str, object]:
     root = root.resolve()
     probe = root / "apps/api/tests/test_a2a_differential_probe.py"
-    python = root / "apps/worker/.venv/bin/python"
     if not probe.is_file():
         raise RuntimeError(f"probe not found: {probe}")
-    if not python.is_file():
-        python = Path(sys.executable)
+    uv_value = shutil.which("uv")
+    if uv_value is None:
+        raise RuntimeError("uv executable is required for frozen Worker probe environments")
+    uv = Path(uv_value).resolve()
     resolved = _resolve_baseline(root, baseline_ref)
     semantic_before, semantic_dirty = _semantic_fingerprint(root)
     repair_before, repair_dirty = _repair_snapshot_fingerprint(root)
@@ -218,14 +280,14 @@ def run(
             root=baseline_root,
             probe=baseline_probe,
             output=baseline_report,
-            python=python,
+            uv=uv,
             label="baseline",
         )
         _run_probe(
             root=root,
             probe=probe,
             output=candidate_report,
-            python=python,
+            uv=uv,
             label="candidate",
             mutation=candidate_mutation,
         )
@@ -246,6 +308,16 @@ def run(
         )
     baseline_composition = _validate_composition("baseline", baseline.get("composition"))
     candidate_composition = _validate_composition("candidate", candidate.get("composition"))
+    baseline_environment = _validate_worker_environment(
+        "baseline",
+        baseline.get("workerEnvironment"),
+        expected_root=baseline_root,
+    )
+    candidate_environment = _validate_worker_environment(
+        "candidate",
+        candidate.get("workerEnvironment"),
+        expected_root=root,
+    )
     baseline_semantics = baseline.get("semantics")
     candidate_semantics = candidate.get("semantics")
     if not isinstance(baseline_semantics, dict) or not isinstance(candidate_semantics, dict):
@@ -264,6 +336,9 @@ def run(
         "repairSnapshotDirty": repair_dirty,
         "baselineComposition": baseline_composition,
         "candidateComposition": candidate_composition,
+        "probeExecution": "uv-worker-frozen-exact",
+        "baselineWorkerEnvironment": baseline_environment,
+        "candidateWorkerEnvironment": candidate_environment,
         "coverage": sorted(REQUIRED_AREAS),
         "equal": equal,
         "baseline": baseline_semantics,

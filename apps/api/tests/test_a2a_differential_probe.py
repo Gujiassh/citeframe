@@ -1032,8 +1032,17 @@ def test_generate_executable_differential_report(tmp_path: Path) -> None:
         "fixedMultiStepProcessOne",
     }
     assert set(semantics) == required
+    import ai_pdf_worker
+    from langgraph import graph as langgraph_graph
+
     report = {
         "schemaVersion": "citeframe-a2a-probe-v1",
+        "workerEnvironment": {
+            "pythonExecutable": str(Path(sys.executable)),
+            "pythonPrefix": str(Path(sys.prefix)),
+            "langgraphModule": str(Path(langgraph_graph.__file__).resolve()),
+            "workerModule": str(Path(ai_pdf_worker.__file__).resolve()),
+        },
         "label": os.environ.get("A2A_DIFFERENTIAL_LABEL"),
         "composition": composition,
         "semantics": semantics,
