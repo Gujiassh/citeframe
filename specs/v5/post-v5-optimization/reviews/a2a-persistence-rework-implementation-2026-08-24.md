@@ -1,6 +1,6 @@
 # A2a Research Persistence Rework Implementation Evidence
 
-Status: **immutable local production candidate; final independent Critical re-audit pending documentation closure; not accepted**
+Status: **independently accepted on 2026-08-24 (`High=0`, `Medium=0`, `Low=0`); local delivery pending**
 Date: 2026-08-24
 
 ## Delivery Ledger
@@ -15,13 +15,14 @@ Date: 2026-08-24
 | Repair branch | `work/research-boundary-runtime-20260824` |
 | Repair starting SHA | `a494b8a098cb77cbc22792883d2f27881a650ffb` (merge of review lineage with `origin/main@9f40241`) |
 | Immutable production candidate | `215cd52565089138704c6b637350e18bc8705c8b` (`refactor(research): complete A2a persistence extraction`) |
-| Push state | Local only; not pushed |
-| Final reviewer artifact | [`a2a-persistence-critical-reaudit-2026-08-24.md`](a2a-persistence-critical-reaudit-2026-08-24.md); verdict pending documentation closure |
-| Downstream gates | R0/R1/R2/W1 and downstream remain blocked until final independent A2a Critical `ACCEPT` |
+| Documentation closure | `95981a499521a28bfd9eb24480d54ef42f485528` |
+| Final reviewer artifact | [`a2a-persistence-critical-reaudit-2026-08-24.md`](a2a-persistence-critical-reaudit-2026-08-24.md), local review commit `eb97adfa75660867eb31d46a4e7d7712909c348e` |
+| Final verdict | `ACCEPT (High=0, Medium=0, Low=0)` |
+| Push state | Production `215cd52`, docs `95981a4`, and review `eb97adf` are all local and not pushed |
+| Downstream gates | R0 is the only next separately gated implementation slice; R1/R2/W1 and downstream remain blocked behind R0 or their named gates |
 
 PR #20 merged the prerequisite branch into `main`; it did not accept the A2a repair. The
-production candidate is now immutable by commit SHA. Documentation closure must not rewrite
-that production snapshot or turn passing implementation evidence into an acceptance claim.
+production candidate is now immutable by commit SHA. Documentation and review commits do not rewrite that production snapshot. Final independent acceptance is recorded in review commit `eb97adf`; remote delivery remains pending.
 
 ## Symptom And Root Cause
 
@@ -74,10 +75,11 @@ known mixed lock order. It does not implement R0 or R1.
 candidateCommit=215cd52565089138704c6b637350e18bc8705c8b
 baseline=d1b5945e977445e4db6bf56ef54cf61607ead2e2
 equal=true
-semanticFingerprint=b155d2fa7783b70e57ed60015eecfd6dd2f2d28bfe9cd5ebea68166c9a33855a
+semanticSha256=119a36086bfb595ea0882deab719d530ebd0107296cf8033a4f348ef07e7d4c0
+reportSha256=db1524a8a2604c60c98e1543eded1828cc8f9e23725287cb40d0056cace42bd7
 candidateComposition=candidate-neutral-research-uow
 uowEnterCount=38
-focused differential=2 passed, 1 warning
+focused differential/boundary=8 passed, 1 warning
 ```
 
 Baseline `process_one` uses its original API facade composition. Candidate `process_one`
@@ -86,9 +88,7 @@ closed. The comparison covers normalized Research rows, exact Event/payload byte
 fencing, auto/manual retry, cancel/reclaim/recovery, permission, conflict wait/resume, and
 final publication.
 
-The pre-commit full-repair worktree fingerprint
-`d185e78e75894be45c0fe625c51856b36531d74d496ea395adc51424b474f037`
-is historical provenance only. The immutable production identity is commit
+The pre-commit semantic fingerprint `b155d2fa7783b70e57ed60015eecfd6dd2f2d28bfe9cd5ebea68166c9a33855a` and full-repair worktree fingerprint `d185e78e75894be45c0fe625c51856b36531d74d496ea395adc51424b474f037` are historical provenance only. The immutable production identity is commit
 `215cd52565089138704c6b637350e18bc8705c8b`; the worktree fingerprint must not replace it.
 
 The differential uses SQLite and controlled external adapters. Real PostgreSQL lock
@@ -127,18 +127,15 @@ Worker final non-root/path/import smoke: passed
 The smokes verify final-image imports, package paths outside `/app/apps/api`, and the Worker
 non-root UID. The mirror did not substitute a different base digest.
 
-## Final Re-Audit And Integration Steps
+## Acceptance And Integration Steps
 
-1. Commit the documentation closure separately after controller inspection; do not amend or
-   rewrite production candidate `215cd52565089138704c6b637350e18bc8705c8b`.
-2. Let the independent reviewer finalize
-   [`a2a-persistence-critical-reaudit-2026-08-24.md`](a2a-persistence-critical-reaudit-2026-08-24.md)
-   against production commit `215cd52` plus the documentation closure.
-3. Only a final independent `ACCEPT` may unblock a separate R0 branch. R1/R2 remain after
-   R0; W1 stays an independent slice. None may be folded into this repair.
-4. After controller acceptance, push the immutable repair and documentation commits, record
-   their remote SHAs in the workbench delivery ledger, then integrate through the repository
-   review flow. Do not push directly to `main` outside that flow.
+1. Preserve accepted production `215cd52`, documentation `95981a4`, and review `eb97adf`;
+   do not amend or rewrite the production candidate.
+2. Push all three local commits, record their remote SHAs in the workbench delivery ledger,
+   and integrate through the repository review flow. Do not push directly to `main` outside
+   that flow.
+3. R0 is the only next separately gated implementation slice. R1/R2 remain behind R0; W1
+   stays an independent named slice. None may be folded into the accepted A2a repair.
 
-Current verdict remains **pending final independent Critical re-audit after documentation
-closure**. No A2a `ACCEPT` is claimed.
+Final verdict: **ACCEPT (High=0, Medium=0, Low=0)** at local review commit `eb97adf`.
+Remote push/PR/integration remains pending.

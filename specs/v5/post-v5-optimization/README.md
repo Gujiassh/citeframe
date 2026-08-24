@@ -2,7 +2,7 @@
 
 Date: 2026-08-19
 
-Status: **Design re-audit and A1/A1b are accepted; A2a initial snapshot `20d411e` received independent Critical `REWORK` (`High=1`, `Medium=5`, `Low=1`). The repaired production candidate is frozen as local commit `215cd52565089138704c6b637350e18bc8705c8b` on `work/research-boundary-runtime-20260824` and is not pushed. Final independent Critical re-audit is pending documentation closure; no A2a `ACCEPT` is claimed. R0/R1/R2/W1 and downstream remain blocked**
+Status: **Design re-audit and A1/A1b are accepted; A2a was independently `ACCEPTED` on 2026-08-24 (`High=0`, `Medium=0`, `Low=0`) at production commit `215cd52565089138704c6b637350e18bc8705c8b`, documentation closure `95981a499521a28bfd9eb24480d54ef42f485528`, and review record `eb97adfa75660867eb31d46a4e7d7712909c348e`. All three commits are local and not pushed. R0 is the only next separately gated implementation slice; R1/R2/W1 and downstream remain blocked behind R0 or their named gates**
 
 Product stage: `internal_preview`
 
@@ -14,8 +14,7 @@ accepted with `High=0`, `Medium=0`, `Low=0`. A1 was independently accepted on `2
 accepted on `2026-08-21` by the follow-up Critical review (`High=0`, `Medium=0`, `Low=0`).
 Implementation evidence is recorded in `reviews/a1b-persistence-implementation-2026-08-20.md`;
 the reviewer-owned result is `reviews/a1b-persistence-critical-audit-2026-08-20.md`.
-A2a initial snapshot `20d411e` received independent Critical `REWORK` (`High=1`, `Medium=5`, `Low=1`). The repaired production candidate is frozen as local commit `215cd52565089138704c6b637350e18bc8705c8b` on `work/research-boundary-runtime-20260824` and is not pushed. Final independent Critical re-audit is pending documentation closure; no A2a `ACCEPT` is claimed. R0, R1, R2, W1, and downstream slices remain
-conditionally authorized, unstarted, and blocked. No schema/API/save/replay/permission changes are authorized.
+A2a was independently `ACCEPTED` on 2026-08-24 (`High=0`, `Medium=0`, `Low=0`) at production `215cd52`, documentation closure `95981a4`, and review record `eb97adf`; all are local and not pushed. R0 is the only next separately gated implementation slice. R1/R2/W1 and downstream remain blocked behind R0 or their named gates. No schema/API/save/replay/permission changes are authorized.
 G/M/P and GitHub repository settings remain unauthorized.
 
 This package turns the 2026-08 architecture review into four bounded follow-up
@@ -24,8 +23,7 @@ lanes. A1 was independently accepted on `2026-08-20`; its evidence is recorded i
 accepted on `2026-08-21` by the follow-up Critical review (`High=0`, `Medium=0`, `Low=0`).
 Implementation evidence is recorded in `reviews/a1b-persistence-implementation-2026-08-20.md`;
 the reviewer-owned result is `reviews/a1b-persistence-critical-audit-2026-08-20.md`.
-A2a initial snapshot `20d411e` received independent Critical `REWORK` (`High=1`, `Medium=5`, `Low=1`). The repaired production candidate is frozen as local commit `215cd52565089138704c6b637350e18bc8705c8b` on `work/research-boundary-runtime-20260824` and is not pushed. Final independent Critical re-audit is pending documentation closure; no A2a `ACCEPT` is claimed. R0, R1, R2, W1, and downstream slices remain
-conditionally authorized, unstarted, and blocked. No schema/API/save/replay/permission changes are
+A2a was independently `ACCEPTED` on 2026-08-24 (`High=0`, `Medium=0`, `Low=0`) at production `215cd52`, documentation closure `95981a4`, and review record `eb97adf`; all are local and not pushed. R0 is the only next separately gated implementation slice. R1/R2/W1 and downstream remain blocked behind R0 or their named gates. No schema/API/save/replay/permission changes are
 authorized, and G/M/P, GitHub settings, paid evaluation, and user study remain outside
 this status.
 
@@ -47,14 +45,14 @@ this status.
 | [`reviews/`](reviews/) | Independent plan/re-audit evidence |
 | [`reviews/a2a-persistence-implementation-2026-08-21.md`](reviews/a2a-persistence-implementation-2026-08-21.md) | Historical initial A2a snapshot evidence; superseded after Critical REWORK |
 | [`reviews/a2a-persistence-critical-audit-2026-08-24.md`](reviews/a2a-persistence-critical-audit-2026-08-24.md) | Initial A2a Critical REWORK (`High=1`, `Medium=5`, `Low=1`) |
-| [`reviews/a2a-persistence-rework-implementation-2026-08-24.md`](reviews/a2a-persistence-rework-implementation-2026-08-24.md) | Immutable local repair commit and final implementation evidence; not pushed, not accepted |
-| [`reviews/a2a-persistence-critical-reaudit-2026-08-24.md`](reviews/a2a-persistence-critical-reaudit-2026-08-24.md) | Final independent Critical re-audit artifact; verdict pending documentation closure |
+| [`reviews/a2a-persistence-rework-implementation-2026-08-24.md`](reviews/a2a-persistence-rework-implementation-2026-08-24.md) | Accepted immutable production/docs evidence and local delivery ledger |
+| [`reviews/a2a-persistence-critical-reaudit-2026-08-24.md`](reviews/a2a-persistence-critical-reaudit-2026-08-24.md) | Final independent Critical `ACCEPT (High=0, Medium=0, Low=0)`; record commit `eb97adf` |
 
 ## Recommended Order
 
 1. Record the owner-authorized A0/R/W direction and the accepted design re-audit (`High=0`, `Medium=0`, `Low=0`).
 2. Preserve the final independent A1b follow-up Critical review ACCEPT (`High=0`, `Medium=0`, `Low=0`) and its clean-image evidence in the linked artifacts.
-3. Close documentation against immutable production commit `215cd52`, then let the independent reviewer finalize [`reviews/a2a-persistence-critical-reaudit-2026-08-24.md`](reviews/a2a-persistence-critical-reaudit-2026-08-24.md). Do not claim acceptance or start R0 before that audit returns `ACCEPT`.
+3. Preserve A2a `ACCEPT` across local production `215cd52`, documentation `95981a4`, and review `eb97adf`; deliver them through remote push/PR integration. R0 is the only next separately gated implementation slice and must not be folded into A2a.
 4. Prove R1/R2 with real PostgreSQL and two or more Workers after R0; implement W1 as an independent SSE slice.
 5. Migrate all nine ingestion modalities in A3/A4 before claiming an API-source-free Worker candidate in A5.
 6. Keep G/M/P and GitHub settings behind their own authorization gates.

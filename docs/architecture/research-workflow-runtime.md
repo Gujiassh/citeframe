@@ -10,7 +10,7 @@
 - First formal campaign attempt: [`../evals/artifacts/r803-campaign-20260730-v1/`](../evals/artifacts/r803-campaign-20260730-v1/) (`failed`, 0/5 completed rounds; immutable)
 - Engineering gate: deterministic R800 baseline `pass`; R803 formal campaign v1 `fail`
 - Research boundary status: the design re-audit is **ACCEPT (High=0, Medium=0, Low=0)**; A1 was independently accepted on **2026-08-20**. A1b/A2-foundation was independently accepted on 2026-08-21 by the follow-up Critical review
-(`High=0`, `Medium=0`, `Low=0`). A2a initial snapshot `20d411e` received `REWORK (High=1, Medium=5, Low=1)`. The repaired production candidate is immutable local commit `215cd52565089138704c6b637350e18bc8705c8b` on `work/research-boundary-runtime-20260824`, not pushed; final independent Critical re-audit is pending documentation closure and no A2a `ACCEPT` is claimed. R0/R1/R2/W1 and downstream remain blocked. Current evidence is in `../../specs/v5/post-v5-optimization/reviews/a2a-persistence-rework-implementation-2026-08-24.md`.
+(`High=0`, `Medium=0`, `Low=0`). A2a initial snapshot `20d411e` received `REWORK (High=1, Medium=5, Low=1)`. A2a is independently `ACCEPTED (High=0, Medium=0, Low=0)` at local production `215cd52565089138704c6b637350e18bc8705c8b`, documentation `95981a499521a28bfd9eb24480d54ef42f485528`, and review `eb97adfa75660867eb31d46a4e7d7712909c348e`; none is pushed. R0 is the only next separately gated implementation slice; R1/R2/W1 and downstream remain blocked. Current evidence is in `../../specs/v5/post-v5-optimization/reviews/a2a-persistence-rework-implementation-2026-08-24.md`.
 - Latest interpretable paired diagnostic gates (v4): Quick `pass`; Research `fail` with 5/6 completed cases
 - Model-quality gate: `not_evaluable` because formal v1 interrupted before any round completed
 - User-value gate: `not_evaluable` until M404 contains qualified target-user evidence
@@ -29,12 +29,12 @@ The production path is split by ownership:
   repair worktree, neutral `citeframe_persistence` owns mappings/metadata and
   `citeframe_research_persistence` owns DB-only Research transitions; API retains public
   routes, compatibility facades, and external-adapter composition.
-- **Repair-worktree fact, pending independent acceptance:** Worker owns typed
+- **Accepted A2a fact, local delivery pending:** Worker owns typed
   orchestration/provider/tool execution and uses the neutral Research persistence service,
   UoW, and repository for DB-only transitions. API owns HTTP/auth/Alembic/schema governance
   and compatibility/external-adapter composition; ingestion retains its shared Session/ORM
   boundary.
-- **Repair state, not accepted/shipped:** the Worker continues to own orchestration and
+- **Accepted A2a state, local delivery pending:** the Worker continues to own orchestration and
   the repaired default composition uses the neutral Worker-side Research UoW as runtime commit-process owner; API owns HTTP/auth,
   Alembic execution, and schema governance. Package staging is A1 pure
   `citeframe_contracts`, A1b/A2-foundation neutral `citeframe_persistence` mappings, then
@@ -56,7 +56,7 @@ least two loops; acceptance proves real branch overlap and wall time below the s
 sum while the persisted per-Run cap remains the concurrency authority. The implementation-ready target and its current/not-implemented status are recorded in
 [`../../specs/v5/post-v5-optimization/research-boundary-runtime-design.md`](../../specs/v5/post-v5-optimization/research-boundary-runtime-design.md). A1 implementation evidence and independent ACCEPT on 2026-08-20 are recorded.
 A1b/A2-foundation was independently accepted on 2026-08-21 (follow-up Critical review ACCEPT; High=0, Medium=0, Low=0);
-A2a repair is implementer-complete but pending a new independent Critical re-audit; R0/R1/R2/W1 and downstream implementation remain blocked. No schema/API/save/replay/permission changes are authorized.
+A2a is independently accepted locally. R0 is the only next separately gated implementation slice; R1/R2/W1 and downstream remain blocked behind R0 or their named gates. No schema/API/save/replay/permission changes are authorized.
 
 ## Orchestration Decision
 

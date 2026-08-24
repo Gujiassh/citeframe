@@ -4,7 +4,7 @@ Date: 2026-08-15
 
 Canonical ownership for the fixed Research product path. Evaluation/R803 scripts are **not** the product path.
 
-Current delivery state: A2a repair is immutable local commit `215cd52565089138704c6b637350e18bc8705c8b` on `work/research-boundary-runtime-20260824`, not pushed. Final independent Critical re-audit is pending documentation closure; the initial snapshot was `REWORK` and no A2a `ACCEPT` is claimed.
+Current delivery state: A2a is independently `ACCEPTED (High=0, Medium=0, Low=0)` at local production `215cd52565089138704c6b637350e18bc8705c8b`, documentation `95981a499521a28bfd9eb24480d54ef42f485528`, and review `eb97adfa75660867eb31d46a4e7d7712909c348e`; none is pushed. R0 is the only next separately gated implementation slice; R1/R2/W1 remain blocked.
 
 ## API package (`apps/api/src/ai_pdf_api/services/research/`)
 
@@ -72,7 +72,7 @@ Import path: `ai_pdf_api.services.research.*`. Compatibility shims remain at `ai
 Package staging is A1 contracts (independently accepted on 2026-08-20) ->
 A1b/A2-foundation persistence mappings (independently accepted on 2026-08-21 by the
 follow-up Critical review: High=0, Medium=0, Low=0) -> A2a Research persistence behavior.
-A2a initial snapshot was rejected; the bounded repair is implementer-complete but pending a new independent Critical re-audit. R0/R1/R2/W1 and downstream remain blocked,
+A2a initial snapshot was rejected and the repair was later independently accepted at `eb97adf`. R0 is the only next separately gated implementation slice; R1/R2/W1 and downstream remain blocked behind named gates,
 and no schema/API/save/replay/permission changes are authorized. No behavior-free
 `citeframe_research_persistence` scaffold is permitted before A2a; see topology freeze in
 [`research-workflow-runtime.md`](research-workflow-runtime.md).

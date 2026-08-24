@@ -1,10 +1,10 @@
 # Research Boundary And Distributed Runtime Design
 
-Status: **Design re-audit and A1/A1b are accepted; A2a initial snapshot `20d411e` received independent Critical `REWORK` (`High=1`, `Medium=5`, `Low=1`). The repaired production candidate is frozen as local commit `215cd52565089138704c6b637350e18bc8705c8b` on `work/research-boundary-runtime-20260824` and is not pushed. Final independent Critical re-audit is pending documentation closure; no A2a `ACCEPT` is claimed. R0/R1/R2/W1 and downstream remain blocked**
+Status: **Design re-audit and A1/A1b are accepted; A2a was independently `ACCEPTED` on 2026-08-24 (`High=0`, `Medium=0`, `Low=0`) at production commit `215cd52565089138704c6b637350e18bc8705c8b`, documentation closure `95981a499521a28bfd9eb24480d54ef42f485528`, and review record `eb97adfa75660867eb31d46a4e7d7712909c348e`. All three commits are local and not pushed. R0 is the only next separately gated implementation slice; R1/R2/W1 and downstream remain blocked behind R0 or their named gates**
 Date: 2026-08-20
 Owner decision: same-database adapter for `internal_preview`; A1b/A2-foundation was
 independently accepted on 2026-08-21 by the follow-up Critical review
-(`High=0`, `Medium=0`, `Low=0`). A2a initial snapshot `20d411e` received independent Critical `REWORK` (`High=1`, `Medium=5`, `Low=1`). The repaired production candidate is frozen as local commit `215cd52565089138704c6b637350e18bc8705c8b` on `work/research-boundary-runtime-20260824` and is not pushed. Final independent Critical re-audit is pending documentation closure; no A2a `ACCEPT` is claimed. R0/R1/R2/W1 and downstream remain blocked. This document
+(`High=0`, `Medium=0`, `Low=0`). A2a was independently `ACCEPTED` on 2026-08-24 (`High=0`, `Medium=0`, `Low=0`) at production commit `215cd52565089138704c6b637350e18bc8705c8b`, documentation closure `95981a499521a28bfd9eb24480d54ef42f485528`, and review record `eb97adfa75660867eb31d46a4e7d7712909c348e`. All three commits are local and not pushed. R0 is the only next separately gated implementation slice; R1/R2/W1 and downstream remain blocked behind R0 or their named gates. This document
 does not authorize schema/API/save/replay/permission changes, G/M/P work, GitHub settings,
 paid provider runs, or user research.
 
@@ -13,7 +13,7 @@ neutral DTO/Protocol definitions, legacy identity-preserving re-exports, API/Wor
 path-source integration, contracts-only Docker/CI smoke, and focused verification. This
 A1 implementation was independently accepted on 2026-08-20. A1b/A2-foundation was
 independently accepted on 2026-08-21 by the follow-up Critical review
-(`High=0`, `Medium=0`, `Low=0`). A2a initial snapshot `20d411e` received independent Critical `REWORK` (`High=1`, `Medium=5`, `Low=1`). The repaired production candidate is frozen as local commit `215cd52565089138704c6b637350e18bc8705c8b` on `work/research-boundary-runtime-20260824` and is not pushed. Final independent Critical re-audit is pending documentation closure; no A2a `ACCEPT` is claimed. R0/R1/R2/W1 and downstream remain blocked.
+(`High=0`, `Medium=0`, `Low=0`). A2a was independently `ACCEPTED` on 2026-08-24 (`High=0`, `Medium=0`, `Low=0`) at production commit `215cd52565089138704c6b637350e18bc8705c8b`, documentation closure `95981a499521a28bfd9eb24480d54ef42f485528`, and review record `eb97adfa75660867eb31d46a4e7d7712909c348e`. All three commits are local and not pushed. R0 is the only next separately gated implementation slice; R1/R2/W1 and downstream remain blocked behind R0 or their named gates.
 
 This is the implementation-ready detail for the Research portion of the Post-V5
 Optimization plan. It deliberately separates three states:
@@ -504,15 +504,15 @@ SSoT/spec synchronization.
 
 ## 10. Authorization And Current Status
 
-Delivery state on 2026-08-24: PR #20 merged at `origin/main@9f40241`; behavioral baseline `d1b5945`; rejected initial snapshot `20d411e`; initial review record `5a6ee38`; immutable local repair commit `215cd52565089138704c6b637350e18bc8705c8b` on `work/research-boundary-runtime-20260824`, not pushed. Candidate production composition uses neutral commands/UoW (`uowEnterCount=38`). Differential `2 passed`, `equal=true`, semantic fingerprint `b155d2fa7783b70e57ed60015eecfd6dd2f2d28bfe9cd5ebea68166c9a33855a`; full API/Worker partitions and deploy `6+2` pass. Official Docker Hub timed out, but mirror retrieval of the same pinned base digest produced controller pre-final API `b1b165f75d14`; the reviewer rebuilt immutable-SHA API `sha256:2437e95e909b2b6d941e58b58b28551f5a09c87d93594ac9e4c80ae9ba7fe70c`; final Worker remains `17e8f6645b4b`; final non-root/path/import smokes passed. Final Critical verdict remains pending documentation closure, so no A2a `ACCEPT` is claimed.
+Delivery state on 2026-08-24: PR #20 merged at `origin/main@9f40241`; behavioral baseline `d1b5945`; rejected initial snapshot `20d411e`; initial review record `5a6ee38`; immutable local repair commit `215cd52565089138704c6b637350e18bc8705c8b` on `work/research-boundary-runtime-20260824`, not pushed. Candidate production composition uses neutral commands/UoW (`uowEnterCount=38`). Final differential/boundary `8 passed`, `equal=true`, semantic SHA `119a36086bfb595ea0882deab719d530ebd0107296cf8033a4f348ef07e7d4c0`; full API/Worker partitions and deploy `6+2` pass. Official Docker Hub timed out, but mirror retrieval of the same pinned base digest produced controller pre-final API `b1b165f75d14`; the reviewer rebuilt immutable-SHA API `sha256:2437e95e909b2b6d941e58b58b28551f5a09c87d93594ac9e4c80ae9ba7fe70c`; final Worker remains `17e8f6645b4b`; final non-root/path/import smokes passed. Final Critical review is `ACCEPT (High=0, Medium=0, Low=0)` at local review commit `eb97adf`; production `215cd52`, documentation `95981a4`, and review `eb97adf` remain unpushed.
 
 Owner authorization covers the A0 ownership/transport direction and conditionally authorizes
 A1/A1b/A2-foundation/A2a/R0/R1/R2/W1 within these boundaries. The design re-audit is
 `ACCEPT (High=0, Medium=0, Low=0)` and A1 was independently accepted on `2026-08-20`.
 A1b/A2-foundation was independently accepted on 2026-08-21 (follow-up Critical review ACCEPT; High=0, Medium=0, Low=0);
-A2a initial snapshot `20d411e` received independent Critical `REWORK` (`High=1`, `Medium=5`, `Low=1`). The repaired production candidate is frozen as local commit `215cd52565089138704c6b637350e18bc8705c8b` on `work/research-boundary-runtime-20260824` and is not pushed. Final independent Critical re-audit is pending documentation closure; no A2a `ACCEPT` is claimed. R0/R1/R2/W1 and downstream remain blocked. G/M/P and GitHub repository settings remain unapproved.
+A2a was independently `ACCEPTED` on 2026-08-24 (`High=0`, `Medium=0`, `Low=0`) at production commit `215cd52565089138704c6b637350e18bc8705c8b`, documentation closure `95981a499521a28bfd9eb24480d54ef42f485528`, and review record `eb97adfa75660867eb31d46a4e7d7712909c348e`. All three commits are local and not pushed. R0 is the only next separately gated implementation slice; R1/R2/W1 and downstream remain blocked behind R0 or their named gates. G/M/P and GitHub repository settings remain unapproved.
 
 This text itself does not authorize additional schema/API changes, G/M/P work, GitHub
 settings, provider spend, or user research. The implementation sequence is A1 ->
-A1b/A2-foundation -> A2a -> R0 -> R1/R2. A2a production implementation is frozen at local commit `215cd52`; its next step is final documentation closure and reviewer verdict in [`reviews/a2a-persistence-critical-reaudit-2026-08-24.md`](reviews/a2a-persistence-critical-reaudit-2026-08-24.md); R0/R1/R2 remain blocked until their named gates. No schema/API/save/
+A1b/A2-foundation -> A2a -> R0 -> R1/R2. A2a is independently accepted at production `215cd52`, documentation `95981a4`, and review `eb97adf`; all are local and not pushed. R0 is the only next separately gated implementation slice; R1/R2/W1 and downstream remain blocked behind R0 or their named gates. No schema/API/save/
 replay/permission changes are authorized; later slices remain blocked until their named gates.

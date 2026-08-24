@@ -45,4 +45,4 @@ not override the failures above:
 - `compileall`, current lock checks, and clean wheel install/import: passed.
 - Initial audit could not obtain image evidence from official Docker Hub. The later immutable repair candidate has same-pinned-digest mirror image/runtime evidence in the rework report; this does not retroactively accept the initial snapshot.
 
-No A2a `ACCEPT` is claimed from this historical snapshot.
+This historical snapshot remained rejected. The later repair was independently accepted on 2026-08-24 in [`a2a-persistence-critical-reaudit-2026-08-24.md`](a2a-persistence-critical-reaudit-2026-08-24.md).
