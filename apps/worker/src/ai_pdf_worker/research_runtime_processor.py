@@ -360,6 +360,6 @@ class ResearchWorkProcessor(_ApiPort):
 def build_default_research_service() -> ResearchWorkerService:
     """Load the API port lazily so ingestion-only worker tests stay isolated."""
 
-    from ai_pdf_api.services import research_worker
+    from ai_pdf_worker.research_persistence_service import build_worker_research_service
 
-    return research_worker
+    return build_worker_research_service()

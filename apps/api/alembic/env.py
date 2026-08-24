@@ -7,8 +7,8 @@ from sqlalchemy import engine_from_config, pool
 from alembic import context
 
 from ai_pdf_api.core.settings import settings
-from ai_pdf_api.db.base import Base
-import ai_pdf_api.models  # noqa: F401
+from citeframe_persistence import Base
+import citeframe_persistence.models  # noqa: F401
 
 config = context.config
 

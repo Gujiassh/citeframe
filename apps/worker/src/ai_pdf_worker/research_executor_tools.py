@@ -3,7 +3,7 @@ from __future__ import annotations
 from collections.abc import Sequence
 from threading import Lock
 
-from ai_pdf_worker.research_executor_contracts import (
+from citeframe_contracts import (
     BranchResult,
     DraftClaim,
     EvidenceHandle,

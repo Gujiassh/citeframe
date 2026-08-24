@@ -1,17 +1,9 @@
-from sqlalchemy import Boolean, ForeignKey, Integer, String
-from sqlalchemy.orm import Mapped, mapped_column
+"""Compatibility alias for citeframe_persistence.models.image_representation_geometry."""
 
-from ai_pdf_api.db.base import Base
+from __future__ import annotations
 
+import sys
 
-class ImageRepresentationGeometry(Base):
-    __tablename__ = "image_representation_geometry"
+from citeframe_persistence.models import image_representation_geometry as _impl
 
-    representation_id: Mapped[str] = mapped_column(
-        String(36), ForeignKey("asset_representations.id", ondelete="CASCADE"), primary_key=True
-    )
-    workspace_id: Mapped[str] = mapped_column(String(36), ForeignKey("workspaces.id"), index=True)
-    asset_id: Mapped[str] = mapped_column(String(36), ForeignKey("assets.id"), index=True)
-    width_pixels: Mapped[int] = mapped_column(Integer)
-    height_pixels: Mapped[int] = mapped_column(Integer)
-    orientation_applied: Mapped[bool] = mapped_column(Boolean)
+sys.modules[__name__] = _impl

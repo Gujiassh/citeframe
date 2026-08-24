@@ -1,5 +1,5 @@
-from sqlalchemy.orm import DeclarativeBase
+"""Compatibility export for the neutral persistence declarative base."""
 
+from citeframe_persistence import Base
 
-class Base(DeclarativeBase):
-    pass
+__all__ = ["Base"]

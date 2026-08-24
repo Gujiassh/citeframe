@@ -1,0 +1,13 @@
+[project]
+name = "citeframe-backend-contracts"
+version = "0.1.0"
+description = "Pure DTO and Protocol contracts shared by Citeframe backends"
+requires-python = ">=3.12"
+dependencies = []
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/citeframe_contracts"]

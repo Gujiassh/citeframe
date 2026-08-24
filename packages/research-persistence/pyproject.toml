@@ -1,0 +1,18 @@
+[project]
+name = "citeframe-research-persistence"
+version = "0.1.0"
+description = "Neutral Research persistence repositories, commands, and lease primitives for Citeframe"
+requires-python = ">=3.12"
+dependencies = [
+  "SQLAlchemy>=2.0,<3.0",
+  "citeframe-backend-contracts",
+  "citeframe-backend-persistence",
+]
+
+[tool.uv.sources]
+citeframe-backend-contracts = { path = "../backend-contracts", editable = true }
+citeframe-backend-persistence = { path = "../backend-persistence", editable = true }
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"

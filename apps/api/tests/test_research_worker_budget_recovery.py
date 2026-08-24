@@ -674,22 +674,30 @@ def test_creator_membership_loss_requests_cancel_for_running_attempt(research_wo
     assert attempt is not None and attempt.status == "running"
 
 
-def _scalar_lock_trace(session: Session):
+def _query_lock_trace(session: Session):
     events: list[tuple[str, bool, bool]] = []
     original_scalar = session.scalar
+    original_execute = session.execute
 
-    def recording_scalar(statement, *args, **kwargs):
+    def record(statement) -> None:
         entity = statement.column_descriptions[0]["entity"]
         entity_name = getattr(entity, "__name__", None) or type(entity).__name__
         for_update = statement._for_update_arg is not None
         populate_existing = bool(statement.get_execution_options().get("populate_existing"))
         events.append((entity_name, for_update, populate_existing))
+
+    def recording_scalar(statement, *args, **kwargs):
+        record(statement)
         return original_scalar(statement, *args, **kwargs)
 
-    return events, recording_scalar
+    def recording_execute(statement, *args, **kwargs):
+        record(statement)
+        return original_execute(statement, *args, **kwargs)
+
+    return events, recording_scalar, recording_execute
 
 
-def test_provider_and_tool_call_chains_lock_attempt_step_run_before_call_and_ledger(
+def test_provider_and_tool_call_chains_lock_run_step_attempt_before_call_and_ledger(
     research_worker_db,
 ) -> None:
     fixture = research_worker_db
@@ -715,14 +723,17 @@ def test_provider_and_tool_call_chains_lock_attempt_step_run_before_call_and_led
         now=fixture.now + timedelta(seconds=2),
     )
 
-    provider_events, provider_scalar = _scalar_lock_trace(fixture.db)
-    with patch.object(fixture.db, "scalar", side_effect=provider_scalar):
+    provider_events, provider_scalar, provider_execute = _query_lock_trace(fixture.db)
+    with (
+        patch.object(fixture.db, "scalar", side_effect=provider_scalar),
+        patch.object(fixture.db, "execute", side_effect=provider_execute),
+    ):
         research_worker_provider._provider_call_chain(fixture.db, provider_reservation.provider_call_id)
     provider_locked = [name for name, for_update, _populate in provider_events if for_update]
     assert provider_locked == [
-        "ResearchStepAttempt",
-        "ResearchStep",
         "ResearchRun",
+        "ResearchStep",
+        "ResearchStepAttempt",
         "ResearchProviderCall",
         "ResearchBudgetLedger",
     ]
@@ -731,14 +742,17 @@ def test_provider_and_tool_call_chains_lock_attempt_step_run_before_call_and_led
     assert ("ResearchProviderCall", True, True) in provider_events
     assert ("ResearchBudgetLedger", True, True) in provider_events
 
-    tool_events, tool_scalar = _scalar_lock_trace(fixture.db)
-    with patch.object(fixture.db, "scalar", side_effect=tool_scalar):
+    tool_events, tool_scalar, tool_execute = _query_lock_trace(fixture.db)
+    with (
+        patch.object(fixture.db, "scalar", side_effect=tool_scalar),
+        patch.object(fixture.db, "execute", side_effect=tool_execute),
+    ):
         research_worker_tools._tool_call_chain(fixture.db, tool_reservation.tool_call_id)
     tool_locked = [name for name, for_update, _populate in tool_events if for_update]
     assert tool_locked == [
-        "ResearchStepAttempt",
-        "ResearchStep",
         "ResearchRun",
+        "ResearchStep",
+        "ResearchStepAttempt",
         "ResearchToolCall",
         "ResearchBudgetLedger",
     ]

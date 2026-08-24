@@ -12,10 +12,16 @@ dependencies = [
   "rapidocr-onnxruntime>=1.4.4",
   "langgraph>=1.0,<2.0",
   "markdown-it-py>=3.0.0",
+  "citeframe-backend-contracts",
+  "citeframe-backend-persistence",
+  "citeframe-research-persistence",
 ]
 
 [tool.uv.sources]
 ai-pdf-api = { path = "../api", editable = true }
+citeframe-backend-contracts = { path = "../../packages/backend-contracts", editable = true }
+citeframe-backend-persistence = { path = "../../packages/backend-persistence", editable = true }
+citeframe-research-persistence = { path = "../../packages/research-persistence", editable = true }
 
 [build-system]
 requires = ["hatchling"]

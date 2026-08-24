@@ -2,14 +2,30 @@
 
 Date: 2026-08-19
 
-Status: **planned / implementation not authorized**
+Status: **Design re-audit and A1/A1b are accepted; A2a was independently `ACCEPTED` on 2026-08-24 (`High=0`, `Medium=0`, `Low=0`) at production commit `215cd52565089138704c6b637350e18bc8705c8b`, documentation closure `95981a499521a28bfd9eb24480d54ef42f485528`, and review record `eb97adfa75660867eb31d46a4e7d7712909c348e`. All three commits are local and not pushed. R0 was independently `ACCEPTED` on 2026-08-24 (`High=0`, `Medium=0`, `Low=0`) across start `7ee97471ffb7d7d23e941d75795ab21d8cb3032b`, production `39766c374bd584b0cb834ef103de025d233c87c1`, final ledger closure `6b8ab475c14a7bbfe90f59a635255ca3768edcf9`, and review record `9d4297f89451fe79b6d1c141613722f7749b11c0`. All four commits are local and not pushed; the branch has no upstream and no remote branch. R1 is the only next separately gated implementation slice; R2/W1 and downstream remain blocked. R0 acceptance authorizes no schema/API/save/replay/permission/admission change and does not claim R1 implementation**
 
 Product stage: `internal_preview`
 
+Owner has authorized the A0/R/W architecture direction (same-DB adapter, Worker
+orchestration, one-claimed-attempt runtime, and independent Research SSE work). Package
+staging is strictly A1 contracts -> A1b/A2-foundation persistence -> A2a Research
+persistence; no later-stage package scaffold is allowed early. The design re-audit is
+accepted with `High=0`, `Medium=0`, `Low=0`. A1 was independently accepted on `2026-08-20`. A1b/A2-foundation was independently
+accepted on `2026-08-21` by the follow-up Critical review (`High=0`, `Medium=0`, `Low=0`).
+Implementation evidence is recorded in `reviews/a1b-persistence-implementation-2026-08-20.md`;
+the reviewer-owned result is `reviews/a1b-persistence-critical-audit-2026-08-20.md`.
+A2a was independently `ACCEPTED` on 2026-08-24 (`High=0`, `Medium=0`, `Low=0`) at production `215cd52`, documentation closure `95981a4`, and review record `eb97adf`; all are local and not pushed. R0 is independently `ACCEPTED (High=0, Medium=0, Low=0)` at local chain `7ee97471 -> 39766c37 -> 6b8ab475 -> 9d4297f8`; no upstream, remote branch, or push exists. R1 is the only next separately gated implementation slice; R2/W1 and downstream remain blocked. No admission or R1 implementation is authorized. No schema/API/save/replay/permission changes are authorized.
+G/M/P and GitHub repository settings remain unauthorized.
+
 This package turns the 2026-08 architecture review into four bounded follow-up
-lanes. It is a planning artifact only. No production code, persistence contract,
-GitHub repository setting, paid evaluation, or user study is authorized by this
-package.
+lanes. A1 was independently accepted on `2026-08-20`; its evidence is recorded in
+`reviews/a1-contracts-implementation-2026-08-20.md`. A1b/A2-foundation was independently
+accepted on `2026-08-21` by the follow-up Critical review (`High=0`, `Medium=0`, `Low=0`).
+Implementation evidence is recorded in `reviews/a1b-persistence-implementation-2026-08-20.md`;
+the reviewer-owned result is `reviews/a1b-persistence-critical-audit-2026-08-20.md`.
+A2a was independently `ACCEPTED` on 2026-08-24 (`High=0`, `Medium=0`, `Low=0`) at production `215cd52`, documentation closure `95981a4`, and review record `eb97adf`; all are local and not pushed. R0 is independently `ACCEPTED (High=0, Medium=0, Low=0)` at local chain `7ee97471 -> 39766c37 -> 6b8ab475 -> 9d4297f8`; no upstream, remote branch, or push exists. R1 is the only next separately gated implementation slice; R2/W1 and downstream remain blocked. No admission or R1 implementation is authorized. No schema/API/save/replay/permission changes are
+authorized, and G/M/P, GitHub settings, paid evaluation, and user study remain outside
+this status.
 
 | Area | Baseline score | Primary fact |
 | --- | ---: | --- |
@@ -24,17 +40,24 @@ package.
 | --- | --- |
 | [`spec.md`](spec.md) | Goals, constraints, facts, and owner decision gates |
 | [`plan.md`](plan.md) | Sequenced lanes, dependencies, estimates, and acceptance oracles |
-| [`tasks.md`](tasks.md) | Unstarted work breakdown; checkboxes are not implementation authorization |
-| [`reviews/`](reviews/) | Independent plan review evidence |
+| [`tasks.md`](tasks.md) | Slice state; authorization and implementation status are kept separate |
+| [`research-boundary-runtime-design.md`](research-boundary-runtime-design.md) | Implementation-ready Research boundary, dispatcher, locking, admission, SSE, and oracle design |
+| [`reviews/`](reviews/) | Independent plan/re-audit evidence |
+| [`reviews/a2a-persistence-implementation-2026-08-21.md`](reviews/a2a-persistence-implementation-2026-08-21.md) | Historical initial A2a snapshot evidence; superseded after Critical REWORK |
+| [`reviews/a2a-persistence-critical-audit-2026-08-24.md`](reviews/a2a-persistence-critical-audit-2026-08-24.md) | Initial A2a Critical REWORK (`High=1`, `Medium=5`, `Low=1`) |
+| [`reviews/a2a-persistence-rework-implementation-2026-08-24.md`](reviews/a2a-persistence-rework-implementation-2026-08-24.md) | Accepted immutable production/docs evidence and local delivery ledger |
+| [`reviews/a2a-persistence-critical-reaudit-2026-08-24.md`](reviews/a2a-persistence-critical-reaudit-2026-08-24.md) | Final independent A2a Critical `ACCEPT (High=0, Medium=0, Low=0)`; record commit `eb97adf` |
+| [`reviews/r0-lock-normalization-implementation-2026-08-24.md`](reviews/r0-lock-normalization-implementation-2026-08-24.md) | R0 implementation and durable ledger history |
+| [`reviews/r0-lock-normalization-critical-review-2026-08-24.md`](reviews/r0-lock-normalization-critical-review-2026-08-24.md) | Final independent R0 Critical `ACCEPT (High=0, Medium=0, Low=0)`; record commit `9d4297f8` |
 
 ## Recommended Order
 
-1. Authorize delivery governance and freeze the API/Worker A0 ownership decision.
-2. Establish baselines and guards before moving code.
-3. Introduce contracts and perform one non-semantic file split at a time.
-4. Build the modality capability/quality matrix and run authorized R803/M404 evidence work.
-5. Select one product-depth investment from evidence; do not deepen every modality in parallel.
-6. Attempt an API-source-free Worker build only after all runtime imports and behavior oracles pass.
+1. Record the owner-authorized A0/R/W direction and the accepted design re-audit (`High=0`, `Medium=0`, `Low=0`).
+2. Preserve the final independent A1b follow-up Critical review ACCEPT (`High=0`, `Medium=0`, `Low=0`) and its clean-image evidence in the linked artifacts.
+3. Preserve A2a and R0 acceptance chains locally, then deliver them through remote push/PR integration; no upstream or remote work branch exists yet.
+4. R1 is the only next separately gated implementation slice. Keep R2 and W1 blocked behind their named gates; do not implement admission or fold R1 into R0.
+5. Migrate all nine ingestion modalities in A3/A4 before claiming an API-source-free Worker candidate in A5.
+6. Keep G/M/P and GitHub settings behind their own authorization gates.
 
 Related current facts:
 

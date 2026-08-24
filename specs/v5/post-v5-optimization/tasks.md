@@ -1,16 +1,22 @@
 # Tasks: Post-V5 Optimization
 
-Status: **all implementation blocked pending explicit owner authorization**.
+Status: **Design re-audit ACCEPT (High=0, Medium=0, Low=0); A1 independently accepted
+on 2026-08-20; A1b/A2-foundation independently accepted on 2026-08-21 by the follow-up
+Critical review (`High=0`, `Medium=0`, `Low=0`); A2a was independently `ACCEPTED` on 2026-08-24 (`High=0`, `Medium=0`, `Low=0`) at production commit `215cd52565089138704c6b637350e18bc8705c8b`, documentation closure `95981a499521a28bfd9eb24480d54ef42f485528`, and review record `eb97adfa75660867eb31d46a4e7d7712909c348e`. All three commits are local and not pushed. R0 was independently `ACCEPTED` on 2026-08-24 (`High=0`, `Medium=0`, `Low=0`) across start `7ee97471ffb7d7d23e941d75795ab21d8cb3032b`, production `39766c374bd584b0cb834ef103de025d233c87c1`, final ledger closure `6b8ab475c14a7bbfe90f59a635255ca3768edcf9`, and review record `9d4297f89451fe79b6d1c141613722f7749b11c0`. All four commits are local and not pushed; the branch has no upstream and no remote branch. R1 is the only next separately gated implementation slice; R2/W1 and downstream remain blocked. R0 acceptance authorizes no schema/API/save/replay/permission/admission change and does not claim R1 implementation**.
 
-Checkboxes describe scope and progress only. They do not authorize code, contract,
-repository-setting, paid-provider, or user-study changes.
+Checkboxes distinguish authorization from implementation. The checked A1 item records
+implementer-complete code and evidence; later checked authorization items do not claim
+code, schema, API, SSE, repository settings, provider spend, or user research was implemented.
 
 ## Plan Closure
 
 - [x] Verify architecture/import/line-count/modality/governance baseline
 - [x] Write spec and sequenced plan
 - [x] Independent plan audit ACCEPT (2026-08-19)
-- [ ] Owner chooses which decision gate to open first
+- [x] Record owner-authorized A0/R/W target direction in the implementation-ready design (2026-08-20; docs only)
+- [x] Independent Critical re-audit of the revised design ACCEPT (High=0, Medium=0, Low=0)
+- [x] Implement bounded A1 contracts slice (2026-08-20); independently accepted on 2026-08-20
+- [x] Independent Critical review of the A1 implementation ACCEPT (2026-08-20)
 
 ## G: Delivery Governance
 
@@ -19,25 +25,56 @@ repository-setting, paid-provider, or user-study changes.
 - [ ] G2 Add concurrency cancellation and missing timeouts
 - [ ] G3 Upgrade Node 20-era action versions and prove job parity
 
-## A: API / Worker Boundary
+G0-G3 and all GitHub repository settings remain unauthorized.
 
-- [ ] A0 Approve schema, mutation, session/commit, and transport owners separately
-- [ ] A1 Add pure Python DTO/Protocol contracts package
-- [ ] A2 Migrate Research port/transaction boundary with old/new oracle
-- [ ] A3 Freeze ingestion result/object/hash/compensation contract and pilot one modality
-- [ ] A4 Migrate all remaining modalities and composition root
-- [ ] A5 Prove API-source-free candidate Worker build
-- [ ] A6 Replace legacy target and remove old dependencies last
+## A/R/W: Boundary And Research Runtime
+
+### Authorized direction, documentation only
+
+- [x] A0 Freeze same-DB adapter; API HTTP/auth/Alembic/schema governance; Worker orchestration; Worker-side Research UoW commit-process ownership
+- [x] A0 Freeze `citeframe_contracts` / `citeframe_persistence` / `citeframe_research_persistence` ownership; prohibit copied mappings/transitions and `citeframe_research_persistence -> ai_pdf_api` imports
+- [x] A0 Freeze unchanged Step/Attempt/Claim/Event/save/replay/permission semantics and the existing lock/fencing contract
+- [x] R/W Freeze PostgreSQL-only orchestration, one-claimed-attempt dispatcher target, admission target semantics, and independent SSE target; freeze does not authorize admission implementation
+- [x] R0 Freeze Run-first lock normalization target; accepted implementation remains separate from A2a/R1
+
+### Production implementation, R0 independently accepted; R1 is the only next gated slice
+
+- [x] A1 Add only `citeframe-backend-contracts` / `citeframe_contracts` pure DTO/Protocol package; API/Worker add only its local path and stage-specific export/smoke; no persistence or Research package scaffold (independently accepted 2026-08-20)
+- [x] A1b / A2-foundation Add `citeframe-backend-persistence` / `citeframe_persistence` on top of A1 as unique Base/metadata and all-model mapping distribution; extend manifests, Docker COPY/PYTHONPATH, and smoke with zero DDL drift (implementer-complete 2026-08-20; independently accepted 2026-08-21 by follow-up Critical review: High=0, Medium=0, Low=0)
+- [x] A2a initial snapshot `20d411e` implemented the third package but failed independent Critical review (`REWORK`, High=1, Medium=5, Low=1)
+- [x] A2a bounded core/supply-chain rework frozen as local commit `215cd52565089138704c6b637350e18bc8705c8b` on `work/research-boundary-runtime-20260824`; not pushed
+- [x] Candidate neutral production composition (`uowEnterCount=38`), final differential/boundary `8 passed`, full API/Worker partitions, deploy `6+2`, and same-pinned-digest mirror image/runtime smokes recorded
+- [x] Final independent A2a Critical `ACCEPT (High=0, Medium=0, Low=0)` in [`reviews/a2a-persistence-critical-reaudit-2026-08-24.md`](reviews/a2a-persistence-critical-reaudit-2026-08-24.md), local review commit `eb97adf`
+- [ ] Push production `215cd52`, documentation `95981a4`, and review `eb97adf`, then integrate through the repository review flow
+- [x] R0 Normalize all mutation lock acquisition to `Run -> Step -> Attempt -> Call -> Ledger` at production `39766c37`, preserving save/API semantics
+- [x] R0 final ledger closure `6b8ab475` and independent Critical [`ACCEPT (High=0, Medium=0, Low=0)`](reviews/r0-lock-normalization-critical-review-2026-08-24.md) at local review `9d4297f8`; start `7ee97471`; no upstream/remote branch/push
+- [x] R0 evidence: PostgreSQL 17.10 `7/7`, report `95f2608e...`, deadlocks `0 -> 0`, no `40P01`/`55P03`, focused `8`, API `90+49`, Worker `43`, A2a equal `7/7`
+- [ ] Push/integrate the accepted R0 chain through the repository review flow
+- [ ] R1 Change `process_one` into bounded concurrent dispatcher loops; each loop creates one `ResearchStepAttempt` lease and executes exactly that newly claimed Attempt with its step-kind handler; prove production-shaped two-loop overlap; keep separate from A2a
+- [ ] R2 Prove two-or-more Worker contention, cap=1/N, cap-full Run skipping/fairness/no-starvation, equal-time Step ordering, lease expiry/late completion, cancel/provider races, join/conflict/recovery on real PostgreSQL
+- [ ] W1 Implement single-flight/dirty rerun, monotonic event gate, Run-switch abort/discard, event-directed artifact cache, terminal flush, and replay fallback
+- [ ] A3 Freeze ingestion result/object/hash/compensation contract and pilot one modality; pilot is not an A5 entry gate
+- [ ] A4 Migrate the other eight modalities and composition root
+- [ ] A5 Prove candidate Worker import/compile/start/ingest/Research/recovery/version-mismatch without API source/editable dependency/PYTHONPATH
+- [ ] A6 Replace legacy Worker target only after A5 and pass deploy/restore regression
+
+A1b/A2-foundation was independently accepted on 2026-08-21 (follow-up Critical review ACCEPT; High=0, Medium=0, Low=0). A2a is independently accepted at local production `215cd52`, documentation `95981a4`, and review `eb97adf`; none is pushed. No schema/API/save/replay/permission changes are authorized. A2a preserved the fixed multi-step `process_one` LangGraph behavior and its historical mixed lock behavior; accepted R0 later changed lock acquisition order only. R1 is the only
+next separately gated implementation slice and is not implemented. R2/W1 remain blocked;
+per-Run admission is not authorized. R1 is the later slice that removes LangGraph runtime step execution and
+introduces one-claimed-attempt dispatch. A5 cannot be claimed until A3/A4 cover all nine
+modalities and Research runtime, composition, and recovery gates pass.
 
 ## M: Maintainability
 
-- [ ] M0 Add reproducible size/dependency baseline and ownership map
+- [ ] M0 Add reproducible size/import/function baseline and ownership map
 - [ ] M1 Split `modalities/evidence.py` without semantic change
 - [ ] M2 Split `routers/assets.py` without HTTP/auth/streaming change
 - [ ] M3 Split M402 execution service with byte-identical report
-- [ ] M4 Split R803 campaign tests without changing test/frozen evidence meaning
+- [ ] M4 Split `test_r803_campaign_v5.py` without changing test/frozen evidence meaning
 - [ ] M5 Split restore acceptance script without changing CLI/report/cleanup
 - [ ] M6 Split M402 tests without reducing adversarial coverage
+
+M work remains unstarted and is not authorized by A0/R/W.
 
 ## P: Product Completeness
 
@@ -49,10 +86,13 @@ repository-setting, paid-provider, or user-study changes.
 - [ ] P3 Select Audio depth only if matrix evidence ranks it first
 - [ ] P4 Select Video depth only if matrix evidence ranks it first
 
+P work, provider spend, and user research remain unapproved.
+
 ## Contract Stop Rules
 
 - [ ] Any persistence/API/save/replay/permission meaning change stops for `A-DATA` approval
 - [ ] Any GitHub repository setting mutation stops for `G0` approval
 - [ ] Any provider spend stops for `P-R803` approval
 - [ ] Any user research stops for `P-M404` approval
+- [ ] Any unproved lock-order change stops for an independent Critical design and deadlock proof
 - [ ] Any depth slice lacking a real fixture and measurable user task remains unstarted

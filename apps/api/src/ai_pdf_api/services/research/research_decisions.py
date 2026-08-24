@@ -29,6 +29,7 @@ from ai_pdf_api.services.research.research_runs import (
 from ai_pdf_api.services.research.research_views import run_detail
 from sqlalchemy import select
 from sqlalchemy.orm import Session
+from citeframe_research_persistence.locks import lock_step
 
 
 def _get_pending_decision(
@@ -39,20 +40,65 @@ def _get_pending_decision(
     decision_id: str,
     decision_type: str,
 ) -> tuple[ResearchRun, HumanDecision]:
+    with db.no_autoflush:
+        locator = db.execute(
+            select(HumanDecision.gate_step_id).where(
+                HumanDecision.id == decision_id,
+                HumanDecision.run_id == run_id,
+                HumanDecision.workspace_id == workspace_id,
+                HumanDecision.decision_type == decision_type,
+            )
+        ).one_or_none()
+        related_step_ids = (
+            tuple(
+                db.scalars(
+                    select(ResearchStepDependency.step_id).where(
+                        ResearchStepDependency.depends_on_step_id == locator.gate_step_id
+                    )
+                ).all()
+            )
+            if locator is not None
+            else ()
+        )
     run = _get_research_run_for_update(db, workspace_id, run_id)
+    if locator is None:
+        raise ResearchError("research_resource_not_found", "Research decision not found.", 404)
+    for step_id in sorted({locator.gate_step_id, *related_step_ids}):
+        if lock_step(
+            db,
+            step_id,
+            run_id=run.id,
+            workspace_id=run.workspace_id,
+        ) is None:
+            raise ResearchError("research_state_conflict", "Research decision Step chain is invalid.", 409)
     decision = db.scalar(
-        select(HumanDecision).where(
+        select(HumanDecision)
+        .where(
             HumanDecision.id == decision_id,
             HumanDecision.run_id == run_id,
             HumanDecision.workspace_id == workspace_id,
             HumanDecision.decision_type == decision_type,
         )
+        .with_for_update(of=HumanDecision)
+        .execution_options(populate_existing=True)
     )
-    if decision is None:
-        raise ResearchError("research_resource_not_found", "Research decision not found.", 404)
+    current_related_ids = tuple(
+        db.scalars(
+            select(ResearchStepDependency.step_id).where(
+                ResearchStepDependency.depends_on_step_id == locator.gate_step_id
+            )
+        ).all()
+    )
+    if (
+        decision is None
+        or decision.gate_step_id != locator.gate_step_id
+        or set(current_related_ids) != set(related_step_ids)
+    ):
+        raise ResearchError("research_state_conflict", "Research decision Step chain is invalid.", 409)
     if decision.status != "pending":
         raise ResearchError("research_state_conflict", "Research decision has already been submitted.", 409)
     return run, decision
+
 
 def _validate_decision_versions(
     run: ResearchRun,
@@ -298,6 +344,8 @@ def decide_conflict(
                         ResearchClaim.workspace_id == run.workspace_id,
                     )
                     .order_by(ResearchArtifactClaim.claim_order)
+                    .with_for_update(of=ResearchClaim)
+                    .execution_options(populate_existing=True)
                 ).all()
             )
             if not claims:

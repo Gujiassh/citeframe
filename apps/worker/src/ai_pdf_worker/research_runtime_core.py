@@ -1,8 +1,8 @@
 """Production Research orchestration ports.
 
-The worker owns orchestration and provider adapters.  The API owns the Research
-ledger and the transaction boundaries.  This module deliberately contains no
-SQLAlchemy model imports: a missing or incomplete API port is a hard failure.
+The Worker owns orchestration, provider adapters, and the Research job UoW.
+Neutral persistence commands own ledger transitions; API adapters supply reads,
+storage, and capability checks. This module deliberately imports no ORM models.
 """
 
 from __future__ import annotations
@@ -18,6 +18,8 @@ from datetime import UTC, datetime
 from time import monotonic
 from typing import TYPE_CHECKING, Any, Protocol
 from uuid import UUID
+
+from citeframe_research_persistence.uow import ResearchUnitOfWork
 
 if TYPE_CHECKING:
     from ai_pdf_worker.research_runtime_ports import SqlResearchLedgerAdapter
@@ -198,11 +200,14 @@ class _ApiPort:
 
     @contextmanager
     def _db(self, *, write: bool = False) -> Iterator[Any]:
+        if write:
+            with ResearchUnitOfWork(self._sessions) as uow:
+                assert uow.repository is not None
+                yield uow.repository.db
+            return
         db = self._sessions()
         try:
             yield db
-            if write:
-                db.commit()
         except Exception:
             if hasattr(db, "rollback"):
                 db.rollback()

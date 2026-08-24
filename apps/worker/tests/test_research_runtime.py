@@ -39,6 +39,7 @@ from ai_pdf_worker.research_runtime import (
     as_approved_execution,
 )
 from ai_pdf_worker.research_runtime_core import (
+    _ApiPort,
     _evidence_handle,
     _persist_step_failure,
     _planning_runtime_payload,
@@ -117,6 +118,60 @@ class EvidenceService:
         self.barrier.wait(timeout=2)
         return []
 
+
+
+def test_api_port_write_call_uses_research_uow_commit_and_close() -> None:
+    class Db:
+        committed = 0
+        rolled_back = 0
+        closed = 0
+
+        def commit(self) -> None:
+            self.committed += 1
+
+        def rollback(self) -> None:
+            self.rolled_back += 1
+
+        def close(self) -> None:
+            self.closed += 1
+
+    class Service:
+        def mutate(self, db: Db, *, value: str) -> str:
+            assert db is session
+            return value
+
+    session = Db()
+    port = _ApiPort(lambda: session, Service())
+
+    assert port._call("mutate", write=True, value="persisted") == "persisted"
+    assert (session.committed, session.rolled_back, session.closed) == (1, 0, 1)
+
+
+def test_api_port_write_call_rolls_back_and_closes_on_failure() -> None:
+    class Db:
+        committed = 0
+        rolled_back = 0
+        closed = 0
+
+        def commit(self) -> None:
+            self.committed += 1
+
+        def rollback(self) -> None:
+            self.rolled_back += 1
+
+        def close(self) -> None:
+            self.closed += 1
+
+    class Service:
+        def mutate(self, _db: Db) -> None:
+            raise RuntimeError("write failed")
+
+    session = Db()
+    port = _ApiPort(lambda: session, Service())
+
+    with pytest.raises(RuntimeError, match="write failed"):
+        port._call("mutate", write=True)
+    assert (session.committed, session.rolled_back, session.closed) == (0, 1, 1)
 
 def test_evidence_port_uses_independent_sessions_for_parallel_branches() -> None:
     factory = SessionFactory()

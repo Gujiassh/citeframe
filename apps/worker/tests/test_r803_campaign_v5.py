@@ -127,7 +127,6 @@ def test_package_v5_loads_with_threshold_and_scorer_v2() -> None:
         "apps/worker/src/ai_pdf_worker/r803_evaluation.py",
         "apps/worker/src/ai_pdf_worker/r803_evaluation_policy.py",
         "apps/worker/src/ai_pdf_worker/research_executor.py",
-        "apps/worker/src/ai_pdf_worker/research_executor_contracts.py",
         "apps/worker/src/ai_pdf_worker/research_executor_engine.py",
         "apps/worker/src/ai_pdf_worker/research_executor_tools.py",
         "apps/worker/src/ai_pdf_worker/research_runtime_core.py",
@@ -137,6 +136,10 @@ def test_package_v5_loads_with_threshold_and_scorer_v2() -> None:
         "apps/api/src/ai_pdf_api/schemas/evaluation.py",
         "apps/api/src/ai_pdf_api/services/providers.py",
         "apps/api/src/ai_pdf_api/services/research/research_prompt_provenance.py",
+        "packages/backend-contracts/src/citeframe_contracts/__init__.py",
+        "packages/backend-persistence/src/citeframe_persistence/__init__.py",
+        "packages/backend-persistence/src/citeframe_persistence/models/content_unit.py",
+        "packages/backend-persistence/src/citeframe_persistence/models/content_unit_embedding.py",
     ]
     for needle in expected_needles:
         assert needle in modules, needle
@@ -145,6 +148,12 @@ def test_package_v5_loads_with_threshold_and_scorer_v2() -> None:
     assert provenance["evaluatorClosureRoots"] == [
         "ai_pdf_worker.r803_evaluation_campaign"
     ]
+    assert provenance["evaluatorClosureSourceRoots"] == {
+        "ai_pdf_worker": "apps/worker/src",
+        "ai_pdf_api": "apps/api/src",
+        "citeframe_contracts": "packages/backend-contracts/src",
+        "citeframe_persistence": "packages/backend-persistence/src",
+    }
 
 
 
