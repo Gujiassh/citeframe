@@ -199,8 +199,8 @@ def run_worker(
                 type(error).__name__,
             )
             if stop_event.is_set():
-                logger.info("worker_stop_after_iteration_error reason=shutdown_requested")
-                break
+                logger.info("worker_iteration_error_during_shutdown action=propagate")
+                raise
             if consecutive_errors >= max_consecutive_errors:
                 logger.critical(
                     "worker_retry_exhausted attempts=%s error_type=%s",
@@ -230,8 +230,8 @@ def run_worker(
                 type(error).__name__,
             )
             if wait_for_stop(delay_seconds):
-                logger.info("worker_stop_during_retry")
-                break
+                logger.info("worker_retry_interrupted_by_shutdown action=propagate")
+                raise
             continue
 
         if consecutive_errors:
@@ -317,7 +317,7 @@ class ResearchDispatcherPool:
         with self._error_lock:
             errors = tuple(self._errors)
         if len(errors) == 1:
-            raise RuntimeError("research_dispatcher_loop_failed") from errors[0]
+            raise errors[0]
         if errors:
             raise BaseExceptionGroup("research_dispatcher_loops_failed", list(errors))
 

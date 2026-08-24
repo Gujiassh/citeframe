@@ -3,6 +3,9 @@ set -euo pipefail
 
 ROOT=$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)
 cd "$ROOT"
+R1_START_REF=${R1_START_REF:-8674d4dc407048471f7b14b23b821e72529487bf}
+
+git cat-file -e "${R1_START_REF}^{commit}"
 
 uv lock --project apps/api --check
 uv lock --project apps/worker --check
@@ -35,5 +38,5 @@ assert "ai_pdf_worker.research_executor_engine" not in sys.modules
 print("r1_production_runtime_langgraph_import=absent")
 PY
 
-git diff --check
+git diff --check "$R1_START_REF"
 echo "r1_single_attempt_gate=pass"
