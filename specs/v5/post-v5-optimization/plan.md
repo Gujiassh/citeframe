@@ -5,7 +5,7 @@
 The owner-authorized architecture freeze and design re-audit are complete: the design audit
 accepted with `High=0`, `Medium=0`, `Low=0`. A1 implementation was independently accepted
 on `2026-08-20`. A1b/A2-foundation was independently accepted on `2026-08-21` by the
-follow-up Critical review (`High=0`, `Medium=0`, `Low=0`); A2a initial snapshot `20d411e` received independent Critical `REWORK` (`High=1`, `Medium=5`, `Low=1`). The bounded rework on `work/research-boundary-runtime-20260824` is implementer-complete but remains uncommitted and unpushed; a new independent Critical re-audit against an immutable repair snapshot is pending. No A2a `ACCEPT` is claimed. R0/R1/R2/W1 and downstream remain blocked. Product
+follow-up Critical review (`High=0`, `Medium=0`, `Low=0`); A2a initial snapshot `20d411e` received independent Critical `REWORK` (`High=1`, `Medium=5`, `Low=1`). The repaired production candidate is frozen as local commit `215cd52565089138704c6b637350e18bc8705c8b` on `work/research-boundary-runtime-20260824` and is not pushed. Final independent Critical re-audit is pending documentation closure; no A2a `ACCEPT` is claimed. R0/R1/R2/W1 and downstream remain blocked. Product
 depth follows a capability/quality matrix rather than preceding it.
 
 ```text
@@ -18,7 +18,7 @@ Wave 0: A0/R/W target freeze + design re-audit `ACCEPT` (`High=0`, `Medium=0`, `
 
 Wave numbers express dependencies, not authorization. A1 was independently accepted
 on `2026-08-20`; A1b/A2-foundation was independently accepted on `2026-08-21` by the
-follow-up Critical review (`High=0`, `Medium=0`, `Low=0`). A2a initial snapshot `20d411e` received independent Critical `REWORK` (`High=1`, `Medium=5`, `Low=1`). The bounded rework on `work/research-boundary-runtime-20260824` is implementer-complete but remains uncommitted and unpushed; a new independent Critical re-audit against an immutable repair snapshot is pending. No A2a `ACCEPT` is claimed. R0/R1/R2/W1 and downstream remain blocked. No schema/API/save/
+follow-up Critical review (`High=0`, `Medium=0`, `Low=0`). A2a initial snapshot `20d411e` received independent Critical `REWORK` (`High=1`, `Medium=5`, `Low=1`). The repaired production candidate is frozen as local commit `215cd52565089138704c6b637350e18bc8705c8b` on `work/research-boundary-runtime-20260824` and is not pushed. Final independent Critical re-audit is pending documentation closure; no A2a `ACCEPT` is claimed. R0/R1/R2/W1 and downstream remain blocked. No schema/API/save/
 replay/permission changes are authorized. G/M/P and GitHub settings remain separate
 unauthorized lanes.
 
@@ -48,7 +48,7 @@ Worker orchestration, Worker-side Research UoW commit process, pure contracts, a
 shared `citeframe_research_persistence` behavior implementation over neutral mappings. The
 design re-audit is accepted (`High=0`, `Medium=0`, `Low=0`). A1 implementation was
 independently accepted on `2026-08-20`; A1b/A2-foundation was independently accepted on
-`2026-08-21` by the follow-up Critical review (`High=0`, `Medium=0`, `Low=0`). The initial A2a snapshot was rejected; its bounded repair is implementer-complete, uncommitted/unpushed, and pending a new independent Critical re-audit. R0/R1/R2/W1 and downstream implementation remains blocked; no
+`2026-08-21` by the follow-up Critical review (`High=0`, `Medium=0`, `Low=0`). The initial A2a snapshot was rejected; its repair is frozen as local commit `215cd52`, not pushed, with final independent Critical re-audit pending documentation closure. R0/R1/R2/W1 and downstream implementation remains blocked; no
 schema/API/save/replay/permission changes are authorized.
 
 | Slice | Scope | Estimate | Exit gate |
@@ -66,7 +66,7 @@ schema/API/save/replay/permission changes are authorized.
 | A6 | Replace legacy Worker target only after A5 | 1 day | Deploy/restore regression passes; old dependency removed last |
 | W1 | Independent Research SSE single-flight, sequence gate, event-directed artifact cache, replay fallback | 2-4 days | Burst/stale/reconnect/lost-notify/gap/terminal/hash evidence; no API/save contract change |
 
-Current A2a delivery ledger: PR #20 is merged at `origin/main@9f40241`; semantic baseline `d1b5945`; initial snapshot `20d411e`; initial review `REWORK (High=1, Medium=5, Low=1)` recorded by local commit `5a6ee38`; repair branch `work/research-boundary-runtime-20260824` is dirty, uncommitted, and unpushed. Core evidence is `71` exact-audit API tests, `122` API Research tests, `58` Worker Research tests, and an executable differential with `equal=true`, fingerprint `1e3c23856db39281ab4d4ba913ff9d1f8f40ee494856edd2f9377560e2406287`, and `coverage=7`. Deploy tests are API `6` + Worker `2`; lock/export/YAML gates pass. Docker clean-image is blocked by Docker Hub timeout and is required before acceptance.
+Current A2a delivery ledger: PR #20 is merged at `origin/main@9f40241`; semantic baseline `d1b5945`; initial snapshot `20d411e`; initial review record `5a6ee38`; immutable production candidate `215cd52565089138704c6b637350e18bc8705c8b` on `work/research-boundary-runtime-20260824`, local and not pushed. Candidate production composition uses neutral commands/UoW with `uowEnterCount=38`; the differential is `2 passed`, `equal=true`, semantic fingerprint `b155d2fa7783b70e57ed60015eecfd6dd2f2d28bfe9cd5ebea68166c9a33855a`. Controller evidence is API `650 passed, 6 skipped, 1 warning`; Worker fast `174 passed, 153 deselected`; acceptance `61 passed, 266 deselected`; evaluation `92 passed, 235 deselected`; deploy `6+2`; lock/export/YAML pass. Official Docker Hub timed out, but the same pinned base digest fetched through a mirror built controller pre-final API `b1b165f75d14`; the reviewer rebuilt immutable-SHA API `sha256:2437e95e909b2b6d941e58b58b28551f5a09c87d93594ac9e4c80ae9ba7fe70c`; final Worker remains `17e8f6645b4b`, and final non-root/path/import smokes passed. Final Critical verdict remains pending documentation closure.
 
 Required semantic oracle for A2a/R0/R1/R2/A3-A6/W1:
 

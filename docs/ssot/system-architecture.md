@@ -753,7 +753,7 @@ M402 的 21-case 工程执行、7-case 真实 BFF 全栈/像素 Evidence 与 7-c
 - `MinIO` 存文件，`pgvector` 存检索向量
 - `EmbeddingProvider` / generation / vision / ASR 走 capability profile，不能把模型写死进业务层
 - Research Workflow/Prompt/provider profile/Asset scope/预算在批准时冻结，Worker 不读取 latest 解释历史 Run
-- **当前 repair-worktree 边界（模块化双进程，非独立服务）**：API package 仍负责 HTTP/auth/Alembic/schema governance；未接受的 A2a repair 已把 DB-only Research transition 收口到 neutral `citeframe_research_persistence`，Worker default composition 通过 neutral UoW/repository 管理 Session/commit，API 保留 compatibility/external-adapter composition；ingestion 仍在 API orchestrator 与 Worker adapter 的共享 Session/ORM 边界。该 repair 未提交/推送且等待新 Critical re-audit，不得描述为已交付或 `ACCEPT`。跟进见 [`docs/architecture/api-worker-boundary-follow-up-2026-08-18.md`](../architecture/api-worker-boundary-follow-up-2026-08-18.md)。
+- **当前 repair-worktree 边界（模块化双进程，非独立服务）**：API package 仍负责 HTTP/auth/Alembic/schema governance；未接受的 A2a repair 已把 DB-only Research transition 收口到 neutral `citeframe_research_persistence`，Worker default composition 通过 neutral UoW/repository 管理 Session/commit，API 保留 compatibility/external-adapter composition；ingestion 仍在 API orchestrator 与 Worker adapter 的共享 Session/ORM 边界。该 repair 已冻结为本地未推送 commit `215cd52`，final Critical re-audit 待文档收口；不得描述为已交付或 `ACCEPT`。跟进见 [`docs/architecture/api-worker-boundary-follow-up-2026-08-18.md`](../architecture/api-worker-boundary-follow-up-2026-08-18.md)。
 - Quick Chat SSE 与 Research Event SSE 是独立合同
 - Workspace 视图状态只应在 workspace 实际切换时同步；重复选择当前 workspace 不能清空 active thread、文档或其他局部视图状态。
 
@@ -761,7 +761,7 @@ M402 的 21-case 工程执行、7-case 真实 BFF 全栈/像素 Evidence 与 7-c
 
 A1 contracts was independently accepted on **2026-08-20**. A1b/A2-foundation was
 independently accepted on **2026-08-21** by the follow-up Critical review
-(`High=0`, `Medium=0`, `Low=0`). A2a initial snapshot `20d411e` was `REWORK (High=1, Medium=5, Low=1)`; the bounded repair is implementer-complete but uncommitted/unpushed and pending a new independent Critical re-audit. No A2a `ACCEPT` is claimed; R0, R1, R2, W1, and downstream remain blocked.
+(`High=0`, `Medium=0`, `Low=0`). A2a initial snapshot `20d411e` was `REWORK (High=1, Medium=5, Low=1)`; the repaired production candidate is immutable local commit `215cd52565089138704c6b637350e18bc8705c8b`, not pushed, with final independent Critical re-audit pending documentation closure. No A2a `ACCEPT` is claimed; R0, R1, R2, W1, and downstream remain blocked.
 The design re-audit is **ACCEPT (High=0, Medium=0, Low=0)**. No schema/API/save/replay/
 permission changes are authorized. For `internal_preview`, the owner-authorized target is a same-PostgreSQL-database
 adapter, not an internal HTTP or database split. API owns HTTP/authentication, Alembic

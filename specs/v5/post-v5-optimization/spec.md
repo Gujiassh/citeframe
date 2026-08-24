@@ -19,7 +19,7 @@ A1 was implemented and independently accepted on 2026-08-20: the pure
 path-source integration, contracts-only Docker/CI smoke, and focused tests are present.
 The design re-audit is accepted (`High=0`, `Medium=0`, `Low=0`). A1b/A2-foundation was
 independently accepted on `2026-08-21` by the follow-up Critical review
-(`High=0`, `Medium=0`, `Low=0`). A2a initial snapshot `20d411e` received independent Critical `REWORK` (`High=1`, `Medium=5`, `Low=1`). The bounded rework on `work/research-boundary-runtime-20260824` is implementer-complete but remains uncommitted and unpushed; a new independent Critical re-audit against an immutable repair snapshot is pending. No A2a `ACCEPT` is claimed. R0/R1/R2/W1 and downstream remain blocked. No schema/API/save/replay/permission changes are authorized;
+(`High=0`, `Medium=0`, `Low=0`). A2a initial snapshot `20d411e` received independent Critical `REWORK` (`High=1`, `Medium=5`, `Low=1`). The repaired production candidate is frozen as local commit `215cd52565089138704c6b637350e18bc8705c8b` on `work/research-boundary-runtime-20260824` and is not pushed. Final independent Critical re-audit is pending documentation closure; no A2a `ACCEPT` is claimed. R0/R1/R2/W1 and downstream remain blocked. No schema/API/save/replay/permission changes are authorized;
 persistence and Research runtime semantics were not changed. A1 evidence: [`reviews/a1-contracts-implementation-2026-08-20.md`](reviews/a1-contracts-implementation-2026-08-20.md). A1b implementation evidence: [`reviews/a1b-persistence-implementation-2026-08-20.md`](reviews/a1b-persistence-implementation-2026-08-20.md); reviewer result: [`reviews/a1b-persistence-critical-audit-2026-08-20.md`](reviews/a1b-persistence-critical-audit-2026-08-20.md).
 
 ## 3. Verified Baseline
@@ -88,7 +88,7 @@ resulting module has one responsibility and the before/after behavior oracle is 
 - No GitHub branch/ruleset mutation without explicit owner authorization.
 - This plan does not authorize additional schema/API changes, G/M/P work, GitHub settings,
   provider spend, or user research. A1b/A2-foundation was independently accepted on 2026-08-21
-  by the follow-up Critical review (`High=0`, `Medium=0`, `Low=0`); A2a initial snapshot `20d411e` received independent Critical `REWORK` (`High=1`, `Medium=5`, `Low=1`). The bounded rework on `work/research-boundary-runtime-20260824` is implementer-complete but remains uncommitted and unpushed; a new independent Critical re-audit against an immutable repair snapshot is pending. No A2a `ACCEPT` is claimed. R0/R1/R2/W1 and downstream remain blocked;
+  by the follow-up Critical review (`High=0`, `Medium=0`, `Low=0`); A2a initial snapshot `20d411e` received independent Critical `REWORK` (`High=1`, `Medium=5`, `Low=1`). The repaired production candidate is frozen as local commit `215cd52565089138704c6b637350e18bc8705c8b` on `work/research-boundary-runtime-20260824` and is not pushed. Final independent Critical re-audit is pending documentation closure; no A2a `ACCEPT` is claimed. R0/R1/R2/W1 and downstream remain blocked;
   no schema/API/save/replay/permission changes are authorized.
 
 ## 5. Owner Decision Gates
@@ -121,7 +121,7 @@ same persistence commands; models and transition logic are not copied.
 
 This is an approved **target direction**, not a current implementation claim. The design
 re-audit is accepted (`High=0`, `Medium=0`, `Low=0`); A1 was independently accepted
-on `2026-08-20`. A1b/A2-foundation was independently accepted on 2026-08-21 (follow-up Critical review ACCEPT; High=0, Medium=0, Low=0). A2a initial snapshot `20d411e` received independent Critical `REWORK` (`High=1`, `Medium=5`, `Low=1`). The bounded rework on `work/research-boundary-runtime-20260824` is implementer-complete but remains uncommitted and unpushed; a new independent Critical re-audit against an immutable repair snapshot is pending. No A2a `ACCEPT` is claimed. R0/R1/R2/W1 and downstream remain blocked.
+on `2026-08-20`. A1b/A2-foundation was independently accepted on 2026-08-21 (follow-up Critical review ACCEPT; High=0, Medium=0, Low=0). A2a initial snapshot `20d411e` received independent Critical `REWORK` (`High=1`, `Medium=5`, `Low=1`). The repaired production candidate is frozen as local commit `215cd52565089138704c6b637350e18bc8705c8b` on `work/research-boundary-runtime-20260824` and is not pushed. Final independent Critical re-audit is pending documentation closure; no A2a `ACCEPT` is claimed. R0/R1/R2/W1 and downstream remain blocked.
 The repair worktree uses the neutral Worker-side Research UoW for DB-only transitions;
 ingestion keeps its shared Session/ORM boundary until its named slices land. This is pending
 independent acceptance, and same-DB adapter must not be described as API-process commit.

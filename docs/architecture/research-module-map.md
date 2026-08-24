@@ -4,7 +4,7 @@ Date: 2026-08-15
 
 Canonical ownership for the fixed Research product path. Evaluation/R803 scripts are **not** the product path.
 
-Current delivery state: A2a repair on `work/research-boundary-runtime-20260824` is implementer-complete but uncommitted/unpushed and pending a new independent Critical re-audit. The initial snapshot was `REWORK`; no A2a `ACCEPT` is claimed.
+Current delivery state: A2a repair is immutable local commit `215cd52565089138704c6b637350e18bc8705c8b` on `work/research-boundary-runtime-20260824`, not pushed. Final independent Critical re-audit is pending documentation closure; the initial snapshot was `REWORK` and no A2a `ACCEPT` is claimed.
 
 ## API package (`apps/api/src/ai_pdf_api/services/research/`)
 

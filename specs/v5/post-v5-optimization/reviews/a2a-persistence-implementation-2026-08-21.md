@@ -43,6 +43,6 @@ not override the failures above:
 - Worker fixed-graph suites: `37 passed` using paths that did not exercise the failing real
   publication facade.
 - `compileall`, current lock checks, and clean wheel install/import: passed.
-- Docker clean-image: **not proven** because the Docker Hub request timed out.
+- Initial audit could not obtain image evidence from official Docker Hub. The later immutable repair candidate has same-pinned-digest mirror image/runtime evidence in the rework report; this does not retroactively accept the initial snapshot.
 
 No A2a `ACCEPT` is claimed from this historical snapshot.

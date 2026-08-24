@@ -5,7 +5,7 @@
 审查分支：`work/docs-stale-honesty-20260817`
 审查范围：`apps/api`、`apps/worker`、Python 镜像和部署编排。
 
-> 2026-08-24 current-state override: PR #20 is merged at `origin/main@9f40241`. The initial A2a snapshot `20d411e` failed Critical review (`High=1`, `Medium=5`, `Low=1`). Bounded repair on `work/research-boundary-runtime-20260824` is implementer-complete but uncommitted/unpushed and awaits a new independent Critical re-audit; no A2a `ACCEPT` is claimed. R0/R1/R2/W1 remain blocked.
+> 2026-08-24 current-state override: PR #20 is merged at `origin/main@9f40241`. The initial A2a snapshot `20d411e` failed Critical review (`High=1`, `Medium=5`, `Low=1`). The repaired production candidate is immutable local commit `215cd52565089138704c6b637350e18bc8705c8b` on `work/research-boundary-runtime-20260824`, not pushed. Final independent Critical re-audit is pending documentation closure; no A2a `ACCEPT` is claimed. R0/R1/R2/W1 remain blocked.
 
 这份记录只处理两个问题：API/Worker 的实际代码边界，以及
 `evidence.py` / `assets.py` 等中心文件的下一步拆分方向。它不是一次重写授权，
@@ -134,7 +134,7 @@
 - **本轮不拆分** `evidence.py` / `assets.py` / `test_r803_campaign_v5.py` /
   `v5b_document_restore_acceptance.py`。
 - **Branch protection / GitHub 设置保持 unresolved**；本记录不调用仓库保护接口。
-- `internal_preview` 的 same-DB adapter、Worker orchestration、R0 lock-normalization target 与 Worker-side UoW commit-process target 已获 owner conditional authorization；API-process HTTP/RPC 仍未授权。修订设计的独立 Critical 复审已接受 (`High=0`, `Medium=0`, `Low=0`)；A1 已于 2026-08-20 独立 ACCEPT；A1b/A2-foundation 已于 2026-08-21 独立 ACCEPT（follow-up Critical review：High=0、Medium=0、Low=0），A2a initial snapshot was rejected; bounded repair is implementer-complete but uncommitted/unpushed and awaits a new independent Critical re-audit; R0/R1/R2/W1 及后续切片保持阻塞；不授权 schema/API/save/replay/permission 变更。
+- `internal_preview` 的 same-DB adapter、Worker orchestration、R0 lock-normalization target 与 Worker-side UoW commit-process target 已获 owner conditional authorization；API-process HTTP/RPC 仍未授权。修订设计的独立 Critical 复审已接受 (`High=0`, `Medium=0`, `Low=0`)；A1 已于 2026-08-20 独立 ACCEPT；A1b/A2-foundation 已于 2026-08-21 独立 ACCEPT（follow-up Critical review：High=0、Medium=0、Low=0），A2a initial snapshot was rejected; repaired production candidate `215cd52` is immutable locally, not pushed, and awaits the final Critical verdict after documentation closure; R0/R1/R2/W1 及后续切片保持阻塞；不授权 schema/API/save/replay/permission 变更。
 
 ## 4. Proposed Incremental Boundary
 
@@ -171,7 +171,7 @@ import surface；迁移期间可 re-export 同一 classes。A1b/A2-foundation �
 pyproject/uv.lock path source 与 Docker 安装，Alembic 仍由 API 显式 import
 `citeframe_persistence.models` 并加载唯一 metadata；这项 foundation 是 A2a 显式前置。
 
-这是批准目标；repair worktree 已按该方向实现 DB-only A2a 边界，但尚未独立接受或交付。修订设计的独立 Critical 复审已接受 (`High=0`, `Medium=0`, `Low=0`)；A1 已于 2026-08-20 独立 ACCEPT；A1b/A2-foundation 已于 2026-08-21 独立 ACCEPT（follow-up Critical review：High=0、Medium=0、Low=0）；A2a initial snapshot was rejected; bounded repair is implementer-complete but uncommitted/unpushed and awaits a new independent Critical re-audit; R0/R1/R2/W1 及后续切片仍保持阻塞，且不授权 schema/API/save/replay/permission 变更。详细的 R1/R2/W1、锁/fencing、per-Run admission、
+这是批准目标；repair worktree 已按该方向实现 DB-only A2a 边界，但尚未独立接受或交付。修订设计的独立 Critical 复审已接受 (`High=0`, `Medium=0`, `Low=0`)；A1 已于 2026-08-20 独立 ACCEPT；A1b/A2-foundation 已于 2026-08-21 独立 ACCEPT（follow-up Critical review：High=0、Medium=0、Low=0）；A2a initial snapshot was rejected; repaired production candidate `215cd52` is immutable locally, not pushed, and awaits the final Critical verdict after documentation closure; R0/R1/R2/W1 及后续切片仍保持阻塞，且不授权 schema/API/save/replay/permission 变更。详细的 R1/R2/W1、锁/fencing、per-Run admission、
 SSE 与语义 oracle 见
 [`research-boundary-runtime-design.md`](../../specs/v5/post-v5-optimization/research-boundary-runtime-design.md)。
 
@@ -390,9 +390,9 @@ Implementation-ready target details live in
 
 A0 目标方向已获 owner 授权，文档同步入口如下：
 
-1. Form one immutable A2a repair snapshot and reconcile code, tests, CI, docs, and workbench evidence.
-2. Retry API/Worker Docker builds and final-image runtime smokes after Docker Hub recovers; textual checks are insufficient.
-3. Run a new independent Critical re-audit against the exact repair SHA. Only `ACCEPT` may unblock a separate R0 slice, followed by separate R1/R2 work; W1 remains independent.
+1. Close specs/SSoT/workbench documentation against immutable production commit `215cd52`; do not rewrite the production snapshot.
+2. Preserve the official Docker Hub timeout as a transport caveat and retain the successful same-pinned-digest mirror image IDs plus final runtime smokes.
+3. Let the independent reviewer finalize [`a2a-persistence-critical-reaudit-2026-08-24.md`](../../specs/v5/post-v5-optimization/reviews/a2a-persistence-critical-reaudit-2026-08-24.md). Only `ACCEPT` may unblock a separate R0 slice, followed by separate R1/R2 work; W1 remains independent.
 4. 大文件拆分、G/M/P、provider spend、M404 与 branch protection 保持后置 / unauthorized。
 
 不要把 A2a、R1、B pilot、C 独立镜像、大文件拆分与 A0 文档冻结混成一个大 PR。
