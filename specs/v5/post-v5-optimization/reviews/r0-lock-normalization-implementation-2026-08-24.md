@@ -1,10 +1,13 @@
 # R0 Research Lock Normalization Implementation
 
-Date: 2026-08-24  
-Status: **IMPLEMENTER COMPLETE; independent Critical review pending**
+Date: 2026-08-24
+Status: **IMPLEMENTER COMPLETE; independent Critical review REWORK (High=0, Medium=1, Low=0); documentation-only closure pending**
 
-This record does not claim `ACCEPT`. R1, R2, W1, per-Run admission, and downstream work
-remain blocked until R0 receives its separate review verdict.
+This record does not claim `ACCEPT`. The independent Critical review is
+[`REWORK (High=0, Medium=1, Low=0)`](r0-lock-normalization-critical-review-2026-08-24.md)
+with no production finding and one durable-ledger/hygiene finding. R1, R2, W1, per-Run
+admission, and downstream work remain blocked until the documentation-only closure is
+committed and independently re-audited.
 
 ## Delivery Ledger
 
@@ -13,11 +16,16 @@ remain blocked until R0 receives its separate review verdict.
 - Starting SHA: `7ee97471ffb7d7d23e941d75795ab21d8cb3032b`
 - Behavioral baseline: `d1b5945e977445e4db6bf56ef54cf61607ead2e2`
 - Repair branch: `work/research-boundary-runtime-20260824`
-- Commit SHA: none; implementation remains uncommitted
-- Push state: not pushed
+- Production parent/start SHA: `7ee97471ffb7d7d23e941d75795ab21d8cb3032b`
+- Production commit: `39766c374bd584b0cb834ef103de025d233c87c1`
+- Production commit state: local commit on `work/research-boundary-runtime-20260824`; the
+  branch has no upstream, `origin` has no branch with this name, and the commit is not pushed
+- Documentation follow-up: this implementation-ledger repair is an uncommitted worktree
+  change on top of production commit `39766c3`; it requires a separate documentation commit
+  and review and does not rewrite the production commit
 - Integration state: no merge, cherry-pick, or downstream branch update performed
 - Downstream targets: R1, R2, W1, and per-Run admission remain blocked behind the R0
-  Critical gate; no downstream sync is authorized from this implementer snapshot
+  Critical gate; no downstream sync is authorized from this production candidate
 
 ## Symptom And Root Cause
 
@@ -82,7 +90,7 @@ they do not parse source text or SQL with regular expressions. They cover:
 - reclaim `Run -> Step -> Attempt -> all Calls -> Ledger`;
 - provider/tool Call paths `Run -> Step -> Attempt -> Call -> Ledger`.
 
-Exact working-tree results:
+Exact production-candidate results:
 
 ```text
 uv run --project apps/api pytest -q <R0 + A2a focused files>
@@ -107,13 +115,13 @@ remains equal. The candidate production composition remains
 remains the original API facade with `0` UoW entries. The fixed multi-step process-one flow,
 29 transition/process tables, exact Event rows, payloads, retry/cancel/reclaim/recovery,
 permissions, publication, and terminal outcomes remain byte/row equal. Only lock acquisition
-evidence differs. Final worktree fingerprints were:
+evidence differs. Production-candidate semantic fingerprint:
 
 - semantic SHA-256 `f5057a39be0b2b4c823e31e2022358702df21273433198391bd572cdc6fd8d69`
 
-The repair snapshot also covers this implementation ledger, so its final fingerprint is
-recorded by the workbench checkpoint after the ledger text is closed rather than embedded
-self-referentially here.
+The dirty repair snapshot fingerprint recorded before the production commit is not the
+immutable commit identity. The canonical production identity is `39766c3`; this
+documentation-only follow-up is tracked separately until committed.
 
 ## Real PostgreSQL Critical Evidence
 
@@ -146,8 +154,8 @@ Environment and report:
 | reclaim vs provider | 68 | one abandon; reservation/ledger applied once; late cancel rejects |
 | reclaim vs tool | 74 | one abandon; tool/ledger applied once; late completion rejects |
 
-The report embeds SHA-256 values for the exact production modules exercised. They match the
-current working-tree bytes for cancellation, lease, locks, provider, state, and tools.
+The report embeds SHA-256 values for the exact production modules exercised. They match
+production commit `39766c3` for cancellation, lease, locks, provider, state, and tools.
 Official `registry-1.docker.io` access remained blocked by a header timeout; the mirror ran
 the exact same immutable digest.
 
@@ -163,8 +171,9 @@ the exact same immutable digest.
 | Duplicate terminal facts | pass | unique Attempt/completion/abandon/ledger assertions |
 | Locator refresh/fail-closed | pass | real concurrent Attempt reparent race |
 | Schema/dependencies | pass | no model/migration/lockfile/dependency change; API/Worker `uv lock --check` pass |
-| Commit/push | not applicable | no commit; no push |
-| Independent Critical review | blocked | pending separate reviewer; no `ACCEPT` claimed |
+| Production commit/push | pass | local production `39766c3`; no upstream; no remote branch; not pushed |
+| Documentation follow-up | pending | uncommitted ledger-only repair; separate commit/re-audit required |
+| Independent Critical review | blocked | `REWORK (High=0, Medium=1, Low=0)`; no production finding; no `ACCEPT` claimed |
 
 ## Residual Risks And Next Gate
 
@@ -172,12 +181,14 @@ the exact same immutable digest.
   complete, but it is not proof of official-registry availability.
 - The real PostgreSQL harness covers the required contention matrix. Unit/differential tests
   cover retry, join, conflict, publication, provider/tool, payload, Event, and permission
-  semantics; an independent reviewer must still reconcile those artifacts against this
-  implementation snapshot.
+  semantics; the independent reviewer found no production issue in `39766c3`.
 - `run-r0-postgres-contention.py` is a cohesive but 1,007-line Critical evidence harness.
   Keep it stable for R0 review and split scenario fixtures, observation, and reporting before
   materially expanding it for R2 rather than growing the file further.
+- Production commit `39766c3` historically contains the trailing whitespace that caused
+  `git diff --check 7ee97471..39766c3` to fail. This documentation-only worktree removes it;
+  worktree and start-to-worktree hygiene must pass before the follow-up is committed. Do not
+  describe the original immutable range as having passed hygiene.
 - R1, R2, W1, per-Run admission, deadlock retry, schema/API changes, and downstream
-  integration remain blocked. The next action is an independent Critical R0 review of one
-  immutable implementation snapshot; this implementer record must not be treated as that
-  verdict.
+  integration remain blocked. The next action is a separate documentation commit and
+  independent re-audit; this implementer record must not be treated as an acceptance verdict.
