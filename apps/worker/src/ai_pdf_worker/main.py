@@ -4,7 +4,8 @@ import logging
 import os
 import signal
 from collections.abc import Callable
-from threading import Event
+from threading import Event, Lock, Thread
+from time import monotonic
 
 from ai_pdf_api.core.settings import settings
 from ai_pdf_api.db.session import SessionLocal
@@ -36,6 +37,8 @@ POLL_INTERVAL_SECONDS = 1.0
 RETRY_INITIAL_DELAY_SECONDS = 1.0
 RETRY_MAX_DELAY_SECONDS = 30.0
 MAX_CONSECUTIVE_ERRORS = 5
+RESEARCH_DISPATCHER_LOOPS = 2
+RESEARCH_POOL_SHUTDOWN_TIMEOUT_SECONDS = 130.0
 INGESTION_ADAPTERS = IngestionAdapterRegistry(
     (
         PdfIngestionAdapter(),
@@ -56,6 +59,7 @@ logger = logging.getLogger("ai_pdf_worker")
 ProcessJob = Callable[[], bool]
 WaitForStop = Callable[[float], bool]
 ResearchProcessorFactory = Callable[[], ResearchWorkProcessor]
+IndexedResearchProcessorFactory = Callable[[int], ResearchWorkProcessor]
 
 # Tests and ingestion-only deployments leave this unset.  ``main`` enables it
 # explicitly, so importing the worker never makes Research a hidden dependency.
@@ -91,7 +95,10 @@ def _process_ingestion_job(db: object) -> bool:
 def _process_research_job() -> bool:
     if RESEARCH_PROCESSOR_FACTORY is None:
         return False
-    processor = RESEARCH_PROCESSOR_FACTORY()
+    return _process_research_processor_job(RESEARCH_PROCESSOR_FACTORY())
+
+
+def _process_research_processor_job(processor: ResearchWorkProcessor) -> bool:
     WORKER_ACTIVE_JOBS.inc()
     try:
         if not processor.process_one():
@@ -106,6 +113,11 @@ def _process_research_job() -> bool:
     return True
 
 
+def process_one_ingestion_job() -> bool:
+    with SessionLocal() as db:
+        return _process_ingestion_job(db)
+
+
 def process_one_job() -> bool:
     global _PREFER_RESEARCH
     lanes = ("research", "ingestion") if _PREFER_RESEARCH else ("ingestion", "research")
@@ -113,8 +125,7 @@ def process_one_job() -> bool:
         if lane == "research":
             handled = _process_research_job()
         else:
-            with SessionLocal() as db:
-                handled = _process_ingestion_job(db)
+            handled = process_one_ingestion_job()
         if handled:
             _PREFER_RESEARCH = lane == "ingestion"
             return True
@@ -243,8 +254,92 @@ def run_worker(
     logger.info("worker_loop_stopped reason=stop_event")
 
 
+class ResearchDispatcherPool:
+    """Bounded production pool with one processor per long-lived loop."""
+
+    def __init__(
+        self,
+        *,
+        stop_event: Event,
+        processor_factory: IndexedResearchProcessorFactory,
+        width: int,
+    ) -> None:
+        if width < 2:
+            raise ValueError("Research dispatcher pool requires at least two loops")
+        self._stop_event = stop_event
+        self._processor_factory = processor_factory
+        self._width = width
+        self._threads: list[Thread] = []
+        self._errors: list[BaseException] = []
+        self._error_lock = Lock()
+
+    def start(self) -> None:
+        if self._threads:
+            raise RuntimeError("Research dispatcher pool already started")
+        for loop_index in range(self._width):
+            thread = Thread(
+                target=self._run_loop,
+                args=(loop_index,),
+                name=f"research-dispatcher-{loop_index + 1}",
+                daemon=False,
+            )
+            self._threads.append(thread)
+            thread.start()
+
+    def _run_loop(self, loop_index: int) -> None:
+        try:
+            processor = self._processor_factory(loop_index)
+            run_worker(
+                stop_event=self._stop_event,
+                process_job=lambda: _process_research_processor_job(processor),
+            )
+        except BaseException as error:  # noqa: BLE001 - the controller must stop sibling loops
+            with self._error_lock:
+                self._errors.append(error)
+            self._stop_event.set()
+
+    def stop_and_join(
+        self,
+        *,
+        timeout_seconds: float = RESEARCH_POOL_SHUTDOWN_TIMEOUT_SECONDS,
+    ) -> None:
+        if timeout_seconds < 0:
+            raise ValueError("timeout_seconds must be non-negative")
+        self._stop_event.set()
+        deadline = monotonic() + timeout_seconds
+        for thread in self._threads:
+            thread.join(timeout=max(0.0, deadline - monotonic()))
+        alive = [thread.name for thread in self._threads if thread.is_alive()]
+        if alive:
+            raise RuntimeError(f"research_dispatcher_shutdown_timeout:{','.join(alive)}")
+
+    def raise_if_failed(self) -> None:
+        with self._error_lock:
+            errors = tuple(self._errors)
+        if len(errors) == 1:
+            raise RuntimeError("research_dispatcher_loop_failed") from errors[0]
+        if errors:
+            raise BaseExceptionGroup("research_dispatcher_loops_failed", list(errors))
+
+
+def _research_dispatcher_width() -> int:
+    raw = os.environ.get("AI_PDF_RESEARCH_DISPATCHER_LOOPS")
+    width = RESEARCH_DISPATCHER_LOOPS if raw is None else int(raw)
+    if width < 2:
+        raise ValueError("AI_PDF_RESEARCH_DISPATCHER_LOOPS must be at least 2")
+    return width
+
+
+def _loop_session_factory() -> Callable[[], object]:
+    """Give each dispatcher loop a distinct SQLAlchemy session-factory identity."""
+
+    def open_session() -> object:
+        return SessionLocal()
+
+    return open_session
+
+
 def main() -> None:
-    global RESEARCH_PROCESSOR_FACTORY
     logging.basicConfig(
         level=logging.INFO,
         format="%(asctime)s %(levelname)s %(name)s %(message)s",
@@ -255,11 +350,15 @@ def main() -> None:
         endpoint=settings.research_otel_endpoint,
         export_timeout_seconds=settings.research_otel_export_timeout_seconds,
     )
-    previous_factory = RESEARCH_PROCESSOR_FACTORY
-    RESEARCH_PROCESSOR_FACTORY = lambda: ResearchWorkProcessor(
-        SessionLocal,
-        build_default_research_service(),
-        worker_instance_id=os.environ.get("AI_PDF_WORKER_INSTANCE_ID"),
+    base_worker_id = os.environ.get("AI_PDF_WORKER_INSTANCE_ID") or f"worker-{os.getpid()}"
+    research_pool = ResearchDispatcherPool(
+        stop_event=stop_event,
+        width=_research_dispatcher_width(),
+        processor_factory=lambda loop_index: ResearchWorkProcessor(
+            _loop_session_factory(),
+            build_default_research_service(),
+            worker_instance_id=f"{base_worker_id}:research:{loop_index + 1}",
+        ),
     )
     start_metrics_server(settings.worker_metrics_host, settings.worker_metrics_port)
     _install_signal_handlers(stop_event)
@@ -271,18 +370,38 @@ def main() -> None:
         RETRY_INITIAL_DELAY_SECONDS,
         RETRY_MAX_DELAY_SECONDS,
     )
+    primary_error: Exception | None = None
+    shutdown_error: Exception | None = None
     try:
+        research_pool.start()
         try:
-            run_worker(stop_event=stop_event)
+            run_worker(stop_event=stop_event, process_job=process_one_ingestion_job)
         except KeyboardInterrupt:
             logger.info("worker_stopped reason=keyboard_interrupt")
         except Exception as error:
             logger.error("worker_fatal error_type=%s", type(error).__name__)
-            raise
+            primary_error = error
         else:
             logger.info("worker_stopped reason=stop_event")
     finally:
-        RESEARCH_PROCESSOR_FACTORY = previous_factory
+        try:
+            research_pool.stop_and_join()
+        except Exception as error:
+            shutdown_error = error
+    pool_error: BaseException | None = None
+    try:
+        research_pool.raise_if_failed()
+    except BaseException as error:  # noqa: BLE001 - preserve every dispatcher failure
+        pool_error = error
+    failures = [
+        error
+        for error in (primary_error, shutdown_error, pool_error)
+        if error is not None
+    ]
+    if len(failures) > 1:
+        raise BaseExceptionGroup("worker_loops_failed", failures)
+    if failures:
+        raise failures[0]
 
 
 if __name__ == "__main__":

@@ -21,6 +21,7 @@ from ai_pdf_api.services.research.research_worker_state import (
     load_completed_branch,
     load_conflict_resume_state,
     load_execution_state,
+    load_step_handler_input,
 )
 from ai_pdf_api.services.storage import delete_object_if_exists, upload_bytes
 from citeframe_research_persistence import completion, failure, lease, provider, state, tools
@@ -107,6 +108,7 @@ def build_worker_research_service():
         load_completed_branch=load_completed_branch,
         load_conflict_resume_state=load_conflict_resume_state,
         load_execution_state=load_execution_state,
+        load_step_handler_input=load_step_handler_input,
         load_frozen_evidence=load_frozen_evidence,
         load_planning_input=load_planning_input,
         mark_provider_call_sent=provider.mark_provider_call_sent,

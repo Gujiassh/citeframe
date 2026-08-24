@@ -75,7 +75,7 @@ def test_a2a_executable_differential_oracle(tmp_path: Path) -> None:
         "leaseFencing",
         "retryCancelReclaimRecovery",
         "permission",
-        "fixedMultiStepProcessOne",
+        "terminalProcessSemantics",
     }
 
     semantics = payload["candidate"]
@@ -86,13 +86,26 @@ def test_a2a_executable_differential_oracle(tmp_path: Path) -> None:
         "apiResponses",
         "objectPayloads",
     }
-    assert semantics["fixedMultiStepProcessOne"]["processOneOutputs"] == [
+    assert payload["schedulerDelta"]["allowed"] is True
+    assert payload["schedulerDelta"]["baseline"]["processOneOutputs"] == [
         True,
         True,
         True,
         False,
     ]
-    assert semantics["fixedMultiStepProcessOne"]["runStatus"] == "completed"
+    assert payload["schedulerDelta"]["candidate"]["processOneOutputs"] == [
+        True,
+        True,
+        True,
+        True,
+        True,
+        True,
+        True,
+        True,
+        False,
+    ]
+    assert semantics["terminalProcessSemantics"]["idleAfterTerminal"] is False
+    assert semantics["terminalProcessSemantics"]["runStatus"] == "completed"
 
     rows = semantics["normalizedDbRows"]
     assert len(rows["transitions"]) == 29

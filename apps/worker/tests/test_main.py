@@ -186,8 +186,12 @@ def test_main_logs_fatal_process_error_and_reraises(
     def fake_install(_stop_event: Event) -> None:
         return None
 
-    def fail_worker(**_kwargs: object) -> None:
-        raise RuntimeError("fatal worker error")
+    def fail_worker(**kwargs: object) -> None:
+        if kwargs.get("process_job") is worker.process_one_ingestion_job:
+            raise RuntimeError("fatal worker error")
+        stop_event = kwargs["stop_event"]
+        assert isinstance(stop_event, Event)
+        stop_event.set()
 
     monkeypatch.setattr(worker, "_install_signal_handlers", fake_install)
     monkeypatch.setattr(worker, "run_worker", fail_worker)
@@ -206,6 +210,41 @@ def test_main_logs_fatal_process_error_and_reraises(
 
     assert "worker_fatal error_type=RuntimeError" in caplog.text
     assert metrics_calls == [(worker.settings.worker_metrics_host, worker.settings.worker_metrics_port)]
+
+
+def test_main_preserves_ingestion_and_all_dispatcher_failures(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    class Processor:
+        def __init__(self, *_args: object, **_kwargs: object) -> None:
+            return None
+
+        def process_one(self) -> bool:
+            return False
+
+    def fail_worker(**kwargs: object) -> None:
+        if kwargs.get("process_job") is worker.process_one_ingestion_job:
+            raise ValueError("ingestion failed")
+        raise RuntimeError("dispatcher failed")
+
+    monkeypatch.setattr(worker, "ResearchWorkProcessor", Processor)
+    monkeypatch.setattr(worker, "build_default_research_service", lambda: object())
+    monkeypatch.setattr(worker, "run_worker", fail_worker)
+    monkeypatch.setattr(worker, "start_metrics_server", lambda *_args: None)
+    monkeypatch.setattr(worker, "_install_signal_handlers", lambda _event: None)
+
+    with pytest.raises(BaseExceptionGroup, match="worker_loops_failed") as caught:
+        worker.main()
+
+    def leaves(error: BaseException) -> list[BaseException]:
+        if isinstance(error, BaseExceptionGroup):
+            return [leaf for child in error.exceptions for leaf in leaves(child)]
+        cause = error.__cause__
+        return [error, *leaves(cause)] if cause is not None else [error]
+
+    messages = [str(error) for error in leaves(caught.value)]
+    assert messages.count("dispatcher failed") == 2
+    assert "ingestion failed" in messages
 
 
 def test_process_one_job_propagates_handler_exception(monkeypatch: pytest.MonkeyPatch) -> None:
