@@ -1,7 +1,7 @@
 # R1 Single-Attempt Dispatcher Implementation Ledger
 
-Date: 2026-08-24  
-Status: **implementation complete; independent Critical review pending; no ACCEPT claimed**
+Date: 2026-08-24
+Status: **runtime rework committed locally; canonical closure handled separately; follow-up Critical review pending; no ACCEPT claimed**
 
 ## Delivery Identity
 
@@ -9,8 +9,16 @@ Status: **implementation complete; independent Critical review pending; no ACCEP
   merge commit delivered by PR #21.
 - Immutable starting SHA: `8674d4dc407048471f7b14b23b821e72529487bf`.
 - Repair branch: `work/research-r1-single-attempt-20260824`.
-- Commit: none.
-- Push: none.
+- Immutable reviewed production candidate:
+  `f4a1d1d7451d707d90948612791d1bb2aac410f3` (`f4a1d1d`), local commit.
+- Independent Critical review: **REWORK (High=0, Medium=4, Low=0)** against `f4a1d1d`.
+- Immutable runtime rework commit:
+  `473213d79154f3fbcf6044e1c4e62ed65038e1c1` (`473213d`), parent `f4a1d1d`.
+- Push state for `473213d`: local only; the branch has no upstream and no remote R1
+  branch.
+- Canonical SSoT/spec closure is handled separately from the runtime rework commit.
+- The exact non-recursive ledger-closure SHA is owned by the external workbench/delivery
+  record and is intentionally not self-recorded in this ledger.
 - Schema/API/save/replay/permission contract change: none.
 
 ## Root Cause
@@ -20,6 +28,34 @@ claim. That executor restored a process-local `ResearchState`, claimed additiona
 executed the remaining fixed graph, and retained cross-step values in memory. Consequently,
 one `process_one()` call was not one claimed Attempt, and production exposed only one
 mixed ingestion/Research loop instead of independent Research dispatchers.
+
+## Critical Rework Against `f4a1d1d`
+
+The independent review found two runtime defects, one delivery-ledger/hygiene defect, and
+stale canonical SSoT/spec status. This implementation lane owns the first three findings;
+canonical SSoT/spec synchronization is assigned to a separate lane and is not edited here.
+
+Runtime rework:
+
+- neutral Research lease ownership now defines the exact Worker-executable kind allowlist;
+- `claim_next_research_step` excludes human and unknown kinds from Run candidate minima,
+  Run eligibility, and the final Step selection while retaining the existing
+  `(queued_at, created_at, step_id), run_id` order among executable Steps;
+- `claim_specific_research_step` reads the Step kind as a locator and rejects a human or
+  unknown kind before Run/Step locks, membership recovery, Attempt creation, status or
+  `state_version` changes, and Event writes;
+- `_lease_locked_step` repeats the allowlist check before membership or mutation as a
+  defense-in-depth contract;
+- `run_worker` now re-raises an iteration failure when a sibling has already set shared
+  stop; clean pre-stopped loops and KeyboardInterrupt remain distinct;
+- real-loop orchestration tests run the production `run_worker` branch with ingestion and
+  two dispatchers failing concurrently and an additional shutdown failure, then prove all
+  four causal leaves reach the caller exactly once. The test wrapper changes only retry
+  delays and maximum attempts to zero/one; it delegates every loop branch to the real
+  `run_worker` implementation.
+
+No per-Run admission, cap, cap-full Run exclusion, or fairness policy was added. Filtering
+human-owned kinds is an authority boundary, not Researcher admission.
 
 ## Implemented Scope
 
@@ -32,7 +68,7 @@ The explicit persisted step-kind mapping is:
 | Persisted kind | R1 owner and behavior |
 | --- | --- |
 | `planner` | Worker planner handler; proposes and validates one plan, publishes it, then leaves the plan approval gate waiting |
-| `plan_approval_gate` | Human/API-owned; the Worker fails closed if an invalid queued claim reaches it |
+| `plan_approval_gate` | Human/API-owned; neutral Worker claim commands skip/reject it before any lock-backed mutation, Attempt, or Event |
 | `researcher` | One claimed branch only; rebuilds its frozen execution/subproblem and uses evidence ports scoped to that Attempt |
 | `join` | One control completion after all persisted researcher predecessors succeeded |
 | `verifier` | Rebuilds all completed branch Claims/Evidence, verifies the exact Claim set, and completes only the verifier Attempt |
@@ -76,6 +112,8 @@ Production `main()` now runs:
 - existing bounded retry/backoff per loop;
 - shared shutdown signaling and a bounded 130-second pool join, covering the frozen
   provider timeout plus cleanup margin;
+- an in-flight iteration error is re-raised even if a sibling set shared stop; only a loop
+  with no failing iteration exits cleanly from that stop;
 - fail-fast sibling shutdown and propagated fatal error when a dispatcher exhausts retries;
 - `BaseExceptionGroup` aggregation when multiple dispatchers or ingestion and a dispatcher
   fail together, so no background cause is discarded during shutdown.
@@ -111,22 +149,20 @@ Required invariant, still compared exactly:
 - lease fencing, retry/cancel/reclaim recovery, permissions, provider/tool accounting, and
   A2a neutral composition ownership.
 
-The evolved executable differential passed with `equal=true`:
+The immutable `f4a1d1d` executable differential passed with `equal=true`:
 
 - baseline handled sequence: `[true, true, true, false]`;
 - candidate handled sequence:
   `[true, true, true, true, true, true, true, true, false]`;
 - candidate neutral UoW entries: `43`;
 - process Event byte records: `40`;
-- report: `/tmp/citeframe-r1-a2a-differential-20260824.json`;
+- report: `/tmp/citeframe-r1-critical-review-f4a1d1d-a2a.json`;
 - report SHA-256:
-  `801491510f4ab47bbc187777f3706df6e3ed3d6643d876af4233700bab74191d`;
-- final candidate semantic worktree SHA-256:
-  `4a3d4e69ff3d5b1675f98e555d8aa97a78e76eff11176d226c8201d645062044`.
+  `fa9e7dcbee1e8c63087182aa85a3f18461e0eb44740aa22f98273773f03ef739`.
 
 ## Verification Evidence
 
-Completed evidence:
+Immutable `f4a1d1d` evidence before Critical REWORK:
 
 | Gate | Result |
 | --- | --- |
@@ -139,10 +175,67 @@ Completed evidence:
 | Production runtime import smoke | LangGraph and executor engine absent from `sys.modules` |
 | API and Worker locks | `uv lock --check` passed for both projects |
 | Compile | Worker and API Research `compileall` passed |
-| Hygiene | `git diff --check` and R1 gate shell syntax passed |
+| Hygiene | failed: `git diff --check 8674d4d..f4a1d1d` found ledger line 3 trailing whitespace |
 | Repeatable R1 gate | Worker focused/integration `62 passed`; API A2a/R0/recovery/lease `39 passed`; import smoke and locks passed |
 
-Accepted R0 lock behavior was re-run against real PostgreSQL:
+## Critical Rework Verification
+
+Runtime rework evidence is bound to immutable commit `473213d`, whose parent is reviewed
+candidate `f4a1d1d`. The reviewer artifact remains separate and is not part of this
+implementation ledger.
+
+Completed rework evidence so far:
+
+| Gate | Result |
+| --- | --- |
+| Real Worker loop/pool/runtime focused set | `64 passed` |
+| API lease/plan including human-gate zero-mutation ORM probe | `9 passed`, one existing Starlette warning |
+| Human gate `claim_next` | returned no lease; Run, Step, Decision, Attempt count, and Event count unchanged |
+| Human gate `claim_specific` | `research_state_conflict`; the same complete before/after snapshot remained equal |
+| Real PostgreSQL R0 focused | `6 passed`, one existing Starlette warning |
+| Runtime commit delta hygiene | `git show --check 473213d` passed |
+| Start-to-ledger-closure hygiene | `git diff --check 8674d4d` passed; the gate checks this combined range |
+| Full affected API Research/R0/A2a | `132 passed`, one existing Starlette warning |
+| Full Worker suite | `349 passed` |
+| Repeatable R1 gate | Worker `64 passed`; API `40 passed`; locks, compile, import smoke, and range hygiene passed |
+
+Commit `473213d` contains exactly the five runtime/test/gate files listed by `git show`; it
+does not claim to contain this ledger closure. The external workbench/delivery record binds
+the ledger closure identity and final start-to-delivery range without a self-reference.
+
+Exact runtime commit A2a differential:
+
+- `equal=true`, coverage `7/7`;
+- candidate HEAD:
+  `473213d79154f3fbcf6044e1c4e62ed65038e1c1`;
+- baseline handled sequence `[true, true, true, false]`;
+- rework handled sequence
+  `[true, true, true, true, true, true, true, true, false]`;
+- candidate neutral UoW entries: `43`;
+- semantic worktree dirty: `false`;
+- semantic worktree SHA-256 is the empty-diff digest:
+  `e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855`;
+- report: `/tmp/citeframe-r1-runtime-rework-473213d-a2a.json`;
+- report SHA-256:
+  `988c5b347e21f5bc997afb8519e5b397c6de382ffa2dafbbe52c73c2689880d5`.
+
+The report's broader repair snapshot is dirty only because the separately owned canonical
+closure, reviewer artifact, and this non-recursive ledger closure are outside the immutable
+runtime commit. Its runtime semantic fingerprint is clean.
+
+Because the neutral lease source changed, R0 PostgreSQL evidence was regenerated rather
+than reusing the `f4a1d1d` source-bound report:
+
+- PostgreSQL `17.11`, pgvector `0.8.6`;
+- seven of seven scenarios passed;
+- deadlocks remained `0 -> 0`;
+- new lease source SHA-256:
+  `1f65e0a66e1de6bed14a29f2f79cdf221567575d1054feb66c400c088ac60090`;
+- report: `/tmp/citeframe-r1-rework-r0-contention-20260824.json`;
+- report SHA-256:
+  `823889721119953a092485a37024f39eaf7ad77f7d75fdc1540d4f2a111fcacc`.
+
+Historical `f4a1d1d` R0 report, superseded only for rework source binding:
 
 - PostgreSQL `17.11`, pgvector `0.8.6`;
 - seven of seven contention scenarios passed;
