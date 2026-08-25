@@ -359,6 +359,105 @@ def test_publish_plan_commits_artifact_approval_gate_and_events_without_executio
     assert run is not None and run.status == "awaiting_plan_approval"
 
 
+def test_worker_claims_leave_a_malformed_queued_plan_gate_unchanged(
+    research_worker_db,
+) -> None:
+    fixture = research_worker_db
+    _revision, planner, _planning_ledger = make_planning_chain(fixture)
+    planner_lease = lease_planner_step(fixture, planner)
+    stored: dict[str, bytes] = {}
+    result = publish_research_plan(
+        fixture.db,
+        attempt_id=planner_lease.attempt_id,
+        lease_token=planner_lease.lease_token,
+        summary="Human-owned gate claim probe.",
+        subproblems=(
+            PlanSubproblemDraft(
+                question="What does the source establish?",
+                asset_ids=(fixture.asset.id,),
+            ),
+        ),
+        estimated_provider_calls=2,
+        store_bytes=lambda key, content, _content_type: stored.__setitem__(key, content),
+        now=fixture.now + timedelta(seconds=1),
+    )
+    decision = fixture.db.get(HumanDecision, result["decisionId"])
+    assert decision is not None
+    gate = fixture.db.get(ResearchStep, decision.gate_step_id)
+    run = fixture.db.get(ResearchRun, fixture.run.id)
+    assert gate is not None and run is not None
+
+    # Model a corrupted queue transition without granting the Worker authority over the gate.
+    gate.status = "queued"
+    gate.queued_at = fixture.now + timedelta(seconds=2)
+    run.status = "queued"
+    fixture.db.commit()
+
+    def row_snapshot(row: object) -> tuple[tuple[str, object], ...]:
+        table = getattr(row, "__table__")
+        return tuple((column.name, getattr(row, column.name)) for column in table.columns)
+
+    fixture.db.refresh(run)
+    fixture.db.refresh(gate)
+    fixture.db.refresh(decision)
+    before = {
+        "run": row_snapshot(run),
+        "gate": row_snapshot(gate),
+        "decision": row_snapshot(decision),
+        "attempts": len(
+            fixture.db.scalars(
+                select(ResearchStepAttempt).where(ResearchStepAttempt.step_id == gate.id)
+            ).all()
+        ),
+        "events": len(
+            fixture.db.scalars(
+                select(ResearchEvent).where(ResearchEvent.run_id == run.id)
+            ).all()
+        ),
+    }
+
+    assert (
+        claim_next_research_step(
+            fixture.db,
+            worker_instance_id="human-gate-probe",
+            now=fixture.now + timedelta(seconds=3),
+        )
+        is None
+    )
+    with pytest.raises(ResearchError) as error:
+        claim_specific_research_step(
+            fixture.db,
+            run_id=run.id,
+            step_key=gate.step_key,
+            branch_key=None,
+            worker_instance_id="human-gate-specific-probe",
+            now=fixture.now + timedelta(seconds=3),
+        )
+    assert_research_error(error, "research_state_conflict", 409)
+
+    fixture.db.expire_all()
+    persisted_run = fixture.db.get(ResearchRun, run.id)
+    persisted_gate = fixture.db.get(ResearchStep, gate.id)
+    persisted_decision = fixture.db.get(HumanDecision, decision.id)
+    assert persisted_run is not None and persisted_gate is not None and persisted_decision is not None
+    after = {
+        "run": row_snapshot(persisted_run),
+        "gate": row_snapshot(persisted_gate),
+        "decision": row_snapshot(persisted_decision),
+        "attempts": len(
+            fixture.db.scalars(
+                select(ResearchStepAttempt).where(ResearchStepAttempt.step_id == gate.id)
+            ).all()
+        ),
+        "events": len(
+            fixture.db.scalars(
+                select(ResearchEvent).where(ResearchEvent.run_id == run.id)
+            ).all()
+        ),
+    }
+    assert after == before
+
+
 def test_publish_plan_rolls_back_ledger_and_cleans_bytes_when_event_write_fails(
     research_worker_db,
     monkeypatch: pytest.MonkeyPatch,

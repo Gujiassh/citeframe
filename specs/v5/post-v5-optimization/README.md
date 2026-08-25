@@ -2,7 +2,7 @@
 
 Date: 2026-08-19
 
-Status: **Design re-audit and A1/A1b are accepted; A2a was independently `ACCEPTED` on 2026-08-24 (`High=0`, `Medium=0`, `Low=0`) at production commit `215cd52565089138704c6b637350e18bc8705c8b`, documentation closure `95981a499521a28bfd9eb24480d54ef42f485528`, and review record `eb97adfa75660867eb31d46a4e7d7712909c348e`. All three commits are local and not pushed. R0 was independently `ACCEPTED` on 2026-08-24 (`High=0`, `Medium=0`, `Low=0`) across start `7ee97471ffb7d7d23e941d75795ab21d8cb3032b`, production `39766c374bd584b0cb834ef103de025d233c87c1`, final ledger closure `6b8ab475c14a7bbfe90f59a635255ca3768edcf9`, and review record `9d4297f89451fe79b6d1c141613722f7749b11c0`. All four commits are local and not pushed; the branch has no upstream and no remote branch. R1 is the only next separately gated implementation slice; R2/W1 and downstream remain blocked. R0 acceptance authorizes no schema/API/save/replay/permission/admission change and does not claim R1 implementation**
+Status: **Design re-audit and A1/A1b are accepted; PR #20 is merged at `origin/main@9f40241`; PR #21 head `1d81470` is merged at `origin/main@8674d4dc407048471f7b14b23b821e72529487bf` with `6/6` CI, delivering A2a/R0. R1 was independently `ACCEPTED` on 2026-08-25 (`High=0`, `Medium=0`, `Low=0`) across start `8674d4dc407048471f7b14b23b821e72529487bf`, historical initial candidate `f4a1d1d7451d707d90948612791d1bb2aac410f3` (`REWORK`), runtime rework `473213d79154f3fbcf6044e1c4e62ed65038e1c1`, ledger `652cfd47f8bc462038e1bd623afc2b33a4ce511a`, canonical docs `559997d073cc2d26fb346c30e2ab9f20550b673f`, delivery truth `80d395d4fd19c0146b22befc2929bc556cfe62fa`, and review `5a55489fef8380f78854f10666a2fdd2983beeff`. All R1 commits are local and not pushed; the branch has no upstream and no remote branch. R2 is the only next separately gated module; W1/per-Run admission and downstream remain blocked. No schema/API/save/replay/permission change is authorized**
 
 Product stage: `internal_preview`
 
@@ -14,7 +14,7 @@ accepted with `High=0`, `Medium=0`, `Low=0`. A1 was independently accepted on `2
 accepted on `2026-08-21` by the follow-up Critical review (`High=0`, `Medium=0`, `Low=0`).
 Implementation evidence is recorded in `reviews/a1b-persistence-implementation-2026-08-20.md`;
 the reviewer-owned result is `reviews/a1b-persistence-critical-audit-2026-08-20.md`.
-A2a was independently `ACCEPTED` on 2026-08-24 (`High=0`, `Medium=0`, `Low=0`) at production `215cd52`, documentation closure `95981a4`, and review record `eb97adf`; all are local and not pushed. R0 is independently `ACCEPTED (High=0, Medium=0, Low=0)` at local chain `7ee97471 -> 39766c37 -> 6b8ab475 -> 9d4297f8`; no upstream, remote branch, or push exists. R1 is the only next separately gated implementation slice; R2/W1 and downstream remain blocked. No admission or R1 implementation is authorized. No schema/API/save/replay/permission changes are authorized.
+A2a/R0 were delivered by PR #21 at `origin/main@8674d4d`. R1 chain `8674d4d -> f4a1d1d(REWORK) -> 473213d -> 652cfd4 -> 559997d -> 80d395d -> 5a55489` is independently `ACCEPTED (High=0, Medium=0, Low=0)` on 2026-08-25. All R1 commits are local/not pushed with no upstream or remote branch. R2 is the only next separately gated module; W1/admission/downstream remain blocked. No schema/API/save/replay/permission changes are authorized.
 G/M/P and GitHub repository settings remain unauthorized.
 
 This package turns the 2026-08 architecture review into four bounded follow-up
@@ -23,7 +23,7 @@ lanes. A1 was independently accepted on `2026-08-20`; its evidence is recorded i
 accepted on `2026-08-21` by the follow-up Critical review (`High=0`, `Medium=0`, `Low=0`).
 Implementation evidence is recorded in `reviews/a1b-persistence-implementation-2026-08-20.md`;
 the reviewer-owned result is `reviews/a1b-persistence-critical-audit-2026-08-20.md`.
-A2a was independently `ACCEPTED` on 2026-08-24 (`High=0`, `Medium=0`, `Low=0`) at production `215cd52`, documentation closure `95981a4`, and review record `eb97adf`; all are local and not pushed. R0 is independently `ACCEPTED (High=0, Medium=0, Low=0)` at local chain `7ee97471 -> 39766c37 -> 6b8ab475 -> 9d4297f8`; no upstream, remote branch, or push exists. R1 is the only next separately gated implementation slice; R2/W1 and downstream remain blocked. No admission or R1 implementation is authorized. No schema/API/save/replay/permission changes are
+A2a/R0 were delivered by PR #21 at `origin/main@8674d4d`. R1 chain `8674d4d -> f4a1d1d(REWORK) -> 473213d -> 652cfd4 -> 559997d -> 80d395d -> 5a55489` is independently `ACCEPTED (High=0, Medium=0, Low=0)` on 2026-08-25. All R1 commits are local/not pushed with no upstream or remote branch. R2 is the only next separately gated module; W1/admission/downstream remain blocked. No schema/API/save/replay/permission changes are
 authorized, and G/M/P, GitHub settings, paid evaluation, and user study remain outside
 this status.
 
@@ -48,14 +48,16 @@ this status.
 | [`reviews/a2a-persistence-rework-implementation-2026-08-24.md`](reviews/a2a-persistence-rework-implementation-2026-08-24.md) | Accepted immutable production/docs evidence and local delivery ledger |
 | [`reviews/a2a-persistence-critical-reaudit-2026-08-24.md`](reviews/a2a-persistence-critical-reaudit-2026-08-24.md) | Final independent A2a Critical `ACCEPT (High=0, Medium=0, Low=0)`; record commit `eb97adf` |
 | [`reviews/r0-lock-normalization-implementation-2026-08-24.md`](reviews/r0-lock-normalization-implementation-2026-08-24.md) | R0 implementation and durable ledger history |
-| [`reviews/r0-lock-normalization-critical-review-2026-08-24.md`](reviews/r0-lock-normalization-critical-review-2026-08-24.md) | Final independent R0 Critical `ACCEPT (High=0, Medium=0, Low=0)`; record commit `9d4297f8` |
+| [`reviews/r0-lock-normalization-critical-review-2026-08-24.md`](reviews/r0-lock-normalization-critical-review-2026-08-24.md) | Final independent R0 Critical `ACCEPT (High=0, Medium=0, Low=0)`; delivered by PR #21 |
+| [`reviews/r1-single-attempt-dispatcher-implementation-2026-08-24.md`](reviews/r1-single-attempt-dispatcher-implementation-2026-08-24.md) | Accepted R1 runtime/ledger evidence |
+| [`reviews/r1-single-attempt-dispatcher-critical-review-2026-08-24.md`](reviews/r1-single-attempt-dispatcher-critical-review-2026-08-24.md) | Historical initial `REWORK`; final Critical `ACCEPT (High=0, Medium=0, Low=0)` at `5a55489` |
 
 ## Recommended Order
 
 1. Record the owner-authorized A0/R/W direction and the accepted design re-audit (`High=0`, `Medium=0`, `Low=0`).
 2. Preserve the final independent A1b follow-up Critical review ACCEPT (`High=0`, `Medium=0`, `Low=0`) and its clean-image evidence in the linked artifacts.
-3. Preserve A2a and R0 acceptance chains locally, then deliver them through remote push/PR integration; no upstream or remote work branch exists yet.
-4. R1 is the only next separately gated implementation slice. Keep R2 and W1 blocked behind their named gates; do not implement admission or fold R1 into R0.
+3. Preserve PR #21 delivery at `origin/main@8674d4d` and its `6/6` CI evidence; A2a/R0 are delivered, not local-pending work.
+4. Preserve local R1 `ACCEPT` chain through review `5a55489`; remote push/PR/integration remains pending. R2 is the only next separately gated module. Keep W1/admission/downstream blocked.
 5. Migrate all nine ingestion modalities in A3/A4 before claiming an API-source-free Worker candidate in A5.
 6. Keep G/M/P and GitHub settings behind their own authorization gates.
 

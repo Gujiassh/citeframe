@@ -34,7 +34,7 @@ from ai_pdf_api.services.providers import (
 )
 from ai_pdf_api.services.research.research_agent_io_registry import resolve_registry
 
-from ai_pdf_worker.research_executor import (
+from citeframe_contracts import (
     ApprovedResearchExecution,
     EvidenceHandle,
     FrozenAsset,

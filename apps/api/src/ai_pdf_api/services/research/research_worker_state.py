@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import hashlib
+import json
 from datetime import UTC, datetime
 
 from ai_pdf_api.models import (
@@ -17,6 +18,7 @@ from ai_pdf_api.models import (
     ResearchRun,
     ResearchStep,
     ResearchStepAttempt,
+    ResearchStepDependency,
     ResearchToolCall,
 )
 from ai_pdf_api.services.research import ResearchError, append_research_event
@@ -56,6 +58,7 @@ def load_execution_state(db: Session, run_id: str) -> dict[str, object] | None:
     if not steps:
         return None
     by_key = {step.step_key: step for step in steps}
+    by_id = {step.id: step for step in steps}
     researcher_steps = [step for step in steps if step.step_kind == "researcher"]
     completed: list[str] = []
     if researcher_steps and all(step.status == "succeeded" for step in researcher_steps):
@@ -102,8 +105,51 @@ def load_execution_state(db: Session, run_id: str) -> dict[str, object] | None:
             if claim is not None
             else None
         )
-        if handle_id is not None:
-            evidence_by_claim.setdefault(relation.claim_id, []).append(handle_id)
+        producer = by_id.get(claim.produced_by_step_id) if claim is not None else None
+        if (
+            claim is None
+            or producer is None
+            or producer.step_kind != "researcher"
+            or producer.status != "succeeded"
+            or evidence.run_id != run_id
+            or evidence.workspace_id != snapshot.workspace_id
+            or evidence.captured_by_step_id != producer.id
+            or handle_id is None
+        ):
+            raise ResearchError("research_state_conflict", "Research Claim Evidence provenance is invalid.", 409)
+        evidence_by_claim.setdefault(relation.claim_id, []).append(handle_id)
+    if any(
+        claim.workspace_id != snapshot.workspace_id
+        or claim.run_id != run_id
+        or claim.statement_sha256
+        != hashlib.sha256(claim.statement_text.encode("utf-8")).hexdigest()
+        or claim.produced_by_step_id not in by_id
+        or by_id[claim.produced_by_step_id].step_kind != "researcher"
+        or by_id[claim.produced_by_step_id].status != "succeeded"
+        or not evidence_by_claim.get(claim.id)
+        or (
+            claim.verification_status == "pending"
+            and claim.verified_by_step_id is not None
+        )
+        or (
+            claim.verification_status != "pending"
+            and (
+                claim.verified_by_step_id not in by_id
+                or by_id[claim.verified_by_step_id].step_kind != "verifier"
+                or by_id[claim.verified_by_step_id].status != "succeeded"
+            )
+        )
+        or (
+            claim.conflict_status != "none"
+            and (
+                claim.critic_step_id not in by_id
+                or by_id[claim.critic_step_id].step_kind != "critic"
+                or by_id[claim.critic_step_id].status != "succeeded"
+            )
+        )
+        for claim in claims
+    ):
+        raise ResearchError("research_state_conflict", "Research Claim provenance is invalid.", 409)
     final_artifact = db.scalar(
         select(ResearchArtifact).where(
             ResearchArtifact.run_id == run_id,
@@ -122,6 +168,14 @@ def load_execution_state(db: Session, run_id: str) -> dict[str, object] | None:
         if final_artifact
         else []
     )
+    synthesis_selection = (
+        {
+            "factClaimIds": [claim_id for claim_id, section in final_claims if section in {"fact", "conclusion"}],
+            "unresolvedClaimIds": [claim_id for claim_id, section in final_claims if section == "unresolved"],
+        }
+        if final_artifact
+        else _load_synthesis_selection(db, run_id=run_id, snapshot=snapshot, steps=steps)
+    )
     return {
         "execution": execution,
         "completedNodes": completed,
@@ -138,12 +192,149 @@ def load_execution_state(db: Session, run_id: str) -> dict[str, object] | None:
             for claim in claims
         ],
         "finalArtifactId": final_artifact.id if final_artifact else None,
-        "synthesisSelection": {
-            "factClaimIds": [claim_id for claim_id, section in final_claims if section in {"fact", "conclusion"}],
-            "unresolvedClaimIds": [claim_id for claim_id, section in final_claims if section == "unresolved"],
-        }
-        if final_artifact
-        else None,
+        "synthesisSelection": synthesis_selection,
+    }
+
+
+def _load_synthesis_selection(
+    db: Session,
+    *,
+    run_id: str,
+    snapshot: ResearchExecutionSnapshot,
+    steps: list[ResearchStep],
+) -> dict[str, object] | None:
+    synthesizer = next((step for step in steps if step.step_kind == "synthesizer"), None)
+    if synthesizer is None or synthesizer.status != "succeeded":
+        return None
+    attempt = db.scalar(
+        select(ResearchStepAttempt).where(
+            ResearchStepAttempt.step_id == synthesizer.id,
+            ResearchStepAttempt.attempt_number == synthesizer.current_attempt_number,
+            ResearchStepAttempt.status == "succeeded",
+        )
+    )
+    artifact = db.get(ResearchArtifact, attempt.checkpoint_artifact_id) if attempt else None
+    if (
+        attempt is None
+        or artifact is None
+        or artifact.workspace_id != snapshot.workspace_id
+        or artifact.run_id != run_id
+        or artifact.generated_by_step_id != synthesizer.id
+        or artifact.generated_by_attempt_id != attempt.id
+        or artifact.artifact_kind != "execution_checkpoint"
+        or artifact.logical_key != "checkpoint:synthesis"
+        or artifact.schema_version != "1"
+        or artifact.content_type != "application/json"
+    ):
+        raise ResearchError("research_state_conflict", "Research synthesis checkpoint provenance is invalid.", 409)
+    from ai_pdf_api.services.research.research_views import verified_artifact_bytes
+
+    try:
+        payload = json.loads(verified_artifact_bytes(artifact))
+    except (ValueError, json.JSONDecodeError, UnicodeDecodeError) as error:
+        raise ResearchError(
+            "research_artifact_integrity_mismatch",
+            "Research synthesis checkpoint bytes failed validation.",
+            409,
+        ) from error
+    if (
+        not isinstance(payload, dict)
+        or payload.get("schemaVersion") != 1
+        or payload.get("runId") != run_id
+        or payload.get("stepId") != synthesizer.id
+        or payload.get("attemptId") != attempt.id
+        or not isinstance(payload.get("factClaimIds"), list)
+        or not isinstance(payload.get("unresolvedClaimIds"), list)
+    ):
+        raise ResearchError("research_state_conflict", "Research synthesis checkpoint contract is invalid.", 409)
+    fact_ids = [str(item) for item in payload["factClaimIds"]]
+    unresolved_ids = [str(item) for item in payload["unresolvedClaimIds"]]
+    if (
+        len(fact_ids) != len(set(fact_ids))
+        or len(unresolved_ids) != len(set(unresolved_ids))
+        or set(fact_ids).intersection(unresolved_ids)
+    ):
+        raise ResearchError("research_state_conflict", "Research synthesis checkpoint selection is invalid.", 409)
+    return {"factClaimIds": fact_ids, "unresolvedClaimIds": unresolved_ids}
+
+
+def load_step_handler_input(
+    db: Session,
+    *,
+    run_id: str,
+    step_id: str,
+    attempt_id: str,
+    lease_token: str,
+    now: datetime,
+) -> dict[str, object]:
+    """Rebuild and validate the persisted input for one claimed Attempt."""
+
+    from ai_pdf_api.services.research.research_worker_lease import load_approved_execution
+
+    execution = load_approved_execution(db, run_id)
+    step = db.get(ResearchStep, step_id)
+    attempt = db.get(ResearchStepAttempt, attempt_id)
+    lease_expires_at = attempt.lease_expires_at if attempt is not None else None
+    if lease_expires_at is not None and lease_expires_at.tzinfo is None:
+        lease_expires_at = lease_expires_at.replace(tzinfo=UTC)
+    if (
+        step is None
+        or attempt is None
+        or step.run_id != run_id
+        or step.workspace_id != execution["workspaceId"]
+        or step.execution_snapshot_id != execution["executionSnapshotId"]
+        or step.status != "running"
+        or attempt.step_id != step.id
+        or attempt.workspace_id != step.workspace_id
+        or attempt.status != "running"
+        or attempt.lease_token_hash
+        != hashlib.sha256(lease_token.encode("utf-8")).hexdigest()
+        or lease_expires_at is None
+        or lease_expires_at <= now
+        or attempt.attempt_number != step.current_attempt_number
+        or attempt.input_sha256
+        != (step.input_sha256 or hashlib.sha256(step.id.encode("utf-8")).hexdigest())
+    ):
+        raise ResearchError("research_state_conflict", "Research claimed Attempt chain is invalid.", 409)
+    dependencies = list(
+        db.execute(
+            select(ResearchStepDependency, ResearchStep)
+            .join(
+                ResearchStep,
+                ResearchStep.id == ResearchStepDependency.depends_on_step_id,
+            )
+            .where(ResearchStepDependency.step_id == step.id)
+            .order_by(ResearchStep.id)
+        ).all()
+    )
+    if any(
+        dependency.step_id != step.id
+        or upstream.run_id != run_id
+        or upstream.workspace_id != step.workspace_id
+        or upstream.execution_snapshot_id != step.execution_snapshot_id
+        or upstream.status != "succeeded"
+        for dependency, upstream in dependencies
+    ):
+        raise ResearchError("research_state_conflict", "Research Step dependency is not satisfied.", 409)
+    state = load_execution_state(db, run_id)
+    if state is None:
+        raise ResearchError("research_state_conflict", "Research execution state is missing.", 409)
+    return {
+        "execution": execution,
+        "step": {
+            "id": step.id,
+            "key": step.step_key,
+            "kind": step.step_kind,
+            "branchKey": step.branch_key,
+            "inputSha256": step.input_sha256,
+        },
+        "attempt": {
+            "id": attempt.id,
+            "number": attempt.attempt_number,
+            "inputSha256": attempt.input_sha256,
+        },
+        "dependencies": [upstream.id for _dependency, upstream in dependencies],
+        "state": state,
     }
 
 
@@ -263,5 +454,6 @@ __all__ = [
     "load_completed_branch",
     "load_conflict_resume_state",
     "load_execution_state",
+    "load_step_handler_input",
     "reclaim_expired_research_steps",
 ]

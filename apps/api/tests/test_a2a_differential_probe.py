@@ -919,18 +919,25 @@ def _process_one_flow(path: Path, normalizer: _Normalizer) -> dict[str, object]:
         assert response.status_code == 200, response.text
         api_payload_bytes.append(base64.b64encode(response.content).decode())
         print("a2a_probe stage=process_graph", flush=True)
-        outputs.append(processor.process_one())
-        print("a2a_probe stage=process_graph_done", flush=True)
-        with sessions() as db:
-            run = db.get(ResearchRun, run_id)
-            decision = db.scalar(
-                select(HumanDecision).where(
-                    HumanDecision.run_id == run_id,
-                    HumanDecision.decision_type == "conflict_resolution",
-                    HumanDecision.status == "pending",
+        decision = None
+        run = None
+        for _attempt in range(10):
+            outputs.append(processor.process_one())
+            with sessions() as db:
+                run = db.get(ResearchRun, run_id)
+                decision = db.scalar(
+                    select(HumanDecision).where(
+                        HumanDecision.run_id == run_id,
+                        HumanDecision.decision_type == "conflict_resolution",
+                        HumanDecision.status == "pending",
+                    )
                 )
-            )
-            assert run is not None and decision is not None
+            if decision is not None:
+                break
+            assert outputs[-1] is True
+        print("a2a_probe stage=process_graph_done", flush=True)
+        assert run is not None and decision is not None
+        with sessions() as db:
             conflict_request = {
                 "expectedStateVersion": run.state_version,
                 "expectedDecisionStateVersion": decision.state_version,
@@ -948,7 +955,19 @@ def _process_one_flow(path: Path, normalizer: _Normalizer) -> dict[str, object]:
         assert response.status_code == 200, response.text
         api_payload_bytes.append(base64.b64encode(response.content).decode())
         print("a2a_probe stage=process_resume", flush=True)
-        outputs.extend([processor.process_one(), processor.process_one()])
+        for _attempt in range(10):
+            with sessions() as db:
+                current = db.get(ResearchRun, run_id)
+                assert current is not None
+                if current.status == "completed":
+                    break
+            outputs.append(processor.process_one())
+            assert outputs[-1] is True
+        with sessions() as db:
+            current = db.get(ResearchRun, run_id)
+            assert current is not None and current.status == "completed"
+        outputs.append(processor.process_one())
+        assert outputs[-1] is False
         print("a2a_probe stage=process_resume_done", flush=True)
 
     with sessions() as db:
@@ -972,7 +991,7 @@ def _process_one_flow(path: Path, normalizer: _Normalizer) -> dict[str, object]:
             if key.startswith("research/")
         }
         final = {
-            "processOneOutputs": outputs,
+            "idleAfterTerminal": outputs[-1],
             "providerNodes": provider.calls,
             "runStatus": run.status,
             "stepKinds": step_kinds,
@@ -988,7 +1007,11 @@ def _process_one_flow(path: Path, normalizer: _Normalizer) -> dict[str, object]:
     engine.dispose()
     return {
         "normalizedDbRows": rows,
-        "fixedMultiStepProcessOne": normalizer.value(final),
+        "terminalProcessSemantics": normalizer.value(final),
+        "_schedulerEvidence": {
+            "processOneOutputs": outputs,
+            "handledAttemptCount": sum(1 for item in outputs if item),
+        },
         "_processExactEventBytes": process_event_bytes,
         "_processExactPayloadBytes": {
             "apiResponses": api_payload_bytes,
@@ -1015,6 +1038,7 @@ def test_generate_executable_differential_report(tmp_path: Path) -> None:
     transition_rows = semantics.pop("_transitionDbRows")
     process_rows = process.pop("normalizedDbRows")
     composition = process.pop("_composition")
+    scheduler = process.pop("_schedulerEvidence")
     semantics["normalizedDbRows"] = {
         "transitions": transition_rows,
         "processOne": process_rows,
@@ -1029,7 +1053,7 @@ def test_generate_executable_differential_report(tmp_path: Path) -> None:
         "leaseFencing",
         "retryCancelReclaimRecovery",
         "permission",
-        "fixedMultiStepProcessOne",
+        "terminalProcessSemantics",
     }
     assert set(semantics) == required
     import ai_pdf_worker
@@ -1045,6 +1069,7 @@ def test_generate_executable_differential_report(tmp_path: Path) -> None:
         },
         "label": os.environ.get("A2A_DIFFERENTIAL_LABEL"),
         "composition": composition,
+        "schedulerEvidence": scheduler,
         "semantics": semantics,
     }
     Path(OUTPUT).write_bytes(_canonical(report) + b"\n")

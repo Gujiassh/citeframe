@@ -3,7 +3,7 @@ from __future__ import annotations
 import json
 from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass
-from threading import Barrier, Lock
+from threading import Barrier, Event, Lock
 
 import ai_pdf_worker.main as worker_main
 import pytest
@@ -698,6 +698,87 @@ def test_reclaim_runs_before_each_outer_claim() -> None:
     assert service.calls == ["reclaim", "claim"]
 
 
+def test_step_handler_input_rebuilds_claim_scope_from_the_read_port() -> None:
+    payload = approved_execution_payload()
+
+    class Service:
+        def load_step_handler_input(self, _db: Session, **_kwargs: object) -> dict[str, object]:
+            return {
+                "execution": payload,
+                "step": {
+                    "id": "step-1",
+                    "key": "researcher:branch-1",
+                    "kind": "researcher",
+                    "branchKey": "branch-1",
+                },
+                "attempt": {"id": "attempt-1", "number": 1},
+                "state": {
+                    "execution": payload,
+                    "completedNodes": [],
+                    "status": "running",
+                    "claims": [],
+                    "finalArtifactId": None,
+                    "synthesisSelection": None,
+                },
+            }
+
+    execution, state = SqlResearchLedgerAdapter(
+        SessionFactory(), Service(), worker_instance_id="worker-1"
+    ).load_step_handler_input(
+        run_id="run-1",
+        workspace_id="workspace-1",
+        step_id="step-1",
+        attempt_id="attempt-1",
+        attempt_number=1,
+        lease_token="lease-token",
+        step_key="researcher:branch-1",
+        step_kind="researcher",
+        branch_key="branch-1",
+    )
+
+    assert execution.run_id == "run-1"
+    assert state["completed_nodes"] == []
+
+
+def test_step_handler_input_rejects_a_different_attempt_identity() -> None:
+    payload = approved_execution_payload()
+
+    class Service:
+        def load_step_handler_input(self, _db: Session, **_kwargs: object) -> dict[str, object]:
+            return {
+                "execution": payload,
+                "step": {
+                    "id": "step-1",
+                    "key": "researcher:branch-1",
+                    "kind": "researcher",
+                    "branchKey": "branch-1",
+                },
+                "attempt": {"id": "late-attempt", "number": 1},
+                "state": {
+                    "execution": payload,
+                    "completedNodes": [],
+                    "status": "running",
+                    "claims": [],
+                    "finalArtifactId": None,
+                    "synthesisSelection": None,
+                },
+            }
+
+    adapter = SqlResearchLedgerAdapter(SessionFactory(), Service(), worker_instance_id="worker-1")
+    with pytest.raises(ResearchPortError, match="claimed_step_scope_mismatch"):
+        adapter.load_step_handler_input(
+            run_id="run-1",
+            workspace_id="workspace-1",
+            step_id="step-1",
+            attempt_id="attempt-1",
+            attempt_number=1,
+            lease_token="lease-token",
+            step_key="researcher:branch-1",
+            step_kind="researcher",
+            branch_key="branch-1",
+        )
+
+
 def test_claimed_workspace_must_match_planning_payload() -> None:
     factory = SessionFactory()
 
@@ -750,11 +831,11 @@ def test_worker_fair_lane_prefers_alternating_successful_jobs(monkeypatch: pytes
 
 
 def test_main_injects_sessionlocal_factory_into_research_runtime(monkeypatch: pytest.MonkeyPatch) -> None:
-    captured: list[object] = []
+    captured: list[tuple[object, str]] = []
 
     class Processor:
         def __init__(self, sessions: object, _service: object, **_kwargs: object) -> None:
-            captured.append(sessions)
+            captured.append((sessions, str(_kwargs["worker_instance_id"])))
 
         def process_one(self) -> bool:
             return True
@@ -762,11 +843,13 @@ def test_main_injects_sessionlocal_factory_into_research_runtime(monkeypatch: py
     def session_factory() -> None:
         return None
 
-    def fake_run_worker(**_kwargs: object) -> None:
-        monkeypatch.setattr(worker_main, "_PREFER_RESEARCH", True)
-        assert worker_main.process_one_job() is True
+    def fake_run_worker(**kwargs: object) -> None:
+        stop_event = kwargs["stop_event"]
+        assert isinstance(stop_event, Event)
+        stop_event.set()
 
     monkeypatch.setattr(worker_main, "SessionLocal", session_factory)
+    monkeypatch.setenv("AI_PDF_WORKER_INSTANCE_ID", "worker-1")
     monkeypatch.setattr(worker_main, "ResearchWorkProcessor", Processor)
     monkeypatch.setattr(worker_main, "build_default_research_service", lambda: object())
     monkeypatch.setattr(worker_main, "run_worker", fake_run_worker)
@@ -775,7 +858,13 @@ def test_main_injects_sessionlocal_factory_into_research_runtime(monkeypatch: py
 
     worker_main.main()
 
-    assert captured == [session_factory]
+    captured.sort(key=lambda item: item[1])
+    assert [item[1] for item in captured] == [
+        "worker-1:research:1",
+        "worker-1:research:2",
+    ]
+    assert all(callable(item[0]) for item in captured)
+    assert captured[0][0] is not captured[1][0]
 
 
 def test_research_lane_does_not_open_an_ingestion_session(monkeypatch: pytest.MonkeyPatch) -> None:
@@ -811,6 +900,7 @@ def test_api_research_worker_exposes_the_production_runtime_contract() -> None:
         "load_completed_branch",
         "load_conflict_resume_state",
         "load_execution_state",
+        "load_step_handler_input",
         "load_frozen_evidence",
         "load_planning_input",
         "mark_provider_call_sent",

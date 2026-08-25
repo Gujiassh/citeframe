@@ -2,7 +2,7 @@
 
 Status: **Design re-audit ACCEPT (High=0, Medium=0, Low=0); A1 independently accepted
 on 2026-08-20; A1b/A2-foundation independently accepted on 2026-08-21 by the follow-up
-Critical review (`High=0`, `Medium=0`, `Low=0`); A2a was independently `ACCEPTED` on 2026-08-24 (`High=0`, `Medium=0`, `Low=0`) at production commit `215cd52565089138704c6b637350e18bc8705c8b`, documentation closure `95981a499521a28bfd9eb24480d54ef42f485528`, and review record `eb97adfa75660867eb31d46a4e7d7712909c348e`. All three commits are local and not pushed. R0 was independently `ACCEPTED` on 2026-08-24 (`High=0`, `Medium=0`, `Low=0`) across start `7ee97471ffb7d7d23e941d75795ab21d8cb3032b`, production `39766c374bd584b0cb834ef103de025d233c87c1`, final ledger closure `6b8ab475c14a7bbfe90f59a635255ca3768edcf9`, and review record `9d4297f89451fe79b6d1c141613722f7749b11c0`. All four commits are local and not pushed; the branch has no upstream and no remote branch. R1 is the only next separately gated implementation slice; R2/W1 and downstream remain blocked. R0 acceptance authorizes no schema/API/save/replay/permission/admission change and does not claim R1 implementation**.
+Critical review (`High=0`, `Medium=0`, `Low=0`); PR #20 is merged at `origin/main@9f40241`; PR #21 head `1d81470` is merged at `origin/main@8674d4dc407048471f7b14b23b821e72529487bf` with `6/6` CI, delivering A2a/R0. R1 was independently `ACCEPTED` on 2026-08-25 (`High=0`, `Medium=0`, `Low=0`) across start `8674d4dc407048471f7b14b23b821e72529487bf`, historical initial candidate `f4a1d1d7451d707d90948612791d1bb2aac410f3` (`REWORK`), runtime rework `473213d79154f3fbcf6044e1c4e62ed65038e1c1`, ledger `652cfd47f8bc462038e1bd623afc2b33a4ce511a`, canonical docs `559997d073cc2d26fb346c30e2ab9f20550b673f`, delivery truth `80d395d4fd19c0146b22befc2929bc556cfe62fa`, and review `5a55489fef8380f78854f10666a2fdd2983beeff`. All R1 commits are local and not pushed; the branch has no upstream and no remote branch. R2 is the only next separately gated module; W1/per-Run admission and downstream remain blocked. No schema/API/save/replay/permission change is authorized**.
 
 Checkboxes distinguish authorization from implementation. The checked A1 item records
 implementer-complete code and evidence; later checked authorization items do not claim
@@ -37,20 +37,24 @@ G0-G3 and all GitHub repository settings remain unauthorized.
 - [x] R/W Freeze PostgreSQL-only orchestration, one-claimed-attempt dispatcher target, admission target semantics, and independent SSE target; freeze does not authorize admission implementation
 - [x] R0 Freeze Run-first lock normalization target; accepted implementation remains separate from A2a/R1
 
-### Production implementation, R0 independently accepted; R1 is the only next gated slice
+### Production implementation, R1 independently accepted; R2 is the only next gated module
 
 - [x] A1 Add only `citeframe-backend-contracts` / `citeframe_contracts` pure DTO/Protocol package; API/Worker add only its local path and stage-specific export/smoke; no persistence or Research package scaffold (independently accepted 2026-08-20)
 - [x] A1b / A2-foundation Add `citeframe-backend-persistence` / `citeframe_persistence` on top of A1 as unique Base/metadata and all-model mapping distribution; extend manifests, Docker COPY/PYTHONPATH, and smoke with zero DDL drift (implementer-complete 2026-08-20; independently accepted 2026-08-21 by follow-up Critical review: High=0, Medium=0, Low=0)
 - [x] A2a initial snapshot `20d411e` implemented the third package but failed independent Critical review (`REWORK`, High=1, Medium=5, Low=1)
-- [x] A2a bounded core/supply-chain rework frozen as local commit `215cd52565089138704c6b637350e18bc8705c8b` on `work/research-boundary-runtime-20260824`; not pushed
+- [x] A2a bounded core/supply-chain repair accepted at `215cd52` and later delivered through PR #21
 - [x] Candidate neutral production composition (`uowEnterCount=38`), final differential/boundary `8 passed`, full API/Worker partitions, deploy `6+2`, and same-pinned-digest mirror image/runtime smokes recorded
 - [x] Final independent A2a Critical `ACCEPT (High=0, Medium=0, Low=0)` in [`reviews/a2a-persistence-critical-reaudit-2026-08-24.md`](reviews/a2a-persistence-critical-reaudit-2026-08-24.md), local review commit `eb97adf`
-- [ ] Push production `215cd52`, documentation `95981a4`, and review `eb97adf`, then integrate through the repository review flow
+- [x] Deliver A2a/R0 through PR #21 head `1d81470` to `origin/main@8674d4d` with `6/6` CI; includes A2a CI fix `4b24181` and exact Worker-environment ledger `1d81470`
 - [x] R0 Normalize all mutation lock acquisition to `Run -> Step -> Attempt -> Call -> Ledger` at production `39766c37`, preserving save/API semantics
-- [x] R0 final ledger closure `6b8ab475` and independent Critical [`ACCEPT (High=0, Medium=0, Low=0)`](reviews/r0-lock-normalization-critical-review-2026-08-24.md) at local review `9d4297f8`; start `7ee97471`; no upstream/remote branch/push
+- [x] R0 final ledger closure `6b8ab475` and independent Critical [`ACCEPT (High=0, Medium=0, Low=0)`](reviews/r0-lock-normalization-critical-review-2026-08-24.md) at review `9d4297f8`; delivered through PR #21
 - [x] R0 evidence: PostgreSQL 17.10 `7/7`, report `95f2608e...`, deadlocks `0 -> 0`, no `40P01`/`55P03`, focused `8`, API `90+49`, Worker `43`, A2a equal `7/7`
-- [ ] Push/integrate the accepted R0 chain through the repository review flow
-- [ ] R1 Change `process_one` into bounded concurrent dispatcher loops; each loop creates one `ResearchStepAttempt` lease and executes exactly that newly claimed Attempt with its step-kind handler; prove production-shaped two-loop overlap; keep separate from A2a
+- [x] Integrate the accepted R0 chain through PR #21
+- [x] R1 candidate `f4a1d1d` implements one outer claim / one handler and bounded independent dispatcher loops from start `8674d4d`
+- [x] R1 immutable runtime rework `473213d` (local/no-push/no-upstream/no-remote) closes the human-owned gate mutation and simultaneous ingestion/dispatcher error-loss paths; post-rework Worker `349`, gate `64+40`, API `132`, A2a handled `3 -> 8` / UoW `43`, PostgreSQL `7/7` deadlocks `0`
+- [x] R1 canonical M4 status sync records PR #21 delivery, candidate/rework state, exact evidence, initial REWORK, and blocked downstream gates
+- [x] R1 ledger `652cfd4`, canonical docs `559997d`, delivery truth `80d395d`, and final independent [`ACCEPT (High=0, Medium=0, Low=0)`](reviews/r1-single-attempt-dispatcher-critical-review-2026-08-24.md) at review `5a55489`
+- [ ] Push/integrate the accepted R1 chain through the repository review flow
 - [ ] R2 Prove two-or-more Worker contention, cap=1/N, cap-full Run skipping/fairness/no-starvation, equal-time Step ordering, lease expiry/late completion, cancel/provider races, join/conflict/recovery on real PostgreSQL
 - [ ] W1 Implement single-flight/dirty rerun, monotonic event gate, Run-switch abort/discard, event-directed artifact cache, terminal flush, and replay fallback
 - [ ] A3 Freeze ingestion result/object/hash/compensation contract and pilot one modality; pilot is not an A5 entry gate
@@ -58,11 +62,7 @@ G0-G3 and all GitHub repository settings remain unauthorized.
 - [ ] A5 Prove candidate Worker import/compile/start/ingest/Research/recovery/version-mismatch without API source/editable dependency/PYTHONPATH
 - [ ] A6 Replace legacy Worker target only after A5 and pass deploy/restore regression
 
-A1b/A2-foundation was independently accepted on 2026-08-21 (follow-up Critical review ACCEPT; High=0, Medium=0, Low=0). A2a is independently accepted at local production `215cd52`, documentation `95981a4`, and review `eb97adf`; none is pushed. No schema/API/save/replay/permission changes are authorized. A2a preserved the fixed multi-step `process_one` LangGraph behavior and its historical mixed lock behavior; accepted R0 later changed lock acquisition order only. R1 is the only
-next separately gated implementation slice and is not implemented. R2/W1 remain blocked;
-per-Run admission is not authorized. R1 is the later slice that removes LangGraph runtime step execution and
-introduces one-claimed-attempt dispatch. A5 cannot be claimed until A3/A4 cover all nine
-modalities and Research runtime, composition, and recovery gates pass.
+A1b/A2-foundation, A2a, R0, and R1 are accepted. A2a/R0 are delivered at `origin/main@8674d4d`; R1 is locally accepted through review `5a55489` but not pushed. Worker `349`, gate `64+40`, API `132`, A2a handled `3 -> 8` / UoW `43`, PostgreSQL `7/7` deadlocks `0`, human zero-mutation, causal error preservation, and LangGraph absence pass. R2 is the only next separately gated module; W1/admission/downstream remain blocked; no schema/API/save/replay/permission change is authorized.
 
 ## M: Maintainability
 

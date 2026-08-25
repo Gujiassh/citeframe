@@ -36,6 +36,7 @@ from ai_pdf_api.services.research.research_worker_state import (
     load_completed_branch,
     load_conflict_resume_state,
     load_execution_state,
+    load_step_handler_input,
     reclaim_expired_research_steps,
 )
 from ai_pdf_api.services.research.research_worker_tools import (
@@ -78,6 +79,7 @@ __all__ = [
     "load_completed_branch",
     "load_conflict_resume_state",
     "load_execution_state",
+    "load_step_handler_input",
     "load_frozen_evidence",
     "load_planning_input",
     "mark_provider_call_sent",

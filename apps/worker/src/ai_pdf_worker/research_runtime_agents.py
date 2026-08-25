@@ -15,7 +15,7 @@ from uuid import uuid4
 
 from ai_pdf_api.services.providers import GenerationMessage
 
-from ai_pdf_worker.research_executor import (
+from citeframe_contracts import (
     BranchResult,
     DraftClaim,
     EvidenceHandle,

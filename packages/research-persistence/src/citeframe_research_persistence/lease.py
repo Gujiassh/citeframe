@@ -17,6 +17,17 @@ from .locks import locate_attempt, lock_attempt_chain, lock_attempt_chain_with_s
 from .membership import ensure_creator_membership
 from .types import ResearchStepLease, StepCompletionCallback
 
+WORKER_EXECUTABLE_STEP_KINDS = (
+    "planner",
+    "researcher",
+    "join",
+    "verifier",
+    "critic",
+    "conflict_decision_gate",
+    "synthesizer",
+    "artifact_publisher",
+)
+
 def _queue_ready_dependents(db: Session, run: ResearchRun, completed_step: ResearchStep, now: datetime) -> None:
     dependent_ids = list(
         db.scalars(
@@ -86,6 +97,12 @@ def _lease_locked_step(
 ) -> ResearchStepLease:
     if run.status not in {"planning", "queued", "running"}:
         raise ResearchError("research_state_conflict", "Research run cannot lease work.", 409)
+    if step.step_kind not in WORKER_EXECUTABLE_STEP_KINDS:
+        raise ResearchError(
+            "research_state_conflict",
+            "Research step is not Worker-executable.",
+            409,
+        )
     ensure_creator_membership(db, run, now=now)
     if (
         step.status != "queued"
@@ -221,6 +238,7 @@ def claim_next_research_step(
     eligible = (
         ResearchStep.status == "queued",
         ResearchStep.run_id == ResearchRun.id,
+        ResearchStep.step_kind.in_(WORKER_EXECUTABLE_STEP_KINDS),
     )
     step_order = (ResearchStep.queued_at, ResearchStep.created_at, ResearchStep.id)
     first_queued_at = (
@@ -249,7 +267,11 @@ def claim_next_research_step(
     with db.no_autoflush:
         step = db.scalar(
             select(ResearchStep)
-            .where(ResearchStep.run_id == run.id, ResearchStep.status == "queued")
+            .where(
+                ResearchStep.run_id == run.id,
+                ResearchStep.status == "queued",
+                ResearchStep.step_kind.in_(WORKER_EXECUTABLE_STEP_KINDS),
+            )
             .order_by(*step_order)
             .with_for_update(of=ResearchStep, skip_locked=True)
             .execution_options(populate_existing=True)
@@ -283,15 +305,22 @@ def claim_specific_research_step(
         else ResearchStep.branch_key == branch_key
     )
     with db.no_autoflush:
-        step_id = db.scalar(
-            select(ResearchStep.id).where(
+        locator = db.execute(
+            select(ResearchStep.id, ResearchStep.step_kind).where(
                 ResearchStep.run_id == run_id,
                 ResearchStep.step_key == step_key,
                 branch_predicate,
             )
-        )
-    if step_id is None:
+        ).one_or_none()
+    if locator is None:
         raise ResearchError("research_resource_not_found", "Research step not found.", 404)
+    step_id, step_kind = locator
+    if step_kind not in WORKER_EXECUTABLE_STEP_KINDS:
+        raise ResearchError(
+            "research_state_conflict",
+            "Research step is not Worker-executable.",
+            409,
+        )
     run = lock_run(db, run_id)
     step = (
         lock_step(

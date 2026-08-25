@@ -32,7 +32,7 @@ from ai_pdf_api.services.research.research_context_policy import (
 )
 from ai_pdf_api.services.research.research_agent_io_registry import resolve_registry, resolve_role_contract
 
-from ai_pdf_worker.research_executor import (
+from citeframe_contracts import (
     ApprovedResearchExecution,
     BranchResult,
     DraftClaim,
@@ -91,6 +91,56 @@ class SqlResearchLedgerAdapter(_ApiPort, ResearchLedger):
         payload = self._call("load_execution_state", run_id=execution.run_id)
         if payload is None:
             return None
+        return self._decode_execution_state(execution, payload)
+
+    def load_step_handler_input(
+        self,
+        *,
+        run_id: str,
+        workspace_id: str,
+        step_id: str,
+        attempt_id: str,
+        attempt_number: int,
+        lease_token: str,
+        step_key: str,
+        step_kind: str,
+        branch_key: str | None,
+    ) -> tuple[ApprovedResearchExecution, ResearchState]:
+        payload = self._call(
+            "load_step_handler_input",
+            run_id=run_id,
+            step_id=step_id,
+            attempt_id=attempt_id,
+            lease_token=lease_token,
+            now=_now(),
+        )
+        execution = as_approved_execution(
+            _field(payload, "execution"),
+            expected_run_id=run_id,
+        )
+        step = _field(payload, "step")
+        attempt = _field(payload, "attempt")
+        if (
+            execution.workspace_id != workspace_id
+            or str(_field(step, "id")) != step_id
+            or str(_field(step, "key")) != step_key
+            or str(_field(step, "kind")) != step_kind
+            or _field(step, "branch_key") != branch_key
+            or str(_field(attempt, "id")) != attempt_id
+            or int(_field(attempt, "number")) != attempt_number
+        ):
+            raise ResearchPortError("claimed_step_scope_mismatch")
+        state_payload = _field(payload, "state")
+        state = self._decode_execution_state(execution, state_payload)
+        if state is None:
+            raise ResearchPortError("execution_state_missing")
+        return execution, state
+
+    def _decode_execution_state(
+        self,
+        execution: ApprovedResearchExecution,
+        payload: Any,
+    ) -> ResearchState:
         if isinstance(payload, Mapping):
             supplied = payload.get("execution")
             if supplied is not None and as_approved_execution(supplied, expected_run_id=execution.run_id) != execution:

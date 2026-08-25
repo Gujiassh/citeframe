@@ -153,6 +153,44 @@ def test_run_worker_stops_after_finite_retries(caplog: pytest.LogCaptureFixture)
     assert "worker_retry_exhausted attempts=3" in caplog.text
 
 
+def test_run_worker_propagates_iteration_failure_after_shared_stop() -> None:
+    stop_event = Event()
+    waits: list[float] = []
+
+    def fail_after_sibling_stop() -> bool:
+        stop_event.set()
+        raise ValueError("simultaneous-ingestion-failure")
+
+    with pytest.raises(ValueError, match="simultaneous-ingestion-failure"):
+        worker.run_worker(
+            stop_event=stop_event,
+            process_job=fail_after_sibling_stop,
+            wait_for_stop=lambda delay: waits.append(delay) or False,
+        )
+    assert waits == []
+
+
+def test_run_worker_distinguishes_keyboard_interrupt_and_clean_pre_stopped_loop() -> None:
+    keyboard_stop = Event()
+    with pytest.raises(KeyboardInterrupt):
+        worker.run_worker(
+            stop_event=keyboard_stop,
+            process_job=lambda: (_ for _ in ()).throw(KeyboardInterrupt()),
+        )
+
+    clean_stop = Event()
+    clean_stop.set()
+    calls = 0
+
+    def forbidden_job() -> bool:
+        nonlocal calls
+        calls += 1
+        return False
+
+    worker.run_worker(stop_event=clean_stop, process_job=forbidden_job)
+    assert calls == 0
+
+
 def test_install_signal_handlers_registers_sigint_and_sigterm(monkeypatch: pytest.MonkeyPatch) -> None:
     stop_event = Event()
     handlers: dict[int, Callable[[int, object], None]] = {}
@@ -186,8 +224,12 @@ def test_main_logs_fatal_process_error_and_reraises(
     def fake_install(_stop_event: Event) -> None:
         return None
 
-    def fail_worker(**_kwargs: object) -> None:
-        raise RuntimeError("fatal worker error")
+    def fail_worker(**kwargs: object) -> None:
+        if kwargs.get("process_job") is worker.process_one_ingestion_job:
+            raise RuntimeError("fatal worker error")
+        stop_event = kwargs["stop_event"]
+        assert isinstance(stop_event, Event)
+        stop_event.set()
 
     monkeypatch.setattr(worker, "_install_signal_handlers", fake_install)
     monkeypatch.setattr(worker, "run_worker", fail_worker)
@@ -206,6 +248,76 @@ def test_main_logs_fatal_process_error_and_reraises(
 
     assert "worker_fatal error_type=RuntimeError" in caplog.text
     assert metrics_calls == [(worker.settings.worker_metrics_host, worker.settings.worker_metrics_port)]
+
+
+def test_main_preserves_ingestion_and_all_dispatcher_failures(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    real_run_worker = worker.run_worker
+    real_stop_and_join = worker.ResearchDispatcherPool.stop_and_join
+    ingestion_started = Event()
+    captured_stop: list[Event] = []
+
+    class Processor:
+        def __init__(self, *_args: object, **kwargs: object) -> None:
+            self.worker_instance_id = str(kwargs["worker_instance_id"])
+
+        def process_one(self) -> bool:
+            assert ingestion_started.wait(timeout=2)
+            raise RuntimeError(f"dispatcher failed:{self.worker_instance_id}")
+
+    def run_fast_real_loop(**kwargs: object) -> None:
+        real_run_worker(
+            **kwargs,
+            poll_interval_seconds=0,
+            retry_initial_delay_seconds=0,
+            retry_max_delay_seconds=0,
+            max_consecutive_errors=1,
+        )
+
+    def fail_ingestion_after_dispatcher_stop() -> bool:
+        ingestion_started.set()
+        assert captured_stop and captured_stop[0].wait(timeout=2)
+        raise ValueError("ingestion failed")
+
+    def capture_stop(stop_event: Event) -> None:
+        captured_stop.append(stop_event)
+
+    def stop_then_fail(
+        pool: worker.ResearchDispatcherPool,
+        *,
+        timeout_seconds: float = worker.RESEARCH_POOL_SHUTDOWN_TIMEOUT_SECONDS,
+    ) -> None:
+        real_stop_and_join(pool, timeout_seconds=timeout_seconds)
+        raise LookupError("shutdown failed")
+
+    monkeypatch.setattr(worker, "ResearchWorkProcessor", Processor)
+    monkeypatch.setenv("AI_PDF_WORKER_INSTANCE_ID", "worker-1")
+    monkeypatch.setattr(worker, "build_default_research_service", lambda: object())
+    monkeypatch.setattr(worker, "run_worker", run_fast_real_loop)
+    monkeypatch.setattr(worker, "process_one_ingestion_job", fail_ingestion_after_dispatcher_stop)
+    monkeypatch.setattr(worker.ResearchDispatcherPool, "stop_and_join", stop_then_fail)
+    monkeypatch.setattr(worker, "start_metrics_server", lambda *_args: None)
+    monkeypatch.setattr(worker, "_install_signal_handlers", capture_stop)
+
+    with pytest.raises(BaseExceptionGroup, match="worker_loops_failed") as caught:
+        worker.main()
+
+    def leaves(error: BaseException) -> list[BaseException]:
+        if isinstance(error, BaseExceptionGroup):
+            return [leaf for child in error.exceptions for leaf in leaves(child)]
+        cause = error.__cause__
+        return [error, *leaves(cause)] if cause is not None else [error]
+
+    messages = [str(error) for error in leaves(caught.value)]
+    expected = {
+        "ingestion failed",
+        "shutdown failed",
+        "dispatcher failed:worker-1:research:1",
+        "dispatcher failed:worker-1:research:2",
+    }
+    assert set(messages) == expected
+    assert len(messages) == len(expected)
 
 
 def test_process_one_job_propagates_handler_exception(monkeypatch: pytest.MonkeyPatch) -> None:
@@ -281,7 +393,9 @@ def test_run_worker_stops_during_poll(caplog: pytest.LogCaptureFixture) -> None:
     assert "worker_stop_during_poll reason=shutdown_requested" in caplog.text
 
 
-def test_run_worker_stops_during_retry(caplog: pytest.LogCaptureFixture) -> None:
+def test_run_worker_propagates_failed_iteration_when_shutdown_interrupts_retry(
+    caplog: pytest.LogCaptureFixture,
+) -> None:
     stop_event = Event()
     process_calls = 0
     delays: list[float] = []
@@ -296,7 +410,10 @@ def test_run_worker_stops_during_retry(caplog: pytest.LogCaptureFixture) -> None
         stop_event.set()
         return True
 
-    with caplog.at_level(logging.INFO, logger=worker.logger.name):
+    with (
+        caplog.at_level(logging.INFO, logger=worker.logger.name),
+        pytest.raises(RuntimeError, match="temporary database outage"),
+    ):
         worker.run_worker(
             stop_event=stop_event,
             process_job=process_job,
@@ -307,7 +424,7 @@ def test_run_worker_stops_during_retry(caplog: pytest.LogCaptureFixture) -> None
 
     assert process_calls == 1
     assert delays == [1.0]
-    assert "worker_stop_during_retry" in caplog.text
+    assert "worker_retry_interrupted_by_shutdown action=propagate" in caplog.text
 
 
 @pytest.mark.parametrize("signum", [signal.SIGINT, signal.SIGTERM])

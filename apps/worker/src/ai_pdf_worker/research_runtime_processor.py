@@ -26,9 +26,9 @@ from ai_pdf_api.services.providers import (
     GenerationProvider,
 )
 
-from ai_pdf_worker.research_executor import (
+from citeframe_contracts import (
     ApprovedResearchExecution,
-    BoundedResearchExecutor,
+    ResearchExecutionError,
     StepLease,
 )
 from ai_pdf_worker.research_runtime_agents import GenerationResearchAgents
@@ -47,9 +47,9 @@ from ai_pdf_worker.research_runtime_core import (
 )
 from ai_pdf_worker.research_runtime_ports import (
     LedgeredGeneration,
-    SqlEvidenceToolPort,
     SqlResearchLedgerAdapter,
 )
+from ai_pdf_worker.research_runtime_handlers import SingleAttemptStepDispatcher
 
 
 @dataclass(frozen=True)
@@ -105,8 +105,6 @@ class ResearchWorkProcessor(_ApiPort):
         if claimed is None:
             return False
         ledger = SqlResearchLedgerAdapter(self._sessions, self._service, worker_instance_id=self._worker_instance_id)
-        with ledger._claimed_lock:
-            ledger._claimed[(claimed.step_key, claimed.branch_key)] = claimed.lease
         run_attributes = {
             "research.run_id": claimed.run_id,
             "research.workspace_id": claimed.workspace_id,
@@ -135,14 +133,19 @@ class ResearchWorkProcessor(_ApiPort):
                     self._process_planner(ledger, claimed)
                     run_outcome = "waiting"
                 else:
-                    execution = ledger.load_approved_execution(claimed.run_id)
-                    if execution.workspace_id != claimed.workspace_id:
-                        raise ResearchPortError("claimed_workspace_scope_mismatch")
-                    generation = LedgeredGeneration(self._sessions, self._service, execution, self._provider, ledger)
-                    agents = GenerationResearchAgents(generation)
-                    executor = BoundedResearchExecutor(planner=agents.planner, researcher=agents.researcher, verifier=agents.verifier, critic=agents.critic, synthesizer=agents.synthesizer, evidence_tools=SqlEvidenceToolPort(self._sessions, self._service), ledger=ledger)
-                    state = executor.execute(claimed.run_id)
-                    run_outcome = "waiting" if state.get("status") == "awaiting_human_decision" else "success"
+                    run_outcome = SingleAttemptStepDispatcher(
+                        self._sessions,
+                        self._service,
+                        ledger,
+                        provider=self._provider,
+                    ).execute(
+                        run_id=claimed.run_id,
+                        workspace_id=claimed.workspace_id,
+                        step_key=claimed.step_key,
+                        step_kind=claimed.step_kind,
+                        branch_key=claimed.branch_key,
+                        lease=claimed.lease,
+                    )
             except Exception as error:
                 research_run_finished("error")
                 research_log(
@@ -276,7 +279,26 @@ class ResearchWorkProcessor(_ApiPort):
         generation = LedgeredGeneration(self._sessions, self._service, execution, self._provider, ledger)
         agents = GenerationResearchAgents(generation)
         try:
-            drafts = BoundedResearchExecutor(planner=agents.planner, researcher=agents.researcher, verifier=agents.verifier, critic=agents.critic, synthesizer=agents.synthesizer, evidence_tools=SqlEvidenceToolPort(self._sessions, self._service), ledger=ledger).propose_plan(question=execution.question, frozen_assets=execution.frozen_assets, lease=claimed.lease)
+            drafts = tuple(
+                agents.planner(
+                    execution.question,
+                    execution.frozen_assets,
+                    claimed.lease,
+                )
+            )
+            frozen_asset_ids = {asset.asset_id for asset in execution.frozen_assets}
+            if not 1 <= len(drafts) <= 16:
+                raise ResearchExecutionError("invalid_research_plan")
+            for draft in drafts:
+                if (
+                    not draft.question.strip()
+                    or len(draft.question) > 4000
+                    or len(draft.asset_ids) > 100
+                    or len(set(draft.asset_ids)) != len(draft.asset_ids)
+                    or not set(draft.asset_ids).issubset(frozen_asset_ids)
+                    or len(draft.expected_evidence) > 20
+                ):
+                    raise ResearchExecutionError("invalid_research_plan")
             if agents.plan_summary is None or agents.plan_estimated_provider_calls is None:
                 raise ResearchPortError("planner_metadata_missing")
             if agents.plan_estimated_provider_calls > int(payload["proposed_max_provider_calls"]):

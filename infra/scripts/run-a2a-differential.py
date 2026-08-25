@@ -22,7 +22,7 @@ REQUIRED_AREAS = {
     "leaseFencing",
     "retryCancelReclaimRecovery",
     "permission",
-    "fixedMultiStepProcessOne",
+    "terminalProcessSemantics",
 }
 
 
@@ -237,6 +237,22 @@ def _validate_worker_environment(
     return payload
 
 
+def _validate_scheduler_evidence(label: str, payload: object) -> dict[str, object]:
+    if not isinstance(payload, dict):
+        raise RuntimeError(f"{label} probe has no scheduler evidence")
+    outputs = payload.get("processOneOutputs")
+    handled = payload.get("handledAttemptCount")
+    if (
+        not isinstance(outputs, list)
+        or len(outputs) < 2
+        or outputs[-1] is not False
+        or any(item is not True for item in outputs[:-1])
+        or handled != len(outputs) - 1
+    ):
+        raise RuntimeError(f"{label} scheduler evidence is invalid: {payload}")
+    return payload
+
+
 def run(
     root: Path,
     *,
@@ -318,6 +334,12 @@ def run(
         candidate.get("workerEnvironment"),
         expected_root=root,
     )
+    baseline_scheduler = _validate_scheduler_evidence(
+        "baseline", baseline.get("schedulerEvidence")
+    )
+    candidate_scheduler = _validate_scheduler_evidence(
+        "candidate", candidate.get("schedulerEvidence")
+    )
     baseline_semantics = baseline.get("semantics")
     candidate_semantics = candidate.get("semantics")
     if not isinstance(baseline_semantics, dict) or not isinstance(candidate_semantics, dict):
@@ -339,6 +361,12 @@ def run(
         "probeExecution": "uv-worker-frozen-exact",
         "baselineWorkerEnvironment": baseline_environment,
         "candidateWorkerEnvironment": candidate_environment,
+        "schedulerDelta": {
+            "allowed": True,
+            "rule": "process_one_claims_exactly_one_attempt; terminal DB/payload/Event semantics remain equal",
+            "baseline": baseline_scheduler,
+            "candidate": candidate_scheduler,
+        },
         "coverage": sorted(REQUIRED_AREAS),
         "equal": equal,
         "baseline": baseline_semantics,
