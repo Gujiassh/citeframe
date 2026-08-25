@@ -5,7 +5,7 @@
 The owner-authorized architecture freeze and design re-audit are complete: the design audit
 accepted with `High=0`, `Medium=0`, `Low=0`. A1 implementation was independently accepted
 on `2026-08-20`. A1b/A2-foundation was independently accepted on `2026-08-21` by the
-follow-up Critical review (`High=0`, `Medium=0`, `Low=0`); PR #20 is merged at `origin/main@9f40241`; PR #21 head `1d81470` is merged at `origin/main@8674d4dc407048471f7b14b23b821e72529487bf` with `6/6` CI, delivering A2a and R0. A2a delivery includes Worker-environment CI fix `4b24181` and ledger `1d81470`. Current branch `work/research-r1-single-attempt-20260824` starts at `8674d4d`; R1 initial candidate `f4a1d1d7451d707d90948612791d1bb2aac410f3` is followed by immutable runtime rework `473213d79154f3fbcf6044e1c4e62ed65038e1c1`. The rework is committed locally, not pushed, and the branch has no upstream or remote branch. R1 is implementer-complete. Initial Critical review is `REWORK (High=0, Medium=4, Low=0)`; a new independent Critical follow-up is pending and no R1 `ACCEPT` is claimed. R2/W1/per-Run admission and downstream remain blocked. No schema/API/save/replay/permission change is authorized. Product
+follow-up Critical review (`High=0`, `Medium=0`, `Low=0`); PR #20 is merged at `origin/main@9f40241`; PR #21 head `1d81470` is merged at `origin/main@8674d4dc407048471f7b14b23b821e72529487bf` with `6/6` CI, delivering A2a/R0. R1 was independently `ACCEPTED` on 2026-08-25 (`High=0`, `Medium=0`, `Low=0`) across start `8674d4dc407048471f7b14b23b821e72529487bf`, historical initial candidate `f4a1d1d7451d707d90948612791d1bb2aac410f3` (`REWORK`), runtime rework `473213d79154f3fbcf6044e1c4e62ed65038e1c1`, ledger `652cfd47f8bc462038e1bd623afc2b33a4ce511a`, canonical docs `559997d073cc2d26fb346c30e2ab9f20550b673f`, delivery truth `80d395d4fd19c0146b22befc2929bc556cfe62fa`, and review `5a55489fef8380f78854f10666a2fdd2983beeff`. All R1 commits are local and not pushed; the branch has no upstream and no remote branch. R2 is the only next separately gated module; W1/per-Run admission and downstream remain blocked. No schema/API/save/replay/permission change is authorized. Product
 depth follows a capability/quality matrix rather than preceding it.
 
 ```text
@@ -18,7 +18,7 @@ Wave 0: A0/R/W target freeze + design re-audit `ACCEPT` (`High=0`, `Medium=0`, `
 
 Wave numbers express dependencies, not authorization. A1 was independently accepted
 on `2026-08-20`; A1b/A2-foundation was independently accepted on `2026-08-21` by the
-follow-up Critical review (`High=0`, `Medium=0`, `Low=0`). PR #20 is merged at `origin/main@9f40241`; PR #21 head `1d81470` is merged at `origin/main@8674d4dc407048471f7b14b23b821e72529487bf` with `6/6` CI, delivering A2a and R0. A2a delivery includes Worker-environment CI fix `4b24181` and ledger `1d81470`. Current branch `work/research-r1-single-attempt-20260824` starts at `8674d4d`; R1 initial candidate `f4a1d1d7451d707d90948612791d1bb2aac410f3` is followed by immutable runtime rework `473213d79154f3fbcf6044e1c4e62ed65038e1c1`. The rework is committed locally, not pushed, and the branch has no upstream or remote branch. R1 is implementer-complete. Initial Critical review is `REWORK (High=0, Medium=4, Low=0)`; a new independent Critical follow-up is pending and no R1 `ACCEPT` is claimed. R2/W1/per-Run admission and downstream remain blocked. No schema/API/save/replay/permission change is authorized. No schema/API/save/
+follow-up Critical review (`High=0`, `Medium=0`, `Low=0`). PR #20 is merged at `origin/main@9f40241`; PR #21 head `1d81470` is merged at `origin/main@8674d4dc407048471f7b14b23b821e72529487bf` with `6/6` CI, delivering A2a/R0. R1 was independently `ACCEPTED` on 2026-08-25 (`High=0`, `Medium=0`, `Low=0`) across start `8674d4dc407048471f7b14b23b821e72529487bf`, historical initial candidate `f4a1d1d7451d707d90948612791d1bb2aac410f3` (`REWORK`), runtime rework `473213d79154f3fbcf6044e1c4e62ed65038e1c1`, ledger `652cfd47f8bc462038e1bd623afc2b33a4ce511a`, canonical docs `559997d073cc2d26fb346c30e2ab9f20550b673f`, delivery truth `80d395d4fd19c0146b22befc2929bc556cfe62fa`, and review `5a55489fef8380f78854f10666a2fdd2983beeff`. All R1 commits are local and not pushed; the branch has no upstream and no remote branch. R2 is the only next separately gated module; W1/per-Run admission and downstream remain blocked. No schema/API/save/replay/permission change is authorized. No schema/API/save/
 replay/permission changes are authorized. G/M/P and GitHub settings remain separate
 unauthorized lanes.
 
@@ -48,7 +48,7 @@ Worker orchestration, Worker-side Research UoW commit process, pure contracts, a
 shared `citeframe_research_persistence` behavior implementation over neutral mappings. The
 design re-audit is accepted (`High=0`, `Medium=0`, `Low=0`). A1 implementation was
 independently accepted on `2026-08-20`; A1b/A2-foundation was independently accepted on
-`2026-08-21` by the follow-up Critical review (`High=0`, `Medium=0`, `Low=0`). A2a/R0 are delivered by PR #21 head `1d81470` at `origin/main@8674d4d` with `6/6` CI. R1 chain `f4a1d1d -> 473213d` is implementer-complete; `473213d` is local/not pushed with no upstream or remote branch after initial Critical `REWORK (High=0, Medium=4, Low=0)`; follow-up is pending. R2/W1/admission/downstream remain blocked; no schema/API/save/replay/permission change is authorized.
+`2026-08-21` by the follow-up Critical review (`High=0`, `Medium=0`, `Low=0`). A2a/R0 are delivered at `origin/main@8674d4d`. R1 is independently `ACCEPTED (High=0, Medium=0, Low=0)` at local review `5a55489`; remote push/PR/integration pending. R2 is the only next separately gated module; W1/admission/downstream remain blocked; no schema/API/save/replay/permission change is authorized.
 
 | Slice | Scope | Estimate | Exit gate |
 | --- | --- | ---: | --- |
@@ -71,16 +71,18 @@ Delivered boundary history: PR #20 merged `origin/main@9f40241`. PR #21 head
 A2a Worker-environment isolation fix `4b24181a3b2a5fbca3cbf6ee0cf0a3ac0d72ca96`
 and ledger `1d81470`, which records the exact Worker environment. A2a and R0 are delivered.
 
-Current R1 ledger: branch `work/research-r1-single-attempt-20260824`, start
-`8674d4dc407048471f7b14b23b821e72529487bf`, immutable candidate
-`f4a1d1d7451d707d90948612791d1bb2aac410f3`, followed by immutable runtime rework `473213d79154f3fbcf6044e1c4e62ed65038e1c1`. Rework `473213d` is committed locally, not pushed, with no upstream or remote branch. The exact docs-closure SHA is maintained externally.
-Initial Critical review is [`REWORK (High=0, Medium=4, Low=0)`](reviews/r1-single-attempt-dispatcher-critical-review-2026-08-24.md).
-The runtime rework and canonical status repair are implementer-complete; a new independent
-Critical follow-up is pending and no R1 `ACCEPT` is claimed. Post-rework evidence: Worker
-`349`, named gate `64+40`, API `132`, A2a `equal=true` with handled count `3 -> 8` and
-candidate UoW entries `43`, accepted PostgreSQL contention `7/7` with deadlocks `0 -> 0`,
-human-owned gate zero-mutation, and ingestion/dispatcher error preservation. R2/W1/per-Run
-admission and downstream remain blocked; no schema/API/save/replay/permission change is authorized.
+Current R1 acceptance ledger: start `8674d4dc407048471f7b14b23b821e72529487bf`;
+historical initial candidate `f4a1d1d7451d707d90948612791d1bb2aac410f3` (`REWORK`);
+runtime rework `473213d79154f3fbcf6044e1c4e62ed65038e1c1`; implementation ledger
+`652cfd47f8bc462038e1bd623afc2b33a4ce511a`; canonical docs
+`559997d073cc2d26fb346c30e2ab9f20550b673f`; delivery truth
+`80d395d4fd19c0146b22befc2929bc556cfe62fa`; final Critical
+[`ACCEPT (High=0, Medium=0, Low=0)`](reviews/r1-single-attempt-dispatcher-critical-review-2026-08-24.md)
+at review `5a55489fef8380f78854f10666a2fdd2983beeff`. All are local/not pushed;
+no upstream or remote branch exists. Evidence: Worker `349`, named gate `64+40`, API `132`,
+A2a `equal=true` handled `3 -> 8` / UoW `43`, PostgreSQL `7/7` deadlocks `0`, human gate
+zero-mutation, causal errors preserved, and LangGraph absent from runtime imports. R2 is the
+only next separately gated module; W1/admission/downstream remain blocked.
 
 Required semantic oracle for A2a/R0/R1/R2/A3-A6/W1:
 

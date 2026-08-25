@@ -19,7 +19,7 @@ Date: 2026-08-24
 | Final reviewer artifact | [`a2a-persistence-critical-reaudit-2026-08-24.md`](a2a-persistence-critical-reaudit-2026-08-24.md), local review commit `eb97adfa75660867eb31d46a4e7d7712909c348e` |
 | Final verdict | `ACCEPT (High=0, Medium=0, Low=0)` |
 | Delivery state | A2a/R0 delivered through PR #21 head `1d81470` to `origin/main@8674d4d` with `6/6` CI |
-| Downstream gates | R1 chain `f4a1d1d -> 473213d` implementer-complete after initial Critical `REWORK (High=0, Medium=4, Low=0)`; follow-up pending; R2/W1/admission/downstream blocked |
+| Downstream gates | R1 later received independent final `ACCEPT` at review `5a55489`; R2 is the only next separately gated module; W1/admission/downstream blocked |
 
 PR #20 merged the prerequisite branch into `main`; it did not accept the A2a repair. The
 production candidate is now immutable by commit SHA. Documentation and review commits do not rewrite that production snapshot. Final independent acceptance is recorded in review commit `eb97adf`; remote delivery remains pending.
@@ -130,8 +130,8 @@ non-root UID. The mirror did not substitute a different base digest.
 ## Acceptance And Integration Steps
 
 1. A2a/R0 delivery completed through PR #21 head `1d81470` at `origin/main@8674d4d`; preserve its `6/6` CI and exact Worker-environment evidence.
-2. R1 chain `f4a1d1d -> 473213d` is implementer-complete; `473213d` is local/not pushed with no upstream or remote branch after initial `REWORK`; run a new independent Critical follow-up and do not claim `ACCEPT` early.
-3. Keep R2/W1/admission/downstream blocked. No downstream slice may be folded into A2a, R0, or the R1 rework.
+2. R1 later received final independent `ACCEPT` at local review `5a55489`; remote push/PR/integration remains pending.
+3. R2 is the only next separately gated module. Keep W1/admission/downstream blocked; no downstream slice may be folded into A2a, R0, or R1.
 
 Final verdict: **ACCEPT (High=0, Medium=0, Low=0)** at local review commit `eb97adf`.
 Remote push/PR/integration remains pending.

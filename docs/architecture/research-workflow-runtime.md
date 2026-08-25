@@ -9,7 +9,7 @@
 - Frozen formal campaign contracts: [`../evals/r803-v5-campaign-threshold.md`](../evals/r803-v5-campaign-threshold.md)
 - First formal campaign attempt: [`../evals/artifacts/r803-campaign-20260730-v1/`](../evals/artifacts/r803-campaign-20260730-v1/) (`failed`, 0/5 completed rounds; immutable)
 - Engineering gate: deterministic R800 baseline `pass`; R803 formal campaign v1 `fail`
-- Research boundary status: A2a/R0 are delivered by PR #21 head `1d81470` at `origin/main@8674d4d` with `6/6` CI. R1 branch `work/research-r1-single-attempt-20260824` starts at `8674d4d`; R1 chain `f4a1d1d -> 473213d` is implementer-complete; `473213d` is local/not pushed with no upstream or remote branch after initial Critical `REWORK (High=0, Medium=4, Low=0)`. New follow-up pending; no `ACCEPT`. R2/W1/admission/downstream blocked. R1 implementation/review artifacts: [`r1 implementation`](../../specs/v5/post-v5-optimization/reviews/r1-single-attempt-dispatcher-implementation-2026-08-24.md), [`initial Critical review`](../../specs/v5/post-v5-optimization/reviews/r1-single-attempt-dispatcher-critical-review-2026-08-24.md).
+- Research boundary status: A2a/R0 are delivered at `origin/main@8674d4d`. R1 is independently `ACCEPTED (High=0, Medium=0, Low=0)` on 2026-08-25 across start `8674d4d`, historical initial `f4a1d1d(REWORK)`, runtime `473213d`, ledger `652cfd4`, docs `559997d`, delivery truth `80d395d`, review `5a55489`. All R1 commits are local/not pushed; no upstream or remote branch. R2 is the only next separately gated module; W1/admission/downstream blocked. [`R1 review`](../../specs/v5/post-v5-optimization/reviews/r1-single-attempt-dispatcher-critical-review-2026-08-24.md).
 - Latest interpretable paired diagnostic gates (v4): Quick `pass`; Research `fail` with 5/6 completed cases
 - Model-quality gate: `not_evaluable` because formal v1 interrupted before any round completed
 - User-value gate: `not_evaluable` until M404 contains qualified target-user evidence
@@ -33,7 +33,7 @@ The production path is split by ownership:
   UoW, and repository for DB-only transitions. API owns HTTP/auth/Alembic/schema governance
   and compatibility/external-adapter composition; ingestion retains its shared Session/ORM
   boundary.
-- **R1 candidate state, follow-up review pending:** the Worker continues to own orchestration and
+- **Accepted R1 state, remote delivery pending:** the Worker continues to own orchestration and
   the repaired default composition uses the neutral Worker-side Research UoW as runtime commit-process owner; API owns HTTP/auth,
   Alembic execution, and schema governance. Package staging is A1 pure
   `citeframe_contracts`, A1b/A2-foundation neutral `citeframe_persistence` mappings, then
@@ -50,11 +50,9 @@ The A2a transition slice must preserve the current behavior in which one `proces
 can drive multiple steps through the fixed LangGraph StateGraph. After A2a is accepted,
 R0 first normalizes lock acquisition; the later R1 slice then changes runtime execution to
 one claimed Attempt per handler in a bounded pool of independent dispatcher loops and
-removes LangGraph from runtime step execution. R1 chain `f4a1d1d -> 473213d` implements at least two independent loops and real overlap; it is implementer-complete but
-not accepted. Human-owned Step polling is zero-mutation and causal ingestion/dispatcher
+removes LangGraph from runtime step execution. Accepted R1 runtime `473213d` implements at least two independent loops and real overlap. Human-owned Step polling is zero-mutation and causal ingestion/dispatcher
 errors are preserved. Per-Run admission remains unauthorized. A2a/R0 are delivered at
-`origin/main@8674d4d`; R1 follow-up Critical review is pending. R2/W1/downstream remain
-blocked, and no schema/API/save/replay/permission change is authorized.
+`origin/main@8674d4d`; R1 review `5a55489` is final ACCEPT. R2 is the only next gated module; W1/downstream remain blocked, and no schema/API/save/replay/permission change is authorized.
 
 ## Orchestration Decision
 
@@ -81,7 +79,7 @@ Planner -> plan approval -> bounded Researcher fan-out -> join -> Verifier
 `StateGraph(ResearchState)` inside the Worker process. PostgreSQL state and immutable
 artifacts are the persistence/checkpoint/business truth; LangGraph is not the persisted
 checkpoint authority and is not allowed to replace the Research ledger.
-**R1 candidate fact, not accepted:** PostgreSQL remains the persistence and business authority. Candidate chain `f4a1d1d -> 473213d` implements one claimed Attempt per handler; follow-up Critical review is pending.
+**Accepted R1 fact:** PostgreSQL remains the persistence and business authority. Runtime `473213d` implements one claimed Attempt per handler; final review `5a55489` is ACCEPT.
 R1 removes LangGraph from runtime step execution or retains it only as a plan-approval
 topology validator. The target is a one-claimed-attempt dispatcher: claim one eligible
 queued Step, create one new Attempt lease, run one step-kind handler, atomically complete
