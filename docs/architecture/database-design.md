@@ -400,7 +400,7 @@ Research 表按职责分为四组：
 
 - **Schema / migration owner**：API 负责 Alembic execution/schema governance；neutral `citeframe_persistence` 定义唯一 mappings/metadata，`ai_pdf_api.models` 仅保留 compatibility surface。
 - **Mutation logic owner**：accepted A2a production 中，DB-only Research transition 由 `citeframe_research_persistence` 单一实现，API 保留 compatibility/composition facade；ingestion mutation 仍由 API service 定义。
-- **Session / commit process owner（Research）**：accepted A2a production 的 Worker default composition 通过 neutral Research UoW/repository 管理 Session/commit；这不是 API-process commit。三笔本地接受链提交仍待远端交付。
+- **Session / commit process owner（Research）**：accepted A2a production 的 Worker default composition 通过 neutral Research UoW/repository 管理 Session/commit；这不是 API-process commit。A2a/R0 已由 PR #21 交付至 `origin/main@8674d4d`；R1 runtime `473213d` 与 docs `559997d073cc2d26fb346c30e2ab9f20550b673f` 仍为本地提交，follow-up Critical 待进行且不声明 `ACCEPT`。
 - **Ingestion**：API `process_ingestion_job` 编排 job，并把同一 SQLAlchemy `Session` / ORM `Asset` 传入 Worker adapter；模态行写入发生在该共享会话边界内。
 
 Worker 通过 service ports 调用账本 mutation 函数，不直接定义 ORM 或 migration。

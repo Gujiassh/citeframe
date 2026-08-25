@@ -170,7 +170,7 @@ import surface；迁移期间可 re-export 同一 classes。A1b/A2-foundation �
 pyproject/uv.lock path source 与 Docker 安装，Alembic 仍由 API 显式 import
 `citeframe_persistence.models` 并加载唯一 metadata；这项 foundation 是 A2a 显式前置。
 
-这是批准目标；A2a 已按该方向实现 DB-only boundary 并通过独立 Critical ACCEPT；三笔本地提交仍待远端交付。修订设计的独立 Critical 复审已接受 (`High=0`, `Medium=0`, `Low=0`)；A1 已于 2026-08-20 独立 ACCEPT；A1b/A2-foundation 已于 2026-08-21 独立 ACCEPT（follow-up Critical review：High=0、Medium=0、Low=0）；A2a/R0 已由 PR #21 交付至 `origin/main@8674d4d`；R1 chain `f4a1d1d -> 473213d` 已由实现者完成；`473213d` 本地已提交、未推送、无 upstream/远端分支，初审 `REWORK (High=0, Medium=4, Low=0)`，follow-up 待进行；R2/W1/admission 继续 blocked，且不授权 schema/API/save/replay/permission 变更。详细的 R1/R2/W1、锁/fencing、per-Run admission、
+这是批准目标；A2a/R0 已由 PR #21 交付至 `origin/main@8674d4d`。R1 runtime `473213d` 与 docs `559997d073cc2d26fb346c30e2ab9f20550b673f` 仍为本地提交，follow-up Critical 待进行且不声明 `ACCEPT`。修订设计的独立 Critical 复审已接受 (`High=0`, `Medium=0`, `Low=0`)；A1 已于 2026-08-20 独立 ACCEPT；A1b/A2-foundation 已于 2026-08-21 独立 ACCEPT（follow-up Critical review：High=0、Medium=0、Low=0）；A2a/R0 已由 PR #21 交付至 `origin/main@8674d4d`；R1 chain `f4a1d1d -> 473213d` 已由实现者完成；`473213d` 本地已提交、未推送、无 upstream/远端分支，初审 `REWORK (High=0, Medium=4, Low=0)`，follow-up 待进行；R2/W1/admission 继续 blocked，且不授权 schema/API/save/replay/permission 变更。详细的 R1/R2/W1、锁/fencing、per-Run admission、
 SSE 与语义 oracle 见
 [`research-boundary-runtime-design.md`](../../specs/v5/post-v5-optimization/research-boundary-runtime-design.md)。
 
@@ -318,8 +318,9 @@ C 在 A0/A1 完成且 B 的合同方法已验证之后才评估，但 **进入 C
 
 详见 §4.0。一句话：**repair worktree 中 API = HTTP/auth/Alembic/schema governance；
 neutral package = DB-only Research transitions；Research runtime commit process =
-Worker-side UoW；ingestion = 共享 Session/ORM。** A2a 已获独立 ACCEPT，三笔本地提交
-仍待远端交付；API-process HTTP/RPC 仍未授权。
+Worker-side UoW；ingestion = 共享 Session/ORM。** A2a/R0 已由 PR #21 交付至
+`origin/main@8674d4d`；R1 runtime `473213d` + docs `559997d` 仍为本地 review 候选，
+follow-up 待进行；API-process HTTP/RPC 仍未授权。
 
 明确禁止：在 A0 把目标写成当前事实；用 B pilot 顶替 C 前置门；在 import 归零/候选
 smoke 前删除 legacy 依赖；`contracts -> ORM/API settings`；把 same-DB-in-Worker
