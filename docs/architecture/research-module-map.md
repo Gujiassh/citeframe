@@ -4,7 +4,7 @@ Date: 2026-08-15
 
 Canonical ownership for the fixed Research product path. Evaluation/R803 scripts are **not** the product path.
 
-Current delivery state: A2a is independently `ACCEPTED (High=0, Medium=0, Low=0)` at local production `215cd52565089138704c6b637350e18bc8705c8b`, documentation `95981a499521a28bfd9eb24480d54ef42f485528`, and review `eb97adfa75660867eb31d46a4e7d7712909c348e`; none is pushed. R0 is independently accepted at local production `39766c37`, ledger `6b8ab475`, and review `9d4297f8`; none is pushed and no upstream/remote branch exists. R1 is the only next separately gated implementation slice; R2/W1 remain blocked.
+Current delivery state: A2a/R0 are delivered by PR #21 at `origin/main@8674d4d` (`6/6` CI). R1 branch starts at `8674d4d`; R1 chain `f4a1d1d -> 473213d` is implementer-complete; `473213d` is local/not pushed with no upstream or remote branch after initial Critical `REWORK (High=0, Medium=4, Low=0)`. Follow-up pending; no `ACCEPT`. R2/W1/admission remain blocked.
 
 ## API package (`apps/api/src/ai_pdf_api/services/research/`)
 
@@ -72,7 +72,7 @@ Import path: `ai_pdf_api.services.research.*`. Compatibility shims remain at `ai
 Package staging is A1 contracts (independently accepted on 2026-08-20) ->
 A1b/A2-foundation persistence mappings (independently accepted on 2026-08-21 by the
 follow-up Critical review: High=0, Medium=0, Low=0) -> A2a Research persistence behavior.
-A2a initial snapshot was rejected and the repair was later independently accepted at `eb97adf`. R0 was independently accepted at `9d4297f8`. R1 is the only next separately gated implementation slice; R2/W1 and downstream remain blocked behind named gates,
+A2a and R0 are delivered at `origin/main@8674d4d`. R1 chain `f4a1d1d -> 473213d` is implementer-complete but remains `REWORK` pending follow-up. R2/W1/admission/downstream remain blocked behind named gates,
 and no schema/API/save/replay/permission changes are authorized. No behavior-free
 `citeframe_research_persistence` scaffold is permitted before A2a; see topology freeze in
 [`research-workflow-runtime.md`](research-workflow-runtime.md).

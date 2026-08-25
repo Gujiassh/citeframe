@@ -1,10 +1,10 @@
 # Research Boundary And Distributed Runtime Design
 
-Status: **Design re-audit and A1/A1b are accepted; A2a was independently `ACCEPTED` on 2026-08-24 (`High=0`, `Medium=0`, `Low=0`) at production commit `215cd52565089138704c6b637350e18bc8705c8b`, documentation closure `95981a499521a28bfd9eb24480d54ef42f485528`, and review record `eb97adfa75660867eb31d46a4e7d7712909c348e`. All three commits are local and not pushed. R0 was independently `ACCEPTED` on 2026-08-24 (`High=0`, `Medium=0`, `Low=0`) across start `7ee97471ffb7d7d23e941d75795ab21d8cb3032b`, production `39766c374bd584b0cb834ef103de025d233c87c1`, final ledger closure `6b8ab475c14a7bbfe90f59a635255ca3768edcf9`, and review record `9d4297f89451fe79b6d1c141613722f7749b11c0`. All four commits are local and not pushed; the branch has no upstream and no remote branch. R1 is the only next separately gated implementation slice; R2/W1 and downstream remain blocked. R0 acceptance authorizes no schema/API/save/replay/permission/admission change and does not claim R1 implementation**
+Status: **Design re-audit and A1/A1b are accepted; PR #20 is merged at `origin/main@9f40241`; PR #21 head `1d81470` is merged at `origin/main@8674d4dc407048471f7b14b23b821e72529487bf` with `6/6` CI, delivering A2a and R0. A2a delivery includes Worker-environment CI fix `4b24181` and ledger `1d81470`. Current branch `work/research-r1-single-attempt-20260824` starts at `8674d4d`; R1 initial candidate `f4a1d1d7451d707d90948612791d1bb2aac410f3` is followed by immutable runtime rework `473213d79154f3fbcf6044e1c4e62ed65038e1c1`. The rework is committed locally, not pushed, and the branch has no upstream or remote branch. R1 is implementer-complete. Initial Critical review is `REWORK (High=0, Medium=4, Low=0)`; a new independent Critical follow-up is pending and no R1 `ACCEPT` is claimed. R2/W1/per-Run admission and downstream remain blocked. No schema/API/save/replay/permission change is authorized**
 Date: 2026-08-20
 Owner decision: same-database adapter for `internal_preview`; A1b/A2-foundation was
 independently accepted on 2026-08-21 by the follow-up Critical review
-(`High=0`, `Medium=0`, `Low=0`). A2a was independently `ACCEPTED` on 2026-08-24 (`High=0`, `Medium=0`, `Low=0`) at production commit `215cd52565089138704c6b637350e18bc8705c8b`, documentation closure `95981a499521a28bfd9eb24480d54ef42f485528`, and review record `eb97adfa75660867eb31d46a4e7d7712909c348e`. All three commits are local and not pushed. R0 was independently `ACCEPTED` on 2026-08-24 (`High=0`, `Medium=0`, `Low=0`) across start `7ee97471ffb7d7d23e941d75795ab21d8cb3032b`, production `39766c374bd584b0cb834ef103de025d233c87c1`, final ledger closure `6b8ab475c14a7bbfe90f59a635255ca3768edcf9`, and review record `9d4297f89451fe79b6d1c141613722f7749b11c0`. All four commits are local and not pushed; the branch has no upstream and no remote branch. R1 is the only next separately gated implementation slice; R2/W1 and downstream remain blocked. R0 acceptance authorizes no schema/API/save/replay/permission/admission change and does not claim R1 implementation. This document
+(`High=0`, `Medium=0`, `Low=0`). PR #20 is merged at `origin/main@9f40241`; PR #21 head `1d81470` is merged at `origin/main@8674d4dc407048471f7b14b23b821e72529487bf` with `6/6` CI, delivering A2a and R0. A2a delivery includes Worker-environment CI fix `4b24181` and ledger `1d81470`. Current branch `work/research-r1-single-attempt-20260824` starts at `8674d4d`; R1 initial candidate `f4a1d1d7451d707d90948612791d1bb2aac410f3` is followed by immutable runtime rework `473213d79154f3fbcf6044e1c4e62ed65038e1c1`. The rework is committed locally, not pushed, and the branch has no upstream or remote branch. R1 is implementer-complete. Initial Critical review is `REWORK (High=0, Medium=4, Low=0)`; a new independent Critical follow-up is pending and no R1 `ACCEPT` is claimed. R2/W1/per-Run admission and downstream remain blocked. No schema/API/save/replay/permission change is authorized. This document
 does not authorize schema/API/save/replay/permission changes, G/M/P work, GitHub settings,
 paid provider runs, or user research.
 
@@ -13,7 +13,7 @@ neutral DTO/Protocol definitions, legacy identity-preserving re-exports, API/Wor
 path-source integration, contracts-only Docker/CI smoke, and focused verification. This
 A1 implementation was independently accepted on 2026-08-20. A1b/A2-foundation was
 independently accepted on 2026-08-21 by the follow-up Critical review
-(`High=0`, `Medium=0`, `Low=0`). A2a was independently `ACCEPTED` on 2026-08-24 (`High=0`, `Medium=0`, `Low=0`) at production commit `215cd52565089138704c6b637350e18bc8705c8b`, documentation closure `95981a499521a28bfd9eb24480d54ef42f485528`, and review record `eb97adfa75660867eb31d46a4e7d7712909c348e`. All three commits are local and not pushed. R0 was independently `ACCEPTED` on 2026-08-24 (`High=0`, `Medium=0`, `Low=0`) across start `7ee97471ffb7d7d23e941d75795ab21d8cb3032b`, production `39766c374bd584b0cb834ef103de025d233c87c1`, final ledger closure `6b8ab475c14a7bbfe90f59a635255ca3768edcf9`, and review record `9d4297f89451fe79b6d1c141613722f7749b11c0`. All four commits are local and not pushed; the branch has no upstream and no remote branch. R1 is the only next separately gated implementation slice; R2/W1 and downstream remain blocked. R0 acceptance authorizes no schema/API/save/replay/permission/admission change and does not claim R1 implementation.
+(`High=0`, `Medium=0`, `Low=0`). PR #20 is merged at `origin/main@9f40241`; PR #21 head `1d81470` is merged at `origin/main@8674d4dc407048471f7b14b23b821e72529487bf` with `6/6` CI, delivering A2a and R0. A2a delivery includes Worker-environment CI fix `4b24181` and ledger `1d81470`. Current branch `work/research-r1-single-attempt-20260824` starts at `8674d4d`; R1 initial candidate `f4a1d1d7451d707d90948612791d1bb2aac410f3` is followed by immutable runtime rework `473213d79154f3fbcf6044e1c4e62ed65038e1c1`. The rework is committed locally, not pushed, and the branch has no upstream or remote branch. R1 is implementer-complete. Initial Critical review is `REWORK (High=0, Medium=4, Low=0)`; a new independent Critical follow-up is pending and no R1 `ACCEPT` is claimed. R2/W1/per-Run admission and downstream remain blocked. No schema/API/save/replay/permission change is authorized.
 
 This is the implementation-ready detail for the Research portion of the Post-V5
 Optimization plan. It deliberately separates three states:
@@ -56,7 +56,14 @@ and must not import `ai_pdf_api` or define a second Base/metadata/model set.
 
 ### 1.2 Current fact and non-claims
 
-The repair checkout has the three staged packages. API still owns HTTP/auth/Alembic/schema governance, while the repaired Worker default composition uses the neutral Research UoW/repository for DB-only transitions; API modules remain compatibility/composition facades and ingestion still uses its shared API/Worker Session/ORM path. A2a and R0 are independently accepted locally; remote delivery is pending. R1, admission, and the later ingestion/composition slices are **not implemented**.
+The repair checkout has the three staged packages. API still owns HTTP/auth/Alembic/schema
+governance, while the repaired Worker default composition uses the neutral Research
+UoW/repository for DB-only transitions; API modules remain compatibility/composition
+facades and ingestion still uses its shared API/Worker Session/ORM path. A2a/R0 are
+delivered by PR #21 at `origin/main@8674d4d`. R1 chain `f4a1d1d -> 473213d` is implementer-complete; rework `473213d` is local/not
+pushed with no upstream or remote branch but unaccepted after initial Critical
+`REWORK (High=0, Medium=4, Low=0)`. Admission and later ingestion/composition slices are
+**not implemented**.
 Same-DB adapter means the runtime commit process remains in Worker; it must never be
 reported as API-process transaction ownership.
 
@@ -325,7 +332,7 @@ API optimistic contract requires it; it is not a blanket Worker completion fence
 or late worker gets a deterministic lease/status fenced rejection and cannot advance a
 Step, Event, dependent, or Artifact.
 
-R0 was implemented separately after A2a and independently accepted at production `39766c37` / review `9d4297f8`. R1 is the only next separately gated implementation slice; per-Run admission remains unauthorized and no slice may hide another in a shared PR.
+R0 was accepted separately and delivered through PR #21. R1 chain `f4a1d1d -> 473213d` remains one isolated, locally committed slice pending Critical follow-up; per-Run admission remains unauthorized and no slice may hide another in a shared PR.
 
 ### 4.2 R2 real multi-worker proof
 
@@ -469,7 +476,7 @@ case, capture old/new database snapshots and API/Worker payload snapshots, then 
 | Area | Invariant/evidence |
 | --- | --- |
 | Save contracts | `Step`, `Attempt`, `Claim`, `Event.seq`, `state_version`, retry, cancel, reclaim, conflict, artifact hash/provenance, budget, permission, and API response meaning are equal |
-| Scheduler | A2a preserves one `process_one` call's fixed multi-step LangGraph behavior; accepted R0 changes lock order only; R1 remains the separate, unimplemented bounded-dispatch target; no duplicate Step completion; readiness/join follows committed DB state |
+| Scheduler | A2a preserves terminal semantics and R0 changes lock order only. R1 candidate/rework implements one outer claim plus one persisted-step handler per call; follow-up review is pending. No duplicate completion; readiness/join follows committed DB state |
 | Locks/fencing | Accepted R0 order `Run -> Step -> Attempt -> Call -> Ledger`; location reads never decide; ordered lock/refresh/revalidate rejects changed chains; stale Attempt status/token/expiry has no late side effects; existing state_version command contracts remain equal |
 | Admission | Unimplemented/unauthorized target: after a separate gate, cap=1 and cap=N never exceed effective unexpired researcher attempts; cap-full rollback releases Run lock and mutates no Step/Event; expired lease recovery is atomic |
 | Provider/tool | reserve/send/reconcile/cancel and billable outcome-unknown behavior remains equal; budget ledger is atomic |
@@ -495,17 +502,22 @@ SSoT/spec synchronization.
 
 ## 10. Authorization And Current Status
 
-R0 acceptance ledger (2026-08-24): start `7ee97471`; production `39766c374bd584b0cb834ef103de025d233c87c1`; final ledger closure `6b8ab475c14a7bbfe90f59a635255ca3768edcf9`; final Critical `ACCEPT (High=0, Medium=0, Low=0)` at review `9d4297f89451fe79b6d1c141613722f7749b11c0`. All four are local/not pushed; the branch has no upstream and no remote branch. PostgreSQL 17.10 `7/7`, report `95f2608e...`, deadlocks `0 -> 0`, no `40P01`/`55P03`; official Docker Hub timed out, while the same immutable pgvector digest through the mirror passed; focused `8`, API `90+49`, Worker `43`, A2a equal `7/7`. R1 is the only next separately gated implementation slice.
-
-Delivery state on 2026-08-24: PR #20 merged at `origin/main@9f40241`; behavioral baseline `d1b5945`; rejected initial snapshot `20d411e`; initial review record `5a6ee38`; immutable local repair commit `215cd52565089138704c6b637350e18bc8705c8b` on `work/research-boundary-runtime-20260824`, not pushed. Candidate production composition uses neutral commands/UoW (`uowEnterCount=38`). Final differential/boundary `8 passed`, `equal=true`, semantic SHA `119a36086bfb595ea0882deab719d530ebd0107296cf8033a4f348ef07e7d4c0`; full API/Worker partitions and deploy `6+2` pass. Official Docker Hub timed out, but mirror retrieval of the same pinned base digest produced controller pre-final API `b1b165f75d14`; the reviewer rebuilt immutable-SHA API `sha256:2437e95e909b2b6d941e58b58b28551f5a09c87d93594ac9e4c80ae9ba7fe70c`; final Worker remains `17e8f6645b4b`; final non-root/path/import smokes passed. Final Critical review is `ACCEPT (High=0, Medium=0, Low=0)` at local review commit `eb97adf`; production `215cd52`, documentation `95981a4`, and review `eb97adf` remain unpushed.
+Delivered/current ledger: PR #20 merged `origin/main@9f40241`; PR #21 head `1d81470`
+merged `origin/main@8674d4dc407048471f7b14b23b821e72529487bf` with `6/6` CI,
+delivering A2a/R0 plus A2a Worker-environment fix `4b24181` and exact-environment ledger
+`1d81470`. Current R1 branch starts at `8674d4d`; initial candidate `f4a1d1d` plus immutable rework `473213d79154f3fbcf6044e1c4e62ed65038e1c1` is implementer-complete. Rework `473213d` is committed locally, not pushed, with no upstream or remote branch. Initial Critical result is
+[`REWORK (High=0, Medium=4, Low=0)`](reviews/r1-single-attempt-dispatcher-critical-review-2026-08-24.md);
+new follow-up pending, no `ACCEPT`. Evidence: Worker `349`, gate `64+40`, API `132`, A2a
+equal with handled `3 -> 8` / UoW `43`, PostgreSQL `7/7` deadlocks `0`, human zero-mutation,
+and causal error preservation. R2/W1/admission/downstream remain blocked.
 
 Owner authorization covers the A0 ownership/transport direction and conditionally authorizes
 A1/A1b/A2-foundation/A2a/R0/R1/R2/W1 within these boundaries. The design re-audit is
 `ACCEPT (High=0, Medium=0, Low=0)` and A1 was independently accepted on `2026-08-20`.
 A1b/A2-foundation was independently accepted on 2026-08-21 (follow-up Critical review ACCEPT; High=0, Medium=0, Low=0);
-A2a was independently `ACCEPTED` on 2026-08-24 (`High=0`, `Medium=0`, `Low=0`) at production commit `215cd52565089138704c6b637350e18bc8705c8b`, documentation closure `95981a499521a28bfd9eb24480d54ef42f485528`, and review record `eb97adfa75660867eb31d46a4e7d7712909c348e`. All three commits are local and not pushed. R0 was independently `ACCEPTED` on 2026-08-24 (`High=0`, `Medium=0`, `Low=0`) across start `7ee97471ffb7d7d23e941d75795ab21d8cb3032b`, production `39766c374bd584b0cb834ef103de025d233c87c1`, final ledger closure `6b8ab475c14a7bbfe90f59a635255ca3768edcf9`, and review record `9d4297f89451fe79b6d1c141613722f7749b11c0`. All four commits are local and not pushed; the branch has no upstream and no remote branch. R1 is the only next separately gated implementation slice; R2/W1 and downstream remain blocked. R0 acceptance authorizes no schema/API/save/replay/permission/admission change and does not claim R1 implementation. G/M/P and GitHub repository settings remain unapproved.
+PR #20 is merged at `origin/main@9f40241`; PR #21 head `1d81470` is merged at `origin/main@8674d4dc407048471f7b14b23b821e72529487bf` with `6/6` CI, delivering A2a and R0. A2a delivery includes Worker-environment CI fix `4b24181` and ledger `1d81470`. Current branch `work/research-r1-single-attempt-20260824` starts at `8674d4d`; R1 initial candidate `f4a1d1d7451d707d90948612791d1bb2aac410f3` is followed by immutable runtime rework `473213d79154f3fbcf6044e1c4e62ed65038e1c1`. The rework is committed locally, not pushed, and the branch has no upstream or remote branch. R1 is implementer-complete. Initial Critical review is `REWORK (High=0, Medium=4, Low=0)`; a new independent Critical follow-up is pending and no R1 `ACCEPT` is claimed. R2/W1/per-Run admission and downstream remain blocked. No schema/API/save/replay/permission change is authorized. G/M/P and GitHub repository settings remain unapproved.
 
 This text itself does not authorize additional schema/API changes, G/M/P work, GitHub
 settings, provider spend, or user research. The implementation sequence is A1 ->
-A1b/A2-foundation -> A2a -> R0 -> R1/R2. A2a is independently accepted at production `215cd52`, documentation `95981a4`, and review `eb97adf`; all are local and not pushed. R0 was independently `ACCEPTED` on 2026-08-24 (`High=0`, `Medium=0`, `Low=0`) across start `7ee97471ffb7d7d23e941d75795ab21d8cb3032b`, production `39766c374bd584b0cb834ef103de025d233c87c1`, final ledger closure `6b8ab475c14a7bbfe90f59a635255ca3768edcf9`, and review record `9d4297f89451fe79b6d1c141613722f7749b11c0`. All four commits are local and not pushed; the branch has no upstream and no remote branch. R1 is the only next separately gated implementation slice; R2/W1 and downstream remain blocked. R0 acceptance authorizes no schema/API/save/replay/permission/admission change and does not claim R1 implementation. No schema/API/save/
+A1b/A2-foundation -> A2a -> R0 -> R1/R2. A2a/R0 are delivered at `origin/main@8674d4d`. R1 chain `f4a1d1d -> 473213d` is implementer-complete but remains `REWORK` pending follow-up; R2/W1/admission/downstream remain blocked. No schema/API/save/
 replay/permission changes are authorized; later slices remain blocked until their named gates.

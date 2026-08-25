@@ -9,8 +9,7 @@
 - Frozen formal campaign contracts: [`../evals/r803-v5-campaign-threshold.md`](../evals/r803-v5-campaign-threshold.md)
 - First formal campaign attempt: [`../evals/artifacts/r803-campaign-20260730-v1/`](../evals/artifacts/r803-campaign-20260730-v1/) (`failed`, 0/5 completed rounds; immutable)
 - Engineering gate: deterministic R800 baseline `pass`; R803 formal campaign v1 `fail`
-- Research boundary status: the design re-audit is **ACCEPT (High=0, Medium=0, Low=0)**; A1 was independently accepted on **2026-08-20**. A1b/A2-foundation was independently accepted on 2026-08-21 by the follow-up Critical review
-(`High=0`, `Medium=0`, `Low=0`). A2a initial snapshot `20d411e` received `REWORK (High=1, Medium=5, Low=1)`. A2a is independently `ACCEPTED (High=0, Medium=0, Low=0)` at local production `215cd52565089138704c6b637350e18bc8705c8b`, documentation `95981a499521a28bfd9eb24480d54ef42f485528`, and review `eb97adfa75660867eb31d46a4e7d7712909c348e`; none is pushed. R0 is independently accepted at local chain `7ee97471 -> 39766c37 -> 6b8ab475 -> 9d4297f8`. R1 is the only next separately gated implementation slice; R2/W1 and downstream remain blocked; admission is unauthorized. A2a evidence is in `../../specs/v5/post-v5-optimization/reviews/a2a-persistence-rework-implementation-2026-08-24.md`; R0 acceptance is in `../../specs/v5/post-v5-optimization/reviews/r0-lock-normalization-critical-review-2026-08-24.md`.
+- Research boundary status: A2a/R0 are delivered by PR #21 head `1d81470` at `origin/main@8674d4d` with `6/6` CI. R1 branch `work/research-r1-single-attempt-20260824` starts at `8674d4d`; R1 chain `f4a1d1d -> 473213d` is implementer-complete; `473213d` is local/not pushed with no upstream or remote branch after initial Critical `REWORK (High=0, Medium=4, Low=0)`. New follow-up pending; no `ACCEPT`. R2/W1/admission/downstream blocked. R1 implementation/review artifacts: [`r1 implementation`](../../specs/v5/post-v5-optimization/reviews/r1-single-attempt-dispatcher-implementation-2026-08-24.md), [`initial Critical review`](../../specs/v5/post-v5-optimization/reviews/r1-single-attempt-dispatcher-critical-review-2026-08-24.md).
 - Latest interpretable paired diagnostic gates (v4): Quick `pass`; Research `fail` with 5/6 completed cases
 - Model-quality gate: `not_evaluable` because formal v1 interrupted before any round completed
 - User-value gate: `not_evaluable` until M404 contains qualified target-user evidence
@@ -29,12 +28,12 @@ The production path is split by ownership:
   repair worktree, neutral `citeframe_persistence` owns mappings/metadata and
   `citeframe_research_persistence` owns DB-only Research transitions; API retains public
   routes, compatibility facades, and external-adapter composition.
-- **Accepted A2a fact, local delivery pending:** Worker owns typed
+- **Delivered A2a/R1 boundary fact:** Worker owns typed
   orchestration/provider/tool execution and uses the neutral Research persistence service,
   UoW, and repository for DB-only transitions. API owns HTTP/auth/Alembic/schema governance
   and compatibility/external-adapter composition; ingestion retains its shared Session/ORM
   boundary.
-- **Accepted A2a state, local delivery pending:** the Worker continues to own orchestration and
+- **R1 candidate state, follow-up review pending:** the Worker continues to own orchestration and
   the repaired default composition uses the neutral Worker-side Research UoW as runtime commit-process owner; API owns HTTP/auth,
   Alembic execution, and schema governance. Package staging is A1 pure
   `citeframe_contracts`, A1b/A2-foundation neutral `citeframe_persistence` mappings, then
@@ -51,12 +50,11 @@ The A2a transition slice must preserve the current behavior in which one `proces
 can drive multiple steps through the fixed LangGraph StateGraph. After A2a is accepted,
 R0 first normalizes lock acquisition; the later R1 slice then changes runtime execution to
 one claimed Attempt per handler in a bounded pool of independent dispatcher loops and
-removes LangGraph from runtime step execution. The separately gated R1 target requires at
-least two loops and real branch overlap. R1 is unimplemented; per-Run admission remains a
-separate unauthorized target. The implementation-ready target and its current/not-implemented status are recorded in
-[`../../specs/v5/post-v5-optimization/research-boundary-runtime-design.md`](../../specs/v5/post-v5-optimization/research-boundary-runtime-design.md). A1 implementation evidence and independent ACCEPT on 2026-08-20 are recorded.
-A1b/A2-foundation was independently accepted on 2026-08-21 (follow-up Critical review ACCEPT; High=0, Medium=0, Low=0);
-A2a is independently accepted locally. R0 was independently `ACCEPTED` on 2026-08-24 (`High=0`, `Medium=0`, `Low=0`) across start `7ee97471ffb7d7d23e941d75795ab21d8cb3032b`, production `39766c374bd584b0cb834ef103de025d233c87c1`, final ledger closure `6b8ab475c14a7bbfe90f59a635255ca3768edcf9`, and review record `9d4297f89451fe79b6d1c141613722f7749b11c0`. All four commits are local and not pushed; the branch has no upstream and no remote branch. R1 is the only next separately gated implementation slice; R2/W1 and downstream remain blocked. R0 acceptance authorizes no schema/API/save/replay/permission/admission change and does not claim R1 implementation. No schema/API/save/replay/permission changes are authorized.
+removes LangGraph from runtime step execution. R1 chain `f4a1d1d -> 473213d` implements at least two independent loops and real overlap; it is implementer-complete but
+not accepted. Human-owned Step polling is zero-mutation and causal ingestion/dispatcher
+errors are preserved. Per-Run admission remains unauthorized. A2a/R0 are delivered at
+`origin/main@8674d4d`; R1 follow-up Critical review is pending. R2/W1/downstream remain
+blocked, and no schema/API/save/replay/permission change is authorized.
 
 ## Orchestration Decision
 
@@ -83,8 +81,7 @@ Planner -> plan approval -> bounded Researcher fan-out -> join -> Verifier
 `StateGraph(ResearchState)` inside the Worker process. PostgreSQL state and immutable
 artifacts are the persistence/checkpoint/business truth; LangGraph is not the persisted
 checkpoint authority and is not allowed to replace the Research ledger.
-**Approved R1 target, not implemented:** PostgreSQL remains the persistence and
-business authority during A2a; after A2a, R1 makes it the runtime orchestration authority.
+**R1 candidate fact, not accepted:** PostgreSQL remains the persistence and business authority. Candidate chain `f4a1d1d -> 473213d` implements one claimed Attempt per handler; follow-up Critical review is pending.
 R1 removes LangGraph from runtime step execution or retains it only as a plan-approval
 topology validator. The target is a one-claimed-attempt dispatcher: claim one eligible
 queued Step, create one new Attempt lease, run one step-kind handler, atomically complete

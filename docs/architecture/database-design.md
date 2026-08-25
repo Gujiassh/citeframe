@@ -403,7 +403,14 @@ Research 表按职责分为四组：
 - **Session / commit process owner（Research）**：accepted A2a production 的 Worker default composition 通过 neutral Research UoW/repository 管理 Session/commit；这不是 API-process commit。三笔本地接受链提交仍待远端交付。
 - **Ingestion**：API `process_ingestion_job` 编排 job，并把同一 SQLAlchemy `Session` / ORM `Asset` 传入 Worker adapter；模态行写入发生在该共享会话边界内。
 
-Worker 通过 service ports 调用账本 mutation 函数，不直接定义 ORM 或 migration。Package staging is A1 contracts -> A1b/A2-foundation persistence mappings -> A2a Research persistence behavior. Initial snapshot `20d411e` was rejected; repair production `215cd52` plus documentation `95981a4` was independently `ACCEPTED (High=0, Medium=0, Low=0)` at local review `eb97adf`. A2a 历史多行 mutation 锁序混合；accepted R0 production `39766c37` 已统一为 `Run -> Step -> Attempt -> Call -> Ledger`，真实 PostgreSQL 17.10 七场景与 `pg_locks`/blocking PID 证据通过，deadlocks `0 -> 0`，无 `40P01`/`55P03`。上述 ORM/mutation/session runtime boundary migration 属于架构跟进（见 `api-worker-boundary-follow-up-2026-08-18.md`）：A1 contracts implementation 已于 2026-08-20 独立 ACCEPT；A1b/A2-foundation 已于 2026-08-21 独立 ACCEPT（follow-up Critical review：High=0、Medium=0、Low=0）；A2a 已在本地 production `215cd52`、docs `95981a4`、review `eb97adf` 获得独立 ACCEPT，三笔提交均未推送；R0 已在本地 review `9d4297f8` 独立 ACCEPT；R1 是唯一下一门控实现切片，R2/W1 继续 blocked，admission 未授权。ORM/mutation/session boundary migration 属于 A1b/A2a/R0 及后续切片。No schema/API/save/replay/permission changes are authorized；A1b follow-up Critical review 已 ACCEPT，A2a 独立 Critical review 已 ACCEPT；R0 及后续切片仍须各自通过命名 gate。
+Worker 通过 service ports 调用账本 mutation 函数，不直接定义 ORM 或 migration。
+A2a/R0 were delivered by PR #21 at `origin/main@8674d4d`; R0 current order remains
+`Run -> Step -> Attempt -> Call -> Ledger`. Current R1 branch starts at `8674d4d`; candidate
+chain `f4a1d1d -> 473213d` is implementer-complete; rework `473213d` is local/not pushed with no upstream or remote branch after initial Critical
+`REWORK (High=0, Medium=4, Low=0)`, with follow-up pending and no `ACCEPT`. A2a remains
+`equal=true`, handled `3 -> 8`, candidate UoW `43`; PostgreSQL remains `7/7`, deadlocks `0`.
+R1 changes scheduler granularity only. R2/W1/admission/downstream remain blocked; no
+schema/API/save/replay/permission change is authorized.
 
 完整字段、状态、唯一键和删除/保留语义以获批 V4 data contract、Alembic migration 与 ORM 为准；本文件不重复复制 30 余张表的字段清单。运行边界见 `research-workflow-runtime.md`。
 

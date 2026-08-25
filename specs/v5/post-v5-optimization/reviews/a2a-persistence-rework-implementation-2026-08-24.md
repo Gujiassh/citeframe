@@ -18,8 +18,8 @@ Date: 2026-08-24
 | Documentation closure | `95981a499521a28bfd9eb24480d54ef42f485528` |
 | Final reviewer artifact | [`a2a-persistence-critical-reaudit-2026-08-24.md`](a2a-persistence-critical-reaudit-2026-08-24.md), local review commit `eb97adfa75660867eb31d46a4e7d7712909c348e` |
 | Final verdict | `ACCEPT (High=0, Medium=0, Low=0)` |
-| Push state | Production `215cd52`, docs `95981a4`, and review `eb97adf` are all local and not pushed |
-| Downstream gates | R0 later received independent `ACCEPT` at local review `9d4297f8`; R1 is the only next separately gated implementation slice; R2/W1/downstream remain blocked |
+| Delivery state | A2a/R0 delivered through PR #21 head `1d81470` to `origin/main@8674d4d` with `6/6` CI |
+| Downstream gates | R1 chain `f4a1d1d -> 473213d` implementer-complete after initial Critical `REWORK (High=0, Medium=4, Low=0)`; follow-up pending; R2/W1/admission/downstream blocked |
 
 PR #20 merged the prerequisite branch into `main`; it did not accept the A2a repair. The
 production candidate is now immutable by commit SHA. Documentation and review commits do not rewrite that production snapshot. Final independent acceptance is recorded in review commit `eb97adf`; remote delivery remains pending.
@@ -129,12 +129,9 @@ non-root UID. The mirror did not substitute a different base digest.
 
 ## Acceptance And Integration Steps
 
-1. Preserve accepted production `215cd52`, documentation `95981a4`, and review `eb97adf`;
-   do not amend or rewrite the production candidate.
-2. Push all three local commits, record their remote SHAs in the workbench delivery ledger,
-   and integrate through the repository review flow. Do not push directly to `main` outside
-   that flow.
-3. R0 was later independently accepted at review `9d4297f8`. R1 is the only next separately gated implementation slice; R2/W1 remain blocked behind their named gates. No downstream slice may be folded into A2a or R0.
+1. A2a/R0 delivery completed through PR #21 head `1d81470` at `origin/main@8674d4d`; preserve its `6/6` CI and exact Worker-environment evidence.
+2. R1 chain `f4a1d1d -> 473213d` is implementer-complete; `473213d` is local/not pushed with no upstream or remote branch after initial `REWORK`; run a new independent Critical follow-up and do not claim `ACCEPT` early.
+3. Keep R2/W1/admission/downstream blocked. No downstream slice may be folded into A2a, R0, or the R1 rework.
 
 Final verdict: **ACCEPT (High=0, Medium=0, Low=0)** at local review commit `eb97adf`.
 Remote push/PR/integration remains pending.

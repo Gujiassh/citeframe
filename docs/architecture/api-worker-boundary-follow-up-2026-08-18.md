@@ -5,7 +5,7 @@
 审查分支：`work/docs-stale-honesty-20260817`
 审查范围：`apps/api`、`apps/worker`、Python 镜像和部署编排。
 
-> 2026-08-24 current-state override: A2a and R0 are independently accepted. R0 chain: start `7ee97471`, production `39766c37`, final ledger `6b8ab475`, review `9d4297f8` (`High=0`, `Medium=0`, `Low=0`). All R0 commits are local/not pushed; the branch has no upstream and no remote branch. R1 is the only next separately gated implementation slice; R2/W1 remain blocked. No admission or R1 implementation is authorized.
+> 2026-08-24 current-state override: PR #21 head `1d81470` merged A2a/R0 to `origin/main@8674d4d` with `6/6` CI. Current R1 branch starts at `8674d4d`; R1 chain `f4a1d1d -> 473213d` is implementer-complete; `473213d` is local/not pushed with no upstream or remote branch. Initial Critical review is `REWORK (High=0, Medium=4, Low=0)`; follow-up pending, no `ACCEPT`. R2/W1/admission/downstream remain blocked; no persisted-contract change is authorized.
 
 这份记录只处理两个问题：API/Worker 的实际代码边界，以及
 `evidence.py` / `assets.py` 等中心文件的下一步拆分方向。它不是一次重写授权，
@@ -62,7 +62,7 @@
 
 - Initial reviewed state defined `ResearchWorkerService`, `SessionFactory`, `_ApiPort`,
   and payload-only `SqlResearchLedgerAdapter`. Accepted A2a adds the installable neutral
-  Research persistence boundary and default Worker UoW composition; remote delivery is pending.
+  Research persistence boundary and default Worker UoW composition; both were delivered through PR #21.
 - 初始快照由 `_ApiPort._db()` 管理 Session/commit。Accepted A2a production 的默认 DB-only Research 写路径改由 Worker-side neutral persistence service/UoW 管理 Session/commit；API 保留 HTTP/auth/Alembic/schema governance 与非 DB adapter composition。
 - Research runtime 仍直接导入 API observability、provider、context policy、
   Agent I/O registry；Worker 启动时通过 `build_default_research_service()` lazy-load
@@ -133,7 +133,7 @@
 - **本轮不拆分** `evidence.py` / `assets.py` / `test_r803_campaign_v5.py` /
   `v5b_document_restore_acceptance.py`。
 - **Branch protection / GitHub 设置保持 unresolved**；本记录不调用仓库保护接口。
-- `internal_preview` 的 same-DB adapter、Worker orchestration、R0 lock-normalization target 与 Worker-side UoW commit-process target 已获 owner conditional authorization；API-process HTTP/RPC 仍未授权。修订设计的独立 Critical 复审已接受 (`High=0`, `Medium=0`, `Low=0`)；A1 已于 2026-08-20 独立 ACCEPT；A1b/A2-foundation 已于 2026-08-21 独立 ACCEPT（follow-up Critical review：High=0、Medium=0、Low=0），A2a was independently accepted at local production `215cd52`, documentation `95981a4`, and review `eb97adf`; none is pushed; R0 已在本地 review `9d4297f8` 独立 ACCEPT；R1 是唯一下一门控切片，R2/W1 继续 blocked，admission 未授权；不授权 schema/API/save/replay/permission 变更。
+- `internal_preview` 的 same-DB adapter、Worker orchestration、R0 lock-normalization target 与 Worker-side UoW commit-process target 已获 owner conditional authorization；API-process HTTP/RPC 仍未授权。修订设计的独立 Critical 复审已接受 (`High=0`, `Medium=0`, `Low=0`)；A1 已于 2026-08-20 独立 ACCEPT；A1b/A2-foundation 已于 2026-08-21 独立 ACCEPT（follow-up Critical review：High=0、Medium=0、Low=0），A2a/R0 已由 PR #21 交付至 `origin/main@8674d4d`；R1 chain `f4a1d1d -> 473213d` 已由实现者完成；`473213d` 本地已提交、未推送、无 upstream/远端分支，初审 `REWORK (High=0, Medium=4, Low=0)`，follow-up 待进行；R2/W1/admission 继续 blocked；不授权 schema/API/save/replay/permission 变更。
 
 ## 4. Proposed Incremental Boundary
 
@@ -143,7 +143,7 @@
 | --- | --- | --- | --- |
 | **Schema / migration owner** | 谁治理表结构与执行 Alembic | **API**；neutral `citeframe_persistence` 定义唯一 mappings/metadata | Schema governance 不等于 runtime commit |
 | **Mutation logic owner** | 谁定义 Research/ingestion 业务写入函数与锁序 | Accepted A2a: DB-only Research transitions in `citeframe_research_persistence`; API compatibility/composition facades; ingestion remains API service-owned | Final Critical `ACCEPT` at `eb97adf` |
-| **Session / commit process owner** | 哪个**进程**创建 Session 并执行 commit/rollback | Accepted A2a Research: Worker-side neutral UoW; Ingestion: shared Session boundary | Accepted locally; delivery push pending |
+| **Session / commit process owner** | 哪个**进程**创建 Session 并执行 commit/rollback | Delivered A2a/R1 Research: Worker-side neutral UoW; Ingestion: shared Session boundary | A2a/R0 delivered; R1 follow-up pending |
 
 Transport 候选的 commit 含义不得混称：
 
@@ -154,7 +154,7 @@ Transport 候选的 commit 含义不得混称：
 - **Internal HTTP（或其他 RPC）由 API 进程执行写入**：此时 **runtime commit
   process owner 才是 API 进程**。该方向仍未授权。
 
-### 4.1 目标依赖方向（A2a independently accepted locally；remote delivery pending）
+### 4.1 当前依赖方向（A2a/R0 delivered；R1 rework pending follow-up）
 
 Owner 已授权 `internal_preview` 使用 same-DB adapter 的目标方向：API 负责
 HTTP/auth、Alembic 执行与 schema governance；Worker 负责 Research orchestration；
@@ -170,7 +170,7 @@ import surface；迁移期间可 re-export 同一 classes。A1b/A2-foundation �
 pyproject/uv.lock path source 与 Docker 安装，Alembic 仍由 API 显式 import
 `citeframe_persistence.models` 并加载唯一 metadata；这项 foundation 是 A2a 显式前置。
 
-这是批准目标；A2a 已按该方向实现 DB-only boundary 并通过独立 Critical ACCEPT；三笔本地提交仍待远端交付。修订设计的独立 Critical 复审已接受 (`High=0`, `Medium=0`, `Low=0`)；A1 已于 2026-08-20 独立 ACCEPT；A1b/A2-foundation 已于 2026-08-21 独立 ACCEPT（follow-up Critical review：High=0、Medium=0、Low=0）；A2a was independently accepted at local production `215cd52`, documentation `95981a4`, and review `eb97adf`; none is pushed; R0 已在本地 review `9d4297f8` 独立 ACCEPT；R1 是唯一下一门控切片，R2/W1 继续 blocked，admission 未授权，且不授权 schema/API/save/replay/permission 变更。详细的 R1/R2/W1、锁/fencing、per-Run admission、
+这是批准目标；A2a 已按该方向实现 DB-only boundary 并通过独立 Critical ACCEPT；三笔本地提交仍待远端交付。修订设计的独立 Critical 复审已接受 (`High=0`, `Medium=0`, `Low=0`)；A1 已于 2026-08-20 独立 ACCEPT；A1b/A2-foundation 已于 2026-08-21 独立 ACCEPT（follow-up Critical review：High=0、Medium=0、Low=0）；A2a/R0 已由 PR #21 交付至 `origin/main@8674d4d`；R1 chain `f4a1d1d -> 473213d` 已由实现者完成；`473213d` 本地已提交、未推送、无 upstream/远端分支，初审 `REWORK (High=0, Medium=4, Low=0)`，follow-up 待进行；R2/W1/admission 继续 blocked，且不授权 schema/API/save/replay/permission 变更。详细的 R1/R2/W1、锁/fencing、per-Run admission、
 SSE 与语义 oracle 见
 [`research-boundary-runtime-design.md`](../../specs/v5/post-v5-optimization/research-boundary-runtime-design.md)。
 
@@ -344,7 +344,7 @@ Implementation-ready target details live in
 
 - 本 ADR 与下列**正式 SSoT** 同步当前 repair-worktree 事实（schema governance vs
   neutral Research UoW commit vs shared ingestion session）；A1/A1b acceptance remains
-  historical; A2a repair is independently accepted locally, with remote delivery pending:
+  historical; A2a/R0 are delivered by PR #21 and R1 rework awaits follow-up review:
   - [`docs/ssot/system-architecture.md`](../ssot/system-architecture.md)
   - [`docs/architecture/database-design.md`](./database-design.md)
   - [`specs/v5/multimodal-agent-product/v5b-detailed-spec.md`](../../specs/v5/multimodal-agent-product/v5b-detailed-spec.md)
@@ -362,7 +362,7 @@ Implementation-ready target details live in
   path source、contracts-only export/Docker/CI smoke and focused tests are present.
 - No schema/API/save/replay/permission/runtime behavior changed; A1 was independently
   accepted on 2026-08-20. A1b/A2-foundation was independently accepted on 2026-08-21 by the
-  follow-up Critical review (`High=0`, `Medium=0`, `Low=0`). A2a and R0 are independently accepted locally. R1 is the only next separately gated implementation slice; R2/W1 remain blocked.
+  follow-up Critical review (`High=0`, `Medium=0`, `Low=0`). A2a/R0 are delivered. R1 rework is implementer-complete but remains `REWORK` pending follow-up; R2/W1 remain blocked.
 
 ### B（pilot 出口，非 C 入口）
 
@@ -386,9 +386,9 @@ Implementation-ready target details live in
 
 A0 目标方向已获 owner 授权，文档同步入口如下：
 
-1. Preserve the accepted A2a chain and R0 chain `7ee97471 -> 39766c37 -> 6b8ab475 -> 9d4297f8`.
-2. Push/integrate through the repository review flow and record remote SHAs; the branch currently has no upstream or remote counterpart.
-3. R1 is the only next separately gated implementation slice. Keep R2/W1 behind their named gates and admission unauthorized; do not fold R1 into R0.
+1. Preserve PR #21 delivery `1d81470 -> origin/main@8674d4d` and its `6/6` CI evidence.
+2. Run a new independent Critical follow-up for R1 chain `f4a1d1d -> 473213d` plus canonical status closure; the exact docs closure SHA is maintained externally. Do not claim `ACCEPT` from implementer evidence.
+3. Keep R2/W1/admission/downstream blocked and preserve schema/API/save/replay/permission semantics.
 4. 大文件拆分、G/M/P、provider spend、M404 与 branch protection 保持后置 / unauthorized。
 
 不要把 A2a、R1、B pilot、C 独立镜像、大文件拆分与 A0 文档冻结混成一个大 PR。

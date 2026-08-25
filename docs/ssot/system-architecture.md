@@ -761,7 +761,7 @@ M402 的 21-case 工程执行、7-case 真实 BFF 全栈/像素 Evidence 与 7-c
 
 A1 contracts was independently accepted on **2026-08-20**. A1b/A2-foundation was
 independently accepted on **2026-08-21** by the follow-up Critical review
-(`High=0`, `Medium=0`, `Low=0`). A2a initial snapshot `20d411e` was `REWORK (High=1, Medium=5, Low=1)`; A2a is independently `ACCEPTED (High=0, Medium=0, Low=0)` at local production `215cd52565089138704c6b637350e18bc8705c8b`, documentation `95981a499521a28bfd9eb24480d54ef42f485528`, and review `eb97adfa75660867eb31d46a4e7d7712909c348e`; none is pushed. R0 is independently accepted at local chain `7ee97471 -> 39766c37 -> 6b8ab475 -> 9d4297f8`. R1 is the only next separately gated implementation slice; R2/W1 and downstream remain blocked; admission is unauthorized.
+(`High=0`, `Medium=0`, `Low=0`). A2a/R0 are delivered by PR #21 at `origin/main@8674d4d` with `6/6` CI. R1 branch starts at `8674d4d`; R1 chain `f4a1d1d -> 473213d` is implementer-complete; `473213d` is local/not pushed with no upstream or remote branch after initial Critical `REWORK (High=0, Medium=4, Low=0)`. Follow-up pending; no `ACCEPT`. R2/W1/admission/downstream remain blocked.
 The design re-audit is **ACCEPT (High=0, Medium=0, Low=0)**. No schema/API/save/replay/
 permission changes are authorized. For `internal_preview`, the owner-authorized target is a same-PostgreSQL-database
 adapter, not an internal HTTP or database split. API owns HTTP/authentication, Alembic
@@ -844,7 +844,7 @@ only as post-commit wakeup.
 These are approved target rules, not shipped behavior. The design re-audit is
 `ACCEPT (High=0, Medium=0, Low=0)`. A1 was independently accepted on `2026-08-20`;
 A1b/A2-foundation was independently accepted on 2026-08-21 (follow-up Critical review ACCEPT; High=0, Medium=0, Low=0).
-A2a is independently accepted locally. R0 was independently `ACCEPTED` on 2026-08-24 (`High=0`, `Medium=0`, `Low=0`) across start `7ee97471ffb7d7d23e941d75795ab21d8cb3032b`, production `39766c374bd584b0cb834ef103de025d233c87c1`, final ledger closure `6b8ab475c14a7bbfe90f59a635255ca3768edcf9`, and review record `9d4297f89451fe79b6d1c141613722f7749b11c0`. All four commits are local and not pushed; the branch has no upstream and no remote branch. R1 is the only next separately gated implementation slice; R2/W1 and downstream remain blocked. R0 acceptance authorizes no schema/API/save/replay/permission/admission change and does not claim R1 implementation. No schema/API/save/replay/permission changes are authorized. G/M/P and GitHub settings remain unauthorized.
+A2a/R0 are delivered at `origin/main@8674d4d`. R1 chain `f4a1d1d -> 473213d` is implementer-complete; rework `473213d` is local/not pushed with no upstream or remote branch and remains `REWORK` pending follow-up; R2/W1/admission/downstream remain blocked. No schema/API/save/replay/permission change is authorized. G/M/P and GitHub settings remain unauthorized.
 Detailed slice boundaries and semantic oracle: [`research-boundary-runtime-design.md`](../../specs/v5/post-v5-optimization/research-boundary-runtime-design.md).
 
 ## 17. 当前 Evidence 域与演进门禁
@@ -875,7 +875,7 @@ Document/Page/Chunk 已通过受控迁移切换为 Asset/Representation/ContentU
 
 ## Deploy and ownership invariants (architecture hardening)
 
-- **当前 accepted-A2a 事实（remote delivery pending）**：API and Worker must be deployed from the same git SHA / image tag. Neutral `citeframe_persistence.models` owns the single mapping/metadata identity and `ai_pdf_api.models` preserves the compatibility surface; Alembic execution remains API-owned. This boundary is independently accepted at local review `eb97adf`; production/docs/review commits are not pushed.
+- **当前 delivered A2a/R0 + R1 candidate 事实**：API and Worker deploy from the same git SHA/image tag. PR #21 delivered A2a/R0 at `origin/main@8674d4d`; R1 rework `473213d` is local/not pushed with no upstream or remote branch, pending Critical follow-up. Neutral mappings/metadata and API Alembic ownership remain unchanged.
 - **Ingestion Worker** may import shared models and write Representations/ContentUnits under the modality adapter contract on the **shared Session** passed by the API orchestrator (current fact; not a completed process-isolated boundary).
-- **Research Worker** must use the neutral persistence commands through ports/adapters and must not invent a second ledger schema. In the repair worktree, the default Worker composition opens and commits through the neutral Research UoW; schema/migration owner remains API. This boundary was independently accepted at local review `eb97adf`; remote delivery remains pending.
+- **Research Worker** uses neutral persistence commands and Worker-owned UoW/session composition. R1 candidate runs one claimed Attempt per handler in independent loops; initial review remains REWORK pending follow-up. Schema/migration ownership remains API.
 - **Chat** attaches generation images only via `modalities.visual_enrichment` (no direct kind-specific crop imports).
