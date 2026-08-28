@@ -1,0 +1,3 @@
+services:
+  postgres:
+    image: ${R2_OVERLAP_POSTGRES_IMAGE}

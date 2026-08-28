@@ -11,6 +11,7 @@ from citeframe_persistence.models import (
     ResearchBudgetLedger, ResearchExecutionSnapshot, ResearchPlanRevision, ResearchRun,
     ResearchStep, ResearchStepAttempt, ResearchStepDependency,
 )
+from .admission import researcher_admission_is_full
 from .errors import ResearchError
 from .events import append_research_event
 from .locks import locate_attempt, lock_attempt_chain, lock_attempt_chain_with_steps, lock_run, lock_step
@@ -235,6 +236,7 @@ def claim_next_research_step(
     now: datetime | None = None,
 ) -> ResearchStepLease | None:
     claimed_at = now or datetime.now(UTC)
+    excluded_run_ids: set[str] = set()
     eligible = (
         ResearchStep.status == "queued",
         ResearchStep.run_id == ResearchRun.id,
@@ -250,43 +252,69 @@ def claim_next_research_step(
     first_step_id = (
         select(ResearchStep.id).where(*eligible).order_by(*step_order).limit(1).scalar_subquery()
     )
-    with db.no_autoflush:
-        run = db.scalar(
-            select(ResearchRun)
-            .where(
-                ResearchRun.status.in_(("planning", "queued", "running")),
-                exists(select(ResearchStep.id).where(*eligible)),
-            )
-            .order_by(first_queued_at, first_created_at, first_step_id, ResearchRun.id)
-            .with_for_update(of=ResearchRun, skip_locked=True)
-            .execution_options(populate_existing=True)
-            .limit(1)
+    while True:
+        run_query = select(ResearchRun).where(
+            ResearchRun.status.in_(("planning", "queued", "running")),
+            exists(select(ResearchStep.id).where(*eligible)),
         )
-    if run is None:
-        return None
-    with db.no_autoflush:
-        step = db.scalar(
-            select(ResearchStep)
-            .where(
-                ResearchStep.run_id == run.id,
-                ResearchStep.status == "queued",
-                ResearchStep.step_kind.in_(WORKER_EXECUTABLE_STEP_KINDS),
+        if excluded_run_ids:
+            run_query = run_query.where(ResearchRun.id.not_in(excluded_run_ids))
+        with db.no_autoflush:
+            run = db.scalar(
+                run_query
+                .order_by(first_queued_at, first_created_at, first_step_id, ResearchRun.id)
+                .with_for_update(of=ResearchRun, skip_locked=True)
+                .execution_options(populate_existing=True)
+                .limit(1)
             )
-            .order_by(*step_order)
-            .with_for_update(of=ResearchStep, skip_locked=True)
-            .execution_options(populate_existing=True)
-            .limit(1)
+        if run is None:
+            return None
+
+        with db.no_autoflush:
+            locator = db.execute(
+                select(
+                    ResearchStep.id,
+                    ResearchStep.step_kind,
+                    ResearchStep.workspace_id,
+                    ResearchStep.execution_snapshot_id,
+                )
+                .where(
+                    ResearchStep.run_id == run.id,
+                    ResearchStep.status == "queued",
+                    ResearchStep.step_kind.in_(WORKER_EXECUTABLE_STEP_KINDS),
+                )
+                .order_by(*step_order)
+                .limit(1)
+            ).one_or_none()
+        if locator is None:
+            return None
+        if locator.step_kind == "researcher" and researcher_admission_is_full(
+            db,
+            run,
+            step_workspace_id=locator.workspace_id,
+            step_execution_snapshot_id=locator.execution_snapshot_id,
+        ):
+            excluded_run_ids.add(run.id)
+            db.rollback()
+            continue
+
+        step = lock_step(
+            db,
+            locator.id,
+            run_id=run.id,
+            workspace_id=run.workspace_id,
+            skip_locked=True,
         )
-    if step is None:
-        return None
-    return _lease_locked_step(
-        db,
-        run,
-        step,
-        worker_instance_id=worker_instance_id,
-        lease_seconds=lease_seconds,
-        now=claimed_at,
-    )
+        if step is None:
+            return None
+        return _lease_locked_step(
+            db,
+            run,
+            step,
+            worker_instance_id=worker_instance_id,
+            lease_seconds=lease_seconds,
+            now=claimed_at,
+        )
 
 
 def claim_specific_research_step(
@@ -306,7 +334,13 @@ def claim_specific_research_step(
     )
     with db.no_autoflush:
         locator = db.execute(
-            select(ResearchStep.id, ResearchStep.step_kind).where(
+            select(
+                ResearchStep.id,
+                ResearchStep.step_kind,
+                ResearchStep.status,
+                ResearchStep.workspace_id,
+                ResearchStep.execution_snapshot_id,
+            ).where(
                 ResearchStep.run_id == run_id,
                 ResearchStep.step_key == step_key,
                 branch_predicate,
@@ -314,18 +348,29 @@ def claim_specific_research_step(
         ).one_or_none()
     if locator is None:
         raise ResearchError("research_resource_not_found", "Research step not found.", 404)
-    step_id, step_kind = locator
-    if step_kind not in WORKER_EXECUTABLE_STEP_KINDS:
+    if locator.step_kind not in WORKER_EXECUTABLE_STEP_KINDS:
         raise ResearchError(
             "research_state_conflict",
             "Research step is not Worker-executable.",
             409,
         )
     run = lock_run(db, run_id)
+    if run is not None and locator.status == "queued" and locator.step_kind == "researcher":
+        if researcher_admission_is_full(
+            db,
+            run,
+            step_workspace_id=locator.workspace_id,
+            step_execution_snapshot_id=locator.execution_snapshot_id,
+        ):
+            raise ResearchError(
+                "research_state_conflict",
+                "Researcher admission is full.",
+                409,
+            )
     step = (
         lock_step(
             db,
-            step_id,
+            locator.id,
             run_id=run.id,
             workspace_id=run.workspace_id,
         )
