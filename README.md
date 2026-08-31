@@ -149,6 +149,7 @@ specs/          versioned feature specifications
 - [V5 multimodal and agent plan](specs/v5/multimodal-agent-product/plan.md)
 - [Research workflow](docs/architecture/research-workflow-runtime.md)
 - [Web development](apps/web/README.md)
+- [Windows local development](docs/architecture/windows-local-development.md)
 - [API development](apps/api/README.md)
 - [Worker development](apps/worker/README.md)
 - [Deployment](infra/docker/README.md)

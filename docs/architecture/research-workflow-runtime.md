@@ -9,7 +9,7 @@
 - Frozen formal campaign contracts: [`../evals/r803-v5-campaign-threshold.md`](../evals/r803-v5-campaign-threshold.md)
 - First formal campaign attempt: [`../evals/artifacts/r803-campaign-20260730-v1/`](../evals/artifacts/r803-campaign-20260730-v1/) (`failed`, 0/5 completed rounds; immutable)
 - Engineering gate: deterministic R800 baseline `pass`; R803 formal campaign v1 `fail`
-- Research boundary status: A2a/R0 are delivered at `origin/main@8674d4d`. R1 is independently `ACCEPTED (High=0, Medium=0, Low=0)` on 2026-08-25 across start `8674d4d`, historical initial `f4a1d1d(REWORK)`, runtime `473213d`, ledger `652cfd4`, docs `559997d`, delivery truth `80d395d`, review `5a55489`. All R1 commits are local/not pushed; no upstream or remote branch. R2 is the only next separately gated module; W1/admission/downstream blocked. [`R1 review`](../../specs/v5/post-v5-optimization/reviews/r1-single-attempt-dispatcher-critical-review-2026-08-24.md).
+- Research boundary status: A2a/R0 are delivered at `origin/main@8674d4d`. R1 is independently `ACCEPTED (High=0, Medium=0, Low=0)` on 2026-08-25 across start `8674d4d`, historical initial `f4a1d1d(REWORK)`, runtime `473213d`, ledger `652cfd4`, docs `559997d`, delivery truth `80d395d`, review `5a55489`; PR #22 delivered the complete chain to `origin/main@a616eea1350b095c6f229890d2c47e5010902330` with `6/6` CI. R2 is the only next separately gated module; W1/admission/downstream blocked. [`R1 review`](../../specs/v5/post-v5-optimization/reviews/r1-single-attempt-dispatcher-critical-review-2026-08-24.md).
 - Latest interpretable paired diagnostic gates (v4): Quick `pass`; Research `fail` with 5/6 completed cases
 - Model-quality gate: `not_evaluable` because formal v1 interrupted before any round completed
 - User-value gate: `not_evaluable` until M404 contains qualified target-user evidence
@@ -33,7 +33,7 @@ The production path is split by ownership:
   UoW, and repository for DB-only transitions. API owns HTTP/auth/Alembic/schema governance
   and compatibility/external-adapter composition; ingestion retains its shared Session/ORM
   boundary.
-- **Accepted R1 state, remote delivery pending:** the Worker continues to own orchestration and
+- **Accepted and delivered R1 state:** the Worker continues to own orchestration and
   the repaired default composition uses the neutral Worker-side Research UoW as runtime commit-process owner; API owns HTTP/auth,
   Alembic execution, and schema governance. Package staging is A1 pure
   `citeframe_contracts`, A1b/A2-foundation neutral `citeframe_persistence` mappings, then

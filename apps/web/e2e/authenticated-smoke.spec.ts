@@ -11,7 +11,7 @@ async function signIn(page: Page) {
   await page.goto("/");
   await page.getByPlaceholder(/电子邮箱|email address/i).fill(email!);
   await page.getByPlaceholder(/输入密码|password/i).fill(password!);
-  await page.getByRole("button", { name: /登录|sign in/i }).click();
+  await page.locator("form").getByRole("button", { name: /登录|sign in/i }).click();
   await expect(page.getByRole("heading", { name: /工作区|workspaces/i })).toBeVisible();
 }
 
@@ -33,20 +33,22 @@ test.describe("authenticated workspace smoke", () => {
     await page.getByRole("button", { name: /创建新工作区|create workspace/i }).click();
     await page.locator('input[placeholder*="例如"]').fill(workspaceName);
     await page.getByRole("button", { name: /创建并进入/i }).click();
+    await page.getByText(workspaceName, { exact: true }).click();
     await expect(page).toHaveURL(/\/workspaces\//);
 
-    await page.getByRole("button", { name: /配置|settings/i }).click();
+    await page.getByRole("tab", { name: /配置|settings/i }).click();
     const prompt = page.locator("textarea").first();
     await expect(prompt).toBeVisible();
     await prompt.fill("Answer with a concise evidence checklist.");
     await page.getByRole("button", { name: /保存系统配置|save configs/i }).click();
     await expect(page.getByText(/已保存|saved/i)).toBeVisible();
     await page.reload();
-    await page.getByRole("button", { name: /配置|settings/i }).click();
+    await page.getByRole("tab", { name: /配置|settings/i }).click();
     await expect(page.locator("textarea").first()).toHaveValue("Answer with a concise evidence checklist.");
   });
 
   test("upload, render source PDF, OCR-select, stream chat, and edit branch", async ({ page }, testInfo) => {
+    test.setTimeout(240_000);
     const pdfPath = process.env.PLAYWRIGHT_E2E_PDF_PATH;
     testInfo.skip(!pdfPath, "Set PLAYWRIGHT_E2E_PDF_PATH to run the document smoke.");
     await signIn(page);
@@ -54,10 +56,13 @@ test.describe("authenticated workspace smoke", () => {
     const workspaceName = `pdf-e2e-${Date.now()}`;
     await page.locator('input[placeholder*="例如"]').fill(workspaceName);
     await page.getByRole("button", { name: /创建并进入/i }).click();
+    await page.getByText(workspaceName, { exact: true }).click();
     await expect(page).toHaveURL(/\/workspaces\//);
 
     await page.locator('input[type="file"]').first().setInputFiles(pdfPath!);
+    await page.locator('[data-asset-status="ready"]', { hasText: path.basename(pdfPath!) }).click({ timeout: 120_000 });
     await expect(page.locator("canvas").first()).toBeVisible({ timeout: 120_000 });
+    await page.getByRole("button", { name: /新会话|new chat/i }).click();
 
     const question = process.env.PLAYWRIGHT_E2E_QUESTION ?? "Summarize the selected evidence.";
     await page.locator(".textLayer").first().evaluate((element) => {
@@ -71,21 +76,21 @@ test.describe("authenticated workspace smoke", () => {
       element.dispatchEvent(new MouseEvent("mouseup", { bubbles: true }));
     });
     const askButton = page.getByRole("button", { name: /问 AI|ask ai/i });
-    if (await askButton.count()) {
-      await askButton.click();
-    }
+    await expect(askButton).toBeVisible();
+    await askButton.click();
     await page.getByPlaceholder(/针对当前工作区|ask about/i).fill(question);
     await page.getByRole("button", { name: /发送|send/i }).click();
     await expect(page.locator('[data-chat-message="assistant"]').last()).toContainText(/.+/, { timeout: 120_000 });
 
-    const editButton = page.getByRole("button", { name: "编辑问题" }).first();
-    if (await editButton.count()) {
-      await editButton.click();
-      const editor = page.locator('[data-chat-message="user"] textarea').first();
-      await editor.fill(`${question} with one more caveat`);
-      await page.getByRole("button", { name: /保存$/ }).first().click();
-      await expect(page.locator('[data-chat-message="assistant"]').last()).toContainText(/.+/, { timeout: 120_000 });
-    }
+    const userMessage = page.locator('[data-chat-message="user"]').first();
+    const editButton = userMessage.getByRole("button", { name: "编辑问题" });
+    await expect(editButton).toBeVisible();
+    await editButton.click();
+    const editor = userMessage.locator("textarea");
+    await expect(editor).toBeVisible();
+    await editor.fill(`${question} with one more caveat`);
+    await editor.press("Control+Enter");
+    await expect(page.locator('[data-chat-message="assistant"]').last()).toContainText(/.+/, { timeout: 120_000 });
   });
 
   test("current image recovers from generation drift and preserves touch and Escape behavior", async ({ page }, testInfo) => {

@@ -4,7 +4,7 @@ Date: 2026-08-15
 
 Canonical ownership for the fixed Research product path. Evaluation/R803 scripts are **not** the product path.
 
-Current delivery state: A2a/R0 are delivered at `origin/main@8674d4d`. R1 is independently `ACCEPTED (High=0, Medium=0, Low=0)` on 2026-08-25 through local review `5a55489`; no push/upstream/remote branch. R2 is the only next separately gated module; W1/admission remain blocked.
+Current delivery state: A2a/R0 are delivered at `origin/main@8674d4d`. R1 is independently `ACCEPTED (High=0, Medium=0, Low=0)` on 2026-08-25 through review `5a55489` and delivered by PR #22 at `origin/main@a616eea` with `6/6` CI. R2 is the only next separately gated module; W1/admission remain blocked.
 
 ## API package (`apps/api/src/ai_pdf_api/services/research/`)
 
@@ -72,7 +72,7 @@ Import path: `ai_pdf_api.services.research.*`. Compatibility shims remain at `ai
 Package staging is A1 contracts (independently accepted on 2026-08-20) ->
 A1b/A2-foundation persistence mappings (independently accepted on 2026-08-21 by the
 follow-up Critical review: High=0, Medium=0, Low=0) -> A2a Research persistence behavior.
-A2a/R0 are delivered and R1 is independently accepted locally at `5a55489`. R2 is the only next separately gated module; W1/admission/downstream remain blocked behind named gates,
+A2a/R0 are delivered and R1 is delivered by PR #22 at `origin/main@a616eea` with `6/6` CI at `5a55489`. R2 is the only next separately gated module; W1/admission/downstream remain blocked behind named gates,
 and no schema/API/save/replay/permission changes are authorized. No behavior-free
 `citeframe_research_persistence` scaffold is permitted before A2a; see topology freeze in
 [`research-workflow-runtime.md`](research-workflow-runtime.md).

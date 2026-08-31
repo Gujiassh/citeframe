@@ -15,6 +15,59 @@ CAPTION = "Synthetic production image caption for M403B acceptance."
 ANSWER = "The uploaded image is available as frozen Evidence from the production Image path."
 
 
+def _user_variables(body: dict) -> dict:
+    messages = body.get("input")
+    if not isinstance(messages, list):
+        return {}
+    for message in reversed(messages):
+        if not isinstance(message, dict) or message.get("role") != "user":
+            continue
+        content = message.get("content")
+        if not isinstance(content, str):
+            continue
+        try:
+            value = json.loads(content)
+        except json.JSONDecodeError:
+            return {}
+        return value if isinstance(value, dict) else {}
+    return {}
+
+
+def _research_output(variables: dict) -> dict | None:
+    if "planOutputSchema" in variables:
+        assets = variables.get("frozenAssetScope", {}).get("assets", [])
+        asset_ids = [item["assetId"] for item in assets if isinstance(item, dict) and isinstance(item.get("assetId"), str)]
+        return {
+            "summary": "Deterministic acceptance research plan.",
+            "knownGaps": [],
+            "estimatedProviderCalls": 5,
+            "subproblems": [{
+                "question": str(variables.get("question") or "Inspect the selected evidence."),
+                "assetIds": asset_ids,
+                "expectedEvidence": ["Deterministic acceptance evidence"],
+            }],
+        }
+    schema = variables.get("resultSchema")
+    if not isinstance(schema, dict):
+        return None
+    if "toolContracts" in variables:
+        evidence = variables.get("toolContracts", {}).get("evidence", [])
+        handle_ids = [item["evidenceHandle"] for item in evidence if isinstance(item, dict) and isinstance(item.get("evidenceHandle"), str)]
+        return {"claims": [{"text": "Deterministic acceptance claim grounded in the loaded evidence.", "evidenceHandleIds": handle_ids[:1]}]}
+    claims = variables.get("claims")
+    claim_ids = [item["id"] for item in claims if isinstance(item, dict) and isinstance(item.get("id"), str)] if isinstance(claims, list) else []
+    properties = schema.get("properties")
+    if not isinstance(properties, dict):
+        return None
+    if "conflictClaimIds" in properties:
+        return {"conflictClaimIds": []}
+    if "factClaimIds" in properties:
+        return {"factClaimIds": claim_ids, "unresolvedClaimIds": []}
+    if "claims" in properties:
+        return {"claims": [{"id": claim_id, "status": "supported"} for claim_id in claim_ids]}
+    return None
+
+
 class Handler(BaseHTTPRequestHandler):
     def do_GET(self) -> None:
         if self.path == "/api/tags":
@@ -52,7 +105,9 @@ class Handler(BaseHTTPRequestHandler):
             if body.get("stream") is True:
                 self._send_stream()
             else:
-                self._send_json({"output_text": CAPTION})
+                research_output = _research_output(_user_variables(body))
+                output_text = json.dumps(research_output, separators=(",", ":")) if research_output is not None else CAPTION
+                self._send_json({"status": "completed", "output_text": output_text})
             return
 
         self.send_error(404)

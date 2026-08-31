@@ -761,7 +761,7 @@ M402 的 21-case 工程执行、7-case 真实 BFF 全栈/像素 Evidence 与 7-c
 
 A1 contracts was independently accepted on **2026-08-20**. A1b/A2-foundation was
 independently accepted on **2026-08-21** by the follow-up Critical review
-(`High=0`, `Medium=0`, `Low=0`). A2a/R0 are delivered at `origin/main@8674d4d`. R1 is independently `ACCEPTED (High=0, Medium=0, Low=0)` on 2026-08-25 through local review `5a55489`; no push/upstream/remote branch. R2 is the only next separately gated module; W1/admission/downstream remain blocked.
+(`High=0`, `Medium=0`, `Low=0`). A2a/R0 are delivered at `origin/main@8674d4d`. R1 is independently `ACCEPTED (High=0, Medium=0, Low=0)` on 2026-08-25 through review `5a55489` and delivered by PR #22 at `origin/main@a616eea` with `6/6` CI. R2 is the only next separately gated module; W1/admission/downstream remain blocked.
 The design re-audit is **ACCEPT (High=0, Medium=0, Low=0)**. No schema/API/save/replay/
 permission changes are authorized. For `internal_preview`, the owner-authorized target is a same-PostgreSQL-database
 adapter, not an internal HTTP or database split. API owns HTTP/authentication, Alembic
@@ -844,7 +844,7 @@ only as post-commit wakeup.
 These are approved target rules, not shipped behavior. The design re-audit is
 `ACCEPT (High=0, Medium=0, Low=0)`. A1 was independently accepted on `2026-08-20`;
 A1b/A2-foundation was independently accepted on 2026-08-21 (follow-up Critical review ACCEPT; High=0, Medium=0, Low=0).
-A2a/R0 are delivered at `origin/main@8674d4d`; R1 is independently accepted locally at review `5a55489`. R2 is the only next separately gated module; W1/admission/downstream remain blocked. No schema/API/save/replay/permission change is authorized. G/M/P and GitHub settings remain unauthorized.
+A2a/R0 are delivered at `origin/main@8674d4d`; R1 is delivered by PR #22 at `origin/main@a616eea` with `6/6` CI at review `5a55489`. R2 is the only next separately gated module; W1/admission/downstream remain blocked. No schema/API/save/replay/permission change is authorized. G/M/P and GitHub settings remain unauthorized.
 Detailed slice boundaries and semantic oracle: [`research-boundary-runtime-design.md`](../../specs/v5/post-v5-optimization/research-boundary-runtime-design.md).
 
 ## 17. 当前 Evidence 域与演进门禁
@@ -875,7 +875,7 @@ Document/Page/Chunk 已通过受控迁移切换为 Asset/Representation/ContentU
 
 ## Deploy and ownership invariants (architecture hardening)
 
-- **当前 delivered A2a/R0 + accepted R1 事实**：API and Worker deploy from the same git SHA/image tag. R1 runtime `473213d` and review `5a55489` are accepted locally; remote delivery remains pending. Neutral mappings/metadata and API Alembic ownership remain unchanged.
+- **当前 delivered A2a/R0/R1 事实**：API and Worker deploy from the same git SHA/image tag. R1 runtime `473213d` and review `5a55489` are accepted; PR #22 delivered the complete chain to `origin/main@a616eea` with `6/6` CI. Neutral mappings/metadata and API Alembic ownership remain unchanged.
 - **Ingestion Worker** may import shared models and write Representations/ContentUnits under the modality adapter contract on the **shared Session** passed by the API orchestrator (current fact; not a completed process-isolated boundary).
 - **Research Worker** uses neutral persistence commands and Worker-owned UoW/session composition. Accepted R1 runtime runs one claimed Attempt per handler in independent loops and excludes LangGraph from runtime imports. Schema/migration ownership remains API.
 - **Chat** attaches generation images only via `modalities.visual_enrichment` (no direct kind-specific crop imports).

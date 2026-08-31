@@ -1,2 +1,5 @@
 # Runtime evidence is byte-preserved and verified by artifact SHA manifests.
 docs/evals/artifacts/** -whitespace
+
+# Cross-platform source and frozen-evidence byte contracts.
+*.sh text eol=lf

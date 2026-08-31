@@ -400,13 +400,13 @@ Research 表按职责分为四组：
 
 - **Schema / migration owner**：API 负责 Alembic execution/schema governance；neutral `citeframe_persistence` 定义唯一 mappings/metadata，`ai_pdf_api.models` 仅保留 compatibility surface。
 - **Mutation logic owner**：accepted A2a production 中，DB-only Research transition 由 `citeframe_research_persistence` 单一实现，API 保留 compatibility/composition facade；ingestion mutation 仍由 API service 定义。
-- **Session / commit process owner（Research）**：accepted A2a/R1 production 的 Worker composition 通过 neutral Research UoW/repository 管理 Session/commit；这不是 API-process commit。A2a/R0 已交付；R1 runtime `473213d`、ledger `652cfd4`、docs `559997d`、delivery truth `80d395d` 已由本地 review `5a55489` 独立 ACCEPT，完整链未推送。
+- **Session / commit process owner（Research）**：accepted A2a/R1 production 的 Worker composition 通过 neutral Research UoW/repository 管理 Session/commit；这不是 API-process commit。A2a/R0 已交付；R1 runtime `473213d`、ledger `652cfd4`、docs `559997d`、delivery truth `80d395d` 已由本地 review `5a55489` 独立 ACCEPT，完整链已由 PR #22 交付至 `origin/main@a616eea`，六项 CI 全绿。
 - **Ingestion**：API `process_ingestion_job` 编排 job，并把同一 SQLAlchemy `Session` / ORM `Asset` 传入 Worker adapter；模态行写入发生在该共享会话边界内。
 
 Worker 通过 service ports 调用账本 mutation 函数，不直接定义 ORM 或 migration。
 A2a/R0 were delivered by PR #21 at `origin/main@8674d4d`; R0 current order remains
 `Run -> Step -> Attempt -> Call -> Ledger`. Current R1 branch starts at `8674d4d`; candidate
-R1 chain through review `5a55489` is independently accepted; the historical `f4a1d1d` initial review was `REWORK`, closed by runtime `473213d` and docs `559997d` / `80d395d`. All R1 commits are local/not pushed with no upstream or remote branch. A2a remains
+R1 chain through review `5a55489` is independently accepted; the historical `f4a1d1d` initial review was `REWORK`, closed by runtime `473213d` and docs `559997d` / `80d395d`. The complete R1 chain was delivered by PR #22 at `origin/main@a616eea1350b095c6f229890d2c47e5010902330` with `6/6` CI. A2a remains
 `equal=true`, handled `3 -> 8`, candidate UoW `43`; PostgreSQL remains `7/7`, deadlocks `0`.
 R1 changes scheduler granularity only. R2 is the only next separately gated module; W1/admission/downstream remain blocked; no
 schema/API/save/replay/permission change is authorized.
