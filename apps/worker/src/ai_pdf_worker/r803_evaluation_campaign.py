@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import errno
 import hashlib
 import json
 import os
@@ -59,6 +60,8 @@ PROGRESS_SCHEMA_VERSION = "r803-campaign-progress-v1"
 ROUND_MANIFEST_SCHEMA_VERSION = "r803-campaign-round-manifest-v1"
 ROUND_START_SCHEMA_VERSION = "r803-campaign-round-start-v1"
 PLAN_SCHEMA_VERSION = "r803-campaign-plan-v1"
+
+_IS_WINDOWS = os.name == "nt"
 
 
 @dataclass(frozen=True)
@@ -175,7 +178,23 @@ def _public_import_report(report: dict[str, Any]) -> dict[str, Any]:
 
 
 def _fsync_directory(directory: Path) -> None:
-    dir_fd = os.open(str(directory), os.O_RDONLY)
+    try:
+        dir_fd = os.open(str(directory), os.O_RDONLY)
+    except PermissionError as error:
+        # Windows' CRT cannot open directory handles through os.open. This is a
+        # platform capability gap, not permission to suppress arbitrary I/O errors.
+        if (
+            _IS_WINDOWS
+            and error.errno == errno.EACCES
+            and directory.is_dir()
+            and not directory.is_symlink()
+            # Python 3.12 reports Windows directory junctions separately from
+            # symlinks. They are reparse points rather than the real directory
+            # for which this narrow CRT capability exception is intended.
+            and not directory.is_junction()
+        ):
+            return
+        raise
     try:
         os.fsync(dir_fd)
     finally:

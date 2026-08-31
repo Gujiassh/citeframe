@@ -518,3 +518,11 @@ Release review / Beta / 公开发布是上述证据齐备后的派生门禁，�
 - R1.5 已通过独立 Critical 审计：`ACCEPT`，findings=0。实现保持既有 schema、外部 API、save/replay 和 permission 语义不变；R2 仍是独立的 PostgreSQL multi-Worker proof-only 阶段。
 - 真实 PostgreSQL 17.11 admission matrix 覆盖 cap=1、cap=N、数据库时间判定的过期 lease、同 Run 非researcher bypass、cap-full Run 排除后其他 eligible Run 推进，以及 Run/Step/Attempt/Event/Membership 全字段零 mutation。Artifact：`docs/evals/r15-postgres-admission-2026-08-31.json`；SHA-256：`eab095bd68a78972c5b80713d2746a816551eaf1d21bb24ee48016615104d9be`。
 - 最终门禁：R1.5 targeted `29 passed`，provider stub `5 passed`，Ruff changed-files gate、真实 PostgreSQL runner、临时数据库清理查询和 `git diff --check` 均通过。R2 为下一阶段，尚未在本记录中宣称开始或完成。
+## 2026-09-01：R803 Windows directory-fsync portability 独立审计 ACCEPT
+
+- R803 immutable-evidence writer 现在仅对 Windows CRT 无法通过 `os.open()` 打开真实目录的 `EACCES` 做 capability exception；directory symlink 和 Python 3.12 junction 均显式排除，其他 open/fsync 错误继续传播。
+- 普通文件 `flush + fsync`、exclusive create、拒绝覆盖、内容 SHA-256、临时文件与 atomic replace 合同保持不变，POSIX 语义不变。
+- `.gitattributes` 仅枚举九个被 checked-in SHA 字段直接约束的文本输入（五个 eval 输入、三个 evidence manifest、一个 Markdown source），防止 Windows `core.autocrlf=true` 改写其字节；普通 review/log/README/generator/draft/fixture manifest 与 `docs/evals/artifacts/**` 均保持 `text: unspecified`。
+- 新增 Windows 分支、unsupported 模拟、unexpected error propagation、directory symlink/junction 边界、file-fsync、exclusive/atomic/hash 回归测试；WinError 1314 只跳过 symlink 专属断言。独立 Critical 审计结论为 `ACCEPT (Critical=0, High=0, Medium=0, Low=0)`；未 commit/push，R2 是下一独立门禁阶段且尚未启动。
+- Windows 实现者门禁：定向 portability/regression/campaign 矩阵 `84 passed, 1 skipped in 50.29s`，最终 repo-root 全 Worker `359 passed, 1 skipped in 176.82s`；唯一 skip 均为当前 Windows 账号 WinError 1314 下的 directory-symlink 专属断言，junction 与其余断言实际执行；changed-file Ruff 通过。
+- 独立复审门禁：专用 portability `9 passed, 1 skipped in 1.45s`；focused `84 passed, 1 skipped in 50.75s`；repo-root collect `360`、全 Worker `359 passed, 1 skipped in 183.53s`；唯一 skip 是 `test_windows_access_denied_for_directory_symlink_propagates`（本机 `WinError 1314`），junction 与全部非 symlink 断言已执行；Ruff `All checks passed!`，`git diff --check` exit `0`。

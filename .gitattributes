@@ -3,3 +3,14 @@ docs/evals/artifacts/** -whitespace
 
 # Cross-platform source and frozen-evidence byte contracts.
 *.sh text eol=lf
+
+# Text inputs whose exact LF bytes are referenced by checked-in SHA-256 fields.
+docs/evals/retrieval-v1.jsonl -text
+docs/evals/multimodal-golden-v1.json -text
+docs/evals/r100-research-cases-v1.json -text
+docs/evals/r100-research-cases-v2.json -text
+docs/evals/r803-release-threshold-v1.json -text
+docs/fixtures/evidence-contract/pdf-coordinate-fixture.json -text
+docs/fixtures/evidence-contract/pdf-artifact-matrix-fixture.json -text
+docs/fixtures/evidence-contract/image-coordinate-fixture.json -text
+docs/fixtures/document-modality/markdown-note.md -text

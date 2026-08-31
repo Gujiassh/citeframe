@@ -391,9 +391,16 @@ def test_round_root_symlink_and_non_directory_are_rejected(tmp_path: Path) -> No
     target = tmp_path / "safe-target"
     target.mkdir()
     link = campaign_dir / "round-01"
-    link.symlink_to(target)
-    with pytest.raises(R803EvaluationError, match="round_symlink_forbidden:round-01"):
-        _run_campaign(campaign_dir, CampaignProvider(), package, max_new_rounds=0)
+    symlinks_available = True
+    try:
+        link.symlink_to(target)
+    except OSError as error:
+        if getattr(error, "winerror", None) != 1314:
+            raise
+        symlinks_available = False
+    if symlinks_available:
+        with pytest.raises(R803EvaluationError, match="round_symlink_forbidden:round-01"):
+            _run_campaign(campaign_dir, CampaignProvider(), package, max_new_rounds=0)
 
     # Regular file named round-01 is rejected.
     file_campaign = tmp_path / "file-campaign"
@@ -404,22 +411,24 @@ def test_round_root_symlink_and_non_directory_are_rejected(tmp_path: Path) -> No
         _run_campaign(file_campaign, CampaignProvider(), package, max_new_rounds=0)
 
     # Checksum closure rejects symlink root itself.
-    with pytest.raises(R803EvaluationError, match="round_symlink_forbidden:"):
-        verify_exact(link)
+    if symlinks_available:
+        with pytest.raises(R803EvaluationError, match="round_symlink_forbidden:"):
+            verify_exact(link)
 
     # Direct round runner rejects symlink output_dir.
     out_link = tmp_path / "out-link"
     out_target = tmp_path / "out-target"
     out_target.mkdir()
-    out_link.symlink_to(out_target)
-    with pytest.raises(R803EvaluationError, match="round_symlink_forbidden:"):
-        run_campaign_round(
-            plan,
-            round_index=1,
-            provider=CampaignProvider(),
-            output_dir=out_link,
-            allow_test_provider=True,
-        )
+    if symlinks_available:
+        out_link.symlink_to(out_target)
+        with pytest.raises(R803EvaluationError, match="round_symlink_forbidden:"):
+            run_campaign_round(
+                plan,
+                round_index=1,
+                provider=CampaignProvider(),
+                output_dir=out_link,
+                allow_test_provider=True,
+            )
 
     # Terminal resume also rejects out-of-range symlink round-06.
     full = tmp_path / "full-terminal"
@@ -427,9 +436,10 @@ def test_round_root_symlink_and_non_directory_are_rejected(tmp_path: Path) -> No
     assert report["status"] == "completed"
     extra_target = tmp_path / "extra-target"
     extra_target.mkdir()
-    (full / "round-06").symlink_to(extra_target)
-    with pytest.raises(R803EvaluationError, match="round_symlink_forbidden:round-06"):
-        _run_campaign(full, None, package, max_new_rounds=0)
+    if symlinks_available:
+        (full / "round-06").symlink_to(extra_target)
+        with pytest.raises(R803EvaluationError, match="round_symlink_forbidden:round-06"):
+            _run_campaign(full, None, package, max_new_rounds=0)
 
 
 def test_v1_to_v4_artifacts_remain_byte_stable() -> None:
