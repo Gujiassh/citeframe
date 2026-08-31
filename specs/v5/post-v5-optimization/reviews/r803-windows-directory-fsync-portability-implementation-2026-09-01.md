@@ -1,7 +1,7 @@
 # R803 Windows directory-fsync portability implementation
 
-Date: 2026-09-01  
-Status: **ACCEPT — independent Critical audit complete (Critical=0, High=0, Medium=0, Low=0)**  
+Date: 2026-09-01
+Status: **ACCEPT — independent Critical audit complete (Critical=0, High=0, Medium=0, Low=0)**
 Delivery: **not committed or pushed**
 
 ## Scope
