@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import hashlib
 import json
-from datetime import timedelta
+from datetime import UTC, datetime, timedelta
 from uuid import uuid4
 
 import pytest
@@ -14,6 +14,7 @@ from ai_pdf_api.models import (
     ResearchRun,
     ResearchStep,
     ResearchStepAttempt,
+    WorkspaceMembership,
 )
 from ai_pdf_api.services import (
     research_worker_plan,
@@ -28,6 +29,7 @@ from ai_pdf_api.services.research.research_worker import (
     load_approved_execution,
     publish_research_plan,
 )
+from citeframe_research_persistence import ResearchAdmissionDeferred
 from research_worker_test_support import (
     add_execution_chain,
     add_step,
@@ -39,6 +41,32 @@ from research_worker_test_support import (
 )
 from sqlalchemy import select
 from sqlalchemy.orm import Session
+
+
+def _persisted_row(row) -> dict[str, object]:
+    values: dict[str, object] = {}
+    for column in row.__table__.columns:
+        value = getattr(row, column.name)
+        if isinstance(value, datetime):
+            value = value.replace(tzinfo=value.tzinfo or UTC).astimezone(UTC).isoformat()
+        values[column.name] = value
+    return values
+
+
+def _admission_aggregate(db: Session, run_id: str) -> dict[str, object]:
+    run = db.get(ResearchRun, run_id)
+    steps = list(db.scalars(select(ResearchStep).where(ResearchStep.run_id == run_id).order_by(ResearchStep.id)))
+    step_ids = [step.id for step in steps]
+    attempts = list(db.scalars(select(ResearchStepAttempt).where(ResearchStepAttempt.step_id.in_(step_ids)).order_by(ResearchStepAttempt.id)))
+    events = list(db.scalars(select(ResearchEvent).where(ResearchEvent.run_id == run_id).order_by(ResearchEvent.id)))
+    memberships = list(db.scalars(select(WorkspaceMembership).where(WorkspaceMembership.workspace_id == run.workspace_id).order_by(WorkspaceMembership.id)))
+    return {
+        "run": _persisted_row(run),
+        "steps": [_persisted_row(row) for row in steps],
+        "attempts": [_persisted_row(row) for row in attempts],
+        "events": [_persisted_row(row) for row in events],
+        "memberships": [_persisted_row(row) for row in memberships],
+    }
 
 
 def test_claim_next_leases_oldest_queued_step_and_records_attempt_and_events(research_worker_db) -> None:
@@ -80,6 +108,72 @@ def test_claim_next_leases_oldest_queued_step_and_records_attempt_and_events(res
     )
     assert [event.event_type for event in events] == ["run_status_changed", "step_started"]
     assert [event.seq for event in events] == [1, 2]
+
+
+def test_researcher_admission_uses_active_attempts_and_preserves_nonresearcher_work(research_worker_db) -> None:
+    fixture = research_worker_db
+    now = datetime.now(UTC)
+    fixture.snapshot.max_parallel_researchers = 1
+    fixture.step.step_kind = "researcher"
+    fixture.step.branch_key = "branch-a"
+    fixture.step.queued_at = now
+    fixture.db.commit()
+
+    first = claim_next_research_step(
+        fixture.db,
+        worker_instance_id="worker-a",
+        lease_seconds=300,
+        now=now,
+    )
+    assert first is not None
+    fixture.db.commit()
+    second = add_step(
+        fixture,
+        step_key="research-branch-b",
+        step_kind="researcher",
+        branch_key="branch-b",
+        queued_at=now + timedelta(seconds=1),
+    )
+    fixture.db.commit()
+    before_deferred = _admission_aggregate(fixture.db, fixture.run.id)
+
+    with pytest.raises(ResearchAdmissionDeferred) as deferred:
+        claim_next_research_step(
+            fixture.db,
+            worker_instance_id="worker-b",
+            now=now,
+        )
+    assert deferred.value.run_id == fixture.run.id
+    fixture.db.rollback()
+    assert _admission_aggregate(fixture.db, fixture.run.id) == before_deferred
+    assert fixture.db.get(ResearchStep, second.id).status == "queued"
+
+    join = add_step(
+        fixture,
+        step_key="join-after-cap",
+        step_kind="join",
+        queued_at=now + timedelta(seconds=2),
+    )
+    fixture.db.commit()
+    claimed = claim_next_research_step(
+        fixture.db,
+        worker_instance_id="worker-b",
+        now=now,
+    )
+    assert claimed is not None
+    assert claimed.step_id == join.id
+    assert fixture.db.get(ResearchStep, second.id).status == "queued"
+
+
+def test_claim_next_excludes_run_for_current_scan(research_worker_db) -> None:
+    fixture = research_worker_db
+    assert claim_next_research_step(
+        fixture.db,
+        worker_instance_id="worker",
+        now=fixture.now,
+        excluded_run_ids=frozenset({fixture.run.id}),
+    ) is None
+    assert fixture.step.status == "queued"
 
 
 def test_claim_specific_matches_branch_and_rejects_wrong_branch(research_worker_db) -> None:
@@ -394,7 +488,7 @@ def test_worker_claims_leave_a_malformed_queued_plan_gate_unchanged(
     fixture.db.commit()
 
     def row_snapshot(row: object) -> tuple[tuple[str, object], ...]:
-        table = getattr(row, "__table__")
+        table = row.__table__
         return tuple((column.name, getattr(row, column.name)) for column in table.columns)
 
     fixture.db.refresh(run)

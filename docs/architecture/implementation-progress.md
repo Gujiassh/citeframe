@@ -108,6 +108,8 @@ Release review / Beta / 公开发布是上述证据齐备后的派生门禁，�
 
 当前（2026-08-18）：工程主线已关。main tip 含 V5-F、architecture-hardening（PR #14/#15）、PPTX layout+hash（PR #16/#17）、preview 默认真 Ollama embed。产品阶段仍为 `internal_preview`。主动缺口是 **V5-E（R803/M404）** 与 **ops 真复配**，不是功能断链。残差清单见 §6。
 
+2026-08-31 Windows native accept 复配：在无 Docker/无管理员权限环境中，使用 PostgreSQL 17.11 portable + pgvector 0.8.6 + MinIO Windows server + accept provider 完成真实 PostgreSQL/MinIO/API/Worker/Web 启动。Alembic 到 `m7a8b9c0d1e2`，API readiness 全绿；浏览器已走通 PDF 摄取/12 页渲染/Quick Answer citation/引用笔记与固定 DAG Research。Research 使用确定性 stub 结构化输出，只是工程证据，不是模型质量证据。Windows 步骤与 digest 见 `docs/architecture/windows-local-development.md`。
+
 
 ## 2026-08-13：PDF 页内视觉列入开发计划
 
@@ -314,7 +316,7 @@ Release review / Beta / 公开发布是上述证据齐备后的派生门禁，�
 - Workspace 列表与详情的最小 API/BFF/页面链路已建立
 - `users / workspaces / workspace_memberships` 最小真表、查询、创建、归档链路已落地
 - Delivery history: PR #20 merged `origin/main@9f40241`; PR #21 head `1d81470` merged A2a/R0 as `origin/main@8674d4dc407048471f7b14b23b821e72529487bf` with `6/6` CI. PR #21 includes A2a Worker-environment fix `4b24181` and exact-environment ledger `1d81470`; A2a/R0 are delivered, not local-pending.
-- R1 is independently `ACCEPTED (High=0, Medium=0, Low=0)` on 2026-08-25 at local chain start `8674d4d`, historical initial `f4a1d1d(REWORK)`, runtime `473213d`, ledger `652cfd4`, docs `559997d`, delivery truth `80d395d`, review `5a55489`; no push/upstream/remote branch. Worker `349`, gate `64+40`, API `132`, A2a equal handled `3 -> 8` / UoW `43`, PostgreSQL `7/7` deadlocks `0`, human zero-mutation, causal error preservation, and LangGraph absence pass. R2 is the only next separately gated module; W1/admission/downstream remain blocked; no schema/API/save/replay/permission change is authorized.
+- R1 is independently `ACCEPTED (High=0, Medium=0, Low=0)` on 2026-08-25 and delivered by PR #22 at `origin/main@a616eea` with `6/6` CI. The accepted chain starts at `8674d4d` and includes historical initial `f4a1d1d(REWORK)`, runtime `473213d`, ledger `652cfd4`, docs `559997d`, delivery truth `80d395d`, and review `5a55489`. Worker `349`, gate `64+40`, API `132`, A2a equal handled `3 -> 8` / UoW `43`, PostgreSQL `7/7` deadlocks `0`, human zero-mutation, causal error preservation, and LangGraph absence pass. R2 is the only next separately gated module; W1/admission/downstream remain blocked; no schema/API/save/replay/permission change is authorized.
 - API 侧已从启动时自动建表切换到显式数据库版本步骤；当前 head 版本为 `m7a8b9c0d1e2`
 - `assets / ingestion_jobs` 真表、迁移、列表、upload-session、二进制上传、finalize-upload、job 查询与删除链路已落地；Worker 通过 `IngestionAdapterRegistry` 按 `asset_kind` dispatch，API 共享 orchestrator 不再理解 PDF/OCR/page/bbox
 - `pdf_pages / content_units / content_unit_embeddings` 真表和迁移已落地；Worker 会领取 queued ingest job、回收超时任务，先提取文本层，必要时用 RapidOCR + ONNX Runtime 渲染页面并识别，再按页生成 ContentUnit、批量调用 embedding provider、写入向量并推进 `chunking -> embedding -> ready`，同时支持 `embed_chunks` 回填已有 ContentUnit。
@@ -510,3 +512,9 @@ Release review / Beta / 公开发布是上述证据齐备后的派生门禁，�
 - Each new unlabeled region is cropped: RapidOCR for searchable text; abstract/low-OCR regions require the existing `image_caption` / gpt-5.5 vision path and fail closed (`image_caption_provider_not_configured` / empty caption). Units stay on the same PDF asset as `pdf_figure` + `pdf_region`.
 - Labeled figure/table layout detection is unchanged. Chat crop-on-hit was not implemented (would need save-contract work).
 - Verification: `uv run --python 3.12 --project apps/worker python -m pytest apps/worker/tests/test_pdf.py apps/worker/tests/test_pdf_ingestion.py -q` → `22 passed`.
+
+## 2026-09-01：R1.5 per-Run researcher admission 独立验收
+
+- R1.5 已通过独立 Critical 审计：`ACCEPT`，findings=0。实现保持既有 schema、外部 API、save/replay 和 permission 语义不变；R2 仍是独立的 PostgreSQL multi-Worker proof-only 阶段。
+- 真实 PostgreSQL 17.11 admission matrix 覆盖 cap=1、cap=N、数据库时间判定的过期 lease、同 Run 非researcher bypass、cap-full Run 排除后其他 eligible Run 推进，以及 Run/Step/Attempt/Event/Membership 全字段零 mutation。Artifact：`docs/evals/r15-postgres-admission-2026-08-31.json`；SHA-256：`eab095bd68a78972c5b80713d2746a816551eaf1d21bb24ee48016615104d9be`。
+- 最终门禁：R1.5 targeted `29 passed`，provider stub `5 passed`，Ruff changed-files gate、真实 PostgreSQL runner、临时数据库清理查询和 `git diff --check` 均通过。R2 为下一阶段，尚未在本记录中宣称开始或完成。

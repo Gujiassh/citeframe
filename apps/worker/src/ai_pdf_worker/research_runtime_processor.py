@@ -25,12 +25,13 @@ from ai_pdf_api.core.research_observability import (
 from ai_pdf_api.services.providers import (
     GenerationProvider,
 )
-
 from citeframe_contracts import (
     ApprovedResearchExecution,
     ResearchExecutionError,
     StepLease,
 )
+from citeframe_research_persistence import ResearchAdmissionDeferred
+
 from ai_pdf_worker.research_runtime_agents import GenerationResearchAgents
 from ai_pdf_worker.research_runtime_core import (
     LEASE_SECONDS,
@@ -45,11 +46,11 @@ from ai_pdf_worker.research_runtime_core import (
     _planning_runtime_payload,
     logger,
 )
+from ai_pdf_worker.research_runtime_handlers import SingleAttemptStepDispatcher
 from ai_pdf_worker.research_runtime_ports import (
     LedgeredGeneration,
     SqlResearchLedgerAdapter,
 )
-from ai_pdf_worker.research_runtime_handlers import SingleAttemptStepDispatcher
 
 
 @dataclass(frozen=True)
@@ -85,7 +86,22 @@ class ResearchWorkProcessor(_ApiPort):
                 status="recovered",
                 fields={"reclaimed_count": reclaimed},
             )
-        result = self._call("claim_next_research_step", write=True, worker_instance_id=self._worker_instance_id, lease_seconds=LEASE_SECONDS, now=_now())
+        excluded_run_ids: set[str] = set()
+        while True:
+            try:
+                result = self._call(
+                    "claim_next_research_step",
+                    write=True,
+                    worker_instance_id=self._worker_instance_id,
+                    lease_seconds=LEASE_SECONDS,
+                    now=_now(),
+                    excluded_run_ids=frozenset(excluded_run_ids),
+                )
+                break
+            except ResearchAdmissionDeferred as deferred:
+                if deferred.run_id in excluded_run_ids:
+                    raise ResearchPortError("research_admission_scan_repeated_run") from deferred
+                excluded_run_ids.add(deferred.run_id)
         if result is None:
             return None
         run_id = str(_field(result, "run_id"))

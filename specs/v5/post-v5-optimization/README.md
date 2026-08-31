@@ -1,8 +1,14 @@
 # Post-V5 Optimization
+> **Current execution status (2026-09-01):** R1.5 per-Run researcher admission received
+> independent Critical `ACCEPT` with findings=0. Accepted evidence:
+> `docs/evals/r15-postgres-admission-2026-08-31.json`, SHA-256
+> `eab095bd68a78972c5b80713d2746a816551eaf1d21bb24ee48016615104d9be`.
+> R2 PostgreSQL proof-only is the next stage. W1 SSE and
+> schema/external API/save/replay/permission changes remain blocked.
 
 Date: 2026-08-19
 
-Status: **Design re-audit and A1/A1b are accepted; PR #20 is merged at `origin/main@9f40241`; PR #21 head `1d81470` is merged at `origin/main@8674d4dc407048471f7b14b23b821e72529487bf` with `6/6` CI, delivering A2a/R0. R1 was independently `ACCEPTED` on 2026-08-25 (`High=0`, `Medium=0`, `Low=0`) across start `8674d4dc407048471f7b14b23b821e72529487bf`, historical initial candidate `f4a1d1d7451d707d90948612791d1bb2aac410f3` (`REWORK`), runtime rework `473213d79154f3fbcf6044e1c4e62ed65038e1c1`, ledger `652cfd47f8bc462038e1bd623afc2b33a4ce511a`, canonical docs `559997d073cc2d26fb346c30e2ab9f20550b673f`, delivery truth `80d395d4fd19c0146b22befc2929bc556cfe62fa`, and review `5a55489fef8380f78854f10666a2fdd2983beeff`. All R1 commits are local and not pushed; the branch has no upstream and no remote branch. R2 is the only next separately gated module; W1/per-Run admission and downstream remain blocked. No schema/API/save/replay/permission change is authorized**
+Status: **Design re-audit and A1/A1b are accepted; PR #20 is merged at `origin/main@9f40241`; PR #21 head `1d81470` is merged at `origin/main@8674d4dc407048471f7b14b23b821e72529487bf` with `6/6` CI, delivering A2a/R0. R1 was independently `ACCEPTED` on 2026-08-25 (`High=0`, `Medium=0`, `Low=0`) across start `8674d4dc407048471f7b14b23b821e72529487bf`, historical initial candidate `f4a1d1d7451d707d90948612791d1bb2aac410f3` (`REWORK`), runtime rework `473213d79154f3fbcf6044e1c4e62ed65038e1c1`, ledger `652cfd47f8bc462038e1bd623afc2b33a4ce511a`, canonical docs `559997d073cc2d26fb346c30e2ab9f20550b673f`, delivery truth `80d395d4fd19c0146b22befc2929bc556cfe62fa`, and review `5a55489fef8380f78854f10666a2fdd2983beeff`. The complete R1 chain was delivered by PR #22 at `origin/main@a616eea1350b095c6f229890d2c47e5010902330` with `6/6` CI. R1.5 admission is independently Critical ACCEPTED (findings=0); R2 proof-only is next; W1 SSE and downstream remain blocked. No schema/API/save/replay/permission change is authorized**
 
 Product stage: `internal_preview`
 
@@ -14,7 +20,7 @@ accepted with `High=0`, `Medium=0`, `Low=0`. A1 was independently accepted on `2
 accepted on `2026-08-21` by the follow-up Critical review (`High=0`, `Medium=0`, `Low=0`).
 Implementation evidence is recorded in `reviews/a1b-persistence-implementation-2026-08-20.md`;
 the reviewer-owned result is `reviews/a1b-persistence-critical-audit-2026-08-20.md`.
-A2a/R0 were delivered by PR #21 at `origin/main@8674d4d`. R1 chain `8674d4d -> f4a1d1d(REWORK) -> 473213d -> 652cfd4 -> 559997d -> 80d395d -> 5a55489` is independently `ACCEPTED (High=0, Medium=0, Low=0)` on 2026-08-25. All R1 commits are local/not pushed with no upstream or remote branch. R2 is the only next separately gated module; W1/admission/downstream remain blocked. No schema/API/save/replay/permission changes are authorized.
+A2a/R0 were delivered by PR #21 at `origin/main@8674d4d`. R1 chain `8674d4d -> f4a1d1d(REWORK) -> 473213d -> 652cfd4 -> 559997d -> 80d395d -> 5a55489` is independently `ACCEPTED (High=0, Medium=0, Low=0)` on 2026-08-25. The complete R1 chain was delivered by PR #22 at `origin/main@a616eea1350b095c6f229890d2c47e5010902330` with `6/6` CI. R1.5 admission is independently Critical ACCEPTED (findings=0); R2 proof-only is next; W1 SSE/downstream remain blocked. No schema/API/save/replay/permission changes are authorized.
 G/M/P and GitHub repository settings remain unauthorized.
 
 This package turns the 2026-08 architecture review into four bounded follow-up
@@ -23,7 +29,7 @@ lanes. A1 was independently accepted on `2026-08-20`; its evidence is recorded i
 accepted on `2026-08-21` by the follow-up Critical review (`High=0`, `Medium=0`, `Low=0`).
 Implementation evidence is recorded in `reviews/a1b-persistence-implementation-2026-08-20.md`;
 the reviewer-owned result is `reviews/a1b-persistence-critical-audit-2026-08-20.md`.
-A2a/R0 were delivered by PR #21 at `origin/main@8674d4d`. R1 chain `8674d4d -> f4a1d1d(REWORK) -> 473213d -> 652cfd4 -> 559997d -> 80d395d -> 5a55489` is independently `ACCEPTED (High=0, Medium=0, Low=0)` on 2026-08-25. All R1 commits are local/not pushed with no upstream or remote branch. R2 is the only next separately gated module; W1/admission/downstream remain blocked. No schema/API/save/replay/permission changes are
+A2a/R0 were delivered by PR #21 at `origin/main@8674d4d`. R1 chain `8674d4d -> f4a1d1d(REWORK) -> 473213d -> 652cfd4 -> 559997d -> 80d395d -> 5a55489` is independently `ACCEPTED (High=0, Medium=0, Low=0)` on 2026-08-25. The complete R1 chain was delivered by PR #22 at `origin/main@a616eea1350b095c6f229890d2c47e5010902330` with `6/6` CI. R1.5 admission is independently Critical ACCEPTED (findings=0); R2 proof-only is next; W1 SSE/downstream remain blocked. No schema/API/save/replay/permission changes are
 authorized, and G/M/P, GitHub settings, paid evaluation, and user study remain outside
 this status.
 
@@ -57,7 +63,7 @@ this status.
 1. Record the owner-authorized A0/R/W direction and the accepted design re-audit (`High=0`, `Medium=0`, `Low=0`).
 2. Preserve the final independent A1b follow-up Critical review ACCEPT (`High=0`, `Medium=0`, `Low=0`) and its clean-image evidence in the linked artifacts.
 3. Preserve PR #21 delivery at `origin/main@8674d4d` and its `6/6` CI evidence; A2a/R0 are delivered, not local-pending work.
-4. Preserve local R1 `ACCEPT` chain through review `5a55489`; remote push/PR/integration remains pending. R2 is the only next separately gated module. Keep W1/admission/downstream blocked.
+4. Preserve the R1 `ACCEPT` chain through review `5a55489` and its delivery by PR #22 at `origin/main@a616eea` with `6/6` CI. R2 is the only next separately gated module. Keep W1/admission/downstream blocked.
 5. Migrate all nine ingestion modalities in A3/A4 before claiming an API-source-free Worker candidate in A5.
 6. Keep G/M/P and GitHub settings behind their own authorization gates.
 

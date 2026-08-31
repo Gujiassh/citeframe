@@ -1,19 +1,31 @@
 from __future__ import annotations
 
-from collections.abc import Callable
 import hashlib
 import secrets
+from collections.abc import Callable
 from datetime import UTC, datetime, timedelta
 
-from sqlalchemy import exists, select, func
-from sqlalchemy.orm import Session
 from citeframe_persistence.models import (
-    ResearchBudgetLedger, ResearchExecutionSnapshot, ResearchPlanRevision, ResearchRun,
-    ResearchStep, ResearchStepAttempt, ResearchStepDependency,
+    ResearchBudgetLedger,
+    ResearchExecutionSnapshot,
+    ResearchPlanRevision,
+    ResearchRun,
+    ResearchStep,
+    ResearchStepAttempt,
+    ResearchStepDependency,
 )
-from .errors import ResearchError
+from sqlalchemy import exists, func, select
+from sqlalchemy.orm import Session
+
+from .errors import ResearchAdmissionDeferred, ResearchError
 from .events import append_research_event
-from .locks import locate_attempt, lock_attempt_chain, lock_attempt_chain_with_steps, lock_run, lock_step
+from .locks import (
+    locate_attempt,
+    lock_attempt_chain,
+    lock_attempt_chain_with_steps,
+    lock_run,
+    lock_step,
+)
 from .membership import ensure_creator_membership
 from .types import ResearchStepLease, StepCompletionCallback
 
@@ -233,6 +245,7 @@ def claim_next_research_step(
     worker_instance_id: str,
     lease_seconds: int = 300,
     now: datetime | None = None,
+    excluded_run_ids: frozenset[str] = frozenset(),
 ) -> ResearchStepLease | None:
     claimed_at = now or datetime.now(UTC)
     eligible = (
@@ -255,6 +268,7 @@ def claim_next_research_step(
             select(ResearchRun)
             .where(
                 ResearchRun.status.in_(("planning", "queued", "running")),
+                ResearchRun.id.not_in(excluded_run_ids),
                 exists(select(ResearchStep.id).where(*eligible)),
             )
             .order_by(first_queued_at, first_created_at, first_step_id, ResearchRun.id)
@@ -264,6 +278,30 @@ def claim_next_research_step(
         )
     if run is None:
         return None
+    snapshot = (
+        db.get(ResearchExecutionSnapshot, run.approved_execution_snapshot_id)
+        if run.approved_execution_snapshot_id is not None
+        else None
+    )
+    cap_full = False
+    if snapshot is not None:
+        if snapshot.max_parallel_researchers <= 0:
+            raise ResearchError(
+                "research_state_conflict",
+                "Research execution snapshot has an invalid researcher concurrency cap.",
+                409,
+            )
+        active_researchers = db.scalar(
+            select(func.count(ResearchStepAttempt.id))
+            .join(ResearchStep, ResearchStep.id == ResearchStepAttempt.step_id)
+            .where(
+                ResearchStep.run_id == run.id,
+                ResearchStep.step_kind == "researcher",
+                ResearchStepAttempt.status == "running",
+                ResearchStepAttempt.lease_expires_at > func.now(),
+            )
+        ) or 0
+        cap_full = active_researchers >= snapshot.max_parallel_researchers
     with db.no_autoflush:
         step = db.scalar(
             select(ResearchStep)
@@ -271,6 +309,11 @@ def claim_next_research_step(
                 ResearchStep.run_id == run.id,
                 ResearchStep.status == "queued",
                 ResearchStep.step_kind.in_(WORKER_EXECUTABLE_STEP_KINDS),
+                *(
+                    (ResearchStep.step_kind != "researcher",)
+                    if cap_full
+                    else ()
+                ),
             )
             .order_by(*step_order)
             .with_for_update(of=ResearchStep, skip_locked=True)
@@ -278,6 +321,8 @@ def claim_next_research_step(
             .limit(1)
         )
     if step is None:
+        if cap_full:
+            raise ResearchAdmissionDeferred(run.id)
         return None
     return _lease_locked_step(
         db,

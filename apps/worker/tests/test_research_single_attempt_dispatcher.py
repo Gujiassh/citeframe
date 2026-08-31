@@ -5,7 +5,17 @@ import sys
 from threading import Barrier, Event, Lock
 from time import monotonic, sleep
 
+import ai_pdf_worker.main as worker_main
+import ai_pdf_worker.research_runtime_handlers as handlers_module
+import ai_pdf_worker.research_runtime_processor as processor_module
 import pytest
+from ai_pdf_worker.research_runtime_core import ResearchPortError
+from ai_pdf_worker.research_runtime_handlers import (
+    HUMAN_OWNED_STEP_KINDS,
+    PERSISTED_STEP_KINDS,
+    SingleAttemptStepDispatcher,
+)
+from ai_pdf_worker.research_runtime_processor import ResearchWorkProcessor
 from citeframe_contracts import (
     ApprovedResearchExecution,
     BranchResult,
@@ -14,18 +24,7 @@ from citeframe_contracts import (
     StepLease,
     SynthesisSelection,
 )
-
-import ai_pdf_worker.main as worker_main
-import ai_pdf_worker.research_runtime_handlers as handlers_module
-import ai_pdf_worker.research_runtime_processor as processor_module
-from ai_pdf_worker.research_runtime_core import ResearchPortError
-from ai_pdf_worker.research_runtime_handlers import (
-    HUMAN_OWNED_STEP_KINDS,
-    PERSISTED_STEP_KINDS,
-    SingleAttemptStepDispatcher,
-)
-from ai_pdf_worker.research_runtime_processor import ResearchWorkProcessor
-
+from citeframe_research_persistence import ResearchAdmissionDeferred
 
 LEASE = StepLease("step-1", "attempt-1", 1, "lease-token")
 
@@ -128,7 +127,7 @@ def test_process_one_keeps_planner_in_waiting_without_dispatching_another_step(
         _ledger: object,
         claimed: object,
     ) -> None:
-        planner_calls.append(getattr(claimed, "step_kind"))
+        planner_calls.append(claimed.step_kind)
 
     class ForbiddenDispatcher:
         def __init__(self, *_args: object, **_kwargs: object) -> None:
@@ -295,7 +294,7 @@ def test_dispatcher_executes_only_the_claimed_step_kind_handler(
     outcome = dispatcher.execute(
         run_id="run-1",
         workspace_id="workspace-1",
-        step_key=f"researcher:branch-1" if step_kind == "researcher" else step_kind,
+        step_key="researcher:branch-1" if step_kind == "researcher" else step_kind,
         step_kind=step_kind,
         branch_key="branch-1" if step_kind == "researcher" else None,
         lease=LEASE,
@@ -493,6 +492,48 @@ def test_production_shaped_two_loop_pool_overlaps_independent_processors(
     assert wall < 0.35
 
 
+def test_claim_retries_cap_full_runs_in_fresh_uows() -> None:
+    sessions: list[object] = []
+
+    class Session:
+        def __init__(self) -> None:
+            self.commits = 0
+            self.rollbacks = 0
+            self.closed = 0
+
+        def commit(self) -> None:
+            self.commits += 1
+
+        def rollback(self) -> None:
+            self.rollbacks += 1
+
+        def close(self) -> None:
+            self.closed += 1
+
+    def factory() -> Session:
+        session = Session()
+        sessions.append(session)
+        return session
+
+    class Service:
+        def reclaim_expired_research_steps(self, _db: object, **_kwargs: object) -> int:
+            return 0
+
+        def claim_next_research_step(self, _db: object, **kwargs: object) -> None:
+            excluded = kwargs["excluded_run_ids"]
+            if not excluded:
+                raise ResearchAdmissionDeferred("run-full")
+            assert excluded == frozenset({"run-full"})
+
+    processor = ResearchWorkProcessor(factory, Service(), worker_instance_id="worker")
+    assert processor.claim() is None
+    assert len(sessions) == 3
+    reclaim_session, deferred_session, exhausted_session = sessions
+    assert (reclaim_session.commits, reclaim_session.rollbacks, reclaim_session.closed) == (1, 0, 1)
+    assert (deferred_session.commits, deferred_session.rollbacks, deferred_session.closed) == (0, 1, 1)
+    assert (exhausted_session.commits, exhausted_session.rollbacks, exhausted_session.closed) == (1, 0, 1)
+
+
 def test_research_pool_shutdown_is_bounded_when_idle() -> None:
     stop_event = Event()
 
@@ -558,7 +599,6 @@ def test_production_runtime_import_does_not_load_langgraph() -> None:
         ],
         check=True,
         text=True,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
+        capture_output=True,
     )
     assert "langgraph" not in completed.stdout.lower()

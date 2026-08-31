@@ -33,7 +33,6 @@ from ai_pdf_api.services.providers import (
     GenerationMessage,
 )
 from ai_pdf_api.services.research.research_agent_io_registry import resolve_registry
-
 from citeframe_contracts import (
     ApprovedResearchExecution,
     EvidenceHandle,
@@ -172,7 +171,7 @@ def _observed_tool(
 
 
 class ResearchWorkerService(Protocol):
-    def claim_next_research_step(self, db: Any, *, worker_instance_id: str, lease_seconds: int, now: datetime) -> Any: ...
+    def claim_next_research_step(self, db: Any, *, worker_instance_id: str, lease_seconds: int, now: datetime, excluded_run_ids: frozenset[str]) -> Any: ...
 
     def claim_specific_research_step(
         self,

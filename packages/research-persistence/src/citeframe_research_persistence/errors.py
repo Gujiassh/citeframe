@@ -16,6 +16,14 @@ class ResearchError(RuntimeError):
         self.request_id = request_id
 
 
+class ResearchAdmissionDeferred(RuntimeError):
+    """Internal Worker signal: retry the claim scan without this cap-full Run."""
+
+    def __init__(self, run_id: str) -> None:
+        super().__init__("researcher admission is temporarily full")
+        self.run_id = run_id
+
+
 def canonical_json(value: object) -> bytes:
     return json.dumps(value, sort_keys=True, separators=(",", ":"), ensure_ascii=False).encode("utf-8")
 

@@ -1,21 +1,21 @@
 # Citeframe 当前执行计划（整理版）
 
 Date: 2026-08-18
-Status: **current execution SSOT**（工程主线已关闭，当前仅维护 residual execution）
+Status: **current execution SSOT**（active post-v5 engineering hardening）
 Product stage: `internal_preview`
 
-本文是唯一当前执行入口。V5-F、architecture-hardening 和 PPTX layout/embed preview 已在 main 关闭；旧的 W1/PDF-Visual 并行计划只保留为历史记录，不代表仍在开发。当前只维护 ops 真复配与 V5-E 后置证据的状态、owner、阻塞条件和下一步。
+本文是唯一当前执行入口。既有 V5-F 工程线已在 main 关闭；post-v5 hardening 的 **R1.5 per-Run researcher admission** 已于 2026-09-01 通过独立 Critical 审计（`ACCEPT`, findings=0），当前下一阶段是 **R2 PostgreSQL multi-Worker proof-only**。二者都不是历史 V5-F 的 W1。
 更细的字段合同仍以下游文档为准；冲突时以本文当前状态和已批准 decision 为准。
 
 ---
 
 ## 1. 当前目标与边界
 
-工程主线已经收口。当前目标不是继续开启 W1 功能开发，而是为 `internal_preview` 补齐发布前证据和运行环境证据：
+既有产品工程主线已经收口，但 post-v5 hardening 已获持续开发授权。当前目标是：
 
-1. **Ops 真复配**：在环境就绪时完成真实 Ollama reindex、preview 真 key 冒烟和多 provider live E2E。
-2. **V5-E 后置证据**：取得明确授权后，以新目录运行 R803 真模型质量评估，并完成 M404 用户价值协议、执行和发布判断。
-3. **Residual 记录**：任何失败、阻塞或环境缺失都写入本入口，不以“工程门通过”替代模型质量或用户价值结论。
+1. **R1.5 admission**：使用既有 execution snapshot cap 与 Attempt rows，实施 Worker 内部 per-Run researcher admission；不改 schema、外部 API、save/replay/permission 语义。
+2. **R2 proof-only**：R1.5 独立审计通过后，用真实 PostgreSQL 和至少两个 Worker 证明 contention/recovery/event oracle；R2 不夹带 admission 生产实现。
+3. **Ops/V5-E residual**：OPS-1 仍需真实 preview 环境；R803 仍需预算/授权；M404 仍需真实用户输入。工程门通过不能替代模型质量或用户价值结论。
 
 **不做**：在没有独立决策包的情况下重开动态 Agent DAG、`ai_pdf_*` 重命名、新模态或更强 mixed Research seed。Office/PPT 深度 WYSIWYG 继续作为已知产品限制。
 
@@ -83,10 +83,12 @@ stub 的固定回答 **不是** 模型质量，只证明管道通。
 preview/accept 的环境分型仍有效，但它是运行约束，不是 W1 的开工状态。
 
 
-### 3.1 Residual execution board（唯一 active residual）
+### 3.1 Current execution board
 
 | ID | 当前状态 | 前置条件 | 完成证据 |
 |---|---|---|---|
+| R1.5 | `accepted` | R1 已交付；冻结内部 Worker↔persistence port 变化 | 独立 Critical `ACCEPT`（findings=0）；[`r15-postgres-admission-2026-08-31.json`](../../../docs/evals/r15-postgres-admission-2026-08-31.json)，SHA-256 `eab095bd68a78972c5b80713d2746a816551eaf1d21bb24ee48016615104d9be` |
+| R2 | `authorized_next` | R1.5 独立审计已 ACCEPT | 真实 PostgreSQL、2+ Worker contention/recovery matrix、event sequence oracle、无重复 terminal facts |
 | OPS-1 | `pending_environment` | 可用的 Ollama、preview 真 key 和目标 provider profile；指定 owner | reindex 命令/日志、索引合同核验、preview smoke 和多 provider live E2E artifact |
 | V5-E-R803 | `deferred_authorization` / `not_evaluable` | owner 明确批准预算、provider/profile 和全新 campaign 目录 | 新 campaign 的完整 round/report/hash；冻结 v1 不恢复、不覆盖 |
 | V5-E-M404 | `blocked_input` / `not_evaluable` | 批准协议、目标用户和合格任务样本 | M404 原始记录、资格判定和用户价值报告 |
@@ -95,7 +97,7 @@ preview/accept 的环境分型仍有效，但它是运行约束，不是 W1 的�
 
 **非 active residual**：mixed Research seed、动态 Research DAG、`ai_pdf_*` 重命名、新模态、Office/PPT 深度 WYSIWYG 属于产品债或独立决策包，不进入本 board。
 
-下一步只做两类选择：为 OPS-1 指定环境和 owner，或为 V5-E 明确授权/输入。未满足前置条件时保留当前状态，不虚构进行中。
+下一步固定为 R2 proof-only。W1 SSE、schema/API/save/replay/permission 变化继续 blocked。
 
 ---
 
@@ -221,8 +223,10 @@ preview embedding 默认走真 Ollama；accept 才使用 18081 stub。既有 stu
 | V5-F / architecture-hardening / PPTX layout | **工程已关闭（main）** |
 | 产品阶段 | **`internal_preview`** |
 | W1 / PDF-Visual | **已完成；无当前实现任务** |
+| R1.5 per-Run admission | **独立 Critical `ACCEPT`（2026-09-01，findings=0）** |
+| R2 PostgreSQL proof | **下一阶段；proof-only，不得夹带 admission 生产逻辑** |
 | Ops 真复配（OPS-1） | **active residual：等待环境/owner 证据** |
 | R803 真实模型质量 | **active residual：`not_evaluable`；需明确授权后新 campaign** |
 | M404 用户价值 | **active residual：`not_evaluable`；需协议、目标用户和执行证据** |
 | Release review | **派生门禁，非独立 residual** |
-| 下一动作 | **先选定 OPS 或 V5-E owner，记录命令/环境/artifact；完成后回写本表** |
+| 下一动作 | **进入 R2 PostgreSQL multi-Worker proof-only** |

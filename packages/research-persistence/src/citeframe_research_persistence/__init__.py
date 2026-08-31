@@ -2,7 +2,13 @@
 from .commands import *
 from .commands import __all__ as _command_exports
 from .completion import BranchClaimDraft, VerificationResult
-from .errors import ResearchError, canonical_json, canonical_sha256, validate_idempotency_key
+from .errors import (
+    ResearchAdmissionDeferred,
+    ResearchError,
+    canonical_json,
+    canonical_sha256,
+    validate_idempotency_key,
+)
 from .evidence import evidence_source_fingerprint, validate_evidence_source_fingerprint
 from .policy import *
 from .repositories import ResearchRepository
@@ -19,6 +25,7 @@ __all__ = [
     "PricingRate",
     "ProviderReservation",
     "ResearchError",
+    "ResearchAdmissionDeferred",
     "ResearchRepository",
     "ResearchStepLease",
     "ResearchUnitOfWork",

@@ -1,0 +1,45 @@
+{
+  "artifactKind": "r15-postgres-admission-v2",
+  "baseSha": "a616eea1350b095c6f229890d2c47e5010902330",
+  "candidateProductionAndRunnerHash": "21efc86e3f4e30d2de3ebcd66f91aa2149fecec8ea42085ee96d9b60211db61f",
+  "candidateTrackedDiffHash": "ab98f4d34d7299e7030ef960dbd73ef1a55337c5751916fe913037e06d0e6439",
+  "exactCommand": "uv run --project apps/worker python infra/scripts/run-r15-postgres-admission.py",
+  "generatedAt": "2026-08-31T15:59:28.696161+00:00",
+  "passed": true,
+  "payloadWithoutHashFieldSha256": "85f86cd5f66641809dc05e498dd5975ccafbe400be4fe644f512f4fe4d4102f2",
+  "postgresql": {
+    "pgTrgm": "1.6",
+    "server": "17.11",
+    "vector": "0.8.6"
+  },
+  "qualityEvidence": false,
+  "scenarios": {
+    "capN": {
+      "cap": 2,
+      "claimed": 2,
+      "third": "deferred"
+    },
+    "capOneContention": {
+      "attemptCount": 1,
+      "eventCount": 2,
+      "outcomes": [
+        "claimed",
+        "deferred"
+      ],
+      "workerIds": 2
+    },
+    "exclusionAndZeroMutation": {
+      "fullRunZeroMutation": true,
+      "otherRunClaimed": "bcd4f944-eb05-56ed-a9ba-4626d62b4eec"
+    },
+    "expiredDbTime": {
+      "clock": "database func.now()",
+      "expiredAttemptStillRunning": true,
+      "secondClaimed": true
+    },
+    "nonresearcherBypass": {
+      "claimedKind": "join"
+    }
+  },
+  "temporarySchema": "citeframe_r0_3f25569d9eb6"
+}

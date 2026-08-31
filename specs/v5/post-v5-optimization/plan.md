@@ -1,11 +1,16 @@
 # Plan: Post-V5 Optimization
+> **Current gated sequence (2026-09-01):** R1.5 admission received independent Critical
+> `ACCEPT` with findings=0. Its PostgreSQL artifact is
+> `docs/evals/r15-postgres-admission-2026-08-31.json` at SHA-256
+> `eab095bd68a78972c5b80713d2746a816551eaf1d21bb24ee48016615104d9be`.
+> R2 PostgreSQL proof-only is the next stage.
 
 ## 1. Sequencing Principle
 
 The owner-authorized architecture freeze and design re-audit are complete: the design audit
 accepted with `High=0`, `Medium=0`, `Low=0`. A1 implementation was independently accepted
 on `2026-08-20`. A1b/A2-foundation was independently accepted on `2026-08-21` by the
-follow-up Critical review (`High=0`, `Medium=0`, `Low=0`); PR #20 is merged at `origin/main@9f40241`; PR #21 head `1d81470` is merged at `origin/main@8674d4dc407048471f7b14b23b821e72529487bf` with `6/6` CI, delivering A2a/R0. R1 was independently `ACCEPTED` on 2026-08-25 (`High=0`, `Medium=0`, `Low=0`) across start `8674d4dc407048471f7b14b23b821e72529487bf`, historical initial candidate `f4a1d1d7451d707d90948612791d1bb2aac410f3` (`REWORK`), runtime rework `473213d79154f3fbcf6044e1c4e62ed65038e1c1`, ledger `652cfd47f8bc462038e1bd623afc2b33a4ce511a`, canonical docs `559997d073cc2d26fb346c30e2ab9f20550b673f`, delivery truth `80d395d4fd19c0146b22befc2929bc556cfe62fa`, and review `5a55489fef8380f78854f10666a2fdd2983beeff`. All R1 commits are local and not pushed; the branch has no upstream and no remote branch. R2 is the only next separately gated module; W1/per-Run admission and downstream remain blocked. No schema/API/save/replay/permission change is authorized. Product
+follow-up Critical review (`High=0`, `Medium=0`, `Low=0`); PR #20 is merged at `origin/main@9f40241`; PR #21 head `1d81470` is merged at `origin/main@8674d4dc407048471f7b14b23b821e72529487bf` with `6/6` CI, delivering A2a/R0. R1 was independently `ACCEPTED` on 2026-08-25 (`High=0`, `Medium=0`, `Low=0`) across start `8674d4dc407048471f7b14b23b821e72529487bf`, historical initial candidate `f4a1d1d7451d707d90948612791d1bb2aac410f3` (`REWORK`), runtime rework `473213d79154f3fbcf6044e1c4e62ed65038e1c1`, ledger `652cfd47f8bc462038e1bd623afc2b33a4ce511a`, canonical docs `559997d073cc2d26fb346c30e2ab9f20550b673f`, delivery truth `80d395d4fd19c0146b22befc2929bc556cfe62fa`, and review `5a55489fef8380f78854f10666a2fdd2983beeff`. The complete R1 chain was delivered by PR #22 at `origin/main@a616eea1350b095c6f229890d2c47e5010902330` with `6/6` CI. R1.5 admission is independently Critical ACCEPTED (findings=0); R2 proof-only is next; W1 SSE and downstream remain blocked. No schema/API/save/replay/permission change is authorized. Product
 depth follows a capability/quality matrix rather than preceding it.
 
 ```text
@@ -18,7 +23,7 @@ Wave 0: A0/R/W target freeze + design re-audit `ACCEPT` (`High=0`, `Medium=0`, `
 
 Wave numbers express dependencies, not authorization. A1 was independently accepted
 on `2026-08-20`; A1b/A2-foundation was independently accepted on `2026-08-21` by the
-follow-up Critical review (`High=0`, `Medium=0`, `Low=0`). PR #20 is merged at `origin/main@9f40241`; PR #21 head `1d81470` is merged at `origin/main@8674d4dc407048471f7b14b23b821e72529487bf` with `6/6` CI, delivering A2a/R0. R1 was independently `ACCEPTED` on 2026-08-25 (`High=0`, `Medium=0`, `Low=0`) across start `8674d4dc407048471f7b14b23b821e72529487bf`, historical initial candidate `f4a1d1d7451d707d90948612791d1bb2aac410f3` (`REWORK`), runtime rework `473213d79154f3fbcf6044e1c4e62ed65038e1c1`, ledger `652cfd47f8bc462038e1bd623afc2b33a4ce511a`, canonical docs `559997d073cc2d26fb346c30e2ab9f20550b673f`, delivery truth `80d395d4fd19c0146b22befc2929bc556cfe62fa`, and review `5a55489fef8380f78854f10666a2fdd2983beeff`. All R1 commits are local and not pushed; the branch has no upstream and no remote branch. R2 is the only next separately gated module; W1/per-Run admission and downstream remain blocked. No schema/API/save/replay/permission change is authorized. No schema/API/save/
+follow-up Critical review (`High=0`, `Medium=0`, `Low=0`). PR #20 is merged at `origin/main@9f40241`; PR #21 head `1d81470` is merged at `origin/main@8674d4dc407048471f7b14b23b821e72529487bf` with `6/6` CI, delivering A2a/R0. R1 was independently `ACCEPTED` on 2026-08-25 (`High=0`, `Medium=0`, `Low=0`) across start `8674d4dc407048471f7b14b23b821e72529487bf`, historical initial candidate `f4a1d1d7451d707d90948612791d1bb2aac410f3` (`REWORK`), runtime rework `473213d79154f3fbcf6044e1c4e62ed65038e1c1`, ledger `652cfd47f8bc462038e1bd623afc2b33a4ce511a`, canonical docs `559997d073cc2d26fb346c30e2ab9f20550b673f`, delivery truth `80d395d4fd19c0146b22befc2929bc556cfe62fa`, and review `5a55489fef8380f78854f10666a2fdd2983beeff`. The complete R1 chain was delivered by PR #22 at `origin/main@a616eea1350b095c6f229890d2c47e5010902330` with `6/6` CI. R1.5 admission is independently Critical ACCEPTED (findings=0); R2 proof-only is next; W1 SSE and downstream remain blocked. No schema/API/save/replay/permission change is authorized. No schema/API/save/
 replay/permission changes are authorized. G/M/P and GitHub settings remain separate
 unauthorized lanes.
 
@@ -48,7 +53,7 @@ Worker orchestration, Worker-side Research UoW commit process, pure contracts, a
 shared `citeframe_research_persistence` behavior implementation over neutral mappings. The
 design re-audit is accepted (`High=0`, `Medium=0`, `Low=0`). A1 implementation was
 independently accepted on `2026-08-20`; A1b/A2-foundation was independently accepted on
-`2026-08-21` by the follow-up Critical review (`High=0`, `Medium=0`, `Low=0`). A2a/R0 are delivered at `origin/main@8674d4d`. R1 is independently `ACCEPTED (High=0, Medium=0, Low=0)` at local review `5a55489`; remote push/PR/integration pending. R2 is the only next separately gated module; W1/admission/downstream remain blocked; no schema/API/save/replay/permission change is authorized.
+`2026-08-21` by the follow-up Critical review (`High=0`, `Medium=0`, `Low=0`). A2a/R0 are delivered at `origin/main@8674d4d`. R1 is independently `ACCEPTED (High=0, Medium=0, Low=0)` at review `5a55489` and delivered by PR #22 at `origin/main@a616eea` with `6/6` CI. R1.5 admission is independently Critical ACCEPTED (findings=0); R2 proof-only is next; W1 SSE/downstream remain blocked; no schema/API/save/replay/permission change is authorized.
 
 | Slice | Scope | Estimate | Exit gate |
 | --- | --- | ---: | --- |
@@ -78,8 +83,8 @@ runtime rework `473213d79154f3fbcf6044e1c4e62ed65038e1c1`; implementation ledger
 `559997d073cc2d26fb346c30e2ab9f20550b673f`; delivery truth
 `80d395d4fd19c0146b22befc2929bc556cfe62fa`; final Critical
 [`ACCEPT (High=0, Medium=0, Low=0)`](reviews/r1-single-attempt-dispatcher-critical-review-2026-08-24.md)
-at review `5a55489fef8380f78854f10666a2fdd2983beeff`. All are local/not pushed;
-no upstream or remote branch exists. Evidence: Worker `349`, named gate `64+40`, API `132`,
+at review `5a55489fef8380f78854f10666a2fdd2983beeff` and delivered by PR #22 at
+`origin/main@a616eea1350b095c6f229890d2c47e5010902330` with `6/6` CI. Evidence: Worker `349`, named gate `64+40`, API `132`,
 A2a `equal=true` handled `3 -> 8` / UoW `43`, PostgreSQL `7/7` deadlocks `0`, human gate
 zero-mutation, causal errors preserved, and LangGraph absent from runtime imports. R2 is the
 only next separately gated module; W1/admission/downstream remain blocked.
