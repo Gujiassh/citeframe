@@ -80,8 +80,15 @@ AI_PDF_OLLAMA_BASE_URL=http://127.0.0.1:18081
 
 ## Web
 
-BFF 仍读 `apps/web/.env.local`（`AI_PDF_API_BASE_URL=http://127.0.0.1:8000`）。
-profile 切换的是 **API/Worker 后端**，Web 一般不用换。
+BFF 读取 `apps/web/.env.local`。先从 `apps/web/.env.example` 复制，至少配置：
+
+- `AI_PDF_API_BASE_URL=http://127.0.0.1:8000`；
+- 与 API 完全一致的 `AI_PDF_API_INTERNAL_TOKEN`；
+- 独立且不可提交的 `AI_PDF_SESSION_SECRET`，用于 httpOnly session cookie 签名。
+
+profile 主要切换 **API/Worker 后端**，但 Web 的 internal token 必须与所选 profile
+一致。缺少 `AI_PDF_SESSION_SECRET` 时注册 API 仍可成功，登录 BFF 会明确 fail closed，
+不会创建未签名 session。
 
 ## 验收脚本
 

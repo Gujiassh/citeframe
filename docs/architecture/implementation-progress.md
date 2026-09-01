@@ -108,7 +108,7 @@ Release review / Beta / 公开发布是上述证据齐备后的派生门禁，�
 
 当前（2026-08-18）：工程主线已关。main tip 含 V5-F、architecture-hardening（PR #14/#15）、PPTX layout+hash（PR #16/#17）、preview 默认真 Ollama embed。产品阶段仍为 `internal_preview`。主动缺口是 **V5-E（R803/M404）** 与 **ops 真复配**，不是功能断链。残差清单见 §6。
 
-2026-08-31 Windows native accept 复配：在无 Docker/无管理员权限环境中，使用 PostgreSQL 17.11 portable + pgvector 0.8.6 + MinIO Windows server + accept provider 完成真实 PostgreSQL/MinIO/API/Worker/Web 启动。Alembic 到 `m7a8b9c0d1e2`，API readiness 全绿；浏览器已走通 PDF 摄取/12 页渲染/Quick Answer citation/引用笔记与固定 DAG Research。Research 使用确定性 stub 结构化输出，只是工程证据，不是模型质量证据。Windows 步骤与 digest 见 `docs/architecture/windows-local-development.md`。
+2026-08-31 Windows native accept 复配：在无 Docker/无管理员权限环境中，使用 PostgreSQL 17.11 portable + pgvector 0.8.6 + MinIO Windows server + accept provider 完成真实 PostgreSQL/MinIO/API/Worker/Web 启动。Alembic 到 `m7a8b9c0d1e2`，API readiness 全绿；浏览器已走通 PDF 摄取/12 页渲染/Quick Answer citation/引用笔记与固定 DAG Research。2026-09-01 在 `main@f115846` 重新执行注册后登录、Workspace 创建、设置保存、12 页 PDF Viewer、Quick Answer 六条 citation、p.8 跳转、source-linked Note、Research plan approval、8-step DAG、2 Artifacts 和刷新恢复；浏览器 console 为零 warning/error。复验发现 accept template 缺少 `AI_PDF_SESSION_SECRET` 会使有效登录在 BFF 签名阶段返回 500，Windows 指南的 Worker module 缺少 `.main` 无法启动，MinIO 指向未创建的目录，preview API/Worker 示例也未加载已复制的 profile；现已补齐 Web/accept 模板、统一 internal token、分离 Web `.env.local` 与 preview backend profile、修正文档并用合同测试锁定。普通 CI 的 authenticated smoke 仍是条件执行，不能冒充本次真实 Windows 浏览器证据。Research 使用确定性 stub 结构化输出，只是工程证据，不是模型质量证据。Windows 步骤与 digest 见 `docs/architecture/windows-local-development.md`。
 
 
 ## 2026-08-13：PDF 页内视觉列入开发计划

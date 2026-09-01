@@ -38,18 +38,36 @@ docker compose -f infra/docker/compose.yml up -d
 uv run --project apps/api alembic -c apps/api/alembic.ini upgrade head
 ```
 
-Start Web, API, and Worker in three PowerShell terminals:
+Replace the Web session signing placeholder in `apps/web/.env.local`. Keep
+`AI_PDF_API_INTERNAL_TOKEN` identical in `apps/web/.env.local` and
+`infra/env/preview.local.env`.
+
+For native PowerShell, start Web in one terminal without importing the backend profile; Next
+loads `apps/web/.env.local` itself:
 
 ```powershell
 pnpm dev:web
+```
+
+In the API and Worker terminals, load `infra/env/preview.local.env` before starting the
+process. Run one of the final two commands per terminal:
+
+```powershell
+$profile = Resolve-Path infra/env/preview.local.env
+Get-Content $profile | Where-Object { $_ -match '^[A-Za-z_][A-Za-z0-9_]*=' } | ForEach-Object { $k,$v=$_.Split('=',2); Set-Item "Env:$k" $v }
+
+# Run one of these per terminal after loading the backend profile:
 pnpm dev:api
 pnpm dev:worker
 ```
 
 The Bash profile helper under `infra/scripts/citeframe-local-env.sh` requires Git Bash or
 WSL. Native PowerShell users may start the three host processes directly as above. Keep the
-same values in API and Worker environments, especially the internal token and embedding
-provider/model/index version.
+internal token identical between Web and the API/Worker profile; keep provider/model/index
+settings identical between API and Worker. `apps/web/.env.local` must define its own
+`AI_PDF_SESSION_SECRET`; otherwise a valid API login reaches the BFF but session-cookie signing
+fails closed with HTTP 500. Do not export a second Web session secret from the preview backend
+profile because process environment would override Next's `.env.local`.
 
 Open <http://localhost:3000>, register a user, create a workspace, upload a fixture from
 `docs/fixtures/`, wait for ingestion to become ready, ask a scoped question, open its
@@ -113,7 +131,7 @@ uv run --project apps/api alembic -c apps/api/alembic.ini current
 ```
 
 The expected head is `m7a8b9c0d1e2`. Start MinIO with `--address :9010
---console-address :9011`, load `infra/env/accept.env.example` into the API and Worker
+--console-address :9011`, load `infra/env/accept.env.example` into the Web, API, and Worker
 process environments, and start the accept provider separately. Redis is part of the
 deployment Compose baseline, but the current local business path uses PostgreSQL jobs and
 does not require Redis to complete the authenticated accept flow. This does not remove
@@ -157,18 +175,19 @@ Copy-Item $runtime/pgvector/vector.control,$runtime/pgvector/vector--*.sql $runt
 
 `SUPERUSER` is strictly a **local acceptance bootstrap equivalence** for Compose's initial
 `POSTGRES_USER`; it is not a production-role recommendation. Load the accept environment
-without persisting secrets, then launch each foreground process in its own PowerShell:
+in every PowerShell that launches Web, API, or Worker. The example contains only local
+acceptance placeholders, including the Web session-signing value; do not reuse them outside
+an isolated local acceptance environment. Then launch each foreground process:
 
 ```powershell
 Get-Content infra/env/accept.env.example | Where-Object { $_ -match '^[A-Za-z_][A-Za-z0-9_]*=' } | ForEach-Object { $k,$v=$_.Split('=',2); Set-Item "Env:$k" $v }
 $env:DATABASE_URL='postgresql+psycopg://ai_pdf:ai_pdf_dev@127.0.0.1:5432/ai_pdf_workspace'
 $env:AI_PDF_DATABASE_URL=$env:DATABASE_URL
-$env:MINIO_ENDPOINT='127.0.0.1:9010'
 uv run --project apps/api python apps/api/scripts/provider_m403b_stub.py
 uv run --project apps/api uvicorn ai_pdf_api.main:app --app-dir apps/api/src --host 127.0.0.1 --port 8000
-uv run --project apps/worker python -m ai_pdf_worker
+uv run --project apps/worker python -m ai_pdf_worker.main
 pnpm --dir apps/web dev
-& $runtime/minio/minio.exe server $runtime/data/minio --address :9010 --console-address :9011
+& $runtime/downloads/minio.exe server $runtime/data/minio --address :9010 --console-address :9011
 ```
 
 Stop foreground processes with `Ctrl+C`, then stop PostgreSQL with:

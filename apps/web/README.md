@@ -30,6 +30,16 @@
 
 ### 在仓库根目录运行
 
+首次启动先创建本地 BFF 环境文件：
+
+```bash
+cp apps/web/.env.example apps/web/.env.local
+```
+
+将 `AI_PDF_API_INTERNAL_TOKEN` 与 API 环境保持一致，并把
+`AI_PDF_SESSION_SECRET` 替换为仅保存在本机的长随机值。缺少 session secret 时登录
+会 fail closed，BFF 不会签发 cookie。
+
 启动 Web 开发服务器：
 ```bash
 pnpm dev

@@ -60,6 +60,15 @@ G0-G3 and all GitHub repository settings remain unauthorized.
   - [x] R2 A-J/L proof checkpoint: real PostgreSQL 17.11 aggregate passes; H join,
     I conflict decision/resume, J crash recovery, and L budget/reconcile each received
     independent `ACCEPT` with Critical/High/Medium/Low all zero.
+  - [x] Current-main Windows native browser baseline: PostgreSQL 17.11 + MinIO + deterministic
+    accept provider + API + Worker + Web completed authenticated Workspace settings, 12-page
+    PDF ingestion/viewer, Quick Answer citations, citation navigation, source-linked Note,
+    fixed-DAG Research approval/publication, and reload recovery. The deterministic provider
+    is engineering evidence only. The run exposed and fixed the missing Web session-secret
+    template, invalid `python -m ai_pdf_worker` command, stale MinIO binary path, and unloaded
+    preview profile; contract tests now pin the executable `.main` entry, downloaded MinIO
+    path, profile loading, and BFF auth environment keys. Execution evidence is
+    recorded in [`docs/evals/windows-native-browser-acceptance-2026-09-01.md`](../../../docs/evals/windows-native-browser-acceptance-2026-09-01.md).
   - [ ] R2-K durable publication outcome-unknown recovery. Current production can verify
     committed or absent immediately, but if verification itself remains unknown it persists
     no publication intent/compensation owner for a later independent process. Any durable
