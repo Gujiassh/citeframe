@@ -32,7 +32,9 @@ from ai_pdf_api.services.embedding_index import (
     EMBEDDING_INDEX_MISMATCH_MESSAGE,
 )
 from ai_pdf_api.services.providers import ModelProviderError
-from ai_pdf_api.services.research.research_evidence_provenance import evidence_source_fingerprint
+from ai_pdf_api.services.research.research_evidence_provenance import (
+    evidence_source_fingerprint,
+)
 from ai_pdf_api.services.research.research_idempotency import ResearchError
 from ai_pdf_api.services.research.research_worker import (
     load_frozen_evidence,
@@ -607,6 +609,49 @@ def test_publish_final_report_cleans_object_when_commit_is_confirmed_absent(
         assert verification_db.scalar(
             select(ResearchArtifact).where(ResearchArtifact.run_id == fixture.run.id)
         ) is None
+
+
+def test_publish_final_report_keeps_object_when_commit_and_verification_are_unknown(
+    research_worker_db,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Characterize the fail-closed R2-K boundary without claiming durable recovery."""
+    fixture = research_worker_db
+    fact, unresolved = make_final_publication_chain(fixture)
+    lease = lease_default_step(fixture)
+    stored_keys: list[str] = []
+    cleaned_keys: list[str] = []
+
+    monkeypatch.setattr(
+        fixture.db,
+        "commit",
+        lambda: (_ for _ in ()).throw(
+            RuntimeError("commit acknowledgement unavailable")
+        ),
+    )
+
+    def unavailable_verification_session():
+        raise RuntimeError("verification database unavailable")
+
+    with pytest.raises(ResearchError) as unknown_error:
+        publish_final_report(
+            fixture.db,
+            attempt_id=lease.attempt_id,
+            lease_token=lease.lease_token,
+            fact_claim_ids=(fact.id,),
+            unresolved_claim_ids=(unresolved.id,),
+            store_bytes=lambda key, _content, _content_type: stored_keys.append(key),
+            cleanup_bytes=cleaned_keys.append,
+            committed_session_factory=unavailable_verification_session,
+            now=fixture.now + timedelta(seconds=1),
+        )
+
+    assert_research_error(unknown_error, "research_commit_outcome_unknown", 503)
+    assert len(stored_keys) == 1
+    assert cleaned_keys == []
+    assert fixture.db.scalar(
+        select(ResearchArtifact).where(ResearchArtifact.run_id == fixture.run.id)
+    ) is None
 
 
 def test_frozen_evidence_search_maps_embedding_index_mismatch_to_research_error(

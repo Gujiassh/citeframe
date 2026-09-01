@@ -193,7 +193,9 @@ def test_exact_worker_sync_removes_real_pytest_plugin_pollution(tmp_path: Path) 
     uv_value = shutil.which("uv")
     assert uv_value is not None
     worker_project = ROOT / "apps/worker"
-    worker_python = worker_project / ".venv/bin/python"
+    worker_python = worker_project / (
+        ".venv/Scripts/python.exe" if os.name == "nt" else ".venv/bin/python"
+    )
     uv_env = os.environ.copy()
     for inherited in (
         "PYTEST_ADDOPTS",

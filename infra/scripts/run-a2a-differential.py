@@ -15,6 +15,10 @@ import tempfile
 from pathlib import Path
 
 BASELINE_REF = "d1b5945e977445e4db6bf56ef54cf61607ead2e2"
+BASELINE_ARCHIVE_PATHS = (
+    "apps/api",
+    "apps/worker",
+)
 REQUIRED_AREAS = {
     "normalizedDbRows",
     "exactPayloadBytes",
@@ -279,7 +283,13 @@ def run(
         archive = temp / "baseline.tar"
         with archive.open("wb") as stream:
             subprocess.run(
-                ["git", "archive", "--format=tar", resolved],
+                [
+                    "git",
+                    "archive",
+                    "--format=tar",
+                    resolved,
+                    *BASELINE_ARCHIVE_PATHS,
+                ],
                 cwd=root,
                 check=True,
                 stdout=stream,

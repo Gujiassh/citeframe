@@ -3,6 +3,8 @@ docs/evals/artifacts/** -whitespace
 
 # Cross-platform source and frozen-evidence byte contracts.
 *.sh text eol=lf
+apps/web/e2e/multimodal-fullstack.spec.ts text eol=lf
+apps/api/tests/fixtures/citeframe-a1b-before-metadata.json -text
 
 # Text inputs whose exact LF bytes are referenced by checked-in SHA-256 fields.
 docs/evals/retrieval-v1.jsonl -text

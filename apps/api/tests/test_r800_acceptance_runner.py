@@ -1,8 +1,10 @@
 from __future__ import annotations
 
-from pathlib import Path
 import subprocess
+from pathlib import Path
 
+import pytest
+from shell_test_support import find_bash
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
 RUNNER_PATH = REPO_ROOT / "infra/scripts/run-r800-acceptance.sh"
@@ -14,8 +16,11 @@ def _runner() -> str:
 
 
 def test_runner_has_valid_shell_syntax() -> None:
+    bash = find_bash(REPO_ROOT)
+    if bash is None:
+        pytest.skip("A real Bash executable is required for shell syntax validation")
     result = subprocess.run(
-        ["bash", "-n", str(RUNNER_PATH)],
+        [bash, "-n", str(RUNNER_PATH)],
         check=False,
         capture_output=True,
         text=True,

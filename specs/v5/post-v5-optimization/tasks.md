@@ -69,6 +69,12 @@ G0-G3 and all GitHub repository settings remain unauthorized.
     preview profile; contract tests now pin the executable `.main` entry, downloaded MinIO
     path, profile loading, and BFF auth environment keys. Execution evidence is
     recorded in [`docs/evals/windows-native-browser-acceptance-2026-09-01.md`](../../../docs/evals/windows-native-browser-acceptance-2026-09-01.md).
+  - [x] Windows full API regression gate: the A2a differential snapshot now archives only
+    the baseline API/Worker sources needed by its frozen probe, avoiding unrelated evidence
+    paths beyond the legacy Windows path limit; test-only Worker Python and Bash discovery
+    select native Windows executables instead of POSIX paths or the disabled WSL launcher;
+    byte-bound Web/M402 and persistence snapshot inputs are checked out with canonical LF
+    bytes. The native Windows API suite passes `674 passed, 2 skipped` on 2026-09-02.
   - [ ] R2-K durable publication outcome-unknown recovery. Current production can verify
     committed or absent immediately, but if verification itself remains unknown it persists
     no publication intent/compensation owner for a later independent process. Any durable

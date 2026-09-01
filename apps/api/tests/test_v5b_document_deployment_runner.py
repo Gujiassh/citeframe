@@ -1,8 +1,11 @@
 from __future__ import annotations
 
-from pathlib import Path
 import subprocess
+import sys
+from pathlib import Path
 
+import pytest
+from shell_test_support import find_bash
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
 RUNNER = REPO_ROOT / "infra/scripts/run-v5b-document-acceptance.sh"
@@ -13,12 +16,15 @@ RESTORE = REPO_ROOT / "infra/scripts/restore-deployment.sh"
 
 
 def test_v5b_runner_and_seed_compile() -> None:
+    bash = find_bash(REPO_ROOT)
+    if bash is None:
+        pytest.skip("A real Bash executable is required for shell syntax validation")
     shell = subprocess.run(
-        ["bash", "-n", str(RUNNER)], capture_output=True, text=True, check=False
+        [bash, "-n", str(RUNNER)], capture_output=True, text=True, check=False
     )
     assert shell.returncode == 0, shell.stderr
     compile_result = subprocess.run(
-        ["python3", "-m", "py_compile", str(SEED)],
+        [sys.executable, "-m", "py_compile", str(SEED)],
         capture_output=True,
         text=True,
         check=False,
