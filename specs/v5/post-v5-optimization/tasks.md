@@ -2,7 +2,7 @@
 
 Status: **Design re-audit ACCEPT (High=0, Medium=0, Low=0); A1 independently accepted
 on 2026-08-20; A1b/A2-foundation independently accepted on 2026-08-21 by the follow-up
-Critical review (`High=0`, `Medium=0`, `Low=0`); PR #20 is merged at `origin/main@9f40241`; PR #21 head `1d81470` is merged at `origin/main@8674d4dc407048471f7b14b23b821e72529487bf` with `6/6` CI, delivering A2a/R0. R1 was independently `ACCEPTED` on 2026-08-25 (`High=0`, `Medium=0`, `Low=0`) across start `8674d4dc407048471f7b14b23b821e72529487bf`, historical initial candidate `f4a1d1d7451d707d90948612791d1bb2aac410f3` (`REWORK`), runtime rework `473213d79154f3fbcf6044e1c4e62ed65038e1c1`, ledger `652cfd47f8bc462038e1bd623afc2b33a4ce511a`, canonical docs `559997d073cc2d26fb346c30e2ab9f20550b673f`, delivery truth `80d395d4fd19c0146b22befc2929bc556cfe62fa`, and review `5a55489fef8380f78854f10666a2fdd2983beeff`. The complete R1 chain was delivered by PR #22 at `origin/main@a616eea1350b095c6f229890d2c47e5010902330` with `6/6` CI. R1.5 admission is independently Critical ACCEPTED (findings=0); R2 proof-only is next; W1 SSE and downstream remain blocked. No schema/API/save/replay/permission change is authorized**.
+Critical review (`High=0`, `Medium=0`, `Low=0`); PR #20 is merged at `origin/main@9f40241`; PR #21 head `1d81470` is merged at `origin/main@8674d4dc407048471f7b14b23b821e72529487bf` with `6/6` CI, delivering A2a/R0. R1 was independently `ACCEPTED` on 2026-08-25 (`High=0`, `Medium=0`, `Low=0`) across start `8674d4dc407048471f7b14b23b821e72529487bf`, historical initial candidate `f4a1d1d7451d707d90948612791d1bb2aac410f3` (`REWORK`), runtime rework `473213d79154f3fbcf6044e1c4e62ed65038e1c1`, ledger `652cfd47f8bc462038e1bd623afc2b33a4ce511a`, canonical docs `559997d073cc2d26fb346c30e2ab9f20550b673f`, delivery truth `80d395d4fd19c0146b22befc2929bc556cfe62fa`, and review `5a55489fef8380f78854f10666a2fdd2983beeff`. The complete R1 chain was delivered by PR #22 at `origin/main@a616eea1350b095c6f229890d2c47e5010902330` with `6/6` CI. R1.5 admission is independently Critical ACCEPTED (findings=0). R2 A-J/L are independently accepted proof-only checkpoints; K remains stopped at `A-DATA`, so R2/W1/downstream are not complete. No schema/API/save/replay/permission change is authorized**.
 
 Checkboxes distinguish authorization from implementation. The checked A1 item records
 implementer-complete code and evidence; later checked authorization items do not claim
@@ -57,6 +57,14 @@ G0-G3 and all GitHub repository settings remain unauthorized.
 - [x] Deliver the accepted R1 chain through PR #22 to `origin/main@a616eea` with `6/6` CI
 - [x] R1.5 Implement per-Run researcher admission using the existing positive `SmallInteger` snapshot cap and Attempt rows: DB-time active-lease count after locking Run; cap-full whole-UoW rollback with zero Step/Attempt/Event/Run mutation; nonresearcher work remains eligible; invocation-local Run exclusion gives eligible other Runs progress without promising round-robin. Independently Critical `ACCEPT` on 2026-09-01 with findings=0.
 - [ ] R2 After R1.5 independent ACCEPT, prove two-or-more Worker contention, cap=1/N, cap-full Run skipping, equal-time Step ordering, lease expiry/late completion, cancel/provider races, join/conflict/recovery on real PostgreSQL. R2 is proof-only and must not add admission production logic.
+  - [x] R2 A-J/L proof checkpoint: real PostgreSQL 17.11 aggregate passes; H join,
+    I conflict decision/resume, J crash recovery, and L budget/reconcile each received
+    independent `ACCEPT` with Critical/High/Medium/Low all zero.
+  - [ ] R2-K durable publication outcome-unknown recovery. Current production can verify
+    committed or absent immediately, but if verification itself remains unknown it persists
+    no publication intent/compensation owner for a later independent process. Any durable
+    intent/saga, migration, save, retry, or replay semantic change requires owner `A-DATA`
+    authorization before implementation.
 R1.5 is independently Critical **ACCEPTED** on 2026-09-01 with findings=0. Focused
 unit/boundary tests passed and the real PostgreSQL admission matrix is recorded at
 [`docs/evals/r15-postgres-admission-2026-08-31.json`](../../../docs/evals/r15-postgres-admission-2026-08-31.json).

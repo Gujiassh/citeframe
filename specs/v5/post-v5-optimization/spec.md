@@ -1,10 +1,12 @@
 # Spec: Post-V5 Optimization
 > **Current status (2026-09-01):** R1.5 per-Run researcher admission is independently
-> Critical `ACCEPT` with findings=0. The accepted PostgreSQL evidence is
-> `docs/evals/r15-postgres-admission-2026-08-31.json`, SHA-256
-> `eab095bd68a78972c5b80713d2746a816551eaf1d21bb24ee48016615104d9be`.
-> R2 proof-only is next. No schema, external API, save/replay, permission, or W1 SSE change
-> is authorized.
+> Critical `ACCEPT` with findings=0. R2 proof-only has independently accepted PostgreSQL
+> scenarios A-J and L with four-level findings=0, but this is an interim checkpoint rather
+> than final R2 acceptance. Scenario K exposed a production gap: publication verification
+> can itself remain unknown after the object write, while no durable cross-process
+> publication intent/reconcile responsibility exists. Closing K requires an explicit
+> `A-DATA` authorization before any schema, persistence, save, retry, or replay change.
+> W1 and downstream remain blocked.
 
 ## 1. Objective
 

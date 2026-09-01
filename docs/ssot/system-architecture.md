@@ -761,7 +761,7 @@ M402 的 21-case 工程执行、7-case 真实 BFF 全栈/像素 Evidence 与 7-c
 
 A1 contracts was independently accepted on **2026-08-20**. A1b/A2-foundation was
 independently accepted on **2026-08-21** by the follow-up Critical review
-(`High=0`, `Medium=0`, `Low=0`). A2a/R0 are delivered at `origin/main@8674d4d`. R1 is independently `ACCEPTED (High=0, Medium=0, Low=0)` on 2026-08-25 through review `5a55489` and delivered by PR #22 at `origin/main@a616eea` with `6/6` CI. R2 is the only next separately gated module; W1/admission/downstream remain blocked.
+(`High=0`, `Medium=0`, `Low=0`). A2a/R0 are delivered at `origin/main@8674d4d`. R1 is independently `ACCEPTED (High=0, Medium=0, Low=0)` on 2026-08-25 through review `5a55489` and delivered by PR #22 at `origin/main@a616eea` with `6/6` CI. R2 A-J/L proof scenarios are independently accepted checkpoints, but R2 is not complete: K requires a durable publication-intent/reconcile production slice and is stopped at the explicit `A-DATA` owner gate. W1/downstream remain blocked.
 The design re-audit is **ACCEPT (High=0, Medium=0, Low=0)**. No schema/API/save/replay/
 permission changes are authorized. For `internal_preview`, the owner-authorized target is a same-PostgreSQL-database
 adapter, not an internal HTTP or database split. API owns HTTP/authentication, Alembic

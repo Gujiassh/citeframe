@@ -1,9 +1,10 @@
 # Plan: Post-V5 Optimization
 > **Current gated sequence (2026-09-01):** R1.5 admission received independent Critical
-> `ACCEPT` with findings=0. Its PostgreSQL artifact is
-> `docs/evals/r15-postgres-admission-2026-08-31.json` at SHA-256
-> `eab095bd68a78972c5b80713d2746a816551eaf1d21bb24ee48016615104d9be`.
-> R2 PostgreSQL proof-only is the next stage.
+> `ACCEPT` with findings=0. R2 A-J/L proof-only scenarios are independently accepted with
+> four-level findings=0 and a real PostgreSQL 17.11 aggregate checkpoint passes. R2 is not
+> complete: K cannot prove durable recovery when publication commit verification is itself
+> unknown. That production repair is stopped at the explicit `A-DATA` owner gate; W1 and
+> downstream remain blocked.
 
 ## 1. Sequencing Principle
 
