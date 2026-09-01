@@ -73,7 +73,14 @@ G0-G3 and all GitHub repository settings remain unauthorized.
     committed or absent immediately, but if verification itself remains unknown it persists
     no publication intent/compensation owner for a later independent process. Any durable
     intent/saga, migration, save, retry, or replay semantic change requires owner `A-DATA`
-    authorization before implementation.
+    authorization before implementation. The implementation boundary, proposed internal
+    state machine, rollout impact, and PostgreSQL failure matrix are documented in the
+    explicitly unapproved
+    [`R2-K A-DATA decision proposal`](reviews/r2k-adata-decision-proposal-2026-09-01.md).
+    The proposal received independent Critical
+    [`ACCEPT`](reviews/r2k-adata-decision-proposal-critical-review-2026-09-01.md)
+    with `Critical=0`, `High=0`, `Medium=0`, `Low=0`; this review does not substitute for
+    owner authorization.
 R1.5 is independently Critical **ACCEPTED** on 2026-09-01 with findings=0. Focused
 unit/boundary tests passed and the real PostgreSQL admission matrix is recorded at
 [`docs/evals/r15-postgres-admission-2026-08-31.json`](../../../docs/evals/r15-postgres-admission-2026-08-31.json).
