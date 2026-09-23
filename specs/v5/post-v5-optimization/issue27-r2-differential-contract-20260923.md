@@ -47,3 +47,9 @@ The Web change only restores exported refresh when no run has loaded: list, choo
 ## Verification / gates
 
 At the working candidate: API adoption/publication/persistence/migration/storage regression 152 passed; executable A2 runner/facade/pollution 3 passed; mocked-browser retry 3 passed; Web tsc and changed-file lint exit 0. Same-HEAD rerun and CI follow the commit. Independent Hubble review, actual PostgreSQL saga recovery/concurrent permission ordering, real object-store crash behavior and service-backed UI remain required. No merge is authorized by these local results.
+
+### Fixed-candidate reverse-review repair
+
+Independent review of 694033be found four accepted counterexamples in the oracle: missing raw phases, a consistently forged owner annotation, an already-expired originating lease, and a cancelled pre-adoption run. These were oracle defects; the fixture results did not establish an actual product permission bypass.
+
+The replacement gate requires both exact raw phases; binds lifecycle ownership to the persisted raw originating attempt; reconstructs every precommit table from the committed historical graph by reversing only the three terminal events, final artifact/claim/prompt links, and exact run/step/attempt finalization fields. All precommit run/step/attempt/snapshot/input/lease/ledger/evidence state is now strict, including consistent mutations across all three phases. Eight additional controls include the four independent cases plus missing process phase, wrong input, wrong snapshot and failed step. Full suite: 33 counterexamples must fail. Manifests now identify immutable Git blob OIDs and SHA-256 of Git blob bytes separately from worktree bytes.

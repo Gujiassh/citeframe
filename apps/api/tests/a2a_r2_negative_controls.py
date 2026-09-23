@@ -49,7 +49,29 @@ def verify_negative_controls(payload):
         event["id"] = "forged-event-id"
         es[-1] = base64.b64encode(json.dumps(event).encode()).decode()
 
+    def coherent_owner(c):
+        for phase in c["publicationLifecycle"]:
+            phase["producerWorkerInstanceId"] = "worker-99999999"
+            intent = phase["rows"]["research_publication_intents"][0]
+            if intent["status"] != "committed": intent["claim_owner"] = "worker-99999999"
+
+    def coherent_precommit(c, table, field, value):
+        for phase in c["publicationLifecycle"][:3]:
+            intent = phase["rows"]["research_publication_intents"][0]
+            identity = {"research_runs": "run_id", "research_steps": "step_id", "research_step_attempts": "attempt_id"}[table]
+            row = next(row for row in phase["rows"][table] if row["id"] == intent[identity])
+            row[field] = value
+
     controls = {
+        "missing_raw_phases": lambda c: c.update(rawDatabaseRows={}),
+        "missing_raw_process_phase": lambda c: c["rawDatabaseRows"].pop("processOne"),
+        "consistent_foreign_owner": coherent_owner,
+        "consistent_expired_attempt": lambda c: coherent_precommit(c, "research_step_attempts", "lease_expires_at", "2026-08-23 04:00:00.000000"),
+        "consistent_cancelled_run": lambda c: coherent_precommit(c, "research_runs", "status", "cancelled"),
+        "consistent_changed_input": lambda c: coherent_precommit(c, "research_step_attempts", "input_sha256", "0" * 64),
+        "consistent_wrong_snapshot": lambda c: coherent_precommit(c, "research_steps", "execution_snapshot_id", "foreign"),
+        "consistent_failed_step": lambda c: coherent_precommit(c, "research_steps", "status", "failed"),
+
         "report_bytes": change_report,
         "evidence_relation": lambda c: rows(c)["research_claim_evidence"][0].update(evidence_snapshot_id="foreign"),
         "unauthorized_adoption": lambda c: c["publicationLifecycle"][2]["authorization"].update(role=None),

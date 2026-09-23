@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import base64
+from copy import deepcopy
 import hashlib
 import json
 from uuid import UUID
@@ -93,7 +94,8 @@ def validate_lifecycle(report, committed, before, objects, key, attempt, run):
     require(len(lifecycle) == 5, "lifecycle.exact transitions")
     prepared = dict(committed)
     owner = lifecycle[0]["producerWorkerInstanceId"]
-    require(isinstance(owner, str) and owner.startswith("worker-"), "lifecycle.owner identity")
+    raw_attempt = one(report["rawDatabaseRows"]["processOne"]["research_step_attempts"], id=attempt["id"])
+    require(owner == raw_attempt["worker_instance_id"] and isinstance(owner, str), "lifecycle.actual persisted owner")
     # The raw owner is captured from the originating persisted attempt, not inferred from UUID order.
     prepared.update(status="prepared", state_version=1, committed_artifact_id=None,
                     adopted_object_generation=None, adopted_object_key=None,
@@ -106,8 +108,13 @@ def validate_lifecycle(report, committed, before, objects, key, attempt, run):
     expected_intents = [prepared, {**prepared, "status": "uploaded", "state_version": 2},
                         {**prepared, "status": "committing", "state_version": 3},
                         before[INTENTS][0], committed]
+    precommit_rows = expected_precommit_rows(before, committed, attempt, run)
     for phase, expected in zip(lifecycle, expected_intents, strict=True):
         require(phase["rows"][INTENTS] == [expected], f"lifecycle.{expected['status']} fields")
+        if expected["status"] != "committed":
+            expected_rows = deepcopy(precommit_rows)
+            expected_rows[INTENTS] = [expected]
+            require(phase["rows"] == expected_rows, f"lifecycle.{expected['status']} complete precommit graph")
         require(phase["producerWorkerInstanceId"] == owner, "lifecycle.owner drift")
         require(phase["authorization"] == {"creatorId": run["created_by_user_id"], "role": "member"}, "lifecycle.authorization")
         current_attempt = one(phase["rows"]["research_step_attempts"], id=attempt["id"])
@@ -123,3 +130,27 @@ def validate_lifecycle(report, committed, before, objects, key, attempt, run):
         expected_rows = json.loads(json.dumps(previous["rows"]))
         expected_rows[INTENTS] = current["rows"][INTENTS]
         require(current["rows"] == expected_rows, "lifecycle.precommit business mutation")
+
+
+def expected_precommit_rows(committed_rows, intent, attempt, run):
+    """Reverse only the exact final adoption writes, leaving the full graph strict."""
+    expected = deepcopy(committed_rows)
+    artifact_id = intent["artifact_id"]
+    for table in ("research_artifact_claims", "research_artifact_prompt_versions"):
+        expected[table] = [row for row in expected[table] if row["artifact_id"] != artifact_id]
+    expected["research_artifacts"] = [row for row in expected["research_artifacts"] if row["id"] != artifact_id]
+    terminal_keys = {"step-succeeded:" + attempt["id"], "artifact-published:" + artifact_id,
+                     "run-completed:" + artifact_id}
+    terminal = [row for row in expected["research_events"] if row["run_id"] == run["id"] and row["dedupe_key"] in terminal_keys]
+    require(len(terminal) == 3, "lifecycle.unique terminal adoption events")
+    expected["research_events"] = [row for row in expected["research_events"] if row not in terminal]
+    one(expected["research_runs"], id=run["id"]).update(
+        status="running", state_version=37, next_event_seq=38, finished_at=None)
+    one(expected["research_steps"], id=intent["step_id"]).update(
+        status="running", state_version=3, finished_at=None)
+    one(expected["research_step_attempts"], id=attempt["id"]).update(
+        status="running", finished_at=None, output_sha256=None,
+        lease_expires_at="2026-08-24 04:05:00.000000")
+    for rows in expected.values():
+        rows.sort(key=canonical)
+    return expected
