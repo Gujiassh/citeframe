@@ -1042,7 +1042,9 @@ def _process_one_flow(path: Path, normalizer: _Normalizer) -> dict[str, object]:
             api_payload_bytes.append(base64.b64encode(response.content).decode())
             decision_requests.append({"path": f"/v1/workspaces/{IDS['workspace']}/research-runs/{run_id}/conflict-decisions/{decision_id}",
                 "key": "a2a-process-conflict-0001", "body": conflict_request, "response": base64.b64encode(response.content).decode()})
-            from a2a_historical_state import export_created_state
+            from a2a_historical_state import export_created_state, verify_stored_replays
+            verify_stored_replays(client, engine, decision_requests, headers,
+                expected_origin="human" if composition is not None else None)
             approval_checkpoint = export_created_state(engine, run_id=run_id,
                 response=base64.b64decode(api_payload_bytes[0]), objects=objects, counters=COUNTERS)
         print("a2a_probe stage=process_resume", flush=True)

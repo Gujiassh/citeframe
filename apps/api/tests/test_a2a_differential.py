@@ -50,6 +50,8 @@ def test_a2a_historical_invariants_and_explicit_r2_delta(tmp_path: Path) -> None
     assert len(payload["productionConsumerEvidence"]) == 4
     from a2a_r2_negative_controls import verify_negative_controls
     verify_negative_controls(payload)
+    from a2a_feature_negative_controls import verify_feature_negative_controls
+    verify_feature_negative_controls(payload)
     assert payload["baselineRef"] == "d1b5945e977445e4db6bf56ef54cf61607ead2e2"
     assert len(payload["candidateSemanticWorktreeSha256"]) == 64
     assert len(payload["repairSnapshotSha256"]) == 64

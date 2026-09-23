@@ -2,6 +2,7 @@
 import base64
 from copy import deepcopy
 import json
+import hashlib
 
 from a2a_r2_delta import compare
 from a2a_r2_publication_oracle import canonical, require
@@ -108,7 +109,9 @@ def compare_historical_feature(baseline, candidate, *, stored_responses=False):
         require(workflow["workflowId"] == "20000000-0000-4000-8000-000000000001" and workflow["workflowVersion"] == 2, "F1.frozen workflow identity")
         require(workflow["currentDefaultWorkflowId"] == "30000000-0000-4000-8000-000000000001", "F1.default workflow not restored")
         require(workflow["prompts"] == baseline["workflowEvidence"]["prompts"], "F1.frozen prompt identity/hash")
-        require(candidate["restoredHistoricalStateSha256"] is not None, "F1.missing restored historical state")
+        original_state = baseline["historicalApprovalCheckpoint" if stored_responses else "historicalCreatedState"]
+        require(candidate["historicalCreatedState"] == original_state, "F1.historical restore source drift")
+        require(candidate["restoredHistoricalStateSha256"] == hashlib.sha256(json.dumps(original_state, sort_keys=True).encode()).hexdigest(), "F1.historical restore source hash")
         return {**result, "f1HistoricalDeltaValid": True}
     except (KeyError, ValueError, TypeError) as error:
         return {"accepted": False, "f1HistoricalDeltaValid": False, "f1Errors": [str(error)]}

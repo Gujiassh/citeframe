@@ -65,7 +65,7 @@ def workflow_evidence(db, run):
         "result": run.status}
 
 
-def verify_stored_replays(client, engine, requests, headers):
+def verify_stored_replays(client, engine, requests, headers, *, expected_origin=None):
     assert len(requests) == 2
     from sqlalchemy import text
     def persisted():
@@ -77,6 +77,13 @@ def verify_stored_replays(client, engine, requests, headers):
         response = client.post(request["path"], headers={**headers, "Idempotency-Key": request["key"]}, json=request["body"])
         assert response.status_code == 200, response.text
         expected = base64.b64decode(request["response"])
-        assert response.content == expected, ("old idempotency key changed response bytes", response.text, expected.decode())
-        assert "decisionOrigin" not in response.json()["decision"]
+        assert response.content == expected, "idempotency replay changed original HTTP response bytes"
+        if expected_origin is None:
+            assert "decisionOrigin" not in response.json()["decision"]
+        else:
+            assert response.json()["decision"]["decisionOrigin"] == expected_origin
+        assert response.headers["Idempotency-Replayed"] == "true"
+        changed = {**request["body"], "comment": "changed original request"}
+        rejected = client.post(request["path"], headers={**headers, "Idempotency-Key": request["key"]}, json=changed)
+        assert rejected.status_code == 409 and rejected.json()["error"]["code"] == "idempotency_key_reused"
     assert persisted() == before, "replay rewrote persisted event/idempotency/decision rows"

@@ -19,3 +19,5 @@ The actual restore probe found FastAPI's response-model defaults inserting decis
 ## Pending
 
 The new combined candidate requires fixed-SHA execution and Hubble review after the predecessor oracle counterexamples are repaired. No merge acceptance is claimed.
+
+The new-request and old-request replay cases both compare original HTTP bytes, preserve database rows, and reject changed bodies under the same key. Four serializer-to-consumer paths execute the production Web parser: original schema1, restored workflow/new human schema2, stored historical schema1 replay, and default policy schema2. The feature history projection has six negative controls (actor/source/prompt/default/unauthorized historical adaptive work/stored-response field injection); R2's 33 controls also run on the explicitly projected historical view. Raw reports and projection hashes are separately identified.

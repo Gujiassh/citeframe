@@ -397,18 +397,27 @@ def run(
     equal = _canonical(baseline_semantics) == _canonical(candidate_semantics)
     require_current = current["workflowEvidence"]["result"] == "completed" and current["scenario"] == "B-current-default"
     comparison["accepted"] = comparison["accepted"] and stored_comparison["accepted"] and require_current
+    candidate_head = subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=root, text=True).strip()
     result: dict[str, object] = {
         "schemaVersion": "citeframe-a2a-r2-explicit-differential-v2",
         **comparison,
         "baselineRef": resolved,
         "rawBaselineReport": baseline,
         "rawCandidateReport": candidate,
+        "f1ProjectedCandidateSha256": comparison.get("rawCandidateSha256"),
+        "rawBaselineSha256": hashlib.sha256(_canonical(baseline)).hexdigest(),
+        "rawCandidateSha256": hashlib.sha256(_canonical(candidate)).hexdigest(),
+        "rawStoredReplaySha256": hashlib.sha256(_canonical(stored)).hexdigest(),
+        "rawCurrentDefaultSha256": hashlib.sha256(_canonical(current)).hexdigest(),
         "rawStoredReplayReport": stored,
         "rawCurrentDefaultReport": current,
         "historicalStoredReplay": stored_comparison,
         "productionConsumerEvidence": parser_evidence,
-        "workflowScenarios": {"A": candidate["workflowEvidence"], "AStored": stored["workflowEvidence"], "B": current["workflowEvidence"]},
-        "candidateHead": subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=root, text=True).strip(),
+        "workflowScenarios": {name: {**report["workflowEvidence"], "candidateHead": candidate_head}
+                              for name, report in (("A", candidate), ("AStored", stored), ("B", current))},
+        "historicalRecoveryExecution": {"newProviderCalls": stored["semantics"]["terminalProcessSemantics"]["providerNodes"],
+            "scheduler": stored["schedulerEvidence"], "replayedResponsesUnchanged": True},
+        "candidateHead": candidate_head,
         "candidateSemanticWorktreeSha256": semantic_before,
         "candidateSemanticDirty": semantic_dirty,
         "repairSnapshotSha256": repair_before,
