@@ -1,11 +1,10 @@
 from datetime import timedelta
 from uuid import uuid4
+
 import pytest
-from sqlalchemy import select
 from citeframe_persistence.models import (
     ResearchConflictTurn,
     ResearchStepAttempt,
-    ResearchStep,
 )
 from citeframe_research_persistence.conflict_investigation import (
     conflict_turn,
@@ -15,7 +14,8 @@ from citeframe_research_persistence.conflict_investigation import (
 )
 from citeframe_research_persistence.errors import ResearchError, canonical_sha256
 from research_worker_test_support import add_step, sha256
-from test_research_conflict_investigation import gate, call
+from sqlalchemy import select
+from test_research_conflict_investigation import call, gate
 from test_research_conflict_publication import (
     test_v4_journal_survives_final_publication_adoption as publish_fixture,
 )

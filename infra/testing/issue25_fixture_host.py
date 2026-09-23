@@ -3,9 +3,10 @@
 import argparse
 import json
 import os
-from pathlib import Path
 import subprocess
-from issue25_service_support import Deployment, ROOT
+from pathlib import Path
+
+from issue25_service_support import ROOT, Deployment
 
 
 def main():

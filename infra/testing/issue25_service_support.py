@@ -5,12 +5,12 @@ from __future__ import annotations
 import io
 import json
 import os
-from pathlib import Path
 import socket
 import subprocess
 import sys
 import tarfile
 import time
+from pathlib import Path
 from uuid import uuid4
 
 import httpx
@@ -102,6 +102,7 @@ class Deployment:
                 stdout=stream,
                 stderr=subprocess.STDOUT,
                 timeout=timeout,
+                check=False,
             )
         assert result.returncode == expected, (
             args,
@@ -217,12 +218,18 @@ class Deployment:
     def rows(self, table):
         assert table.replace("_", "").isalnum()
         with self.engine.connect() as connection:
-            return [
+            rows = [
                 dict(row)
                 for row in connection.execute(
                     text(f'SELECT * FROM "{table}"')
                 ).mappings()
             ]
+            return sorted(
+                rows,
+                key=lambda row: str(
+                    row.get("id", (row.get("step_id"), row.get("operation_number")))
+                ),
+            )
 
     def binding(self):
         snapshots = self.rows("research_execution_snapshots")
@@ -235,6 +242,11 @@ class Deployment:
                 key=lambda r: r["node_key"],
             ),
             "assets": self.rows("research_execution_assets"),
+            "approval": [
+                row
+                for row in self.rows("human_decisions")
+                if row["decision_type"] == "plan_approval"
+            ],
         }
 
     def capture(self, name, value):

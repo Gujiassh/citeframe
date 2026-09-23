@@ -4,12 +4,11 @@ from __future__ import annotations
 
 import json
 import os
-from pathlib import Path
 import time
 
 import pytest
+from issue25_service_support import ROOT, Deployment, archive_legacy
 from sqlalchemy import text
-from issue25_service_support import Deployment, ROOT, archive_legacy
 
 BASE_URL = os.environ.get("CITEFRAME_TEST_POSTGRES_URL")
 pytestmark = pytest.mark.skipif(
@@ -95,6 +94,9 @@ def test_approved_v3_snapshot_survives_default_v4_upgrade_and_edit(
     d.work(steps=1)
     before = d.binding()
     assert before["snapshot"]["workflow_version_id"] == V3
+    assert len(before["approval"]) == 1
+    assert before["approval"][0]["status"] == "submitted"
+    assert before["approval"][0]["action"] == "approve"
     assert (
         before["snapshot"]["agent_result_schema_version"] == "research-agent-results-v2"
     )
@@ -166,13 +168,34 @@ def test_journal_recovery_after_actual_worker_process_exit(
     prior = d.rows("research_conflict_turns")
     calls = d.rows("research_provider_calls")
     tools = d.rows("research_tool_calls")
-    d.capture("crash-state", {"turns": prior, "providers": calls, "tools": tools, "attempts": d.rows("research_step_attempts"), "steps": d.rows("research_steps")})
+    d.capture(
+        "crash-state",
+        {
+            "turns": prior,
+            "providers": calls,
+            "tools": tools,
+            "attempts": d.rows("research_step_attempts"),
+            "steps": d.rows("research_steps"),
+        },
+    )
     # Wait for the genuine fixture lease to expire; do not rewrite lease timestamps.
     time.sleep(9)
     d.stop_api()
     d.start_api()
     d.work(mode)
-    d.capture("restart-state", {t: d.rows(t) for t in ("research_steps", "research_step_attempts", "research_runs", "research_conflict_turns", "research_publication_intents")})
+    d.capture(
+        "restart-state",
+        {
+            t: d.rows(t)
+            for t in (
+                "research_steps",
+                "research_step_attempts",
+                "research_runs",
+                "research_conflict_turns",
+                "research_publication_intents",
+            )
+        },
+    )
     detail = assert_report_and_edit(d, investigation_status=status)
     current = d.rows("research_conflict_turns")
     by_number = {r["operation_number"]: r for r in current}
@@ -183,6 +206,8 @@ def test_journal_recovery_after_actual_worker_process_exit(
         )
     if point.endswith(("after-reserve", "before-result")):
         assert detail["conflictInvestigation"]["reason"] == "operation_outcome_unknown"
+        assert d.rows("research_provider_calls") == calls
+        assert d.rows("research_tool_calls") == tools
     gate = next(
         s
         for s in d.rows("research_steps")
@@ -221,7 +246,19 @@ def test_journal_recovery_after_actual_worker_process_exit(
     assert [(c["id"], c["statement_text"]) for c in d.rows("research_claims")] == [
         (c["id"], c["statement_text"]) for c in originals
     ]
-    d.capture("recovered", {"turns": current, "attempts": attempts, "http": detail})
+    d.capture(
+        "recovered",
+        {
+            "point": point,
+            "turns": current,
+            "attempts": attempts,
+            "http": detail,
+            "providers": d.rows("research_provider_calls"),
+            "tools": d.rows("research_tool_calls"),
+            "budgetLedgers": d.rows("research_budget_ledgers"),
+            "artifacts": d.rows("research_artifacts"),
+        },
+    )
 
 
 @pytest.mark.parametrize("boundary", ["cancel", "permission"])
@@ -270,4 +307,7 @@ def test_revocation_or_cancel_between_processes_prevents_more_work(
     ]
     assert d.rows("research_runs")[0]["status"] == "cancelled"
     if boundary == "permission":
-        assert d.request("GET", d.path, expected=404).json()["error"]["code"] == "workspace_not_found"
+        assert (
+            d.request("GET", d.path, expected=404).json()["error"]["code"]
+            == "workspace_not_found"
+        )

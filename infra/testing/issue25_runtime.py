@@ -164,7 +164,7 @@ def seed():
     from ai_pdf_api.core.security import hash_password
     from ai_pdf_api.db.session import SessionLocal
     from ai_pdf_api.models import User
-    from ai_pdf_api.services.storage import upload_bytes, delete_object_if_exists
+    from ai_pdf_api.services.storage import delete_object_if_exists, upload_bytes
     from ai_pdf_worker import r800_acceptance_fixture as fixture
     from ai_pdf_worker.r800_acceptance_common import IDS
 
@@ -190,7 +190,8 @@ def seed():
 
 
 def consume_tool_budget():
-    from datetime import datetime, UTC
+    from datetime import UTC, datetime
+
     from ai_pdf_worker.research_runtime_ports import LedgeredGeneration
     from citeframe_research_persistence.errors import ResearchError
 
@@ -235,11 +236,11 @@ def consume_tool_budget():
 
 def work(args):
     from ai_pdf_api.db.session import SessionLocal
+    from ai_pdf_worker import research_runtime_ports, research_runtime_processor
     from ai_pdf_worker.research_runtime import (
         ResearchWorkProcessor,
         build_default_research_service,
     )
-    from ai_pdf_worker import research_runtime_processor, research_runtime_ports
 
     research_runtime_processor.LEASE_SECONDS = 8
     research_runtime_ports.LEASE_SECONDS = 8
@@ -255,8 +256,8 @@ def work(args):
         if not processor.process_one():
             break
         if args.until_gate:
-            from sqlalchemy import select
             from ai_pdf_api.models import ResearchStep
+            from sqlalchemy import select
 
             with SessionLocal() as db:
                 if db.scalar(

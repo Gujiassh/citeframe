@@ -1,8 +1,10 @@
 """Bind journal payloads to their frozen step and producing attempt."""
 
 import hashlib
-from sqlalchemy import select
+
 from citeframe_persistence.models import ResearchExecutionSnapshot, ResearchStepAttempt
+from sqlalchemy import select
+
 from .conflict_policy import investigation_step
 from .errors import ResearchError, canonical_sha256
 

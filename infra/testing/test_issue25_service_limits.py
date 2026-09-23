@@ -1,9 +1,13 @@
 """Budget and complete PostgreSQL-chain oracles for the issue-25 service fixture."""
 
 import os
+
 import pytest
 from issue25_service_support import ROOT, Deployment, archive_legacy
-from test_issue25_services import deployment, start, assert_report_and_edit
+from test_issue25_services import assert_report_and_edit, start
+from test_issue25_services import deployment as service_deployment
+
+deployment = service_deployment
 
 pytestmark = pytest.mark.skipif(
     not os.environ.get("CITEFRAME_TEST_POSTGRES_URL"), reason="requires PostgreSQL/S3"

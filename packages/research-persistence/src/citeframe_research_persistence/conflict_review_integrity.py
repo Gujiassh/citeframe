@@ -1,11 +1,12 @@
 """Require conflict review of verified revisions and every unaffected fact."""
 
-from sqlalchemy import select
 from citeframe_persistence.models import (
     ResearchClaim,
     ResearchClaimEvidence,
     ResearchEvidenceHandle,
 )
+from sqlalchemy import select
+
 from .errors import ResearchError, canonical_sha256
 
 
