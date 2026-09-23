@@ -201,3 +201,20 @@ def test_autonomy_migration_installs_v3_and_preserves_historical_decisions():
         workflow,prompts=load_v2_release(db,workflow_id=V3_WORKFLOW_VERSION_ID)
         assert workflow.version_number == 3 and len(prompts) == 5
         assert "decision_origin" in {c["name"] for c in inspect(engine).get_columns("human_decisions")}
+
+
+def test_deployment_oracle_reads_real_auto_plan_and_rejects_tampering(research_app):
+    from contextlib import nullcontext
+    from citeframe_evaluation.acceptance.workflow import workflow_facts
+    client, db, ctx = research_app
+    run, _ = publish(client, db, ctx)
+    observe = lambda: workflow_facts(lambda: nullcontext(db), run.id)
+    proof = observe()
+    assert proof["release"] == "citeframe-research-v3" and proof["snapshotId"] == run.approved_execution_snapshot_id
+    snapshot = db.get(ResearchExecutionSnapshot, run.approved_execution_snapshot_id)
+    decision = db.get(HumanDecision, snapshot.approval_decision_id)
+    decision.decided_by_user_id = run.created_by_user_id
+    db.flush()
+    with pytest.raises(AssertionError):
+        observe()
+    db.rollback()

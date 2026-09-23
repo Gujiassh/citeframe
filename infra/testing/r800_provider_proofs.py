@@ -4,6 +4,7 @@ The original stub and its wire timeline are unchanged. This test-only entry poin
 records received JSON bytes (no headers) separately for independent hash replay.
 """
 import os
+import json
 import sys
 import threading
 import time
@@ -36,6 +37,21 @@ class ProofState(stub.ProviderState):
 
 
 class ProofHandler(stub.R800ProviderHandler):
+    @staticmethod
+    def _generation_output(body):
+        output = stub.R800ProviderHandler._generation_output(body)
+        if stub._detect_node(body) == "researcher":
+            payload = stub._last_user_payload(body)
+            schema = payload["resultSchema"]
+            required = schema["required"]
+            assert required in (["claims"], ["claims", "nextQuery"]), "unknown_researcher_contract"
+            if required == ["claims", "nextQuery"]:
+                result = json.loads(output["output_text"])
+                result["nextQuery"] = None
+                output["output_text"] = json.dumps(result, ensure_ascii=True, sort_keys=True, separators=(",", ":"))
+                output["usage"]["output_tokens"] = max(1, (len(output["output_text"]) + 3) // 4)
+        return output
+
     def _provider_request(self, node, body_bytes, body, output_builder):
         self.provider_state.context.raw_body = body_bytes.decode("utf-8")
         self.provider_state.context.path = urlsplit(self.path).path

@@ -32,6 +32,8 @@ from citeframe_evaluation.acceptance.common import (
 )
 from citeframe_evaluation.acceptance.controls import mutation_controls
 from citeframe_evaluation.acceptance.drivers import consumers, wait_for_reclaim
+from citeframe_evaluation.acceptance.workflow import (workflow_facts, wait_plan_boundary,
+    assert_policy_completion, assert_conflict_partition, V2_WORKFLOW_VERSION_ID, V3_WORKFLOW_VERSION_ID)
 from citeframe_evaluation.acceptance.evidence import execution_facts, reclaim_facts
 from citeframe_evaluation.acceptance.oracles import parallel_evidence, parallel_passed, reclaim_passed, assert_execution_policy
 from ai_pdf_worker.research.runtime import (
@@ -239,31 +241,15 @@ def _main_scenario(
         key="r800-main-create-0001",
         question="Compare unsupported conflict evidence across the frozen fixture.",
     )
-    run, worker_errors = _process_until(
-        client,
-        str(created["id"]),
-        {"awaiting_plan_approval", "failed"},
-        processor=processor,
-    )
+    plan = wait_plan_boundary(lambda: workflow_facts(session_factory, str(created["id"])), processor.process_one)
+    assert plan["workflowId"] == V3_WORKFLOW_VERSION_ID, "default_release_regressed"
+    run = client.run(str(created["id"]))
     with nullcontext() if serial_main else consumers(session_factory):
-        if run["status"] == "awaiting_plan_approval":
-            run = _submit_plan(client, run)
-            run, later_errors = _process_until(
-                client,
-                str(run["id"]),
-                {"awaiting_human_decision", "completed", "failed", "awaiting_retry"},
-                processor=processor if serial_main else None,
-            )
-            worker_errors.extend(later_errors)
-        if run["status"] == "awaiting_human_decision":
-            run = _submit_conflict(client, run)
-            run, later_errors = _process_until(
-                client,
-                str(run["id"]),
-                {"completed", "failed", "awaiting_retry"},
-                processor=processor if serial_main else None,
-            )
-            worker_errors.extend(later_errors)
+        run, worker_errors = _process_until(
+            client, str(run["id"]), {"completed", "failed", "awaiting_retry", "awaiting_human_decision"},
+            processor=processor if serial_main else None,
+        )
+    policy = assert_policy_completion(session_factory, str(run["id"]), conflict_required=True)
 
     artifacts_response = client.request(
         "GET",
@@ -280,6 +266,11 @@ def _main_scenario(
             f"artifacts/{final_items[0]['id']}",
             actor_id=IDS["creator"],
         ).json()["artifact"]
+
+    assert len(final_items) == 1
+    report = client.request("GET", f"/v1/workspaces/{IDS['workspace']}/research-runs/{run['id']}/"
+                            f"artifacts/{final_items[0]['id']}/content", actor_id=IDS["creator"]).text
+    assert_conflict_partition(session_factory, str(run["id"]), report)
 
     events = client.request(
         "GET",
@@ -396,6 +387,7 @@ def _main_scenario(
     return {
         "id": run["id"],
         "status": run["status"],
+        "workflowEvidence": policy,
         "artifactIds": [item.get("id") for item in artifacts],
         "eventCount": len(all_ids),
         "providerTimeline": {
@@ -417,15 +409,12 @@ def _reclaim_scenario(
         key="r800-reclaim-create-0001",
         question="Verify lease reclaim from frozen evidence.",
     )
-    run, _errors = _process_until(
-        client,
-        str(created["id"]),
-        {"awaiting_plan_approval", "failed"},
-        processor=processor,
-    )
-    if run["status"] != "awaiting_plan_approval":
-        return run, _check(False, evidence={"status": run["status"]}, blocked="plan_not_ready")
-    run = _submit_plan(client, run)
+    plan = wait_plan_boundary(lambda: workflow_facts(session_factory, str(created["id"])), processor.process_one)
+    run = client.run(str(created["id"]))
+    if plan["workflowId"] == V2_WORKFLOW_VERSION_ID:
+        run = _submit_plan(client, run)
+    else:
+        assert plan["workflowId"] == V3_WORKFLOW_VERSION_ID and plan["snapshotId"] is not None
     claimed = processor.claim()
     if claimed is None or claimed.run_id != run["id"]:
         return run, _check(False, evidence={"claimed": False}, blocked="step_claim_raced")

@@ -93,3 +93,5 @@ scenario failures remain independent and keep the overall gate red when present.
 ### Reviewed feature-stack integration
 
 The R2/minimal-W1 prerequisite stack is integrated by normal merge onto accepted architecture main5ed. Deleted flat modules stay deleted; the publication adapter retains its reviewed saga behavior in `research/adapters/ledger.py`. The deployment fixture admits only the checked-in exact product-delta manifest and still enforces its historical, negative-control and real-service gates. Mapping, provenance and acceptance limits are recorded in [stack integration](../../specs/v5/worker-layout/stack-integration-20260924.md).
+
+The #29 feature integration also maps adaptive retrieval and historical V1 prompt-registry binding. Its deployment oracle records the persisted release and requires default v3 policy transitions without human substitution; the historical50af raw run and A2 historical-v2 recovery remain distinct checks. See the feature deployment oracle section of the stack integration spec for the exact harness delta and negative controls.

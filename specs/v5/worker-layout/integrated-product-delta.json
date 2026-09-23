@@ -2,7 +2,8 @@
   "schemaVersion": 1,
   "architectureBase": "5ed02c8b7b5f357f58d1c3fd270ead0718e7afbf",
   "reviewedSourceHeads": [
-    "b691406fdc7d38e3f93578b36aaddafe7dbf992f"
+    "b691406fdc7d38e3f93578b36aaddafe7dbf992f",
+    "ed478a865068492107218dd9dcdff566a8efc6b8"
   ],
   "scope": "PR29 reviewed autonomous research/adaptive retrieval/report edits and PR28 prerequisite, mapped onto accepted architecture; exact blobs frozen outside CI",
   "functionalOracle": [
@@ -327,11 +328,11 @@
     },
     {
       "path": "apps/api/tests/test_research_autonomy.py",
-      "integratedBlob": "4b603192382b1b41d9824aa82e271bdef0117d16",
+      "integratedBlob": "7d61fca525007a7d37cb08d7b0eb415b45e8793a",
       "reviewedSourceHead": "b691406fdc7d38e3f93578b36aaddafe7dbf992f",
       "reviewedSourcePath": "apps/api/tests/test_research_autonomy.py",
       "reviewedSourceBlob": "4b603192382b1b41d9824aa82e271bdef0117d16",
-      "transformation": "identical-reviewed-bytes"
+      "transformation": "explicit feature deployment oracle/negative-control delta; see stack-integration spec"
     },
     {
       "path": "apps/api/tests/test_research_migration.py",
@@ -343,11 +344,11 @@
     },
     {
       "path": "apps/api/tests/test_research_policy_publication.py",
-      "integratedBlob": "d90571b7031e8b8594f04b98733225849b7bbc8d",
+      "integratedBlob": "c8f6f99e2ca40f4de9a88f99a744b28c91bebaf4",
       "reviewedSourceHead": "b691406fdc7d38e3f93578b36aaddafe7dbf992f",
       "reviewedSourcePath": "apps/api/tests/test_research_policy_publication.py",
       "reviewedSourceBlob": "d90571b7031e8b8594f04b98733225849b7bbc8d",
-      "transformation": "identical-reviewed-bytes"
+      "transformation": "explicit feature deployment oracle/negative-control delta; see stack-integration spec"
     },
     {
       "path": "apps/api/tests/test_research_policy_sse.py",
@@ -854,12 +855,28 @@
       "transformation": "identical-reviewed-bytes"
     },
     {
+      "path": "tools/evaluation/src/citeframe_evaluation/acceptance/scenarios.py",
+      "reviewedSourceHead": "5ed02c8b7b5f357f58d1c3fd270ead0718e7afbf",
+      "reviewedSourcePath": "tools/evaluation/src/citeframe_evaluation/acceptance/scenarios.py",
+      "reviewedSourceBlob": "53314182d169accb1521be62af882b5c99be1bd6",
+      "transformation": "explicit feature deployment oracle extracted from scenario lifecycle; see stack-integration spec",
+      "integratedBlob": "8f47a078fbc0ae9776c0409a804a9b03d2f52404"
+    },
+    {
       "path": "tools/evaluation/src/citeframe_evaluation/acceptance/snapshot_proofs.py",
       "integratedBlob": "57e0984e25f623c6be8efb52c9d780e5f79c2d8d",
-      "reviewedSourceHead": "5ed02c8b7b5f357f58d1c3fd270ead0718e7afbf",
+      "reviewedSourceHead": "ed478a865068492107218dd9dcdff566a8efc6b8",
       "reviewedSourcePath": "tools/evaluation/src/citeframe_evaluation/acceptance/snapshot_proofs.py",
-      "reviewedSourceBlob": "a3f3c2dfcdf4cb39f44afb70e3dbd1366946d23b",
-      "transformation": "constructor import relocated to production research-persistence snapshot_integrity; hash payload and frozen fixtures unchanged"
+      "reviewedSourceBlob": "57e0984e25f623c6be8efb52c9d780e5f79c2d8d",
+      "transformation": "identical-reviewed-bytes"
+    },
+    {
+      "path": "tools/evaluation/src/citeframe_evaluation/acceptance/workflow.py",
+      "reviewedSourceHead": "5ed02c8b7b5f357f58d1c3fd270ead0718e7afbf",
+      "reviewedSourcePath": "tools/evaluation/src/citeframe_evaluation/acceptance/scenarios.py",
+      "reviewedSourceBlob": "53314182d169accb1521be62af882b5c99be1bd6",
+      "transformation": "explicit feature deployment oracle extracted from scenario lifecycle; see stack-integration spec",
+      "integratedBlob": "e82803c2f6ace485c5890509d9b180c874c81182"
     },
     {
       "path": "tools/evaluation/src/citeframe_evaluation/provider.py",
@@ -876,6 +893,22 @@
       "reviewedSourcePath": "tools/evaluation/tests/test_acceptance_cli_output.py",
       "reviewedSourceBlob": "3c2f4e4eb8c830c6c53fdd169d1ef590756acd57",
       "transformation": "explicit-layout-integration; inspect mapping report and merge delta"
+    },
+    {
+      "path": "tools/evaluation/tests/test_acceptance_evidence_links.py",
+      "reviewedSourceHead": "5ed02c8b7b5f357f58d1c3fd270ead0718e7afbf",
+      "reviewedSourcePath": "tools/evaluation/tests/test_acceptance_evidence_links.py",
+      "reviewedSourceBlob": "5962db34514c27dea5447a8ea4077445c52e16ed",
+      "transformation": "explicit feature deployment oracle extracted from scenario lifecycle; see stack-integration spec",
+      "integratedBlob": "b3c45b31ee6ca9f7bddea7481c5f6c90657cf5e7"
+    },
+    {
+      "path": "tools/evaluation/tests/test_acceptance_scenario_drivers.py",
+      "reviewedSourceHead": "5ed02c8b7b5f357f58d1c3fd270ead0718e7afbf",
+      "reviewedSourcePath": "tools/evaluation/tests/test_acceptance_scenario_drivers.py",
+      "reviewedSourceBlob": "61ab25f33199928af08c8022c54df66fb568d789",
+      "transformation": "explicit feature deployment oracle extracted from scenario lifecycle; see stack-integration spec",
+      "integratedBlob": "18eca2857e81b396403a94fe492e42832ac91558"
     }
   ]
 }
