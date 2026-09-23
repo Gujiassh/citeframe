@@ -221,3 +221,61 @@ def test_deployment_oracle_reads_real_auto_plan_and_rejects_tampering(research_a
     with pytest.raises(AssertionError):
         observe()
     db.rollback()
+
+
+@pytest.mark.parametrize("mutation", ["foreign_run", "foreign_workspace", "stale_revision"])
+def test_deployment_oracle_rejects_a_valid_snapshot_bound_to_another_context(research_app, mutation):
+    from contextlib import nullcontext
+    from uuid import uuid4
+    from ai_pdf_api.models import ResearchPlanRevision, Workspace
+    from citeframe_evaluation.acceptance.workflow import workflow_facts
+    client, db, ctx = research_app
+    run, _ = publish(client, db, ctx)
+    sessions = lambda: nullcontext(db)
+    valid = workflow_facts(sessions, run.id)
+    revision = db.get(ResearchPlanRevision, run.current_plan_revision_id)
+    clone = ResearchPlanRevision(**{c.key: getattr(revision, c.key) for c in ResearchPlanRevision.__table__.columns})
+    clone.id = str(uuid4())
+    if mutation == "stale_revision":
+        clone.revision_number += 1
+        run.current_plan_revision_id = clone.id
+        target = run
+    else:
+        target = ResearchRun(**{c.key: getattr(run, c.key) for c in ResearchRun.__table__.columns})
+        target.id = str(uuid4())
+        clone.run_id = target.id
+        target.current_plan_revision_id = clone.id
+        if mutation == "foreign_workspace":
+            old_workspace = db.get(Workspace, run.workspace_id)
+            workspace = Workspace(**{c.key: getattr(old_workspace, c.key) for c in Workspace.__table__.columns})
+            workspace.id = str(uuid4())
+            db.add(workspace)
+            target.workspace_id = clone.workspace_id = workspace.id
+        run.approved_execution_snapshot_id = None
+        db.flush()
+        db.add(target)
+    db.add(clone)
+    db.commit()
+    snapshot = db.get(ResearchExecutionSnapshot, valid["snapshotId"])
+    assert snapshot.approved_plan_revision_id == revision.id and target.current_plan_revision_id == clone.id
+    with pytest.raises(AssertionError, match="snapshot_request_binding_mismatch"):
+        workflow_facts(sessions, target.id)
+
+
+@pytest.mark.parametrize("mutation", ["approval_type", "approval_snapshot"])
+def test_deployment_oracle_rejects_wrong_approval_binding(research_app, mutation):
+    from contextlib import nullcontext
+    from citeframe_evaluation.acceptance.workflow import workflow_facts
+    client, db, ctx = research_app
+    run, _ = publish(client, db, ctx)
+    sessions = lambda: nullcontext(db)
+    assert workflow_facts(sessions, run.id)["snapshotId"] == run.approved_execution_snapshot_id
+    snapshot = db.get(ResearchExecutionSnapshot, run.approved_execution_snapshot_id)
+    decision = db.get(HumanDecision, snapshot.approval_decision_id)
+    if mutation == "approval_type":
+        decision.decision_type = "conflict_resolution"
+    else:
+        decision.input_snapshot_sha256 = "0" * 64
+    db.commit()
+    with pytest.raises(AssertionError, match="approval_request_binding_mismatch"):
+        workflow_facts(sessions, run.id)
