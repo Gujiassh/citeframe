@@ -18,6 +18,13 @@ PRODUCT_PATHS = ["apps", "packages", "tools/evaluation", "infra/docker",
                  "package.json", "pnpm-lock.yaml", "pnpm-workspace.yaml"]
 
 
+ATTEMPT_TIMELINE_QUERY = ("SELECT coalesce(json_agg(t), '[]') FROM (SELECT s.run_id, s.step_kind, s.step_key, "
+         "s.status AS step_status, a.attempt_number, a.status, a.worker_instance_id, "
+         "a.lease_expires_at, a.heartbeat_at, a.started_at, a.finished_at "
+         "FROM research_step_attempts a JOIN research_steps s ON s.id=a.step_id "
+         "ORDER BY a.started_at) t")
+
+
 def scrub(value: str, secret_values: list[str]) -> str:
     for secret in sorted(secret_values, key=len, reverse=True):
         value = value.replace(secret, "<redacted>")
@@ -157,13 +164,8 @@ def main() -> None:
         (output / "scenario-summary.json").write_text(json.dumps(scenarios, indent=2))
         run("scenario-provider-timeline", compose + ["exec", "-T", "provider-stub", "python", "-c",
             "import urllib.request; print(urllib.request.urlopen('http://127.0.0.1:18082/__r800__/control/timeline').read().decode())"])
-        query = ("SELECT coalesce(json_agg(t), '[]') FROM (SELECT r.question, s.step_kind, s.step_key, "
-                 "s.status AS step_status, a.attempt_number, a.status, a.worker_instance_id, "
-                 "a.lease_expires_at, a.heartbeat_at, a.started_at, a.finished_at "
-                 "FROM research_step_attempts a JOIN research_steps s ON s.id=a.step_id "
-                 "JOIN research_runs r ON r.id=s.run_id ORDER BY a.started_at) t")
         run("scenario-attempt-timeline", compose + ["exec", "-T", "postgres", "psql", "--username",
-            "ai_pdf", "--dbname", "ai_pdf_workspace", "--no-psqlrc", "-At", "-c", query])
+            "ai_pdf", "--dbname", "ai_pdf_workspace", "--no-psqlrc", "-At", "-c", ATTEMPT_TIMELINE_QUERY])
         if args.historical_scenarios_only:
             return
         cli("before", "snapshot")

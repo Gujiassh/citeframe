@@ -24,3 +24,18 @@ raise SystemExit(cli.main(["snapshot"]))
     assert json.loads(result.stdout) == {"testSnapshot": True}
     assert "dependency-import-diagnostic" in result.stderr
     assert "dependency-import-diagnostic" not in result.stdout
+
+
+def test_docker_timeline_query_uses_real_persistence_columns():
+    import re
+    import runpy
+    from ai_pdf_api.models import ResearchStep, ResearchStepAttempt
+
+    root = Path(__file__).resolve().parents[3]
+    query = runpy.run_path(str(root / "infra/testing/r800_docker_smoke.py"))["ATTEMPT_TIMELINE_QUERY"]
+    columns = {"s": set(ResearchStep.__table__.columns.keys()),
+               "a": set(ResearchStepAttempt.__table__.columns.keys())}
+    references = re.findall(r"\b([a-z])\.([a-z_]+)", query)
+    assert references
+    for alias, column in references:
+        assert alias in columns and column in columns[alias], (alias, column)
