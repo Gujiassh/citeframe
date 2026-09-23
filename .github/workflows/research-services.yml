@@ -64,9 +64,10 @@ jobs:
       - name: Exact HEAD migration, process crash, restore and new-task acceptance
         run: |
           git rev-parse HEAD
-          uv run --project apps/api pytest -q infra/testing/test_research_services.py --basetemp service-evidence
+          uv run --project apps/api pytest -q infra/testing/test_research_services.py infra/testing/test_research_edit_services.py --basetemp service-evidence
       - uses: actions/upload-artifact@v4
         if: always()
         with:
           name: research-services-${{ github.event.pull_request.head.sha }}
           path: service-evidence/
+

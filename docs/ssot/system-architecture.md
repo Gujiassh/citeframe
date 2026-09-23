@@ -904,3 +904,7 @@ The current candidate executes isolated historical v2 restore, historical approv
 ### Research service-backed recovery acceptance
 
 The isolated PG17/S3/Worker process gate is specified in [issue27 real-service acceptance](../../specs/v5/post-v5-optimization/issue27-real-service-acceptance-20260923.md). It is separate from the historical differential oracle and does not substitute for browser acceptance.
+
+### Research report edition service gate
+
+The stacked feature gate exercises real PostgreSQL first-save/CAS races on two connections, default policy publication and revoked-editor no-write behavior. Scope and API-versus-UI boundaries are recorded in [issue23 real-service acceptance](../../specs/v5/post-v5-optimization/issue23-real-service-acceptance-20260924.md).
