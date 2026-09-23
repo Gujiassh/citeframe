@@ -900,3 +900,7 @@ The A2 runner now retains raw reports and validates historical invariants plus e
 ### Issue 23 historical/current workflow acceptance
 
 The current candidate executes isolated historical v2 restore, historical approved-task/idempotency replay, and real default-v3 POST-create-to-publication scenarios. F1 additions for newly generated human decision events/responses are verified by a separate feature oracle; existing schema1 events and old-key HTTP responses remain unchanged. Decision POST replay serializes only explicitly persisted fields while retaining the response model's datetime encoding. See `specs/v5/post-v5-optimization/issue23-versioned-workflow-acceptance-20260923.md`. The checks use SQLite and scripted capabilities; real PostgreSQL saga/process/object-store/UI acceptance remains open.
+
+### Research service-backed recovery acceptance
+
+The isolated PG17/S3/Worker process gate is specified in [issue27 real-service acceptance](../../specs/v5/post-v5-optimization/issue27-real-service-acceptance-20260923.md). It is separate from the historical differential oracle and does not substitute for browser acceptance.
