@@ -61,6 +61,8 @@ from pathlib import Path
 
 import ai_pdf_api
 import ai_pdf_worker
+import importlib.util
+assert importlib.util.find_spec("citeframe_evaluation") is None
 import citeframe_contracts
 import citeframe_persistence
 import citeframe_research_persistence

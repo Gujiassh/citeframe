@@ -5,7 +5,7 @@ from typing import Any
 
 import pytest
 
-from ai_pdf_worker.research_agent_schemas import (
+from ai_pdf_worker.research.schemas import (
     AGENT_RESULT_SCHEMA_VERSION,
     AGENT_RESULT_SCHEMA_VERSION_LEGACY,
     COMPACT_POLICY_VERSION,
@@ -18,8 +18,8 @@ from ai_pdf_worker.research_agent_schemas import (
     validate_synthesizer_claim_sets,
     validate_verifier_claim_set,
 )
-from ai_pdf_worker.research_executor import ResearchExecutionError
-from ai_pdf_worker.research_executor_contracts import (
+from ai_pdf_worker.research.executor import ResearchExecutionError
+from citeframe_contracts import (
     ApprovedResearchExecution,
     FrozenAsset,
     FrozenPrompt,
@@ -27,7 +27,7 @@ from ai_pdf_worker.research_executor_contracts import (
     StepLease,
     VerifiedClaim,
 )
-from ai_pdf_worker.research_runtime_agents import GenerationResearchAgents
+from ai_pdf_worker.research.agents import GenerationResearchAgents
 
 
 class _FakeGeneration:
@@ -307,7 +307,7 @@ def test_f1_executable_registry_runtime_bindings() -> None:
         resolve_registry,
         resolve_role_contract,
     )
-    from ai_pdf_worker.research_agent_schemas import (
+    from ai_pdf_worker.research.schemas import (
         schemas_for_registry,
         validate_legacy_agent_result,
         validators_for_registry,

@@ -28,7 +28,7 @@ from ai_pdf_api.models import (
     VideoTranscriptSegment,
 )
 from ai_pdf_api.services.providers import ModelProviderError
-from ai_pdf_worker.video_ingestion import VideoIngestionAdapter
+from ai_pdf_worker.ingestion.video_ingestion import VideoIngestionAdapter
 
 
 def _engine():
@@ -89,7 +89,7 @@ def test_video_adapter_fails_closed_without_asr(monkeypatch: pytest.MonkeyPatch)
         raise ModelProviderError("asr_not_configured", "OpenAI ASR API key is not configured.")
 
     monkeypatch.setattr(
-        "ai_pdf_worker.video_ingestion.require_configured_asr_profile",
+        "ai_pdf_worker.ingestion.video_ingestion.require_configured_asr_profile",
         boom,
     )
 
@@ -124,11 +124,11 @@ def test_video_adapter_not_audio_kind(monkeypatch: pytest.MonkeyPatch) -> None:
         limits = {}
 
     monkeypatch.setattr(
-        "ai_pdf_worker.video_ingestion.require_configured_asr_profile",
+        "ai_pdf_worker.ingestion.video_ingestion.require_configured_asr_profile",
         lambda: FakeProfile(),
     )
     monkeypatch.setattr(
-        "ai_pdf_worker.video_ingestion.asr_profile_snapshot_fields",
+        "ai_pdf_worker.ingestion.video_ingestion.asr_profile_snapshot_fields",
         lambda _p=None: {},
     )
 
@@ -182,11 +182,11 @@ def test_video_adapter_persists_real_transcription_when_asr_mocked(
         limits = {}
 
     monkeypatch.setattr(
-        "ai_pdf_worker.video_ingestion.require_configured_asr_profile",
+        "ai_pdf_worker.ingestion.video_ingestion.require_configured_asr_profile",
         lambda: FakeProfile(),
     )
     monkeypatch.setattr(
-        "ai_pdf_worker.video_ingestion.asr_profile_snapshot_fields",
+        "ai_pdf_worker.ingestion.video_ingestion.asr_profile_snapshot_fields",
         lambda _p=None: {"asrProfileFingerprint": "fp"},
     )
 
@@ -264,11 +264,11 @@ def test_video_adapter_never_invents_empty_success(monkeypatch: pytest.MonkeyPat
         limits = {}
 
     monkeypatch.setattr(
-        "ai_pdf_worker.video_ingestion.require_configured_asr_profile",
+        "ai_pdf_worker.ingestion.video_ingestion.require_configured_asr_profile",
         lambda: FakeProfile(),
     )
     monkeypatch.setattr(
-        "ai_pdf_worker.video_ingestion.asr_profile_snapshot_fields",
+        "ai_pdf_worker.ingestion.video_ingestion.asr_profile_snapshot_fields",
         lambda _p=None: {},
     )
 

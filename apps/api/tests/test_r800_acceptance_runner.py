@@ -69,10 +69,10 @@ def test_runner_orders_real_services_routes_and_restore_oracles() -> None:
         'compose build api worker web > "$OUTPUT_DIR/build.log"',
         "compose up -d provider-stub",
         'compose run --rm -T migration > "$OUTPUT_DIR/migration.log"',
-        "python scripts/r800_research_acceptance.py seed",
+        "python -m citeframe_evaluation.acceptance.cli seed",
         "compose up -d web caddy",
-        "python scripts/r800_research_acceptance.py run-scenarios",
-        "python scripts/r800_research_acceptance.py snapshot",
+        "python -m citeframe_evaluation.acceptance.cli run-scenarios",
+        "python -m citeframe_evaluation.acceptance.cli snapshot",
         '"$SCRIPT_DIR/backup-deployment.sh"',
         'compose down --volumes --remove-orphans > "$OUTPUT_DIR/down-before-restore.log"',
         '"$SCRIPT_DIR/restore-deployment.sh"',
@@ -83,11 +83,11 @@ def test_runner_orders_real_services_routes_and_restore_oracles() -> None:
 
     after_restore = runner.index('"$SCRIPT_DIR/restore-deployment.sh"')
     after_snapshot = runner.index(
-        "python scripts/r800_research_acceptance.py snapshot",
+        "python -m citeframe_evaluation.acceptance.cli snapshot",
         after_restore,
     )
     verify = runner.index(
-        "uv run python scripts/r800_research_acceptance.py verify",
+        "uv run --project tools/evaluation python -m citeframe_evaluation.acceptance.cli verify",
         after_snapshot,
     )
     assert after_restore < after_snapshot < verify
@@ -133,6 +133,23 @@ def test_provider_stays_private_and_runner_uses_only_compose_v1() -> None:
     assert "ports:" not in compose_override
     assert "provider-stub:18082" in runner
     assert "docker compose" not in runner
+
+
+def test_evaluation_image_keeps_a_long_running_worker_in_acceptance_compose() -> None:
+    compose_override = COMPOSE_OVERRIDE_PATH.read_text()
+    worker = compose_override.split("\n  worker:\n", 1)[1]
+    assert "target: evaluation" in worker
+    assert 'command: ["python", "-m", "ai_pdf_worker.main"]' in worker
+    dockerfile = (REPO_ROOT / "infra/docker/Dockerfile.python").read_text()
+    tooling = dockerfile.split("FROM worker AS evaluation", 1)[1]
+    assert 'CMD ["python", "-m", "citeframe_evaluation.cli.campaign", "--help"]' in tooling
+    # Backup/restore use the same override; their service starts must inherit the
+    # daemon command while explicit one-off CLI commands remain available.
+    for name in ("backup-deployment.sh", "restore-deployment.sh"):
+        source = (REPO_ROOT / "infra/scripts" / name).read_text()
+        assert 'source "$SCRIPT_DIR/compose-common.sh"' in source
+    common = (REPO_ROOT / "infra/scripts/compose-common.sh").read_text()
+    assert 'compose_files+=(-f "$COMPOSE_OVERRIDE_FILE")' in common
 
 
 def test_runner_separates_engineering_model_and_user_gates() -> None:

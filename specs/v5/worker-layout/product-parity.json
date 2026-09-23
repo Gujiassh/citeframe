@@ -1,0 +1,36 @@
+{
+  "baselineHead": "50af19dc3b79fbb677d9ac66c005b77cbe76f3d9",
+  "probe": "apps/api/tests/test_a2a_differential_probe.py",
+  "comparison": "exact structured equality including existing normalized DB data, serialized event and payload bytes; only report label and checkout path metadata differ",
+  "checks": {
+    "semantics": {
+      "equal": true,
+      "sha256": "6fba3da7bde9f54074d277a3a50b8aa91128f21718578f2e85731cf48c2f6fcb"
+    },
+    "composition": {
+      "equal": true,
+      "sha256": "98513bcf3f918010308a75917d80cec15749e4f1b8775df9476bf2c882805a5a"
+    },
+    "schedulerEvidence": {
+      "equal": true,
+      "sha256": "9c3734b37170e8e390c180f045189be6e4921542b9f3dbdc61fe710af7a25515"
+    },
+    "schemaVersion": {
+      "equal": true,
+      "sha256": "cfde88ccdde00860bacf726603f7f800da73edbe261928d2f4b1fdd78ebfc0df"
+    }
+  },
+  "areas": [
+    "exactEventBytes",
+    "exactPayloadBytes",
+    "leaseFencing",
+    "normalizedDbRows",
+    "permission",
+    "retryCancelReclaimRecovery",
+    "terminalProcessSemantics"
+  ],
+  "localRawReports": [
+    ".local-validation/baseline-product.json",
+    ".local-validation/migrated-product.json"
+  ]
+}

@@ -30,7 +30,7 @@ jobs:
       AI_PDF_MINIO_SECURE: 'false'
       PGOPTIONS: '-c timezone=UTC'
       PYTHONDONTWRITEBYTECODE: '1'
-      PYTHONPATH: apps/api/src:apps/worker/src:packages/backend-contracts/src:packages/backend-persistence/src:packages/research-persistence/src:infra/testing
+      PYTHONPATH: apps/api/src:apps/worker/src:packages/backend-contracts/src:packages/backend-persistence/src:packages/research-persistence/src:tools/evaluation/src:infra/testing
     steps:
       - uses: actions/checkout@v4
         with:

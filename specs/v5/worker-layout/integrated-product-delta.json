@@ -1,0 +1,447 @@
+{
+  "schemaVersion": 1,
+  "architectureBase": "5ed02c8b7b5f357f58d1c3fd270ead0718e7afbf",
+  "reviewedSourceHeads": [
+    "e1f080f4c9dca954da11fcd58aa5559220b23ab1"
+  ],
+  "scope": "PR28 R2/minimal-W1 plus reviewed storage admission, mapped onto accepted architecture; fixed source blobs, never regenerated in CI",
+  "functionalOracle": [
+    "existing R800 scenarios + three Hubble controls + actual fresh serial negative",
+    "real PG/S3 publication restore/cancel/revoke service gate",
+    "deadline admission + adoption + recovered-step-error tests"
+  ],
+  "files": [
+    {
+      "path": "apps/api/alembic/versions/n8b9c0d1e2f3_add_research_publication_intents.py",
+      "integratedBlob": "50fdc1bb5ec065318a148b3f16ab2774bc54eb63",
+      "reviewedSourceHead": "e1f080f4c9dca954da11fcd58aa5559220b23ab1",
+      "reviewedSourcePath": "apps/api/alembic/versions/n8b9c0d1e2f3_add_research_publication_intents.py",
+      "reviewedSourceBlob": "50fdc1bb5ec065318a148b3f16ab2774bc54eb63",
+      "transformation": "identical-reviewed-bytes"
+    },
+    {
+      "path": "apps/api/src/ai_pdf_api/models/__init__.py",
+      "integratedBlob": "09219fd0692ca1f69a60beae83ad32190f9f6f26",
+      "reviewedSourceHead": "e1f080f4c9dca954da11fcd58aa5559220b23ab1",
+      "reviewedSourcePath": "apps/api/src/ai_pdf_api/models/__init__.py",
+      "reviewedSourceBlob": "09219fd0692ca1f69a60beae83ad32190f9f6f26",
+      "transformation": "identical-reviewed-bytes"
+    },
+    {
+      "path": "apps/api/src/ai_pdf_api/services/research/__init__.py",
+      "integratedBlob": "f01d10e67699f5c0226bcf68c98042e8cd6d9ad6",
+      "reviewedSourceHead": "e1f080f4c9dca954da11fcd58aa5559220b23ab1",
+      "reviewedSourcePath": "apps/api/src/ai_pdf_api/services/research/__init__.py",
+      "reviewedSourceBlob": "f01d10e67699f5c0226bcf68c98042e8cd6d9ad6",
+      "transformation": "identical-reviewed-bytes"
+    },
+    {
+      "path": "apps/api/src/ai_pdf_api/services/research/research_plan_approval.py",
+      "integratedBlob": "d90800b7287414efd916e56e252f9c198ba21244",
+      "reviewedSourceHead": "e1f080f4c9dca954da11fcd58aa5559220b23ab1",
+      "reviewedSourcePath": "apps/api/src/ai_pdf_api/services/research/research_plan_approval.py",
+      "reviewedSourceBlob": "d90800b7287414efd916e56e252f9c198ba21244",
+      "transformation": "identical-reviewed-bytes"
+    },
+    {
+      "path": "apps/api/src/ai_pdf_api/services/research/research_prompt_provenance.py",
+      "integratedBlob": "8672e1e6ba7ca08881a3f6216beec3377fbc1caf",
+      "reviewedSourceHead": "e1f080f4c9dca954da11fcd58aa5559220b23ab1",
+      "reviewedSourcePath": "apps/api/src/ai_pdf_api/services/research/research_prompt_provenance.py",
+      "reviewedSourceBlob": "8672e1e6ba7ca08881a3f6216beec3377fbc1caf",
+      "transformation": "identical-reviewed-bytes"
+    },
+    {
+      "path": "apps/api/src/ai_pdf_api/services/research/research_runs.py",
+      "integratedBlob": "cf6a28fd4e24e9bb904a49889e139d50ced66760",
+      "reviewedSourceHead": "e1f080f4c9dca954da11fcd58aa5559220b23ab1",
+      "reviewedSourcePath": "apps/api/src/ai_pdf_api/services/research/research_runs.py",
+      "reviewedSourceBlob": "cf6a28fd4e24e9bb904a49889e139d50ced66760",
+      "transformation": "identical-reviewed-bytes"
+    },
+    {
+      "path": "apps/api/src/ai_pdf_api/services/research/research_worker.py",
+      "integratedBlob": "03783fe6376540eae4b3a06d6f34ad2aeed17d4f",
+      "reviewedSourceHead": "e1f080f4c9dca954da11fcd58aa5559220b23ab1",
+      "reviewedSourcePath": "apps/api/src/ai_pdf_api/services/research/research_worker.py",
+      "reviewedSourceBlob": "03783fe6376540eae4b3a06d6f34ad2aeed17d4f",
+      "transformation": "identical-reviewed-bytes"
+    },
+    {
+      "path": "apps/api/src/ai_pdf_api/services/research/research_worker_publication.py",
+      "integratedBlob": "dade27ec7a9e1492e6c7e386efc1486bed8ee155",
+      "reviewedSourceHead": "e1f080f4c9dca954da11fcd58aa5559220b23ab1",
+      "reviewedSourcePath": "apps/api/src/ai_pdf_api/services/research/research_worker_publication.py",
+      "reviewedSourceBlob": "dade27ec7a9e1492e6c7e386efc1486bed8ee155",
+      "transformation": "identical-reviewed-bytes"
+    },
+    {
+      "path": "apps/api/src/ai_pdf_api/services/storage.py",
+      "integratedBlob": "19546f43864e4de8b681930f006871a1944f8df8",
+      "reviewedSourceHead": "e1f080f4c9dca954da11fcd58aa5559220b23ab1",
+      "reviewedSourcePath": "apps/api/src/ai_pdf_api/services/storage.py",
+      "reviewedSourceBlob": "19546f43864e4de8b681930f006871a1944f8df8",
+      "transformation": "identical-reviewed-bytes"
+    },
+    {
+      "path": "apps/api/tests/a2a_r2_negative_controls.py",
+      "integratedBlob": "6587132c6e624e7e1903cb8c1de23fa4c1441496",
+      "reviewedSourceHead": "e1f080f4c9dca954da11fcd58aa5559220b23ab1",
+      "reviewedSourcePath": "apps/api/tests/a2a_r2_negative_controls.py",
+      "reviewedSourceBlob": "6587132c6e624e7e1903cb8c1de23fa4c1441496",
+      "transformation": "identical-reviewed-bytes"
+    },
+    {
+      "path": "apps/api/tests/a2a_retry_negative_controls.py",
+      "integratedBlob": "942a6c4b472d03144f33560b25783731aa418fee",
+      "reviewedSourceHead": "e1f080f4c9dca954da11fcd58aa5559220b23ab1",
+      "reviewedSourcePath": "apps/api/tests/a2a_retry_negative_controls.py",
+      "reviewedSourceBlob": "942a6c4b472d03144f33560b25783731aa418fee",
+      "transformation": "identical-reviewed-bytes"
+    },
+    {
+      "path": "apps/api/tests/fixtures/citeframe-a1b-before-metadata.json",
+      "integratedBlob": "f279aba9027602a77b8f1e438f237ce9d30ef849",
+      "reviewedSourceHead": "e1f080f4c9dca954da11fcd58aa5559220b23ab1",
+      "reviewedSourcePath": "apps/api/tests/fixtures/citeframe-a1b-before-metadata.json",
+      "reviewedSourceBlob": "f279aba9027602a77b8f1e438f237ce9d30ef849",
+      "transformation": "identical-reviewed-bytes"
+    },
+    {
+      "path": "apps/api/tests/research_worker_test_support.py",
+      "integratedBlob": "75322a1bc154bb39b807fa7cfbfd1749ecad14aa",
+      "reviewedSourceHead": "e1f080f4c9dca954da11fcd58aa5559220b23ab1",
+      "reviewedSourcePath": "apps/api/tests/research_worker_test_support.py",
+      "reviewedSourceBlob": "75322a1bc154bb39b807fa7cfbfd1749ecad14aa",
+      "transformation": "identical-reviewed-bytes"
+    },
+    {
+      "path": "apps/api/tests/test_a2a_differential.py",
+      "integratedBlob": "a1bd4bd64664f553968e65090c5f1e53ae7e6bea",
+      "reviewedSourceHead": "e1f080f4c9dca954da11fcd58aa5559220b23ab1",
+      "reviewedSourcePath": "apps/api/tests/test_a2a_differential.py",
+      "reviewedSourceBlob": "a1bd4bd64664f553968e65090c5f1e53ae7e6bea",
+      "transformation": "identical-reviewed-bytes"
+    },
+    {
+      "path": "apps/api/tests/test_a2a_differential_probe.py",
+      "integratedBlob": "7346eef229d082a2c549d1b9422bf5f73e3632a4",
+      "reviewedSourceHead": "e1f080f4c9dca954da11fcd58aa5559220b23ab1",
+      "reviewedSourcePath": "apps/api/tests/test_a2a_differential_probe.py",
+      "reviewedSourceBlob": "ae8b6a31b32690477ce1400e65082c2df4c129aa",
+      "transformation": "explicit-layout-integration; inspect mapping report and merge delta"
+    },
+    {
+      "path": "apps/api/tests/test_layout_probe_paths.py",
+      "integratedBlob": "62f07471844781bd9c3ff819b26540a10e6e5de3",
+      "reviewedSourceHead": "5ed02c8b7b5f357f58d1c3fd270ead0718e7afbf",
+      "reviewedSourcePath": "apps/api/tests/test_layout_probe_paths.py",
+      "reviewedSourceBlob": "68b39e77a5708b881ed25f628c0cf928647224b4",
+      "transformation": "explicit-layout-integration; inspect mapping report and merge delta"
+    },
+    {
+      "path": "apps/api/tests/test_persistence_boundary.py",
+      "integratedBlob": "a456c9e4da4ef7405a9920c68d189ef0d5c138f9",
+      "reviewedSourceHead": "e1f080f4c9dca954da11fcd58aa5559220b23ab1",
+      "reviewedSourcePath": "apps/api/tests/test_persistence_boundary.py",
+      "reviewedSourceBlob": "a456c9e4da4ef7405a9920c68d189ef0d5c138f9",
+      "transformation": "identical-reviewed-bytes"
+    },
+    {
+      "path": "apps/api/tests/test_research_migration.py",
+      "integratedBlob": "a70b55cf8bb73bf9a69cf98a1c6ec1df94acfec5",
+      "reviewedSourceHead": "e1f080f4c9dca954da11fcd58aa5559220b23ab1",
+      "reviewedSourcePath": "apps/api/tests/test_research_migration.py",
+      "reviewedSourceBlob": "a70b55cf8bb73bf9a69cf98a1c6ec1df94acfec5",
+      "transformation": "identical-reviewed-bytes"
+    },
+    {
+      "path": "apps/api/tests/test_research_publication_adoption.py",
+      "integratedBlob": "30292e521121d596672519794902ea0d997f91a4",
+      "reviewedSourceHead": "e1f080f4c9dca954da11fcd58aa5559220b23ab1",
+      "reviewedSourcePath": "apps/api/tests/test_research_publication_adoption.py",
+      "reviewedSourceBlob": "30292e521121d596672519794902ea0d997f91a4",
+      "transformation": "identical-reviewed-bytes"
+    },
+    {
+      "path": "apps/api/tests/test_research_publication_intent_migration.py",
+      "integratedBlob": "d48535e2f9e66a26c0049d23cdbf19fe63a61fe4",
+      "reviewedSourceHead": "e1f080f4c9dca954da11fcd58aa5559220b23ab1",
+      "reviewedSourcePath": "apps/api/tests/test_research_publication_intent_migration.py",
+      "reviewedSourceBlob": "d48535e2f9e66a26c0049d23cdbf19fe63a61fe4",
+      "transformation": "identical-reviewed-bytes"
+    },
+    {
+      "path": "apps/api/tests/test_research_recovered_step_error.py",
+      "integratedBlob": "aeb6bed2dac2552acd6e7a0726fe2de0289f4b1e",
+      "reviewedSourceHead": "e1f080f4c9dca954da11fcd58aa5559220b23ab1",
+      "reviewedSourcePath": "apps/api/tests/test_research_recovered_step_error.py",
+      "reviewedSourceBlob": "aeb6bed2dac2552acd6e7a0726fe2de0289f4b1e",
+      "transformation": "identical-reviewed-bytes"
+    },
+    {
+      "path": "apps/api/tests/test_research_worker_evidence_publication.py",
+      "integratedBlob": "659bf5936c6225d62e363a96e8b751acbd3e23f7",
+      "reviewedSourceHead": "e1f080f4c9dca954da11fcd58aa5559220b23ab1",
+      "reviewedSourcePath": "apps/api/tests/test_research_worker_evidence_publication.py",
+      "reviewedSourceBlob": "659bf5936c6225d62e363a96e8b751acbd3e23f7",
+      "transformation": "identical-reviewed-bytes"
+    },
+    {
+      "path": "apps/api/tests/test_storage_deadline_admission.py",
+      "integratedBlob": "9be150af4054b407a07f0906e51bf5d350e01e6d",
+      "reviewedSourceHead": "e1f080f4c9dca954da11fcd58aa5559220b23ab1",
+      "reviewedSourcePath": "apps/api/tests/test_storage_deadline_admission.py",
+      "reviewedSourceBlob": "9be150af4054b407a07f0906e51bf5d350e01e6d",
+      "transformation": "identical-reviewed-bytes"
+    },
+    {
+      "path": "apps/api/tests/test_storage_metrics.py",
+      "integratedBlob": "65cc91c35c0f4a04e9817220fd456f5d03bc6e87",
+      "reviewedSourceHead": "e1f080f4c9dca954da11fcd58aa5559220b23ab1",
+      "reviewedSourcePath": "apps/api/tests/test_storage_metrics.py",
+      "reviewedSourceBlob": "65cc91c35c0f4a04e9817220fd456f5d03bc6e87",
+      "transformation": "identical-reviewed-bytes"
+    },
+    {
+      "path": "apps/web/e2e/research-run.spec.ts",
+      "integratedBlob": "af7d9e3387e009b5a0c309dde5795a3f292b0541",
+      "reviewedSourceHead": "e1f080f4c9dca954da11fcd58aa5559220b23ab1",
+      "reviewedSourcePath": "apps/web/e2e/research-run.spec.ts",
+      "reviewedSourceBlob": "af7d9e3387e009b5a0c309dde5795a3f292b0541",
+      "transformation": "identical-reviewed-bytes"
+    },
+    {
+      "path": "apps/web/src/components/chat-panel.tsx",
+      "integratedBlob": "1654eedfe70dbe5eb21482d7baa617a8439c908c",
+      "reviewedSourceHead": "e1f080f4c9dca954da11fcd58aa5559220b23ab1",
+      "reviewedSourcePath": "apps/web/src/components/chat-panel.tsx",
+      "reviewedSourceBlob": "1654eedfe70dbe5eb21482d7baa617a8439c908c",
+      "transformation": "identical-reviewed-bytes"
+    },
+    {
+      "path": "apps/web/src/components/research-run-panel.tsx",
+      "integratedBlob": "fffe7c215aa2cce8a9ef3163e527244b80860f5b",
+      "reviewedSourceHead": "e1f080f4c9dca954da11fcd58aa5559220b23ab1",
+      "reviewedSourcePath": "apps/web/src/components/research-run-panel.tsx",
+      "reviewedSourceBlob": "fffe7c215aa2cce8a9ef3163e527244b80860f5b",
+      "transformation": "identical-reviewed-bytes"
+    },
+    {
+      "path": "apps/web/src/lib/i18n-context.tsx",
+      "integratedBlob": "7ceb5ef84d29b0b398a6fed85f3b9099d0e4a278",
+      "reviewedSourceHead": "e1f080f4c9dca954da11fcd58aa5559220b23ab1",
+      "reviewedSourcePath": "apps/web/src/lib/i18n-context.tsx",
+      "reviewedSourceBlob": "7ceb5ef84d29b0b398a6fed85f3b9099d0e4a278",
+      "transformation": "identical-reviewed-bytes"
+    },
+    {
+      "path": "apps/web/src/lib/use-research.ts",
+      "integratedBlob": "5c0ba8103c71560cb0b9b8eb8946b8824a217539",
+      "reviewedSourceHead": "e1f080f4c9dca954da11fcd58aa5559220b23ab1",
+      "reviewedSourcePath": "apps/web/src/lib/use-research.ts",
+      "reviewedSourceBlob": "5c0ba8103c71560cb0b9b8eb8946b8824a217539",
+      "transformation": "identical-reviewed-bytes"
+    },
+    {
+      "path": "apps/worker/src/ai_pdf_worker/research/adapters/ledger.py",
+      "integratedBlob": "d0135b77f84d81ae6ec8a832783390965a779c53",
+      "reviewedSourceHead": "e1f080f4c9dca954da11fcd58aa5559220b23ab1",
+      "reviewedSourcePath": "apps/worker/src/ai_pdf_worker/research_runtime_ports.py",
+      "reviewedSourceBlob": "6dbbcbd28ddf70ae3de651d9ecac91288cdcf174",
+      "transformation": "explicit-layout-integration; inspect mapping report and merge delta"
+    },
+    {
+      "path": "apps/worker/src/ai_pdf_worker/research/core.py",
+      "integratedBlob": "ebc8f96a374323ddaf4b68b7bc0c35c0a7338058",
+      "reviewedSourceHead": "e1f080f4c9dca954da11fcd58aa5559220b23ab1",
+      "reviewedSourcePath": "apps/worker/src/ai_pdf_worker/research_runtime_core.py",
+      "reviewedSourceBlob": "fefe9de2a803f5cad5dc947567db133d7cb91259",
+      "transformation": "explicit-layout-integration; inspect mapping report and merge delta"
+    },
+    {
+      "path": "apps/worker/src/ai_pdf_worker/research/executor.py",
+      "integratedBlob": "c47c7402643c7b658f8c50b0661c9f6c48a4fc43",
+      "reviewedSourceHead": "e1f080f4c9dca954da11fcd58aa5559220b23ab1",
+      "reviewedSourcePath": "apps/worker/src/ai_pdf_worker/research_executor.py",
+      "reviewedSourceBlob": "c047584bea9972751ea32df49d4da2ec1c50bc94",
+      "transformation": "explicit-layout-integration; inspect mapping report and merge delta"
+    },
+    {
+      "path": "apps/worker/src/ai_pdf_worker/research/handlers.py",
+      "integratedBlob": "d37e2244f25b7fc64f652d1895b26bcd4d7eda33",
+      "reviewedSourceHead": "e1f080f4c9dca954da11fcd58aa5559220b23ab1",
+      "reviewedSourcePath": "apps/worker/src/ai_pdf_worker/research_runtime_handlers.py",
+      "reviewedSourceBlob": "e5bc1c6ae687617b84eedd845f43b3741cb32bd3",
+      "transformation": "explicit-layout-integration; inspect mapping report and merge delta"
+    },
+    {
+      "path": "apps/worker/src/ai_pdf_worker/research/persistence.py",
+      "integratedBlob": "41cb524627fb6e03d4ca8457db984c9bf9c5e88b",
+      "reviewedSourceHead": "e1f080f4c9dca954da11fcd58aa5559220b23ab1",
+      "reviewedSourcePath": "apps/worker/src/ai_pdf_worker/research_persistence_service.py",
+      "reviewedSourceBlob": "41cb524627fb6e03d4ca8457db984c9bf9c5e88b",
+      "transformation": "identical-reviewed-bytes"
+    },
+    {
+      "path": "apps/worker/src/ai_pdf_worker/research/processor.py",
+      "integratedBlob": "285b8190a489282e1ed3628a805c6cc191c4c890",
+      "reviewedSourceHead": "e1f080f4c9dca954da11fcd58aa5559220b23ab1",
+      "reviewedSourcePath": "apps/worker/src/ai_pdf_worker/research_runtime_processor.py",
+      "reviewedSourceBlob": "972b5bb8bcdaf271fc4cdd9c455cc62fa186937f",
+      "transformation": "explicit-layout-integration; inspect mapping report and merge delta"
+    },
+    {
+      "path": "apps/worker/tests/test_research_runtime.py",
+      "integratedBlob": "234a183feddbb2a296afb81e4ad3d1b775c210c0",
+      "reviewedSourceHead": "e1f080f4c9dca954da11fcd58aa5559220b23ab1",
+      "reviewedSourcePath": "apps/worker/tests/test_research_runtime.py",
+      "reviewedSourceBlob": "908669704623d5fb82d63703d716faa14ded8fcf",
+      "transformation": "explicit-layout-integration; inspect mapping report and merge delta"
+    },
+    {
+      "path": "apps/worker/tests/test_research_single_attempt_dispatcher.py",
+      "integratedBlob": "72e5541c003911efbcfd122b01472dc7ffd85fa0",
+      "reviewedSourceHead": "e1f080f4c9dca954da11fcd58aa5559220b23ab1",
+      "reviewedSourcePath": "apps/worker/tests/test_research_single_attempt_dispatcher.py",
+      "reviewedSourceBlob": "5a411ff7702e66cf0946e758fa9900ce94d05302",
+      "transformation": "explicit-layout-integration; inspect mapping report and merge delta"
+    },
+    {
+      "path": "packages/backend-contracts/src/citeframe_contracts/__init__.py",
+      "integratedBlob": "d4e91f56407018d66bc92adbb5a89230401f698d",
+      "reviewedSourceHead": "e1f080f4c9dca954da11fcd58aa5559220b23ab1",
+      "reviewedSourcePath": "apps/worker/src/ai_pdf_worker/research_executor_contracts.py",
+      "reviewedSourceBlob": "05749c3ffa0d107c317ed475e9a7125750fa0e54",
+      "transformation": "explicit-layout-integration; inspect mapping report and merge delta"
+    },
+    {
+      "path": "packages/backend-persistence/src/citeframe_persistence/models/__init__.py",
+      "integratedBlob": "09219fd0692ca1f69a60beae83ad32190f9f6f26",
+      "reviewedSourceHead": "e1f080f4c9dca954da11fcd58aa5559220b23ab1",
+      "reviewedSourcePath": "packages/backend-persistence/src/citeframe_persistence/models/__init__.py",
+      "reviewedSourceBlob": "09219fd0692ca1f69a60beae83ad32190f9f6f26",
+      "transformation": "identical-reviewed-bytes"
+    },
+    {
+      "path": "packages/backend-persistence/src/citeframe_persistence/models/research_publication_intent.py",
+      "integratedBlob": "bdbebab9a932bbad6d32c3d662a81af568857df5",
+      "reviewedSourceHead": "e1f080f4c9dca954da11fcd58aa5559220b23ab1",
+      "reviewedSourcePath": "packages/backend-persistence/src/citeframe_persistence/models/research_publication_intent.py",
+      "reviewedSourceBlob": "bdbebab9a932bbad6d32c3d662a81af568857df5",
+      "transformation": "identical-reviewed-bytes"
+    },
+    {
+      "path": "packages/research-persistence/src/citeframe_research_persistence/commands.py",
+      "integratedBlob": "5d19563c3e1eba4225615da7ede08d54bde50ba3",
+      "reviewedSourceHead": "e1f080f4c9dca954da11fcd58aa5559220b23ab1",
+      "reviewedSourcePath": "packages/research-persistence/src/citeframe_research_persistence/commands.py",
+      "reviewedSourceBlob": "5d19563c3e1eba4225615da7ede08d54bde50ba3",
+      "transformation": "identical-reviewed-bytes"
+    },
+    {
+      "path": "packages/research-persistence/src/citeframe_research_persistence/lease.py",
+      "integratedBlob": "5a0fc21be8d9538ddb8cd69682c3a0b688a9a4b8",
+      "reviewedSourceHead": "e1f080f4c9dca954da11fcd58aa5559220b23ab1",
+      "reviewedSourcePath": "packages/research-persistence/src/citeframe_research_persistence/lease.py",
+      "reviewedSourceBlob": "5a0fc21be8d9538ddb8cd69682c3a0b688a9a4b8",
+      "transformation": "identical-reviewed-bytes"
+    },
+    {
+      "path": "packages/research-persistence/src/citeframe_research_persistence/policy.py",
+      "integratedBlob": "c2081c0ae6de08f4b996dc383e79503b3ea856f1",
+      "reviewedSourceHead": "e1f080f4c9dca954da11fcd58aa5559220b23ab1",
+      "reviewedSourcePath": "packages/research-persistence/src/citeframe_research_persistence/policy.py",
+      "reviewedSourceBlob": "c2081c0ae6de08f4b996dc383e79503b3ea856f1",
+      "transformation": "identical-reviewed-bytes"
+    },
+    {
+      "path": "packages/research-persistence/src/citeframe_research_persistence/publication.py",
+      "integratedBlob": "18d2be397f2dcefa6cb5dcb05a3660dfe08658ef",
+      "reviewedSourceHead": "e1f080f4c9dca954da11fcd58aa5559220b23ab1",
+      "reviewedSourcePath": "packages/research-persistence/src/citeframe_research_persistence/publication.py",
+      "reviewedSourceBlob": "18d2be397f2dcefa6cb5dcb05a3660dfe08658ef",
+      "transformation": "identical-reviewed-bytes"
+    },
+    {
+      "path": "packages/research-persistence/src/citeframe_research_persistence/publication_adoption.py",
+      "integratedBlob": "aa715e61788822a16952b73414eb006162e9fdfa",
+      "reviewedSourceHead": "e1f080f4c9dca954da11fcd58aa5559220b23ab1",
+      "reviewedSourcePath": "packages/research-persistence/src/citeframe_research_persistence/publication_adoption.py",
+      "reviewedSourceBlob": "aa715e61788822a16952b73414eb006162e9fdfa",
+      "transformation": "identical-reviewed-bytes"
+    },
+    {
+      "path": "packages/research-persistence/src/citeframe_research_persistence/publication_finalize.py",
+      "integratedBlob": "b960d42561d78ecab9ab3e082e4a779ebed90e4a",
+      "reviewedSourceHead": "e1f080f4c9dca954da11fcd58aa5559220b23ab1",
+      "reviewedSourcePath": "packages/research-persistence/src/citeframe_research_persistence/publication_finalize.py",
+      "reviewedSourceBlob": "b960d42561d78ecab9ab3e082e4a779ebed90e4a",
+      "transformation": "identical-reviewed-bytes"
+    },
+    {
+      "path": "packages/research-persistence/src/citeframe_research_persistence/publication_prepare.py",
+      "integratedBlob": "21b88d1296df38c350c5954a522114218c5780fc",
+      "reviewedSourceHead": "e1f080f4c9dca954da11fcd58aa5559220b23ab1",
+      "reviewedSourcePath": "packages/research-persistence/src/citeframe_research_persistence/publication_prepare.py",
+      "reviewedSourceBlob": "21b88d1296df38c350c5954a522114218c5780fc",
+      "transformation": "identical-reviewed-bytes"
+    },
+    {
+      "path": "packages/research-persistence/src/citeframe_research_persistence/publication_reconcile.py",
+      "integratedBlob": "3089c742bdb92b50843b795e3706f4b2a5bff356",
+      "reviewedSourceHead": "e1f080f4c9dca954da11fcd58aa5559220b23ab1",
+      "reviewedSourcePath": "packages/research-persistence/src/citeframe_research_persistence/publication_reconcile.py",
+      "reviewedSourceBlob": "3089c742bdb92b50843b795e3706f4b2a5bff356",
+      "transformation": "identical-reviewed-bytes"
+    },
+    {
+      "path": "packages/research-persistence/src/citeframe_research_persistence/publication_render.py",
+      "integratedBlob": "36d229a5bb74288c4a11ffe844b53e82bc6bb226",
+      "reviewedSourceHead": "e1f080f4c9dca954da11fcd58aa5559220b23ab1",
+      "reviewedSourcePath": "packages/research-persistence/src/citeframe_research_persistence/publication_render.py",
+      "reviewedSourceBlob": "36d229a5bb74288c4a11ffe844b53e82bc6bb226",
+      "transformation": "identical-reviewed-bytes"
+    },
+    {
+      "path": "packages/research-persistence/src/citeframe_research_persistence/publication_saga.py",
+      "integratedBlob": "990ebaa3f47af9f22e5ccc25239bc720fe7dc011",
+      "reviewedSourceHead": "e1f080f4c9dca954da11fcd58aa5559220b23ab1",
+      "reviewedSourcePath": "packages/research-persistence/src/citeframe_research_persistence/publication_saga.py",
+      "reviewedSourceBlob": "990ebaa3f47af9f22e5ccc25239bc720fe7dc011",
+      "transformation": "identical-reviewed-bytes"
+    },
+    {
+      "path": "packages/research-persistence/src/citeframe_research_persistence/publication_saga_support.py",
+      "integratedBlob": "b414814449b1eb544ad73505854b46a08ca8ab97",
+      "reviewedSourceHead": "e1f080f4c9dca954da11fcd58aa5559220b23ab1",
+      "reviewedSourcePath": "packages/research-persistence/src/citeframe_research_persistence/publication_saga_support.py",
+      "reviewedSourceBlob": "b414814449b1eb544ad73505854b46a08ca8ab97",
+      "transformation": "identical-reviewed-bytes"
+    },
+    {
+      "path": "packages/research-persistence/src/citeframe_research_persistence/snapshot_integrity.py",
+      "integratedBlob": "29e4965257c11aa33051e4e58115e6c2e581a7ae",
+      "reviewedSourceHead": "e1f080f4c9dca954da11fcd58aa5559220b23ab1",
+      "reviewedSourcePath": "packages/research-persistence/src/citeframe_research_persistence/snapshot_integrity.py",
+      "reviewedSourceBlob": "29e4965257c11aa33051e4e58115e6c2e581a7ae",
+      "transformation": "identical-reviewed-bytes"
+    },
+    {
+      "path": "packages/research-persistence/src/citeframe_research_persistence/state.py",
+      "integratedBlob": "24cbad63cc81dc810fafd174c51fd48416f62682",
+      "reviewedSourceHead": "e1f080f4c9dca954da11fcd58aa5559220b23ab1",
+      "reviewedSourcePath": "packages/research-persistence/src/citeframe_research_persistence/state.py",
+      "reviewedSourceBlob": "24cbad63cc81dc810fafd174c51fd48416f62682",
+      "transformation": "identical-reviewed-bytes"
+    },
+    {
+      "path": "tools/evaluation/tests/test_acceptance_cli_output.py",
+      "integratedBlob": "f466ce3565d93c8b5e68b3a16227d1c126a09401",
+      "reviewedSourceHead": "5ed02c8b7b5f357f58d1c3fd270ead0718e7afbf",
+      "reviewedSourcePath": "tools/evaluation/tests/test_acceptance_cli_output.py",
+      "reviewedSourceBlob": "3c2f4e4eb8c830c6c53fdd169d1ef590756acd57",
+      "transformation": "explicit-layout-integration; inspect mapping report and merge delta"
+    }
+  ]
+}

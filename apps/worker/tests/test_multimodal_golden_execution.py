@@ -44,8 +44,8 @@ from ai_pdf_api.services.multimodal_quality import (
 )
 from ai_pdf_api.services.providers import get_generation_provider
 from ai_pdf_api.services.retrieval import retrieve_query_content
-from ai_pdf_worker.image_ingestion import ImageIngestionAdapter, extract_image_text_with_ocr
-from ai_pdf_worker.pdf_ingestion import PdfIngestionAdapter
+from ai_pdf_worker.ingestion.image_ingestion import ImageIngestionAdapter, extract_image_text_with_ocr
+from ai_pdf_worker.ingestion.pdf_ingestion import PdfIngestionAdapter
 
 pytestmark = pytest.mark.acceptance
 

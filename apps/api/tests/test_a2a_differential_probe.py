@@ -694,9 +694,9 @@ def _process_one_flow(path: Path, normalizer: _Normalizer) -> dict[str, object]:
     from ai_pdf_api.routers.research import router
     from ai_pdf_api.services import research_worker
     from ai_pdf_api.services.research.research_versions_service import publish_research_versions_for_release
-    from ai_pdf_worker.r800_acceptance_common import IDS
-    from ai_pdf_worker.r800_acceptance_fixture import seed_state
-    from ai_pdf_worker.research_runtime import (
+    from citeframe_evaluation.acceptance.common import IDS
+    from citeframe_evaluation.acceptance.fixture import seed_state
+    from ai_pdf_worker.research.runtime import (
         ResearchWorkProcessor,
         build_default_research_service,
     )
@@ -850,7 +850,7 @@ def _process_one_flow(path: Path, normalizer: _Normalizer) -> dict[str, object]:
 
     uow_enters = {"count": 0}
     try:
-        from ai_pdf_worker import research_persistence_service as composition
+        from ai_pdf_worker.research import persistence as composition
     except ImportError:
         composition = None
 
@@ -890,7 +890,7 @@ def _process_one_flow(path: Path, normalizer: _Normalizer) -> dict[str, object]:
         composition.search_frozen_evidence = injected_search
         service = build_default_research_service()
 
-        from ai_pdf_worker import research_runtime_core
+        from ai_pdf_worker.research import core as research_runtime_core
 
         original_enter = research_runtime_core.ResearchUnitOfWork.__enter__
 
@@ -1103,7 +1103,7 @@ def test_generate_executable_differential_report(tmp_path: Path) -> None:
     assert OUTPUT is not None
     # Import the complete API/Worker surface before replacing module-level uuid4 seams.
     import ai_pdf_api.services.research.research_worker_evidence  # noqa: F401
-    import ai_pdf_worker.research_runtime  # noqa: F401
+    import ai_pdf_worker.research.runtime  # noqa: F401
 
     _install_determinism()
     normalizer = _Normalizer()

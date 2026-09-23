@@ -48,6 +48,7 @@ class ServiceHarness:
             "packages/backend-persistence/src",
             "packages/research-persistence/src",
             "infra/testing",
+            "tools/evaluation/src",
         ]
         self.env["PYTHONPATH"] = os.pathsep.join(str(ROOT / p) for p in paths)
         admin = create_engine(self.admin, isolation_level="AUTOCOMMIT")
@@ -248,7 +249,7 @@ def api_client(harness):
 
 
 def create_run(client, key):
-    from ai_pdf_worker.r800_acceptance_common import IDS
+    from citeframe_evaluation.acceptance.common import IDS
 
     response = client.post(
         f"/v1/workspaces/{IDS['workspace']}/research-runs",
@@ -264,7 +265,7 @@ def create_run(client, key):
 
 def headers(key):
     from ai_pdf_api.core.settings import settings
-    from ai_pdf_worker.r800_acceptance_common import IDS
+    from citeframe_evaluation.acceptance.common import IDS
 
     return {
         "x-ai-pdf-internal-token": settings.api_internal_token,
@@ -275,7 +276,7 @@ def headers(key):
 
 def to_publisher(harness, client, sessions, run_id):
     from ai_pdf_api.models import HumanDecision, ResearchRun, ResearchStep
-    from ai_pdf_worker.r800_acceptance_common import IDS
+    from citeframe_evaluation.acceptance.common import IDS
     from sqlalchemy import select
 
     for phase in range(3):

@@ -288,6 +288,8 @@ FastAPI 是业务 API 的单一实现层，不把一半业务逻辑留在 Next.j
 
 ### 5.3 Worker 架构
 
+源码目录、离线评测包与允许依赖方向见 [Worker 目录与评测边界](worker-layout.md)。Worker 按 `ingestion/` 与 `research/` 分域；`tools/evaluation` 独立打包，仅向产品合同和运行时依赖。
+
 Worker 是独立进程，不与 API 共用请求生命周期。
 
 Worker 任务：

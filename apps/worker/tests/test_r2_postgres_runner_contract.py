@@ -82,7 +82,7 @@ def test_r2_artifact_hash_and_cleanup_contract(tmp_path: Path) -> None:
         for path in runner.CANDIDATE_FILES
     }
     assert "packages/research-persistence/src/citeframe_research_persistence/lease.py" in hashes
-    assert "apps/worker/src/ai_pdf_worker/research_runtime_processor.py" in hashes
+    assert "apps/worker/src/ai_pdf_worker/research/processor.py" in hashes
     assert "infra/scripts/r2_scenario_l_budget.py" in hashes
     assert "infra/scripts/r2_scenario_l_worker.py" in hashes
     output = tmp_path / "nested" / "r2.json"

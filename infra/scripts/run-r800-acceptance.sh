@@ -280,7 +280,7 @@ compose up -d api
 wait_for_service_health api
 
 compose run --rm -T --no-deps worker \
-  python scripts/r800_research_acceptance.py seed > "$OUTPUT_DIR/state.json"
+  python -m citeframe_evaluation.acceptance.cli seed > "$OUTPUT_DIR/state.json"
 
 compose up -d web caddy
 for service in web caddy; do wait_for_service_health "$service"; done
@@ -290,7 +290,7 @@ compose exec -T api python -c \
 
 date +%s%N > "$OUTPUT_DIR/scenarios-start.ns"
 compose run --rm -T --no-deps worker \
-  python scripts/r800_research_acceptance.py run-scenarios > "$OUTPUT_DIR/scenarios.json"
+  python -m citeframe_evaluation.acceptance.cli run-scenarios > "$OUTPUT_DIR/scenarios.json"
 date +%s%N > "$OUTPUT_DIR/scenarios-end.ns"
 capture_provider_timeline "$OUTPUT_DIR/provider-timeline.json"
 compose logs --no-color api > "$OUTPUT_DIR/api.log"
@@ -298,7 +298,7 @@ compose logs --no-color worker > "$OUTPUT_DIR/worker.log"
 compose logs --no-color provider-stub > "$OUTPUT_DIR/provider.log"
 
 compose run --rm -T --no-deps worker \
-  python scripts/r800_research_acceptance.py snapshot > "$OUTPUT_DIR/before.json"
+  python -m citeframe_evaluation.acceptance.cli snapshot > "$OUTPUT_DIR/before.json"
 
 date +%s%N > "$OUTPUT_DIR/backup-start.ns"
 "$SCRIPT_DIR/backup-deployment.sh" \
@@ -335,10 +335,10 @@ for service in postgres minio redis provider-stub api worker web caddy; do
 done
 
 compose run --rm -T --no-deps worker \
-  python scripts/r800_research_acceptance.py snapshot > "$OUTPUT_DIR/after.json"
+  python -m citeframe_evaluation.acceptance.cli snapshot > "$OUTPUT_DIR/after.json"
 capture_provider_timeline "$OUTPUT_DIR/provider-timeline-after-restore.json"
 
-(cd "$REPO_ROOT/apps/worker" && uv run python scripts/r800_research_acceptance.py verify \
+(cd "$REPO_ROOT" && uv run --project tools/evaluation python -m citeframe_evaluation.acceptance.cli verify \
   --before "$OUTPUT_DIR/before.json" \
   --after "$OUTPUT_DIR/after.json" \
   --output "$OUTPUT_DIR/verification.json")

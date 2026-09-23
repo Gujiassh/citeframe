@@ -1076,3 +1076,7 @@ V3 多模态 PDF + 独立图片需要把现有 `Document/Page/Chunk/Citation` �
 3. `job-state-machine.md`
 
 只有把这三份也补上，整套架构设计才真正进入“可直接实现”的状态。
+
+## Worker 与离线评测源码边界
+
+当前文件归属与依赖约束以 [Worker 目录 SSoT](../ssot/worker-layout.md) 为准。Research handler、模型角色、Evidence 工具、provider adapter 与持久化组合位于 Worker 的 `research/` 子包；离线评测、campaign 与确定性验收位于独立 `tools/evaluation` 包。
