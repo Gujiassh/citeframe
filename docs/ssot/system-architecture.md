@@ -879,3 +879,8 @@ Document/Page/Chunk 已通过受控迁移切换为 Asset/Representation/ContentU
 - **Ingestion Worker** may import shared models and write Representations/ContentUnits under the modality adapter contract on the **shared Session** passed by the API orchestrator (current fact; not a completed process-isolated boundary).
 - **Research Worker** uses neutral persistence commands and Worker-owned UoW/session composition. Accepted R1 runtime runs one claimed Attempt per handler in independent loops and excludes LangGraph from runtime imports. Schema/migration ownership remains API.
 - **Chat** attaches generation images only via `modalities.visual_enrichment` (no direct kind-specific crop imports).
+
+
+## Publication adoption authorization (2026-09-23)
+
+Final adoption and reconciliation lock and recheck the creator membership inside the commit transaction, after the Run/Step/Attempt/intent chain. Revocation triggers cancellation and compensating cleanup without publishing a final artifact. Successful evidence from a terminated prior attempt remains reusable only within the same Step, frozen input and execution snapshot. See `specs/v5/post-v5-optimization/issue27-adoption-repair-20260923.md` for the test scope and pending PostgreSQL/runtime gates.
