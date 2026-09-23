@@ -61,7 +61,7 @@ from ai_pdf_api.services.ingestion import (
 )
 from ai_pdf_api.services.notes import _to_source_dto_with_db
 from ai_pdf_api.services.retrieval import retrieve_content, retrieve_lexical_content
-from ai_pdf_worker.document_ingestion import DocumentIngestionAdapter
+from ai_pdf_worker.ingestion.document_ingestion import DocumentIngestionAdapter
 from ai_pdf_worker.main import INGESTION_ADAPTERS
 
 pytestmark = pytest.mark.acceptance

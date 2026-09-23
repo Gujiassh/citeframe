@@ -14,8 +14,8 @@ from citeframe_persistence.models import (
 )
 from citeframe_research_persistence.conflict_policy import INVESTIGATION_WORKFLOW_ID
 from citeframe_research_persistence.conflict_investigation import conflict_turn
-from ai_pdf_worker.research_conflict_investigation import investigate
-from ai_pdf_worker.research_runtime_core import _evidence_handle
+from ai_pdf_worker.research.conflict_investigation import investigate
+from ai_pdf_worker.research.core import _evidence_handle
 from ai_pdf_api.services.research.research_worker_evidence import _frozen_evidence_value
 from ai_pdf_api.services.research.research_worker import publish_final_report
 from research_worker_test_support import (

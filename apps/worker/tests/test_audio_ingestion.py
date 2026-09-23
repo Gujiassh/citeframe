@@ -28,7 +28,7 @@ from ai_pdf_api.models import (
     EvidenceLocator,
 )
 from ai_pdf_api.services.providers import ModelProviderError
-from ai_pdf_worker.audio_ingestion import AudioIngestionAdapter
+from ai_pdf_worker.ingestion.audio_ingestion import AudioIngestionAdapter
 
 
 def _engine():
@@ -89,7 +89,7 @@ def test_audio_adapter_fails_closed_without_asr(monkeypatch: pytest.MonkeyPatch)
         raise ModelProviderError("asr_not_configured", "OpenAI ASR API key is not configured.")
 
     monkeypatch.setattr(
-        "ai_pdf_worker.audio_ingestion.require_configured_asr_profile",
+        "ai_pdf_worker.ingestion.audio_ingestion.require_configured_asr_profile",
         boom,
     )
 
@@ -128,11 +128,11 @@ def test_audio_adapter_persists_real_transcription_when_asr_mocked(
         limits = {}
 
     monkeypatch.setattr(
-        "ai_pdf_worker.audio_ingestion.require_configured_asr_profile",
+        "ai_pdf_worker.ingestion.audio_ingestion.require_configured_asr_profile",
         lambda: FakeProfile(),
     )
     monkeypatch.setattr(
-        "ai_pdf_worker.audio_ingestion.asr_profile_snapshot_fields",
+        "ai_pdf_worker.ingestion.audio_ingestion.asr_profile_snapshot_fields",
         lambda _p=None: {"asrProfileFingerprint": "fp"},
     )
 
@@ -199,11 +199,11 @@ def test_audio_adapter_never_invents_empty_success(monkeypatch: pytest.MonkeyPat
         limits = {}
 
     monkeypatch.setattr(
-        "ai_pdf_worker.audio_ingestion.require_configured_asr_profile",
+        "ai_pdf_worker.ingestion.audio_ingestion.require_configured_asr_profile",
         lambda: FakeProfile(),
     )
     monkeypatch.setattr(
-        "ai_pdf_worker.audio_ingestion.asr_profile_snapshot_fields",
+        "ai_pdf_worker.ingestion.audio_ingestion.asr_profile_snapshot_fields",
         lambda _p=None: {},
     )
 

@@ -10,8 +10,8 @@ from ai_pdf_api.core.settings import settings
 from ai_pdf_api.db.session import SessionLocal
 from ai_pdf_api.models import ResearchRun, ResearchStep
 from ai_pdf_api.services.research.research_worker_evidence import search_frozen_evidence
-from ai_pdf_worker import research_persistence_service as composition
-from ai_pdf_worker.research_runtime import (
+from ai_pdf_worker.research import persistence as composition
+from ai_pdf_worker.research.runtime import (
     ResearchWorkProcessor,
     build_default_research_service,
 )

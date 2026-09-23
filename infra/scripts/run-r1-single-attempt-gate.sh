@@ -31,10 +31,10 @@ PYTHONPATH="packages/backend-contracts/src:packages/backend-persistence/src:pack
 import sys
 
 import ai_pdf_worker.main
-import ai_pdf_worker.research_runtime
+import ai_pdf_worker.research.runtime
 
 assert "langgraph" not in sys.modules
-assert "ai_pdf_worker.research_executor_engine" not in sys.modules
+assert "ai_pdf_worker.research.engine" not in sys.modules
 print("r1_production_runtime_langgraph_import=absent")
 PY
 

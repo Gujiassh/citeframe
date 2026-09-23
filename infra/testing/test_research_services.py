@@ -26,7 +26,7 @@ def test_publication_crash_restore_and_new_worker(tmp_path):
         ResearchRun,
     )
     from ai_pdf_api.services import storage
-    from ai_pdf_worker.r800_acceptance_fixture import seed_state
+    from citeframe_evaluation.acceptance.fixture import seed_state
     from research_service_support import (
         ServiceHarness,
         api_client,
@@ -271,8 +271,8 @@ def test_crashed_publication_fenced_before_adoption(tmp_path, fence):
         WorkspaceMembership,
     )
     from ai_pdf_api.services import storage
-    from ai_pdf_worker.r800_acceptance_common import IDS
-    from ai_pdf_worker.r800_acceptance_fixture import seed_state
+    from citeframe_evaluation.acceptance.common import IDS
+    from citeframe_evaluation.acceptance.fixture import seed_state
     from research_service_support import (
         ServiceHarness,
         api_client,

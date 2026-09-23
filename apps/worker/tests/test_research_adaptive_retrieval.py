@@ -1,7 +1,7 @@
 from types import SimpleNamespace as N
 import pytest
-from ai_pdf_worker.research_adaptive_retrieval import research_adaptively
-from ai_pdf_worker.research_agent_schemas import validate_adaptive_agent_result
+from ai_pdf_worker.research.adaptive_retrieval import research_adaptively
+from ai_pdf_worker.research.schemas import validate_adaptive_agent_result
 from citeframe_contracts import ResearchExecutionError
 
 

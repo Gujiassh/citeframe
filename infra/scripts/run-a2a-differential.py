@@ -53,6 +53,7 @@ def _run_probe(
     paths = [
         root / "apps/api/src",
         root / "apps/worker/src",
+        root / "tools/evaluation/src",
         root / "packages/backend-contracts/src",
         root / "packages/backend-persistence/src",
         root / "packages/research-persistence/src",
@@ -175,11 +176,27 @@ def _fingerprint(
     return digest.hexdigest(), bool(diff or untracked)
 
 
+def _historical_probe_source(source: str) -> str:
+    """Bind the current oracle to the frozen pre-layout A2a baseline module paths."""
+    replacements = {
+        "citeframe_evaluation.acceptance.common": "ai_pdf_worker.r800_acceptance_common",
+        "citeframe_evaluation.acceptance.fixture": "ai_pdf_worker.r800_acceptance_fixture",
+        "ai_pdf_worker.research.runtime": "ai_pdf_worker.research_runtime",
+        "from ai_pdf_worker.research import persistence as composition":
+            "from ai_pdf_worker import research_persistence_service as composition",
+        "from ai_pdf_worker.research import core as research_runtime_core":
+            "from ai_pdf_worker import research_runtime_core",
+    }
+    for current, historical in replacements.items():
+        source = source.replace(current, historical)
+    return source
+
+
 def _semantic_fingerprint(root: Path) -> tuple[str, bool]:
     return _fingerprint(
         root,
-        diff_paths=("apps/api", "apps/worker", "packages", "infra/scripts"),
-        untracked_prefixes=("apps/api/", "apps/worker/", "packages/", "infra/scripts/"),
+        diff_paths=("apps/api", "apps/worker", "packages", "infra/scripts", "tools/evaluation"),
+        untracked_prefixes=("apps/api/", "apps/worker/", "packages/", "infra/scripts/", "tools/evaluation/"),
     )
 
 
@@ -194,6 +211,7 @@ def _repair_snapshot_fingerprint(root: Path) -> tuple[str, bool]:
             "infra/scripts/",
             "packages/",
             "specs/",
+            "tools/evaluation/",
         ),
     )
 
@@ -315,7 +333,9 @@ def run(
             bundle.extractall(baseline_root, filter="data")
         baseline_probe = baseline_root / "apps/api/tests/test_a2a_differential_probe.py"
         baseline_probe.parent.mkdir(parents=True, exist_ok=True)
-        baseline_probe.write_bytes(probe.read_bytes())
+        baseline_probe.write_text(
+            _historical_probe_source(probe.read_text(encoding="utf-8")), encoding="utf-8"
+        )
         helper = "a2a_historical_state.py"
         (baseline_probe.parent / helper).write_bytes((probe.parent / helper).read_bytes())
 

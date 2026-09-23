@@ -20,9 +20,9 @@ from citeframe_research_persistence.provider import reserve_provider_call, mark_
 from citeframe_research_persistence.errors import ResearchError, canonical_sha256
 from research_worker_test_support import lease_default_step, sha256
 sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "worker" / "src"))
-from ai_pdf_worker.research_adaptive_retrieval import research_adaptively
-from ai_pdf_worker.research_executor_tools import EvidenceToolRegistry
-from ai_pdf_worker.research_runtime_core import _evidence_handle, _loaded_evidence
+from ai_pdf_worker.research.adaptive_retrieval import research_adaptively
+from ai_pdf_worker.research.tools import EvidenceToolRegistry
+from ai_pdf_worker.research.core import _evidence_handle, _loaded_evidence
 from citeframe_contracts import ToolExecutionContext, FrozenAsset
 
 
@@ -191,9 +191,9 @@ def test_checkpoint_refuses_changed_request_and_out_of_bound_turn(adaptive_case)
 
 def test_production_checkpoint_adapter_commits_and_reopens(adaptive_case, monkeypatch):
     from sqlalchemy.orm import sessionmaker
-    from ai_pdf_worker.research_runtime_ports import LedgeredGeneration
-    from ai_pdf_worker.research_persistence_service import build_worker_research_service
-    import ai_pdf_worker.research_runtime_ports as ports
+    from ai_pdf_worker.research.adapters.generation import LedgeredGeneration
+    from ai_pdf_worker.research.persistence import build_worker_research_service
+    import ai_pdf_worker.research.adapters.generation as ports
     c=adaptive_case
     monkeypatch.setattr(ports, "_now", lambda: c.f.now+timedelta(seconds=c.tick))
     factory=sessionmaker(bind=c.db.get_bind(), expire_on_commit=False)

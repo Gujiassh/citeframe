@@ -3,7 +3,7 @@ from types import SimpleNamespace as N
 import json
 import pytest
 from citeframe_contracts import EvidenceHandle, VerifiedClaim, ResearchExecutionError
-from ai_pdf_worker.research_conflict_investigation import investigate
+from ai_pdf_worker.research.conflict_investigation import investigate
 
 
 def evidence(id="h1", text="Version 1 Linux: use A. Version 2 Windows: use B."):

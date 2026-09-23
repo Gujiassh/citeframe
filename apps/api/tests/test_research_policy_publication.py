@@ -31,6 +31,14 @@ def test_policy_decision_final_publish(research_worker_db, corrupt):
         report = bytes(intent.payload_bytes).decode()
         findings, conflicts = report.split("## Unresolved Evidence Conflicts")
         assert unresolved.statement_text not in findings and unresolved.statement_text in conflicts
+        from contextlib import nullcontext
+        from citeframe_evaluation.acceptance.workflow import assert_conflict_partition
+        observe = lambda text: assert_conflict_partition(lambda: nullcontext(f.db), f.run.id, text)
+        observe(report)
+        with pytest.raises(AssertionError):
+            observe(findings + unresolved.statement_text + "## Unresolved Evidence Conflicts" + conflicts)
+        with pytest.raises(AssertionError):
+            observe(report.replace(unresolved.statement_text, "removed conflict"))
     else:
         assert intent.status == "compensating" and not store.objects
 

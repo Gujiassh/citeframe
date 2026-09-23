@@ -25,9 +25,9 @@ from ai_pdf_api.models import (
     PptxLocatorDetail,
     XlsxLocatorDetail,
 )
-from ai_pdf_worker.docx_ingestion import DocxIngestionAdapter
-from ai_pdf_worker.pptx_ingestion import PptxIngestionAdapter
-from ai_pdf_worker.xlsx_ingestion import XlsxIngestionAdapter
+from ai_pdf_worker.ingestion.docx_ingestion import DocxIngestionAdapter
+from ai_pdf_worker.ingestion.pptx_ingestion import PptxIngestionAdapter
+from ai_pdf_worker.ingestion.xlsx_ingestion import XlsxIngestionAdapter
 import ai_pdf_worker.main as worker_main
 
 

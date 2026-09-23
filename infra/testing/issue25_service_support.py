@@ -33,6 +33,22 @@ def archive_legacy(target):
     return target
 
 
+def legacy_runtime_source(source):
+    """Translate only test-driver imports when running the pinned cfc archive."""
+    replacements = {
+        "from ai_pdf_worker.research import persistence as composition": "from ai_pdf_worker import research_persistence_service as composition",
+        "from citeframe_evaluation.acceptance import fixture": "from ai_pdf_worker import r800_acceptance_fixture as fixture",
+        "citeframe_evaluation.acceptance.common": "ai_pdf_worker.r800_acceptance_common",
+        "ai_pdf_worker.research.adapters.generation": "ai_pdf_worker.research_runtime_ports",
+        "from ai_pdf_worker.research.adapters import ledger as research_runtime_ports": "from ai_pdf_worker import research_runtime_ports",
+        "from ai_pdf_worker.research import processor as research_runtime_processor": "from ai_pdf_worker import research_runtime_processor",
+        "ai_pdf_worker.research.runtime": "ai_pdf_worker.research_runtime",
+    }
+    for current, historical in replacements.items():
+        source = source.replace(current, historical)
+    return source
+
+
 class Deployment:
     def __init__(self, directory, base_url):
         self.directory = Path(directory)
@@ -98,12 +114,18 @@ class Deployment:
             for p in [
                 root / "apps/api/src",
                 root / "apps/worker/src",
+                root / "tools/evaluation/src",
                 *(p / "src" for p in (root / "packages").iterdir() if p.is_dir()),
             ]
         )
         return env
 
     def command(self, args, *, root=None, expected=0, timeout=180):
+        source = root or self.root
+        if source != ROOT and args[0] == RUNTIME:
+            driver = self.directory / "archived-layout-runtime.py"
+            driver.write_text(legacy_runtime_source(RUNTIME.read_text(encoding="utf-8")), encoding="utf-8")
+            args = [driver, *args[1:]]
         self.counter += 1
         log = self.directory / f"command-{self.counter}.log"
         with log.open("wb") as stream:
@@ -170,7 +192,7 @@ class Deployment:
         raise AssertionError("API startup timeout")
 
     def seed(self):
-        from ai_pdf_worker.r800_acceptance_common import IDS
+        from citeframe_evaluation.acceptance.common import IDS
 
         self.command([RUNTIME, "seed"])
         self.workspace, self.user, self.asset = (

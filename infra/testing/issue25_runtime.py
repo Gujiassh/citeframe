@@ -113,7 +113,7 @@ class FixtureProvider:
 
 def install_capabilities(mode):
     from ai_pdf_api.core.settings import settings
-    from ai_pdf_worker import research_persistence_service as composition
+    from ai_pdf_worker.research import persistence as composition
 
     original = composition.search_frozen_evidence
 
@@ -136,7 +136,7 @@ def install_capabilities(mode):
 
 
 def install_crash(point, marker):
-    from ai_pdf_worker.research_runtime_ports import LedgeredGeneration
+    from ai_pdf_worker.research.adapters.generation import LedgeredGeneration
 
     original = LedgeredGeneration.conflict_turn
 
@@ -165,8 +165,8 @@ def seed():
     from ai_pdf_api.db.session import SessionLocal
     from ai_pdf_api.models import User
     from ai_pdf_api.services.storage import delete_object_if_exists, upload_bytes
-    from ai_pdf_worker import r800_acceptance_fixture as fixture
-    from ai_pdf_worker.r800_acceptance_common import IDS
+    from citeframe_evaluation.acceptance import fixture
+    from citeframe_evaluation.acceptance.common import IDS
 
     fixture.SOURCE_TEXT = SOURCE
     fixture.seed_state(
@@ -192,7 +192,7 @@ def seed():
 def consume_tool_budget():
     from datetime import UTC, datetime
 
-    from ai_pdf_worker.research_runtime_ports import LedgeredGeneration
+    from ai_pdf_worker.research.adapters.generation import LedgeredGeneration
     from citeframe_research_persistence.errors import ResearchError
 
     original = LedgeredGeneration.conflict_turn
@@ -236,8 +236,9 @@ def consume_tool_budget():
 
 def work(args):
     from ai_pdf_api.db.session import SessionLocal
-    from ai_pdf_worker import research_runtime_ports, research_runtime_processor
-    from ai_pdf_worker.research_runtime import (
+    from ai_pdf_worker.research.adapters import ledger as research_runtime_ports
+    from ai_pdf_worker.research import processor as research_runtime_processor
+    from ai_pdf_worker.research.runtime import (
         ResearchWorkProcessor,
         build_default_research_service,
     )

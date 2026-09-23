@@ -150,8 +150,8 @@ def test_worker_gate_persists_sources_correction_and_rechecks_across_sessions(
     from types import SimpleNamespace as N
     from uuid import uuid4
     from citeframe_contracts import VerifiedClaim
-    from ai_pdf_worker.research_conflict_investigation import investigate
-    from ai_pdf_worker.research_runtime_core import _evidence_handle
+    from ai_pdf_worker.research.conflict_investigation import investigate
+    from ai_pdf_worker.research.core import _evidence_handle
     from ai_pdf_api.services.research.research_worker_evidence import (
         _frozen_evidence_value,
     )
@@ -365,7 +365,7 @@ def test_v4_gate_search_load_uses_frozen_evidence_service_and_dedup_ledger(
     found = search_frozen_evidence(f.db, **context, **search)
     assert found and all(h.owner_step_id == f.step.id for h in found)
     from dataclasses import asdict
-    from ai_pdf_worker.research_runtime_core import _evidence_handle
+    from ai_pdf_worker.research.core import _evidence_handle
     from citeframe_research_persistence.conflict_provenance import validate_sources
 
     validate_sources(
@@ -384,7 +384,7 @@ def test_v4_gate_search_load_uses_frozen_evidence_service_and_dedup_ledger(
     )
     loaded = load_frozen_evidence(f.db, **context, **load)
     f.db.commit()
-    from ai_pdf_worker.research_runtime_core import _evidence_handle
+    from ai_pdf_worker.research.core import _evidence_handle
 
     assert [
         _evidence_handle(h) for h in search_frozen_evidence(f.db, **context, **search)
@@ -438,7 +438,7 @@ def test_live_gate_source_hash_and_scope(research_worker_db, explicit_input, mut
     from ai_pdf_api.services.research.research_worker_evidence import (
         _frozen_evidence_value,
     )
-    from ai_pdf_worker.research_runtime_core import _evidence_handle
+    from ai_pdf_worker.research.core import _evidence_handle
     from citeframe_persistence.models import ResearchEvidenceSnapshot, ResearchToolCall
     from citeframe_research_persistence.conflict_provenance import validate_sources
     from research_worker_test_support import seed_frozen_evidence, sha256
