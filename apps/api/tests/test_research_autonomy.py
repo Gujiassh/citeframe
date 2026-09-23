@@ -213,7 +213,7 @@ def test_deployment_oracle_reads_real_auto_plan_and_rejects_tampering(research_a
     run, _ = publish(client, db, ctx)
     observe = lambda: workflow_facts(lambda: nullcontext(db), run.id)
     proof = observe()
-    assert proof["release"] == "citeframe-research-v3" and proof["snapshotId"] == run.approved_execution_snapshot_id
+    assert proof["release"] == "citeframe-research-v4" and proof["snapshotId"] == run.approved_execution_snapshot_id
     snapshot = db.get(ResearchExecutionSnapshot, run.approved_execution_snapshot_id)
     decision = db.get(HumanDecision, snapshot.approval_decision_id)
     decision.decided_by_user_id = run.created_by_user_id
