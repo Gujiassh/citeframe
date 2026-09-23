@@ -35,6 +35,7 @@ services:
   worker:
     build:
       target: evaluation
+    command: ["python", "-m", "ai_pdf_worker.main"]
     environment:
       AI_PDF_OLLAMA_BASE_URL: http://provider-stub:18082
       AI_PDF_OPENAI_API_BASE: http://provider-stub:18082/v1

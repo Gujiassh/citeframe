@@ -112,3 +112,34 @@ The independent worktree's dev-workbench task is `research-layout-20260923` unde
 `--Code--citeframe-architecture`. Publication commit/PR and review-pending status are
 recorded there after publication. This repository ledger and SSoT are the durable
 project records; no private user memory is needed for this handoff.
+
+## PR #26 review corrections
+
+At submitted HEAD `98f78cce4bbeb324f43b02a0f24ceb4212150a50`, CI run
+`35824377439` passed API, Worker fast/acceptance, Web and Web E2E jobs. Evaluation
+had 109 passing tests and one failing new layout oracle; its later wheel, CLI and
+evaluation-image steps were skipped. These job results do not certify the dirty
+functional checkout or full service/UI acceptance.
+
+The oracle compared a derived timing value (`parallel_speedup`) captured as null
+on Windows with 1.0 on Linux. It now controls the evaluation research module's
+nanosecond clock and checks both zero-duration (null) and nonzero-duration (1.0)
+paths. It independently asserts that timing value, adjusts only that field in the
+in-memory expected record, and strictly compares all remaining output, evidence,
+score and failure fields. The captured fixture bytes and runtime formula are
+unchanged; measured elapsed fields remain the three previously documented exclusions.
+
+Independent review also identified that the opt-in evaluation image's default help
+command would be inherited by the R800 worker service. `compose.r800.yml` now
+explicitly starts `python -m ai_pdf_worker.main`; explicit one-off acceptance CLI
+commands continue to override it. A regression checks the image/Compose command
+contract and the shared override used by backup/restore. This was a static finding,
+not a locally reproduced Docker failure. Actual isolated restore followed by worker
+task consumption remains an outstanding acceptance check.
+
+Correction verification: `python -m pytest -c pytest.ini tools/evaluation/tests
+apps/api/tests/test_r800_acceptance_runner.py
+apps/worker/tests/test_architecture_boundaries.py -q --tb=short` passed with
+**122 passed, 1 skipped** (Windows directory-symlink privilege); the existing
+Starlette deprecation warning remains. The controlled-clock parity test covers all
+24 outputs in each timing mode. Remote CI must rerun the previously skipped gates.
