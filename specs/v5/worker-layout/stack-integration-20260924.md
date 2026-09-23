@@ -23,7 +23,7 @@ The historical `c263` product diff and pinned `50af` historical scenarios remain
 - The manifest is frozen during owner preparation and reviewed as source. CI never regenerates it from the candidate.
 - Git ancestry is required for the accepted architecture and explicitly reviewed source heads, but is not sufficient: every reviewed source path/blob and every integrated path/blob is verified.
 - Actual product diff must exactly equal the manifest, including missing paths. Unknown files, changed admitted bytes, duplicate paths and changed baseline fail.
-- The prerequisite manifest contains54 product/test paths. Layout-independent files retain reviewed bytes; mapped files and two script-import test adaptations have explicit source provenance.
+- The prerequisite manifest contains55 product/test paths. Layout-independent files retain reviewed bytes; mapped files and two script-import test adaptations have explicit source provenance.
 - `r800_product_delta.py` is the validator; `test_r800_product_delta.py` supplies positive and five rejection controls. Existing deployment controls remain intact.
 - The original three Hubble false-positive controls, historical raw output, real fresh-project forced-serial negative control, original scenario engineering gate, backup/restore, ordinary Worker task completion and default pinned MinIO-client check remain mandatory.
 - A pre-smoke functional check explicitly runs R2 adoption/revocation, recovered-Step error and deadline-admission regressions. It supplements the existing scenario and real-service gates; it does not replace them.
@@ -34,8 +34,14 @@ Development checks: architecture/runtime/dispatcher/storage84passed; layout pari
 
 Local Windows has no Docker runtime. The existing exact-HEAD GitHub runner exercises image packaging and deployment. No paid provider, shared database migration or frozen-source mutation is authorized by this integration.
 
+## Snapshot-proof integration repair
+
+The first architecture candidate `bec8864c320fb3fec1132ddd35e6298c86eb8747` reproduced 10 failed / 6 passed frozen proof tests. The evaluation CI job reported the same ten ImportErrors (119 other tests passed). R2 had moved the canonical snapshot constructor from the API facade to `citeframe_research_persistence.snapshot_integrity`; the offline proof now imports that actual production constructor. Its invocation, payload keys, canonical hash operation, frozen fixtures and mutation controls remain unchanged. No ImportError is converted to an accepted rejection.
+
+The shared-contract manifest provenance now references `packages/backend-contracts/src/citeframe_contracts/__init__.py` at the reviewed e1 source, whose bytes exactly equal the integrated definition. The former re-export shim is not a definition source and is not restored. The snapshot-proof file adds one explicitly pinned product-delta entry sourced from accepted architecture main.
+
 ## Feature stack mapping
 
 The feature source is fixed `b691406fdc7d38e3f93578b36aaddafe7dbf992f`. The feature manifest replaces the prerequisite manifest with its own exact product delta and provenance. Adaptive retrieval moves to `research/adaptive_retrieval.py`; `LedgeredGeneration.adaptive_turn` moves into the generation adapter with its durable call contract intact. The evaluation provider retains historical `V1_REGISTRY` after the schema-module move. Historical A2 probe import translation and the feature historical-state helper are both retained. No historical fixture bytes change.
 
-This mapping has 38 focused passing tests. The upstream snapshot-proof constructor import failure remains an explicit integration blocker until the prerequisite repair is merged and the positive proof plus negative controls pass on the final feature SHA. This local merge alone is not a published or accepted candidate.
+The feature stack normally merges prerequisite repair ed478a8. Its snapshot proof import and negative controls remain mandatory on the final feature candidate. The feature manifest contains 108 exact product/test paths before any further reviewed harness adaptation. The earlier mapping check passed 38 focused tests; final-SHA runtime gates are recorded separately.

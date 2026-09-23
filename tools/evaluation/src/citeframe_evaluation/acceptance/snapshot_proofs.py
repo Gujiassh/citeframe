@@ -4,7 +4,7 @@ from types import SimpleNamespace as NS
 
 def valid_snapshot(facts):
     from ai_pdf_api.models import ResearchExecutionSnapshot, ResearchExecutionAsset, ResearchExecutionPromptVersion
-    from ai_pdf_api.services.research.research_runs import build_execution_snapshot_hash_payload
+    from citeframe_research_persistence.snapshot_integrity import build_execution_snapshot_hash_payload
     from ai_pdf_api.services.research.research_idempotency import canonical_sha256
 
     snapshot, proof = facts["snapshot"], facts["snapshotProof"]

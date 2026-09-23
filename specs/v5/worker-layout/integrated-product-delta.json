@@ -854,6 +854,14 @@
       "transformation": "identical-reviewed-bytes"
     },
     {
+      "path": "tools/evaluation/src/citeframe_evaluation/acceptance/snapshot_proofs.py",
+      "integratedBlob": "57e0984e25f623c6be8efb52c9d780e5f79c2d8d",
+      "reviewedSourceHead": "5ed02c8b7b5f357f58d1c3fd270ead0718e7afbf",
+      "reviewedSourcePath": "tools/evaluation/src/citeframe_evaluation/acceptance/snapshot_proofs.py",
+      "reviewedSourceBlob": "a3f3c2dfcdf4cb39f44afb70e3dbd1366946d23b",
+      "transformation": "constructor import relocated to production research-persistence snapshot_integrity; hash payload and frozen fixtures unchanged"
+    },
+    {
       "path": "tools/evaluation/src/citeframe_evaluation/provider.py",
       "integratedBlob": "61101410c8816069be13d1ae75c44684322599e5",
       "reviewedSourceHead": "b691406fdc7d38e3f93578b36aaddafe7dbf992f",
