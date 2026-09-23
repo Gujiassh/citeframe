@@ -205,3 +205,24 @@ The workflow checks out the exact PR SHA and explicitly verifies that the only
 product-input changes relative to 82ec are this CLI correction and its regression.
 The original non-CLI API/Worker/image/backup/restore inputs remain identical.
 Portable/UI conclusions retain their original fixed-SHA attribution.
+
+### Docker rerun attribution and registry boundary
+
+Run `35891438408` on `527cd7b` passed direct JSON output and real SQL attempt
+telemetry. Both old `50af19dc` and candidate retained the same two failed scenario
+checks: parallelFanout maxActive=1 and leaseReclaim attempts=[1]/abandoned. The
+scenario assertions and historical outputs remain unchanged. Regular CI
+`35891438440` passed all checks.
+
+The candidate reached the original backup script and PostgreSQL dump, then the
+original Docker Hub `minio/mc` pull was denied. The common/backup/restore scripts
+are unchanged from 50af. Read-only verification of MinIO's official Quay registry
+returned the identical manifest digest; the raw response bytes independently hash
+to `a7fe349ef4bd8521fb8497f55c6042871b2ae640607cf99d9bede5e9bdf11727`.
+The upstream `minio/mc` docker-buildx.sh publishes both registry names.
+
+The isolated harness now uses the existing `MINIO_MC_IMAGE` override with that
+same tag/digest under `quay.io/minio/mc`, records pull/RepoDigests, and asserts the
+content pin is unchanged. Production defaults and scripts remain untouched.
+This does not establish default Docker Hub availability. Preserve the failed
+original run; restore/daemon-consumption evidence requires the next run.

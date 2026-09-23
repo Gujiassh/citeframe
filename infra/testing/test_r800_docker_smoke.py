@@ -6,7 +6,7 @@ import unittest
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from r800_docker_probe import assert_attempts
-from r800_docker_smoke import free_ports, scrub
+from r800_docker_smoke import free_ports, official_mc_mirror, scrub
 
 
 class EvidenceContractTests(unittest.TestCase):
@@ -20,6 +20,16 @@ class EvidenceContractTests(unittest.TestCase):
 
     def test_secret_redaction_handles_overlapping_values(self):
         self.assertEqual(scrub("abc abcdef", ["abc", "abcdef"]), "<redacted> <redacted>")
+
+    def test_official_mirror_preserves_exact_product_pin(self):
+        root = Path(__file__).resolve().parents[2]
+        script = (root / "infra/scripts/compose-common.sh").read_text()
+        mirror = official_mc_mirror(script)
+        self.assertTrue(mirror.startswith("quay.io/minio/mc:"))
+        self.assertIn(mirror.removeprefix("quay.io/"), script)
+        for invalid in ("", "MINIO_MC_IMAGE=${MINIO_MC_IMAGE:-minio/mc:latest}"):
+            with self.subTest(script=invalid), self.assertRaises(ValueError):
+                official_mc_mirror(invalid)
 
     def test_bound_ports_are_unique(self):
         ports = free_ports(3)

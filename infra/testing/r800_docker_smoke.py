@@ -5,6 +5,7 @@ import argparse
 from hashlib import sha256
 import json
 import os
+import re
 from pathlib import Path
 import secrets
 import socket
@@ -29,6 +30,13 @@ def scrub(value: str, secret_values: list[str]) -> str:
     for secret in sorted(secret_values, key=len, reverse=True):
         value = value.replace(secret, "<redacted>")
     return value
+
+
+def official_mc_mirror(common_script: str) -> str:
+    match = re.search(r"MINIO_MC_IMAGE=\$\{MINIO_MC_IMAGE:-([^}]+)\}", common_script)
+    if not match or not re.fullmatch(r"minio/mc:[^@]+@sha256:[0-9a-f]{64}", match[1]):
+        raise ValueError("Expected digest-pinned original MinIO client reference")
+    return "quay.io/" + match[1]
 
 
 def free_ports(count: int) -> list[int]:
@@ -146,6 +154,18 @@ def main() -> None:
             "harnessHead": harness_head, "baselineHead": baseline, "project": project,
             "harnessFiles": {p.name: sha256(p.read_bytes()).hexdigest()
                              for p in (Path(__file__), harness / "r800_docker_probe.py")}}, indent=2))
+        if not args.historical_scenarios_only:
+            # The official second registry serves the identical pinned manifest.
+            image = official_mc_mirror((source / "infra/scripts/compose-common.sh").read_text())
+            env["MINIO_MC_IMAGE"] = image
+            (output / "mc-image-source.json").write_text(json.dumps({
+                "override": image, "defaultRegistryPassed": False,
+                "reason": "Default Docker Hub pull denied in run 35891438408; same-digest official mirror",
+            }, indent=2))
+            run("mc-pull", ["docker", "pull", image])
+            digests = json.loads(run("mc-digests", ["docker", "image", "inspect", "--format",
+                "{{json .RepoDigests}}", image]))
+            assert "quay.io/minio/mc@" + image.split("@", 1)[1] in digests
         run("compose-redacted", compose + ["config"])
         targets = ["api", "worker"] if args.historical_scenarios_only else ["api", "worker", "web"]
         run("build", compose + ["build", *targets], timeout=1200)
