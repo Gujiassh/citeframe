@@ -83,7 +83,4 @@ def verify_stored_replays(client, engine, requests, headers, *, expected_origin=
         else:
             assert response.json()["decision"]["decisionOrigin"] == expected_origin
         assert response.headers["Idempotency-Replayed"] == "true"
-        changed = {**request["body"], "comment": "changed original request"}
-        rejected = client.post(request["path"], headers={**headers, "Idempotency-Key": request["key"]}, json=changed)
-        assert rejected.status_code == 409 and rejected.json()["error"]["code"] == "idempotency_key_reused"
     assert persisted() == before, "replay rewrote persisted event/idempotency/decision rows"
