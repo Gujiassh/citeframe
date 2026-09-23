@@ -61,3 +61,59 @@ def test_recovered_attempt_clears_only_step_error(research_worker_db):
     assert (
         abandoned.payload_json == payload and payload["reasonCode"] == "lease_expired"
     )
+
+
+def test_rejected_lease_keeps_error_and_new_failure_replaces_it(research_worker_db):
+    import pytest
+    from ai_pdf_api.services.research.research_idempotency import ResearchError
+    from ai_pdf_api.services.research.research_worker import fail_research_step
+
+    fixture = research_worker_db
+    first = lease_default_step(fixture)
+    now = fixture.now + timedelta(seconds=61)
+    reclaim_expired_research_steps(fixture.db, now=now)
+    fixture.step.max_attempts_snapshot = 1
+    fixture.db.commit()
+    with pytest.raises(ResearchError, match="attempt limit"):
+        claim_specific_research_step(
+            fixture.db,
+            run_id=fixture.run.id,
+            step_key=fixture.step.step_key,
+            branch_key=fixture.step.branch_key,
+            worker_instance_id="rejected-worker",
+            lease_seconds=60,
+            now=now,
+        )
+    assert fixture.step.error_code == "lease_expired"
+    assert fixture.step.error_message == "Research Attempt lease expired."
+    assert fixture.step.current_attempt_number == 1
+    fixture.step.max_attempts_snapshot = 3
+    fixture.db.commit()
+    second = claim_specific_research_step(
+        fixture.db,
+        run_id=fixture.run.id,
+        step_key=fixture.step.step_key,
+        branch_key=fixture.step.branch_key,
+        worker_instance_id="accepted-worker",
+        lease_seconds=60,
+        now=now,
+    )
+    fail_research_step(
+        fixture.db,
+        attempt_id=second.attempt_id,
+        lease_token=second.lease_token,
+        error_code="tool_scope_violation",
+        now=now + timedelta(seconds=1),
+    )
+    fixture.db.commit()
+    assert fixture.step.error_code == "tool_scope_violation"
+    assert fixture.step.error_message == "Research step failed: tool_scope_violation."
+    assert (
+        fixture.db.get(ResearchStepAttempt, first.attempt_id).error_code
+        == "lease_expired"
+    )
+    assert (
+        fixture.db.get(ResearchStepAttempt, second.attempt_id).error_code
+        == "tool_scope_violation"
+    )
+
