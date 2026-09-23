@@ -7,6 +7,7 @@ import hashlib
 import json
 
 from a2a_r2_publication_oracle import INTENTS, canonical, one, require, validate_publication
+from a2a_retry_step_oracle import validate_retry_step_error_delta
 
 
 def differences(left, right, path="semantics"):
@@ -121,6 +122,13 @@ def compare(baseline, candidate, *, candidate_business_calls=8):
                 "processOneOutputs": [True] * (candidate_business_calls + 1) + [False]}, "candidate.schedule")
     except (ValueError, KeyError, TypeError, IndexError) as error:
         errors.append(str(error))
+    retry_errors, retry_delta = [], []
+    try:
+        for report in (baseline, candidate):
+            validate_raw_rows(report)
+        retry_delta = validate_retry_step_error_delta(baseline, candidate, right)
+    except (ValueError, KeyError, TypeError, IndexError) as error:
+        retry_errors.append(str(error))
     unknown = differences(left, right)
     return {
         "rawEqual": raw_equal,
@@ -128,7 +136,10 @@ def compare(baseline, candidate, *, candidate_business_calls=8):
         "r2DeltaValid": not errors,
         "unknownDifferences": unknown,
         "r2ValidationErrors": errors,
-        "accepted": not errors and not unknown,
+        "accepted": not errors and not retry_errors and not unknown,
+        "retryStepErrorDelta": retry_delta,
+        "retryStepErrorDeltaValid": not retry_errors,
+        "retryStepErrorValidationErrors": retry_errors,
         "eventIdBijection": mapping,
         "objectKeyBijection": object_mapping,
         "rawBaselineSha256": hashlib.sha256(canonical(baseline)).hexdigest(),

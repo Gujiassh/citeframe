@@ -1,0 +1,73 @@
+name: Research real-service acceptance
+
+on:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  research-services:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    services:
+      postgres:
+        image: pgvector/pgvector:pg17
+        env:
+          POSTGRES_USER: fixture
+          POSTGRES_PASSWORD: isolated-fixture-only
+          POSTGRES_DB: postgres
+        ports: [5432:5432]
+        options: >-
+          --health-cmd "pg_isready -U fixture -d postgres"
+          --health-interval 5s --health-timeout 5s --health-retries 20
+    env:
+      CITEFRAME_SERVICE_ADMIN_URL: postgresql+psycopg://fixture:isolated-fixture-only@127.0.0.1:5432/postgres
+      AI_PDF_DATABASE_URL: postgresql+psycopg://fixture:isolated-fixture-only@127.0.0.1:5432/postgres
+      AI_PDF_MINIO_ENDPOINT: 127.0.0.1:9000
+      AI_PDF_MINIO_ACCESS_KEY: fixture-service
+      AI_PDF_MINIO_SECRET_KEY: isolated-service-fixture-only
+      AI_PDF_MINIO_SECURE: 'false'
+      PGOPTIONS: '-c timezone=UTC'
+      PYTHONDONTWRITEBYTECODE: '1'
+      PYTHONPATH: apps/api/src:apps/worker/src:packages/backend-contracts/src:packages/backend-persistence/src:packages/research-persistence/src:infra/testing
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+      - uses: astral-sh/setup-uv@v6
+      - run: uv sync --project apps/api --frozen --extra dev
+      - name: Start isolated real S3
+        run: |
+          docker run -d --name research-fixture-s3 -p 9000:9000 \
+            -e MINIO_ROOT_USER="$AI_PDF_MINIO_ACCESS_KEY" \
+            -e MINIO_ROOT_PASSWORD="$AI_PDF_MINIO_SECRET_KEY" \
+            quay.io/minio/minio:RELEASE.2025-09-07T16-13-09Z@sha256:14cea493d9a34af32f524e538b8346cf79f3321eff8e708c1e2960462bd8936e \
+            server /data
+          for attempt in $(seq 1 30); do
+            if curl -fsS http://127.0.0.1:9000/minio/health/live; then exit 0; fi
+            sleep 1
+          done
+          docker logs research-fixture-s3
+          exit 1
+      - name: Install matching PostgreSQL client
+        run: |
+          sudo install -d -m 0755 /usr/share/postgresql-common/pgdg
+          curl -fsSL https://www.postgresql.org/media/keys/ACCC4CF8.asc \
+            | sudo gpg --dearmor --yes --output /usr/share/postgresql-common/pgdg/apt.postgresql.org.gpg
+          . /etc/os-release
+          echo "deb [signed-by=/usr/share/postgresql-common/pgdg/apt.postgresql.org.gpg] https://apt.postgresql.org/pub/repos/apt ${VERSION_CODENAME}-pgdg main" \
+            | sudo tee /etc/apt/sources.list.d/pgdg.list
+          sudo apt-get update
+          sudo apt-get install --yes --no-install-recommends postgresql-client-17
+          echo "/usr/lib/postgresql/17/bin" >> "$GITHUB_PATH"
+      - name: Exact HEAD migration, process crash, restore and new-task acceptance
+        run: |
+          git rev-parse HEAD
+          uv run --project apps/api pytest -q infra/testing/test_research_services.py infra/testing/test_research_edit_services.py --basetemp service-evidence
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: research-services-${{ github.event.pull_request.head.sha }}
+          path: service-evidence/
+

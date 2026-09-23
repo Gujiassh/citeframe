@@ -41,6 +41,8 @@ def test_a2a_historical_invariants_and_explicit_r2_delta(tmp_path: Path) -> None
     assert payload["rawEqual"] is False
     assert payload["historicalInvariantsEqual"] is True
     assert payload["r2DeltaValid"] is True
+    assert payload["retryStepErrorDeltaValid"] is True
+    assert len(payload["retryStepErrorDelta"]) == 1
     assert payload["unknownDifferences"] == []
     assert payload["accepted"] is True
     assert payload["historicalStoredReplay"]["accepted"] is True
