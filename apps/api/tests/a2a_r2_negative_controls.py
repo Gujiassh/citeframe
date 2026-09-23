@@ -109,5 +109,5 @@ def verify_negative_controls(payload):
         assert not result["accepted"], (name, result)
         assert result["unknownDifferences"] or result["r2ValidationErrors"], name
     from a2a_retry_negative_controls import verify_retry_negative_controls
-    verify_retry_negative_controls(payload)
+    verify_retry_negative_controls({**payload, "rawCandidateReport": source})
     return list(controls)
