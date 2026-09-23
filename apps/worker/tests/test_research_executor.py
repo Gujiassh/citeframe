@@ -9,7 +9,7 @@ from threading import Barrier, Lock
 from time import sleep
 
 import pytest
-from ai_pdf_worker.research_executor import (
+from ai_pdf_worker.research.executor import (
     ApprovedResearchExecution,
     BoundedResearchExecutor,
     BranchResult,
@@ -435,7 +435,7 @@ def test_conflict_gate_observability_records_waiting_not_success(
 ) -> None:
     from ai_pdf_api.core import metrics
     from ai_pdf_api.core.research_observability import install_research_tracer_for_tests
-    from ai_pdf_worker.research_executor_engine import logger
+    from ai_pdf_worker.research.engine import logger
     from opentelemetry.sdk.trace import TracerProvider
     from opentelemetry.sdk.trace.export import SimpleSpanProcessor
     from opentelemetry.sdk.trace.export.in_memory_span_exporter import (
@@ -566,7 +566,7 @@ def test_tool_inputs_reject_unknown_assets_and_duplicate_handles() -> None:
         "branch-1",
         execution.frozen_assets,
     )
-    from ai_pdf_worker.research_executor import EvidenceToolRegistry
+    from ai_pdf_worker.research.executor import EvidenceToolRegistry
 
     registry = EvidenceToolRegistry(port, context)
     with pytest.raises(ToolPolicyError, match="tool_scope_violation"):

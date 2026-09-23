@@ -69,10 +69,10 @@ def test_runner_orders_real_services_routes_and_restore_oracles() -> None:
         'compose build api worker web > "$OUTPUT_DIR/build.log"',
         "compose up -d provider-stub",
         'compose run --rm -T migration > "$OUTPUT_DIR/migration.log"',
-        "python scripts/r800_research_acceptance.py seed",
+        "python -m citeframe_evaluation.acceptance.cli seed",
         "compose up -d web caddy",
-        "python scripts/r800_research_acceptance.py run-scenarios",
-        "python scripts/r800_research_acceptance.py snapshot",
+        "python -m citeframe_evaluation.acceptance.cli run-scenarios",
+        "python -m citeframe_evaluation.acceptance.cli snapshot",
         '"$SCRIPT_DIR/backup-deployment.sh"',
         'compose down --volumes --remove-orphans > "$OUTPUT_DIR/down-before-restore.log"',
         '"$SCRIPT_DIR/restore-deployment.sh"',
@@ -83,11 +83,11 @@ def test_runner_orders_real_services_routes_and_restore_oracles() -> None:
 
     after_restore = runner.index('"$SCRIPT_DIR/restore-deployment.sh"')
     after_snapshot = runner.index(
-        "python scripts/r800_research_acceptance.py snapshot",
+        "python -m citeframe_evaluation.acceptance.cli snapshot",
         after_restore,
     )
     verify = runner.index(
-        "uv run python scripts/r800_research_acceptance.py verify",
+        "uv run --project tools/evaluation python -m citeframe_evaluation.acceptance.cli verify",
         after_snapshot,
     )
     assert after_restore < after_snapshot < verify

@@ -314,8 +314,8 @@ def cancel(args: argparse.Namespace, db: Session) -> dict[str, object]:
 
 def processor_claim(Session: sessionmaker[Session], worker_instance_id: str) -> dict[str, object]:
     """Compose and call the production processor rather than simulating exclusions."""
-    from ai_pdf_worker.research_persistence_service import build_worker_research_service
-    from ai_pdf_worker.research_runtime_processor import ResearchWorkProcessor
+    from ai_pdf_worker.research.persistence import build_worker_research_service
+    from ai_pdf_worker.research.processor import ResearchWorkProcessor
 
     claimed = ResearchWorkProcessor(
         Session,

@@ -1,0 +1,55 @@
+"""Semantic oracle captured from 50af19d before the package relocation."""
+
+from dataclasses import asdict
+import json
+from pathlib import Path
+
+from citeframe_evaluation.contracts import (
+    DEFAULT_PACKAGE_PATH,
+    DEFAULT_PACKAGE_V5_PATH,
+    load_evaluation_package,
+    score_case,
+)
+from citeframe_evaluation.runtime import run_quick_case, run_research_case
+from r803_test_helpers import DeterministicProvider
+
+
+def _without_elapsed_measurements(value):
+    if isinstance(value, dict):
+        return {
+            key: _without_elapsed_measurements(item)
+            for key, item in value.items()
+            if key not in {"duration_ms", "wall_time_ms", "wallTimeMs"}
+        }
+    if isinstance(value, list):
+        return [_without_elapsed_measurements(item) for item in value]
+    return value
+
+
+def test_frozen_case_outputs_and_scores_match_pre_relocation_baseline():
+    rows = []
+    for path in (DEFAULT_PACKAGE_PATH, DEFAULT_PACKAGE_V5_PATH):
+        package = load_evaluation_package(path)
+        for case in package.cases:
+            for mode, execute in (
+                ("quick", run_quick_case),
+                ("research", run_research_case),
+            ):
+                result = execute(package, case, DeterministicProvider())
+                rows.append(
+                    {
+                        "package": path.name,
+                        "case": case["id"],
+                        "mode": mode,
+                        "execution": asdict(result),
+                        "score": score_case(case, result),
+                    }
+                )
+    # JSON roundtrip matches the serialized tuple/list representation of the baseline.
+    actual = _without_elapsed_measurements(json.loads(json.dumps(rows)))
+    expected = json.loads(
+        (Path(__file__).parent / "fixtures/layout-baseline.json").read_text(
+            encoding="utf-8"
+        )
+    )
+    assert actual == expected

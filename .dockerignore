@@ -11,7 +11,12 @@
 **/.next
 **/node_modules
 infra/docker/data
-docs
+docs/*
+!docs/evals/
+docs/evals/artifacts/
+!docs/fixtures/
 specs
 coverage
 dist
+
+.local-validation/

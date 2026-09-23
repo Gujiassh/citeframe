@@ -26,9 +26,9 @@ Document exact commands in the campaign `campaign-plan.json`. Typical shape:
 
 ```bash
 # non-formal dry checks only until owner authorizes spend
-uv run --project apps/worker python -m pytest apps/worker/tests/test_r803_campaign_v5.py -q
+uv run --project tools/evaluation python -m pytest tools/evaluation/tests/test_r803_campaign_v5.py -q
 # formal campaign (requires explicit authorization + secrets)
-# uv run --project apps/worker python apps/worker/scripts/evaluate_r803_campaign.py ...
+# uv run --project tools/evaluation python -m citeframe_evaluation.cli.campaign ...
 ```
 
 ## Forbidden claims

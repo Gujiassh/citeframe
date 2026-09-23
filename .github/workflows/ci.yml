@@ -38,6 +38,7 @@ jobs:
         run: |
           uv lock --project apps/api --check
           uv lock --project apps/worker --check
+          uv lock --project tools/evaluation --check
       - name: Run A2a deploy supply-chain and final-image gate
         run: bash infra/scripts/a2a-deploy-gate.sh
       - name: Install PostgreSQL 17 client
@@ -89,7 +90,7 @@ jobs:
           uv run --project apps/worker pytest --strict-markers
           -m acceptance apps/worker/tests
 
-  worker-evaluation:
+  evaluation:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
@@ -97,12 +98,23 @@ jobs:
       - uses: astral-sh/setup-uv@v6
         with:
           enable-cache: true
-          cache-dependency-glob: apps/worker/uv.lock
-      - run: uv lock --project apps/worker --check
-      - run: uv sync --project apps/worker --frozen --dev
-      - run: >-
-          uv run --project apps/worker pytest --strict-markers
-          -m evaluation apps/worker/tests
+          cache-dependency-glob: tools/evaluation/uv.lock
+      - run: uv lock --project tools/evaluation --check
+      - run: uv sync --project tools/evaluation --frozen --dev
+      - run: uv run --project tools/evaluation pytest --strict-markers tools/evaluation/tests
+      - run: uv build --project apps/worker
+      - run: uv build --project tools/evaluation
+      - run: uv run --project tools/evaluation citeframe-evaluate --help
+      - run: uv run --project tools/evaluation citeframe-campaign --help
+      - run: uv run --project tools/evaluation citeframe-research-acceptance --help
+      - name: Build isolated evaluation image and check packaged entry points
+        run: |
+          docker build --target evaluation --file infra/docker/Dockerfile.python --tag citeframe-evaluation:ci .
+          docker run --rm citeframe-evaluation:ci python -m citeframe_evaluation.cli.paired --help
+          docker run --rm citeframe-evaluation:ci python -m citeframe_evaluation.cli.campaign --help
+          docker run --rm citeframe-evaluation:ci python -m citeframe_evaluation.acceptance.cli --help
+          docker run --rm citeframe-evaluation:ci python -c 'from citeframe_evaluation.contracts import load_evaluation_package; assert len(load_evaluation_package().cases) == 6'
+
 
   web:
     runs-on: ubuntu-latest

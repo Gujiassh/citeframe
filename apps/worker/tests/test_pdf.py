@@ -6,7 +6,7 @@ import numpy as np
 import pytest
 
 from ai_pdf_api.modalities.ingestion import IngestionError
-from ai_pdf_worker.pdf import (
+from ai_pdf_worker.ingestion.pdf import (
     _map_page_words,
     _merge_figure_rects,
     detect_visual_region_rects,

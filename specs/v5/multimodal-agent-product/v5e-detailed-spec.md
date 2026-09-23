@@ -77,8 +77,8 @@ silently stretch v5.
 
 ## 6. Runner constraints
 
-- Prefer `apps/worker/scripts/evaluate_r803_campaign.py` and existing
-  `r803_evaluation_runtime` contracts
+- Prefer `tools/evaluation/src/citeframe_evaluation/cli/campaign.py` and existing
+  `citeframe_evaluation.runtime` contracts
 - Formal runs: real configured provider, `provider=None` injection, no test
   provider unless explicitly non-formal
 - Persist plan SHA, package SHA, threshold SHA, prompt-binding hashes before

@@ -1,23 +1,22 @@
 from dataclasses import asdict
 
 import citeframe_contracts as new_contracts
-from ai_pdf_worker import research_executor_contracts as old_contracts
-from ai_pdf_worker.research_executor_tools import EvidenceToolRegistry
+from ai_pdf_worker.research import executor as worker_contracts
+from ai_pdf_worker.research.tools import EvidenceToolRegistry
 
 
-def test_legacy_contract_exports_are_the_same_objects() -> None:
-    assert set(old_contracts.__all__) == set(new_contracts.__all__)
-    for name in new_contracts.__all__:
-        assert getattr(old_contracts, name) is getattr(new_contracts, name), name
+def test_executor_uses_neutral_contract_objects() -> None:
+    for name in set(worker_contracts.__all__) & set(new_contracts.__all__):
+        assert getattr(worker_contracts, name) is getattr(new_contracts, name), name
 
 
 def test_representative_contract_defaults_and_dataclass_serialization_match() -> None:
-    old_draft = old_contracts.PlanSubproblemDraft("question")
+    old_draft = worker_contracts.PlanSubproblemDraft("question")
     new_draft = new_contracts.PlanSubproblemDraft("question")
     assert old_draft == new_draft
     assert asdict(old_draft) == {"question": "question", "asset_ids": (), "expected_evidence": ()}
 
-    old_claim = old_contracts.VerifiedClaim("claim-1", "fact", ("evidence-1",), "supported")
+    old_claim = worker_contracts.VerifiedClaim("claim-1", "fact", ("evidence-1",), "supported")
     new_claim = new_contracts.VerifiedClaim("claim-1", "fact", ("evidence-1",), "supported")
     assert old_claim == new_claim
     assert old_claim.conflict_status == new_claim.conflict_status == "none"
@@ -54,7 +53,7 @@ def test_concrete_registry_matches_neutral_structural_protocol() -> None:
 
 def test_worker_default_service_exposes_neutral_research_commands() -> None:
     import citeframe_research_persistence as research
-    from ai_pdf_worker.research_runtime_processor import build_default_research_service
+    from ai_pdf_worker.research.processor import build_default_research_service
 
     service = build_default_research_service()
     for name in (

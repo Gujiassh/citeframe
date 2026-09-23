@@ -30,8 +30,8 @@ from ai_pdf_api.models import (
 )
 from ai_pdf_api.services.multimodal_quality import GoldenEvidenceTarget, load_multimodal_quality_suite
 from ai_pdf_api.services.storage import delete_objects_with_prefix, upload_bytes
-from ai_pdf_worker.image_ingestion import ImageIngestionAdapter, extract_image_text_with_ocr
-from ai_pdf_worker.pdf_ingestion import PdfIngestionAdapter
+from ai_pdf_worker.ingestion.image_ingestion import ImageIngestionAdapter, extract_image_text_with_ocr
+from ai_pdf_worker.ingestion.pdf_ingestion import PdfIngestionAdapter
 
 
 REPOSITORY_ROOT = Path(__file__).resolve().parents[3]

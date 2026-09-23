@@ -26,10 +26,10 @@ from ai_pdf_api.models import (
     PdfPage,
     SpatialLocatorRegion,
 )
-import ai_pdf_worker.pdf_ingestion as pdf_ingestion_module
-from ai_pdf_worker.ocr import OcrRegionResult, OcrTextResult
-from ai_pdf_worker.pdf import extract_pdf_page_layout
-from ai_pdf_worker.pdf_ingestion import (
+import ai_pdf_worker.ingestion.pdf_ingestion as pdf_ingestion_module
+from ai_pdf_worker.ingestion.ocr import OcrRegionResult, OcrTextResult
+from ai_pdf_worker.ingestion.pdf import extract_pdf_page_layout
+from ai_pdf_worker.ingestion.pdf_ingestion import (
     PdfIngestionAdapter,
     _chunk_size,
     extract_page_texts_with_ocr,
