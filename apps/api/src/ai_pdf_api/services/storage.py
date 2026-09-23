@@ -177,6 +177,8 @@ def _publication_storage_child_entry(
 ) -> None:
     """Run one operation under a watchdog independent of the parent Worker."""
 
+    if time.monotonic() >= deadline_at:
+        os._exit(PUBLICATION_STORAGE_WATCHDOG_EXIT_CODE)
     stop = threading.Event()
     watchdog = threading.Thread(
         target=_publication_storage_watchdog,
@@ -190,6 +192,8 @@ def _publication_storage_child_entry(
     )
     watchdog.start()
     try:
+        if time.monotonic() >= deadline_at:
+            os._exit(PUBLICATION_STORAGE_WATCHDOG_EXIT_CODE)
         operation_target(connection, request)
     finally:
         stop.set()
