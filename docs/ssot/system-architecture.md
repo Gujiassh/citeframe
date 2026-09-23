@@ -888,3 +888,7 @@ The current working-tree candidate adds immutable research workflow v3/Agent I/O
 ## Research recovery and editing contracts — 2026-09-23 repair
 
 Adaptive model turns are persisted under a bounded step/turn key, with frozen execution binding and request/result hashes. Recovery replays committed decisions and the existing successful tool ledger; it does not require nondeterministic model responses to repeat. The added migration `q1e2f3a4b5c6` must follow the previously recorded R2/editor/autonomy chain. Decision SSE version 2 carries explicit human/policy provenance; historical human version-1 events remain readable. Editor saves include the displayed original ID/hash and reject an obsolete base before the first write. No shared migration or real-service acceptance has been performed. The repaired candidate and isolated prerequisite/feature assembly evidence are tracked in `specs/v5/post-v5-optimization/issue23-review-repair-20260923.md`; architecture PR #26 remains separate.
+
+## Publication adoption authorization (2026-09-23)
+
+Final adoption and reconciliation lock and recheck the creator membership inside the commit transaction, after the Run/Step/Attempt/intent chain. Revocation triggers cancellation and compensating cleanup without publishing a final artifact. Successful evidence from a terminated prior attempt remains reusable only within the same Step, frozen input and execution snapshot. See `specs/v5/post-v5-optimization/issue27-adoption-repair-20260923.md` for the test scope and pending PostgreSQL/runtime gates.

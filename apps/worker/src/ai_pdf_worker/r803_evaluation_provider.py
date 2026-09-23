@@ -39,8 +39,9 @@ from ai_pdf_worker.r803_structured_output import (
     STRUCTURED_OUTPUT_TRANSPORT_VERSION,
     structured_output_format,
 )
+from ai_pdf_api.services.research.research_agent_io_registry import V1_REGISTRY
+
 from ai_pdf_worker.research_agent_schemas import (
-    AGENT_RESULT_SCHEMA_VERSION,
     AGENT_RESULT_SCHEMAS,
 )
 from ai_pdf_worker.research_executor import (
@@ -269,7 +270,7 @@ def research_prompt_binding_sha256(package: EvaluationPackage) -> str:
     if (
         research["releaseId"] != V2_RELEASE_ID
         or research["workflowVersionId"] != V2_WORKFLOW_VERSION_ID
-        or research["agentResultSchemaVersion"] != AGENT_RESULT_SCHEMA_VERSION
+        or research["agentResultSchemaVersion"] != V1_REGISTRY.agent_result_schema_version
         or structured_output["transportVersion"]
         != STRUCTURED_OUTPUT_TRANSPORT_VERSION
         or structured_output["schemaSetVersion"]
@@ -281,7 +282,7 @@ def research_prompt_binding_sha256(package: EvaluationPackage) -> str:
         {
             "releaseId": V2_RELEASE_ID,
             "workflowVersionId": V2_WORKFLOW_VERSION_ID,
-            "agentResultSchemaVersion": AGENT_RESULT_SCHEMA_VERSION,
+            "agentResultSchemaVersion": V1_REGISTRY.agent_result_schema_version,
             "agentResultSchemasSha256": canonical_sha256(AGENT_RESULT_SCHEMAS),
             "structuredOutputTransport": structured_output["transportVersion"],
             "schemaSetVersion": structured_output["schemaSetVersion"],

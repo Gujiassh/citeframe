@@ -34,6 +34,8 @@ from .errors import ResearchError, canonical_json, canonical_sha256
 from .events import append_research_event
 from .evidence import validate_evidence_source_fingerprint
 from .membership import finalize_cancel_if_idle
+from .automatic_decisions import decision_origin_is_valid
+from .publication_adoption import lock_creator_membership, tool_attempt_is_replayable
 from .publication_prepare import _commit_phase
 from .publication_render import canonical_final_report
 from .publication_saga_support import (
@@ -271,7 +273,7 @@ def _conflict_decision_is_valid(
             and decision.decision_type == "conflict_resolution"
             and decision.status == "submitted"
             and decision.action == "keep_as_unresolved"
-            and decision.decided_by_user_id is not None
+            and decision_origin_is_valid(decision, snapshot.workflow_version_id)
             and decision.decided_at is not None
             and _as_utc(decision.decided_at) >= _as_utc(decision.requested_at)
             and decision.requested_at == conflict_artifact.created_at
@@ -517,7 +519,9 @@ def _claim_provenance_is_valid(
                         or tool_call.run_id != run_id
                         or tool_call.execution_snapshot_id != snapshot.id
                         or tool_call.step_id != producer.id
-                        or tool_call.attempt_id != producer_attempt.id
+                        or not tool_attempt_is_replayable(
+                            db, tool_call, producer, producer_attempt
+                        )
                         or tool_call.status != "succeeded"
                         or tool_call.finished_at is None
                     )
@@ -696,6 +700,24 @@ def _finalize(
             )
             db.commit()
             return PublicationResult.reconcile_pending(intent.id)
+        membership_current = lock_creator_membership(db, run)
+        # Membership may have waited on a concurrent revocation. Recheck the
+        # publication fence and lease time after that last lock acquisition.
+        intent, db_now = _lock_fenced_intent(db, claim)
+        if not membership_current and run.status == "running":
+            run.status = "cancel_requested"
+            run.cancel_requested_by_user_id = run.created_by_user_id
+            run.cancel_reason_code = "creator_membership_removed"
+            run.cancel_requested_at = db_now
+            run.updated_at = db_now
+            run.state_version += 1
+            append_research_event(
+                db, run, event_type="cancel_requested",
+                dedupe_key=f"creator-membership-removed:{run.id}",
+                data={"actorUserId": run.created_by_user_id,
+                      "reasonCode": "creator_membership_removed",
+                      "runStateVersion": run.state_version}, now=db_now,
+            )
         if run.status == "cancel_requested":
             _transition_compensating(
                 db,
