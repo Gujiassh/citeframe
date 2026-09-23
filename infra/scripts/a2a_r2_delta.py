@@ -139,6 +139,8 @@ def compare(baseline, candidate, *, candidate_business_calls=8):
 def validate_raw_rows(report):
     # Preserve the original raw records. Only the pre-existing process identity
     # normalization may differ from their historical-comparison projection.
+    require(set(report["rawDatabaseRows"]) == {"transitions", "processOne"}, "rawDatabaseRows.exact phases")
+    require(set(report["semantics"]["normalizedDbRows"]) == {"transitions", "processOne"}, "normalizedDbRows.exact phases")
     for phase, tables in report["rawDatabaseRows"].items():
         projected = deepcopy(tables)
         for table_rows in projected.values():
