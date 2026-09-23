@@ -174,7 +174,7 @@ def seed():
     )
     with SessionLocal() as db:
         user = db.get(User, IDS["creator"])
-        user.email, user.name = "issue25@example.test", "Issue 25 Service Fixture"
+        user.email, user.name = "issue25@example.com", "Issue 25 Service Fixture"
         user.password_hash = hash_password("issue25-local-fixture-only")
         user.avatar_url = "/favicon.ico"
         db.commit()

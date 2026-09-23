@@ -56,6 +56,18 @@ class Deployment:
         self.server = None
         self.counter = 0
         self.root = ROOT
+        self.capture(
+            "source",
+            {
+                "head": subprocess.check_output(
+                    ["git", "rev-parse", "HEAD"], cwd=ROOT, text=True
+                ).strip(),
+                "trackedDelta": subprocess.check_output(
+                    ["git", "diff", "--name-only", "HEAD"], cwd=ROOT, text=True
+                ).splitlines(),
+                "legacyRef": LEGACY,
+            },
+        )
         self.env = os.environ.copy()
         # Explicit loopback fixture settings prevent accidental remote provider calls.
         for key in ("OPENAI_API_KEY", "DEEPSEEK_API_KEY", "AI_PDF_DEEPSEEK_API_KEY"):
@@ -167,6 +179,16 @@ class Deployment:
             IDS["asset"],
         )
         self.prefix = f"/v1/workspaces/{self.workspace}/research-runs"
+        login = self.request(
+            "POST",
+            "/v1/auth/login",
+            json={
+                "email": "issue25@example.com",
+                "password": "issue25-local-fixture-only",
+            },
+        ).json()
+        assert login["user"]["id"] == self.user
+        self.capture("login", {"status": 200, "userId": self.user})
 
     def request(self, method, path, *, expected=200, **kwargs):
         response = httpx.request(
@@ -198,6 +220,7 @@ class Deployment:
                 "assetScope": {"mode": "selected", "assetIds": [self.asset]},
             },
         )
+        assert response.json()["run"]["createdByUserId"] == self.user
         self.run = response.json()["run"]["id"]
         self.path = f"{self.prefix}/{self.run}"
         return response.json()

@@ -13,6 +13,12 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--directory", type=Path, required=True)
     args = parser.parse_args()
+    if subprocess.check_output(
+        ["git", "diff", "--name-only", "HEAD"], cwd=ROOT, text=True
+    ).strip():
+        parser.error(
+            "Commit the fixture source before creating a fixed-HEAD walkthrough."
+        )
     d = Deployment(args.directory, os.environ["CITEFRAME_TEST_POSTGRES_URL"])
     d.migrate()
     d.start_api()
@@ -36,7 +42,12 @@ def main():
         "database": d.database,
         "workspaceId": d.workspace,
         "userId": d.user,
-        "email": "issue25@example.test",
+        "authentication": {
+            "apiLoginVerified": True,
+            "fixtureActorVerified": True,
+            "browserSessionVerified": False,
+            "browserSessionStatus": "requires permitted frontend login walkthrough",
+        },
         "runs": runs,
     }
     d.capture("walkthrough", result)

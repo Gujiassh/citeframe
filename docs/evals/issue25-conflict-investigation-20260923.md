@@ -107,3 +107,12 @@ Clean 41c7acf A2 evidence is accepted with `repairSnapshotDirty=false` and `cand
 
 
 The strengthened approved-v3 test now completes a real researcher step before upgrade and captures pre-upgrade Steps, Attempts, Claims and Artifacts alongside snapshot/prompt/asset/approval rows. It passed locally in 26.03 seconds (`v3-inflight.log`), continuing through report publication and persisted report editing after default-v4 upgrade. This closes the earlier pre-approval-only coverage gap for this bounded service fixture; final integrated-head rerun remains required.
+
+
+## Integrated recovery result and fixed-head handoff
+
+Normal merges incorporate #29 `86e710f2` then `e607aaebbd4bdc4b4fb4e08eaa6183e1724e3c26`, including #28 `e8f71d8`. The prerequisite owns the two-line current-Step error cleanup and the separately approved, relationship-checked retry error delta; #25 does not add an R2 whitelist exception. Both lanes' SSoT entries are retained. Clean a929a80 A2 passed after the production prerequisite integration; e607 changes only the retry negative-control input.
+
+The exploratory real-service matrix completed **19 passed in 565.48 seconds**, including all twelve actual Worker exit86 boundaries through final publication, report editing and API restart. `integrated-all/` stores crash/restart/journal/attempt/call/budget/artifact/API evidence for each case. That invocation began at 661b566 and spans subsequent docs/test-only changes and fixture-login development; it is explicitly **not the final same-HEAD proof**. The final delivery reruns both service modules against a clean committed head into `fixed-head-services/`; every case records `source.json` with its actual Git HEAD, tracked delta and archived v3 source ref. A2, current-SHA CI and the independent review are pinned separately in the PR/workbench ledger.
+
+The retained b337 API56046 fixture is superseded for login: the original synthetic `.test` email receives 422 from the existing EmailStr schema. The fixture now uses a valid reserved example-domain email and asserts actual login HTTP 200 plus the returned user ID and created run's actor ID. A fixed-head fixture host refuses tracked dirty source and writes a credential-free `walkthrough.json` for Descartes. API login returns user data; browser session signing occurs in Next's login route. Browser session and visible UI validation remain blocked until frontend startup is permitted. No password/token appears in the walkthrough or handoff messages, and no production authentication rule is changed.
