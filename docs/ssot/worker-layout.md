@@ -66,3 +66,26 @@ script → ordinary Compose Worker-consumption gate is exercised by
 `.github/workflows/r800-deployment.yml` and the external harness under `infra/testing/`.
 Product source and harness source SHAs are recorded separately. See the worker-layout
 plan and PR #26 for results and remaining acceptance boundaries.
+
+### Default MinIO client registry
+
+The deployment helper now defaults to
+`quay.io/minio/mc:RELEASE.2025-08-13T08-35-41Z@sha256:a7fe349ef4bd8521fb8497f55c6042871b2ae640607cf99d9bede5e9bdf11727`.
+The image version and content digest are unchanged. An explicitly supplied
+`MINIO_MC_IMAGE` still takes precedence.
+
+This changes the default pull hostname from Docker Hub to `quay.io`. Deployments
+with outbound allowlists must allow the Quay registry and its image-layer delivery
+endpoints according to their network policy. Registry authentication is resolved
+for Quay by the deployment user's Docker credential configuration; existing
+Docker Hub credentials do not implicitly authenticate to Quay. This lane does not
+read, copy, migrate or configure user registry credentials, firewall rules or
+system network settings. The verified public image did not require a registry
+login on the isolated runner.
+
+The bounded deployment smoke removes `MINIO_MC_IMAGE` from its subprocess
+environment, records the product default and actual pulled RepoDigests, then runs
+the unchanged backup/restore bodies and ordinary Compose Worker task path.
+`defaultRegistryPassed` is recorded true only after that actual chain succeeds.
+The workflow includes `compose-common.sh` in its trigger paths. Historical
+scenario failures remain independent and keep the overall gate red when present.

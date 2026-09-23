@@ -8,6 +8,7 @@ on:
       - '.github/workflows/r800-deployment.yml'
       - 'infra/docker/**'
       - 'infra/scripts/*deployment.sh'
+      - 'infra/scripts/compose-common.sh'
       - 'tools/evaluation/**'
       - 'apps/worker/**'
 

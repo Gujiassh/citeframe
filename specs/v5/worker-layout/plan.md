@@ -226,3 +226,26 @@ same tag/digest under `quay.io/minio/mc`, records pull/RepoDigests, and asserts 
 content pin is unchanged. Production defaults and scripts remain untouched.
 This does not establish default Docker Hub availability. Preserve the failed
 original run; restore/daemon-consumption evidence requires the next run.
+
+### Approved default registry repair
+
+Fixed `5b1f0c18` run `35892756138` completed the original backup/restore scripts,
+normal Compose Worker and new HTTP task/artifact path through the same-digest
+Quay override; 11 object bytes matched, snapshots had zero semantic mismatches,
+and 10 new attempts succeeded. Both historical scenario failures persisted on
+original50af and current source, so the aggregate stayed red. Regular CI
+`35892756381` passed six checks. Evidence is linked in PR comment5799271568.
+
+The controller subsequently approved the minimal production default repair:
+`compose-common.sh` changes only the registry prefix to official Quay, preserving
+the same tag/digest and the user's explicit override. Default pull domain,
+outbound allowlist and registry-authentication implications are documented in the
+SSoT. No credentials or system/network settings are read or migrated.
+
+The next exact-HEAD run must remove all inherited `MINIO_MC_IMAGE` values from the
+harness environment, pull and verify the actual production default, then repeat
+the original deployment scripts and new-task path. The harness verifies that the
+common-script delta from82ec is exactly that registry prefix; no override is
+injected. Tests reject override injection and ensure the common script triggers
+CI. This newly changed default is not covered by the previous5b1 evidence until
+that run succeeds. Both scenario assertions and original failed evidence remain.

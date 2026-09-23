@@ -32,11 +32,11 @@ def scrub(value: str, secret_values: list[str]) -> str:
     return value
 
 
-def official_mc_mirror(common_script: str) -> str:
+def default_mc_image(common_script: str) -> str:
     match = re.search(r"MINIO_MC_IMAGE=\$\{MINIO_MC_IMAGE:-([^}]+)\}", common_script)
-    if not match or not re.fullmatch(r"minio/mc:[^@]+@sha256:[0-9a-f]{64}", match[1]):
+    if not match or not re.fullmatch(r"(?:quay\.io/)?minio/mc:[^@]+@sha256:[0-9a-f]{64}", match[1]):
         raise ValueError("Expected digest-pinned original MinIO client reference")
-    return "quay.io/" + match[1]
+    return match[1]
 
 
 def free_ports(count: int) -> list[int]:
@@ -64,6 +64,7 @@ def main() -> None:
     env_file = output / ".env.deploy"
     project = "citeframe-r800-pr26-" + secrets.token_hex(5)
     env = os.environ.copy()
+    env.pop("MINIO_MC_IMAGE", None)
     env["COMPOSE_OVERRIDE_FILE"] = str(source / "infra/docker/compose.r800.yml")
     values = {name: secrets.token_hex(20) for name in (
         "POSTGRES_PASSWORD", "MINIO_ROOT_USER", "MINIO_ROOT_PASSWORD",
@@ -149,18 +150,24 @@ def main() -> None:
             assert set(product_diff.splitlines()) <= {
                 "tools/evaluation/src/citeframe_evaluation/acceptance/cli.py",
                 "tools/evaluation/tests/test_acceptance_cli_output.py",
+                "infra/scripts/compose-common.sh",
             }, product_diff
         (output / "provenance.json").write_text(json.dumps({"productHead": target_head,
             "harnessHead": harness_head, "baselineHead": baseline, "project": project,
             "harnessFiles": {p.name: sha256(p.read_bytes()).hexdigest()
                              for p in (Path(__file__), harness / "r800_docker_probe.py")}}, indent=2))
         if not args.historical_scenarios_only:
-            # The official second registry serves the identical pinned manifest.
-            image = official_mc_mirror((source / "infra/scripts/compose-common.sh").read_text())
-            env["MINIO_MC_IMAGE"] = image
+            original_common = run("baseline-common-script", ["git", "show",
+                baseline + ":infra/scripts/compose-common.sh"])
+            current_common = (source / "infra/scripts/compose-common.sh").read_text()
+            assert current_common == original_common.replace(
+                "MINIO_MC_IMAGE=${MINIO_MC_IMAGE:-minio/mc:",
+                "MINIO_MC_IMAGE=${MINIO_MC_IMAGE:-quay.io/minio/mc:")
+            image = default_mc_image(current_common)
+            assert "MINIO_MC_IMAGE" not in env
             (output / "mc-image-source.json").write_text(json.dumps({
-                "override": image, "defaultRegistryPassed": False,
-                "reason": "Default Docker Hub pull denied in run 35891438408; same-digest official mirror",
+                "defaultImage": image, "environmentOverridePresent": False,
+                "reason": "Exercise the product default; keep tag/digest unchanged",
             }, indent=2))
             run("mc-pull", ["docker", "pull", image])
             digests = json.loads(run("mc-digests", ["docker", "image", "inspect", "--format",
@@ -226,7 +233,7 @@ def main() -> None:
         # Backups are synthetic but do not publish DB dumps or credentials in CI artifacts.
         report = {"mode": "historical-scenario-attribution" if args.historical_scenarios_only else "deployment",
                   "passed": success and cleanup_ok and scenarios_passed,
-                  "deploymentGatePassed": success, "scenarioGatePassed": scenarios_passed, "cleanupPassed": cleanup_ok, "modelQuality": "not_evaluated", "project": project}
+                  "deploymentGatePassed": success, "defaultRegistryPassed": success, "scenarioGatePassed": scenarios_passed, "cleanupPassed": cleanup_ok, "modelQuality": "not_evaluated", "project": project}
         (output / "result.json").write_text(json.dumps(report, indent=2))
         for path in output.rglob("*"):
             if path.is_file() and path.suffix in {".out", ".err", ".json", ".txt", ".env"}:
