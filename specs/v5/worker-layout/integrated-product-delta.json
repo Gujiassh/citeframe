@@ -311,9 +311,9 @@
       "path": "packages/backend-contracts/src/citeframe_contracts/__init__.py",
       "integratedBlob": "d4e91f56407018d66bc92adbb5a89230401f698d",
       "reviewedSourceHead": "e1f080f4c9dca954da11fcd58aa5559220b23ab1",
-      "reviewedSourcePath": "apps/worker/src/ai_pdf_worker/research_executor_contracts.py",
-      "reviewedSourceBlob": "05749c3ffa0d107c317ed475e9a7125750fa0e54",
-      "transformation": "explicit-layout-integration; inspect mapping report and merge delta"
+      "reviewedSourcePath": "packages/backend-contracts/src/citeframe_contracts/__init__.py",
+      "reviewedSourceBlob": "d4e91f56407018d66bc92adbb5a89230401f698d",
+      "transformation": "identical-reviewed-bytes"
     },
     {
       "path": "packages/backend-persistence/src/citeframe_persistence/models/__init__.py",
@@ -434,6 +434,14 @@
       "reviewedSourcePath": "packages/research-persistence/src/citeframe_research_persistence/state.py",
       "reviewedSourceBlob": "24cbad63cc81dc810fafd174c51fd48416f62682",
       "transformation": "identical-reviewed-bytes"
+    },
+    {
+      "path": "tools/evaluation/src/citeframe_evaluation/acceptance/snapshot_proofs.py",
+      "integratedBlob": "57e0984e25f623c6be8efb52c9d780e5f79c2d8d",
+      "reviewedSourceHead": "5ed02c8b7b5f357f58d1c3fd270ead0718e7afbf",
+      "reviewedSourcePath": "tools/evaluation/src/citeframe_evaluation/acceptance/snapshot_proofs.py",
+      "reviewedSourceBlob": "a3f3c2dfcdf4cb39f44afb70e3dbd1366946d23b",
+      "transformation": "constructor import relocated to production research-persistence snapshot_integrity; hash payload and frozen fixtures unchanged"
     },
     {
       "path": "tools/evaluation/tests/test_acceptance_cli_output.py",
