@@ -4,6 +4,7 @@ on:
   pull_request:
     paths:
       - 'infra/testing/r800_docker_*.py'
+      - 'infra/testing/r800_provider_proofs.py'
       - 'infra/testing/test_r800_docker_smoke.py'
       - '.github/workflows/r800-deployment.yml'
       - 'infra/docker/**'
@@ -35,6 +36,16 @@ jobs:
           ref: 50af19dc3b79fbb677d9ac66c005b77cbe76f3d9
           path: baseline
           fetch-depth: 0
+      - uses: astral-sh/setup-uv@v6
+        with:
+          version: "0.10.12"
+          enable-cache: true
+          cache-dependency-glob: product/tools/evaluation/uv.lock
+      - name: Replay three Hubble false positives before service smoke
+        working-directory: product
+        run: |
+          uv sync --project tools/evaluation --frozen --dev
+          uv run --project tools/evaluation pytest tools/evaluation/tests/test_acceptance_evidence_links.py -k hubble -v
       - name: Use the runner's existing Compose v2 through the scripts' CLI name
         run: |
           docker version
@@ -50,6 +61,9 @@ jobs:
         run: |
           python3 -m unittest discover -s harness/infra/testing -p test_r800_docker_smoke.py -v
           python3 harness/infra/testing/r800_docker_smoke.py --source product --output "$RUNNER_TEMP/r800-evidence"
+      - name: Actual forced-serial negative control in a fresh isolated project
+        if: ${{ !cancelled() }}
+        run: python3 harness/infra/testing/r800_docker_smoke.py --source product --output "$RUNNER_TEMP/r800-serial" --serial-negative-control
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -66,3 +80,7 @@ jobs:
             ${{ runner.temp }}/r800-baseline/*.out
             ${{ runner.temp }}/r800-baseline/*.err
             ${{ runner.temp }}/r800-baseline/*.txt
+            ${{ runner.temp }}/r800-serial/*.json
+            ${{ runner.temp }}/r800-serial/*.out
+            ${{ runner.temp }}/r800-serial/*.err
+            ${{ runner.temp }}/r800-serial/*.txt

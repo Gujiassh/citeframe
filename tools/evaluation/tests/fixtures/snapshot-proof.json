@@ -1,0 +1,118 @@
+{
+  "_provenance": {
+    "sourceHead": "c2639a071dbdc9deb18c46098637c19cfaca88a7",
+    "run": "35894964943",
+    "artifact": "before.out",
+    "selectionRunId": "154614d8-67cf-49f8-9972-f887043459fb"
+  },
+  "snapshotProof": {
+    "revision": {
+      "agent_result_schema_version": "research-agent-results-v1",
+      "compact_policy_version": "research-compact-policy-v1",
+      "context_policy_version": "research-context-policy-v1",
+      "created_at": "2026-09-23T17:23:25.15254+00:00",
+      "created_by_user_id": "2c1ce847-ca1e-5d44-b30e-03d218dd3fbf",
+      "id": "d8f6ecab-1c1d-43dc-9624-fd9ec32a9bfc",
+      "planner_prompt_version_id": "20000000-0000-4000-8000-000000000101",
+      "planning_budget_policy_version": "research-budget-v1",
+      "planning_cost_currency": "USD",
+      "planning_max_cost_microunits": 500000,
+      "planning_max_input_tokens": 32000,
+      "planning_max_output_tokens": 8000,
+      "planning_max_provider_calls": 2,
+      "planning_max_provider_timeout_seconds": 120,
+      "planning_max_step_attempts": 3,
+      "planning_max_step_timeout_seconds": 300,
+      "planning_retry_policy_version": "research-retry-v1",
+      "planning_snapshot_sha256": "6b1f2a0a09233d9c2704caaf45673d21985b6dbbffac183e639756a6d89259e6",
+      "proposed_budget_policy_version": "research-budget-v1",
+      "proposed_cost_currency": "USD",
+      "proposed_data_boundary_policy_version": "research-data-boundary-v1",
+      "proposed_embedding_model": "qwen3-embedding:0.6b",
+      "proposed_embedding_provider": "ollama",
+      "proposed_embedding_version": "embedding-v1",
+      "proposed_generation_model": "gpt-5.5",
+      "proposed_generation_provider": "openai",
+      "proposed_max_cost_microunits": 5000000,
+      "proposed_max_input_tokens": 250000,
+      "proposed_max_output_tokens": 64000,
+      "proposed_max_parallel_researchers": 3,
+      "proposed_max_provider_calls": 32,
+      "proposed_max_provider_timeout_seconds": 120,
+      "proposed_max_run_timeout_seconds": 1800,
+      "proposed_max_step_attempts": 3,
+      "proposed_max_step_timeout_seconds": 300,
+      "proposed_max_tool_calls": 64,
+      "proposed_pricing_version": "research-pricing-v1",
+      "proposed_provider_config_fingerprint": "e39d0e4f0499338a6cdd6ba1290d35a7079cc7b6676ff25e34c70253e3d5345f",
+      "proposed_retrieval_strategy": "hybrid",
+      "proposed_retrieval_top_k": 10,
+      "proposed_retry_policy_version": "research-retry-v1",
+      "proposed_workflow_version_id": "20000000-0000-4000-8000-000000000001",
+      "question_text": "Compare unsupported conflict evidence across the frozen fixture.",
+      "revision_number": 1,
+      "run_id": "154614d8-67cf-49f8-9972-f887043459fb",
+      "scope_mode": "selected",
+      "supersedes_revision_id": null,
+      "workspace_id": "f54c7366-4a49-5eda-8373-dcd80bd5df6d"
+    },
+    "decision": {
+      "action": "approve",
+      "comment_text": "R800 deterministic approval.",
+      "decided_at": "2026-09-23T17:23:25.5326+00:00",
+      "decided_by_user_id": "2c1ce847-ca1e-5d44-b30e-03d218dd3fbf",
+      "decision_type": "plan_approval",
+      "expires_at": null,
+      "gate_step_id": "0866b2d2-9ead-45cb-820b-0e9d238a94a1",
+      "id": "9d0ddaa0-ac85-429b-94eb-360a3ce747bb",
+      "input_artifact_id": "c29e93ea-f8bc-4418-9fd1-d658efb9da4a",
+      "input_artifact_sha256": "3f80f353a778333bdcd76b8818dac754064b98a422b669f235a7bd6b3d9428a0",
+      "input_snapshot_sha256": "6b1f2a0a09233d9c2704caaf45673d21985b6dbbffac183e639756a6d89259e6",
+      "request_number": 1,
+      "requested_at": "2026-09-23T17:23:25.435898+00:00",
+      "run_id": "154614d8-67cf-49f8-9972-f887043459fb",
+      "state_version": 2,
+      "status": "submitted",
+      "workspace_id": "f54c7366-4a49-5eda-8373-dcd80bd5df6d"
+    },
+    "assets": [
+      {
+        "asset_id": "2f00e613-c792-589d-af16-be30cba6b847",
+        "asset_kind_snapshot": "pdf",
+        "asset_order": 0,
+        "asset_title_snapshot": "r800-research.pdf",
+        "execution_snapshot_id": "4f3ed37b-4c74-44ee-9732-1bf07aff5a42",
+        "index_version_snapshot": 1,
+        "processing_generation_snapshot": 1,
+        "workspace_id": "f54c7366-4a49-5eda-8373-dcd80bd5df6d"
+      }
+    ],
+    "prompts": [
+      {
+        "execution_snapshot_id": "4f3ed37b-4c74-44ee-9732-1bf07aff5a42",
+        "node_key": "critic",
+        "prompt_version_id": "20000000-0000-4000-8000-000000000104"
+      },
+      {
+        "execution_snapshot_id": "4f3ed37b-4c74-44ee-9732-1bf07aff5a42",
+        "node_key": "planner",
+        "prompt_version_id": "20000000-0000-4000-8000-000000000101"
+      },
+      {
+        "execution_snapshot_id": "4f3ed37b-4c74-44ee-9732-1bf07aff5a42",
+        "node_key": "researchers",
+        "prompt_version_id": "20000000-0000-4000-8000-000000000102"
+      },
+      {
+        "execution_snapshot_id": "4f3ed37b-4c74-44ee-9732-1bf07aff5a42",
+        "node_key": "synthesizer",
+        "prompt_version_id": "20000000-0000-4000-8000-000000000105"
+      },
+      {
+        "execution_snapshot_id": "4f3ed37b-4c74-44ee-9732-1bf07aff5a42",
+        "node_key": "verifier",
+        "prompt_version_id": "20000000-0000-4000-8000-000000000103"
+      }
+    ]
+  }
+}
