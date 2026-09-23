@@ -911,3 +911,8 @@ The A2 runner now retains raw reports and validates historical invariants plus e
 ### Issue 23 historical/current workflow acceptance
 
 The current candidate executes isolated historical v2 restore, historical approved-task/idempotency replay, and real default-v3 POST-create-to-publication scenarios. F1 additions for newly generated human decision events/responses are verified by a separate feature oracle; existing schema1 events and old-key HTTP responses remain unchanged. Decision POST replay serializes only explicitly persisted fields while retaining the response model's datetime encoding. See `specs/v5/post-v5-optimization/issue23-versioned-workflow-acceptance-20260923.md`. The checks use SQLite and scripted capabilities; real PostgreSQL saga/process/object-store/UI acceptance remains open.
+
+
+### Issue 25 versioned oracle and dependency integration
+
+Issue #25 normally merges #29 through `cfc0e728` (including #28 `ae3fd6f`). Default workflow v4/IO v3 is checked by an explicit F2 feature oracle before the unchanged F1/R2 comparators; it is not an R2 whitelist addition. Historical v2 replay and a restored pre-approval v3 task retain their frozen identities. The F2 oracle validates empty historical journals and actual default-v4 investigation/publication with frozen evidence, scripted retrieval and bounded unresolved termination. Five serialized SSE streams pass through the production Web parser. PostgreSQL, object-store/process restart, a visible service-backed walkthrough and independent review remain separate delivery gates. Current local regression results and platform failures are recorded in `docs/evals/issue25-conflict-investigation-20260923.md`; exact clean-commit evidence is pinned in draft PR #30 and dev-workbench.

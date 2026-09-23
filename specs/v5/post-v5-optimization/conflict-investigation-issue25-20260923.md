@@ -80,3 +80,27 @@ Issue #25 adds `a2a_conflict_feature_oracle.py` as an explicit F2 projection bef
 The current-default B scenario now executes actual POST creation, production scheduling, investigator, real frozen evidence service with scripted retrieval, durable no-new-evidence termination and final publication. Its separate feature assertions check v4 prompt identities, journal hashes/phases/snapshot/attempt lineage, source linkage, original claims and unresolved report gaps. A and AStored continue to restore historical v2 state and idempotency records. C restores an original persisted v3 creation state exported by the fixed #29 b1f7423 runner, installs v4 beside it, and completes with the original v3 manifest/prompts/IO and no investigation journal. This C evidence starts before approval; it does not claim recovery of a pre-existing approved v3 snapshot.
 
 The exploratory dirty-worktree runner passed A/AStored/B/C and five real serialized-SSE→Web-parser checks. Its report is `.local-issue25/v4-feature-integration.json`; it is not same-HEAD acceptance. On that raw report, all 33 R2, 6 F1 and 10 F2 negative controls reject; nullable running/completed-attempt source plus publication/migration targeted suite: 64 passed. A clean committed-head rerun is required for delivery. PostgreSQL/object-store/process/UI production acceptance remains open.
+
+
+## Dependency cfc0e728 integration and bounded local regression
+
+Verified the public #29 HEAD `cfc0e728fb3dca82a097088a0dc5038cd833b926` with `gh pr view 29`; normal merge commit `f185aa521fd051f25edb3805198a8eedb89d013c` retains the #25 delta. The prerequisite is #28 `ae3fd6fbccb260c9e5851cbb4a57e2c549f6702f`. The cfc increment only strengthens replay request-body rejection and the unchanged Research/human-decision database projection. No R2 whitelist, R2 publication oracle or F1 historical comparator changes were introduced by #25. V4 changes remain in the explicit F2 oracle. Historical artifacts were not rewritten.
+
+At f185aa5, with lane-owned environments and no paid provider:
+
+- `PGCONNECT_TIMEOUT=2; apps/api/.venv/Scripts/python.exe -u -m pytest apps/api/tests -q -ra`: **844 passed, 27 failed, 7 skipped** (`.local-issue25/cfc-api-bounded.log`). The three A2 executable/facade/plugin-pollution tests pass, including the 33 R2 / 6 F1 / 10 F2 rejection controls. Six skips require PostgreSQL; the seventh is the runner-only probe. The earlier unbounded-connection run was stopped and is not counted as complete.
+- The 27 API failures comprise 22 historical M402 hash/provenance checks, two R100 taxonomy-hash checks and three storage subprocess timeout/lifecycle checks on Windows. `windows-hash-diagnostic.json` confirms CRLF worktree bytes for the sampled M402 harness/artifact and R100 taxonomy normalize exactly to unchanged cfc Git blobs; the artifact/taxonomy LF hashes match their recorded hashes. These files are outside the feature delta. Storage timeouts remain local failures; no portability fix or passing baseline is inferred. No frozen artifact, hash whitelist or unrelated production code was changed to suppress failures.
+- `PGCONNECT_TIMEOUT=2; apps/worker/.venv/Scripts/python.exe -m pytest --strict-markers apps/worker/tests -q -ra`: **569 passed, 1 skipped** (`cfc-worker-all.log`), including fast, acceptance and evaluation markers. The skip is the unavailable Windows directory-symlink capability.
+- Web unit **140 passed**; TypeScript, lint and production build passed. Installed Chrome on lane-local port 3305: **7 passed**, covering four investigation cases and three upstream initial-failure/retry cases (`cfc-browser.log`). These browser tests use API fixtures, not a service-backed acceptance environment.
+- Investigation/source/publication/adoption/migration targeted regression on the merged b1 source: **64 passed** (`b1-affected2.log`). It covers nullable and explicit Step input on running and completed originating attempts.
+
+The delivery also formats the three new F2 oracle/test modules; AST comparisons against f185aa5 are identical. This is a readability-only change. Final clean-commit evidence is generated after the delivery commit with:
+
+```powershell
+$env:PYTHONUTF8='1'
+& ./apps/api/.venv/Scripts/python.exe infra/scripts/run-a2a-differential.py --root D:/Code/citeframe-conflict-investigation --output .local-issue25/delivery-fixed-head-a2.json
+```
+
+The report must identify the public delivery commit, `repairSnapshotDirty=false`, `candidateSemanticDirty=false`, accepted A/AStored/B/C scenarios and five production Web SSE parser results. Its exact SHA/results are recorded in draft PR #30 and the linked dev-workbench delivery checkpoint; exploratory dirty reports do not substitute for it. C remains a restored pre-approval v3 task, not recovery of an already approved v3 snapshot.
+
+Local full-suite failures, the six unavailable PostgreSQL checks, actual object-store/service restart and visible real-service UI acceptance remain open. CI for #29 cfc passed all six jobs; that is prerequisite evidence only. #30 requires its own current-SHA CI and independent Hubble review. All stacked PRs remain draft and unmerged.
