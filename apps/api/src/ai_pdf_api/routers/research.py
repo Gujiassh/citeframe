@@ -258,7 +258,7 @@ def submit_plan_decision(
     idempotency_key: str | None = Header(default=None, alias="Idempotency-Key"),
     user_id: str = Depends(require_user_id),
     db: Session = Depends(get_db),
-) -> dict[str, object]:
+) -> dict[str, object] | JSONResponse:
     get_accessible_workspace(db, user_id, workspace_id)
     status_code, result, replayed = decide_plan(
         db,
@@ -271,7 +271,12 @@ def submit_plan_decision(
     )
     response.status_code = status_code
     if replayed:
-        response.headers["Idempotency-Replayed"] = "true"
+        # Persisted responses belong to their original contract, including omitted
+        # fields. Current model defaults must not upgrade a historical replay.
+        return JSONResponse(status_code=status_code,
+                            content=PlanDecisionResponse.model_validate(result).model_dump(
+                                mode="json", by_alias=True, exclude_unset=True),
+                            headers={"Idempotency-Replayed": "true"})
     return result
 
 
@@ -285,7 +290,7 @@ def submit_conflict_decision(
     idempotency_key: str | None = Header(default=None, alias="Idempotency-Key"),
     user_id: str = Depends(require_user_id),
     db: Session = Depends(get_db),
-) -> dict[str, object]:
+) -> dict[str, object] | JSONResponse:
     get_accessible_workspace(db, user_id, workspace_id)
     status_code, result, replayed = decide_conflict(
         db,
@@ -298,7 +303,12 @@ def submit_conflict_decision(
     )
     response.status_code = status_code
     if replayed:
-        response.headers["Idempotency-Replayed"] = "true"
+        # Persisted responses belong to their original contract, including omitted
+        # fields. Current model defaults must not upgrade a historical replay.
+        return JSONResponse(status_code=status_code,
+                            content=ConflictDecisionResponse.model_validate(result).model_dump(
+                                mode="json", by_alias=True, exclude_unset=True),
+                            headers={"Idempotency-Replayed": "true"})
     return result
 
 
