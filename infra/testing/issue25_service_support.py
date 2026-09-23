@@ -5,7 +5,7 @@ from __future__ import annotations
 import io
 import json
 import os
-import socket
+import re
 import subprocess
 import sys
 import tarfile
@@ -120,11 +120,8 @@ class Deployment:
 
     def start_api(self):
         self.stop_api()
-        with socket.socket() as listener:
-            listener.bind(("127.0.0.1", 0))
-            port = listener.getsockname()[1]
-        self.api = f"http://127.0.0.1:{port}"
-        self.server_log = (self.directory / f"api-{port}.log").open("wb")
+        log = self.directory / f"api-{uuid4().hex}.log"
+        self.server_log = log.open("wb")
         self.server = subprocess.Popen(
             [
                 sys.executable,
@@ -134,7 +131,7 @@ class Deployment:
                 "--host",
                 "127.0.0.1",
                 "--port",
-                str(port),
+                "0",
             ],
             env=self.environment(),
             cwd=self.directory,
@@ -143,11 +140,20 @@ class Deployment:
         )
         for _ in range(150):
             assert self.server.poll() is None, "API exited; inspect API log"
-            try:
-                if httpx.get(self.api + "/openapi.json", timeout=1).status_code == 200:
-                    return
-            except httpx.HTTPError:
-                pass
+            bound = re.search(
+                r"Uvicorn running on (http://127\.0\.0\.1:\d+)",
+                log.read_text(encoding="utf-8"),
+            )
+            if bound:
+                self.api = bound.group(1)
+                try:
+                    if (
+                        httpx.get(self.api + "/openapi.json", timeout=1).status_code
+                        == 200
+                    ):
+                        return
+                except httpx.HTTPError:
+                    pass
             time.sleep(0.2)
         raise AssertionError("API startup timeout")
 

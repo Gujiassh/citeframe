@@ -58,6 +58,7 @@ jobs:
       - name: Exercise real HTTP, PostgreSQL, S3 and worker recovery
         run: |
           git rev-parse HEAD
+          mkdir -p .local-issue25
           uv run --project apps/worker pytest infra/testing/test_issue25_services.py infra/testing/test_issue25_service_limits.py -vv --tb=short --basetemp .local-issue25/ci-services
       - uses: actions/upload-artifact@v4
         if: always()
