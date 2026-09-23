@@ -29,6 +29,14 @@ import type {
   ResearchStep,
 } from "@/lib/research/types";
 
+export function ResearchReportMarkdown({ content }: { content: string }) {
+  return (
+    <ReactMarkdown remarkPlugins={[remarkGfm]} skipHtml>
+      {content}
+    </ReactMarkdown>
+  );
+}
+
 type Props = {
   workspaceId: string;
   run: ResearchRunDetail | null;
@@ -43,6 +51,7 @@ type Props = {
   streamState: ResearchStreamState;
   error: string | null;
   onSelectRun: (runId: string) => void;
+  onRefresh: () => void;
   onApprove: () => void;
   onRevisePlan: (question: string, comment: string) => void;
   onCancelPlan: () => void;
@@ -95,6 +104,7 @@ export function ResearchRunPanel({
   streamState,
   error,
   onSelectRun,
+  onRefresh,
   onApprove,
   onRevisePlan,
   onCancelPlan,
@@ -109,7 +119,22 @@ export function ResearchRunPanel({
   const [revisionComment, setRevisionComment] = useState("");
 
   if (!run) {
-    return <div className="flex min-h-[45vh] items-center justify-center text-xs text-zinc-500">{t("research.empty")}</div>;
+    return (
+      <div className="flex min-h-[45vh] flex-col items-center justify-center gap-3 text-xs text-zinc-500" aria-busy={loading}>
+        {loading ? <p role="status">{t("research.loading")}</p> : error ? (
+          <>
+            <p role="alert" className="text-red-600 dark:text-red-400">{error}</p>
+            <button type="button" onClick={onRefresh} className="rounded-md border border-border px-3 py-2">{t("workspace.retryLoad")}</button>
+          </>
+        ) : <p>{t("research.empty")}</p>}
+        {runs.length ? (
+          <select aria-label={t("research.runHistory")} defaultValue="" onChange={(event) => onSelectRun(event.target.value)} className="rounded-md border border-border bg-background px-2 py-1">
+            <option value="" disabled>{t("research.runHistory")}</option>
+            {runs.map((item) => <option key={item.id} value={item.id}>{item.question}</option>)}
+          </select>
+        ) : null}
+      </div>
+    );
   }
 
   const planDecision = run.pendingDecisions.find((item) => item.type === "plan_approval");
@@ -181,7 +206,10 @@ export function ResearchRunPanel({
         </div>
       </header>
 
-      {error ? <p role="alert" className="py-3 text-xs text-red-600 dark:text-red-400">{error}</p> : null}
+      {error ? <div className="flex items-center gap-3 py-3 text-xs">
+        <p role="alert" className="text-red-600 dark:text-red-400">{error}</p>
+        <button type="button" onClick={onRefresh} disabled={loading} className="rounded-md border border-border px-2 py-1">{t("workspace.retryLoad")}</button>
+      </div> : null}
 
       <section className="border-y border-border py-4">
         <div className="flex flex-wrap items-center justify-between gap-2">
@@ -236,7 +264,7 @@ export function ResearchRunPanel({
             <h4 className="text-xs font-semibold text-zinc-950 dark:text-white">
               {t("research.planVersion").replace("{version}", String(run.plan.version))}
             </h4>
-            {canManage && planDecision && !editingPlan ? (
+            {canManage && run.status === "awaiting_plan_approval" && planDecision && !editingPlan ? (
               <div className="flex items-center gap-2">
                 <button type="button" disabled={loading} onClick={() => setEditingPlan(true)} className="h-8 rounded-md border border-border px-3 text-xs font-semibold transition-colors hover:bg-zinc-100 disabled:opacity-50 dark:hover:bg-zinc-900">
                   {t("research.revisePlan")}
@@ -248,7 +276,7 @@ export function ResearchRunPanel({
             ) : null}
           </div>
 
-          {editingPlan ? (
+          {editingPlan && canManage && run.status === "awaiting_plan_approval" && planDecision ? (
             <div className="mt-3 space-y-3 border-y border-border py-3">
               <label className="block">
                 <span className="mb-1 block text-[10px] font-semibold text-zinc-500">{t("research.revisedQuestion")}</span>
@@ -317,7 +345,7 @@ export function ResearchRunPanel({
               ))}
             </div>
           ) : null}
-          {canManage && conflictReportReady ? (
+          {canManage && run.status === "awaiting_human_decision" && conflictReportReady ? (
             <div className="mt-3 flex flex-wrap gap-2">
               <button type="button" disabled={loading} onClick={() => onResolveConflict("exclude_conflicted_claims")} className="h-8 rounded-md bg-zinc-950 px-3 text-xs font-semibold text-white transition-colors hover:bg-zinc-800 disabled:opacity-50 dark:bg-white dark:text-zinc-950 dark:hover:bg-zinc-100">{t("research.excludeConflicts")}</button>
               <button type="button" disabled={loading} onClick={() => onResolveConflict("keep_as_unresolved")} className="h-8 rounded-md border border-border px-3 text-xs font-semibold transition-colors hover:bg-zinc-100 disabled:opacity-50 dark:hover:bg-zinc-900">{t("research.keepUnresolved")}</button>
@@ -354,7 +382,7 @@ export function ResearchRunPanel({
             <span className="font-mono text-[10px] text-zinc-500">{artifacts.find((item) => item.kind === "final_report")?.sha256.slice(0, 12)}</span>
           </div>
           <article className="mt-3 max-w-none text-sm leading-6 text-zinc-700 [&_a]:text-emerald-700 [&_a]:underline [&_h1]:mb-3 [&_h1]:mt-6 [&_h1]:text-lg [&_h1]:font-semibold [&_h2]:mb-2 [&_h2]:mt-5 [&_h2]:text-base [&_h2]:font-semibold [&_li]:my-1 [&_ol]:my-3 [&_ol]:list-decimal [&_ol]:pl-5 [&_p]:my-3 [&_strong]:font-semibold [&_strong]:text-zinc-950 [&_ul]:my-3 [&_ul]:list-disc [&_ul]:pl-5 dark:text-zinc-200 dark:[&_a]:text-emerald-400 dark:[&_strong]:text-white">
-            <ReactMarkdown remarkPlugins={[remarkGfm]}>{artifactContent}</ReactMarkdown>
+            <ResearchReportMarkdown content={artifactContent} />
           </article>
 
           {artifactDetail?.evidence.length ? (

@@ -171,6 +171,13 @@ def _observed_tool(
 
 
 class ResearchWorkerService(Protocol):
+    def reconcile_one_publication_intent(
+        self,
+        db: Any,
+        *,
+        worker_instance_id: str,
+    ) -> Any: ...
+
     def claim_next_research_step(self, db: Any, *, worker_instance_id: str, lease_seconds: int, now: datetime, excluded_run_ids: frozenset[str]) -> Any: ...
 
     def claim_specific_research_step(
@@ -219,6 +226,49 @@ class _ApiPort:
         function = _require_service(self._service, name)
         with self._db(write=write) as db:
             return function(db, **kwargs)
+
+    def _call_saga(self, name: str, **kwargs: Any) -> Any:
+        """Call a multi-transaction command without an outer implicit commit.
+
+        Publication commands own their commit/verification boundary.  Closing the
+        caller session after a returned durable result must not turn that result into
+        a generic step failure merely because connection cleanup reports an error.
+        """
+
+        function = _require_service(self._service, name)
+        db = self._sessions()
+        try:
+            result = function(db, **kwargs)
+        except BaseException:
+            if hasattr(db, "rollback"):
+                try:
+                    db.rollback()
+                except Exception as cleanup_error:  # noqa: BLE001
+                    logger.warning(
+                        "research_saga_session_rollback_failed command=%s error_type=%s",
+                        name,
+                        type(cleanup_error).__name__,
+                    )
+            if hasattr(db, "close"):
+                try:
+                    db.close()
+                except Exception as cleanup_error:  # noqa: BLE001
+                    logger.warning(
+                        "research_saga_session_close_failed command=%s error_type=%s",
+                        name,
+                        type(cleanup_error).__name__,
+                    )
+            raise
+        if hasattr(db, "close"):
+            try:
+                db.close()
+            except Exception as error:  # noqa: BLE001
+                logger.warning(
+                    "research_saga_session_close_failed command=%s error_type=%s",
+                    name,
+                    type(error).__name__,
+                )
+        return result
 
 
 def _field(value: Any, name: str) -> Any:

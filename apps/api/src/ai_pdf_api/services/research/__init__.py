@@ -22,13 +22,15 @@ from ai_pdf_api.services.research.research_idempotency import (
 )
 from ai_pdf_api.services.research.research_recovery import retry_research_step
 from ai_pdf_api.services.research.research_runs import (
-    build_execution_snapshot_hash_payload,
-    build_plan_snapshot_hash_payload,
     cancel_research_run,
     create_research_run,
-    finalize_cancel_if_idle,
     get_research_run,
     list_research_runs,
+)
+from citeframe_research_persistence.membership import finalize_cancel_if_idle
+from citeframe_research_persistence.snapshot_integrity import (
+    build_execution_snapshot_hash_payload,
+    build_plan_snapshot_hash_payload,
 )
 
 __all__ = [

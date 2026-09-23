@@ -4,9 +4,6 @@ import hashlib
 import json
 from dataclasses import dataclass
 
-from sqlalchemy import select
-from sqlalchemy.orm import Session
-
 from ai_pdf_api.models import (
     PromptVersion,
     ResearchExecutionPromptVersion,
@@ -15,7 +12,8 @@ from ai_pdf_api.models import (
     WorkflowPromptBinding,
     WorkflowVersion,
 )
-
+from sqlalchemy import select
+from sqlalchemy.orm import Session
 
 PROMPT_NODE_ORDER = ("planner", "researchers", "verifier", "critic", "synthesizer")
 V2_WORKFLOW_VERSION_ID = "20000000-0000-4000-8000-000000000001"
@@ -228,15 +226,34 @@ def _validate_v2_prompt(prompt: PromptVersion, *, node_key: str) -> PromptReleas
     return spec
 
 
-def load_v2_release(db: Session) -> tuple[WorkflowVersion, dict[str, PromptVersion]]:
-    workflow = _validate_v2_workflow(db.get(WorkflowVersion, V2_WORKFLOW_VERSION_ID))
-    rows = list(
-        db.execute(
-            select(WorkflowPromptBinding, PromptVersion)
-            .join(PromptVersion, PromptVersion.id == WorkflowPromptBinding.prompt_version_id)
-            .where(WorkflowPromptBinding.workflow_version_id == V2_WORKFLOW_VERSION_ID)
-        ).all()
+def load_v2_release(
+    db: Session,
+    *,
+    for_update: bool = False,
+) -> tuple[WorkflowVersion, dict[str, PromptVersion]]:
+    workflow_query = (
+        select(WorkflowVersion)
+        .where(WorkflowVersion.id == V2_WORKFLOW_VERSION_ID)
+        .execution_options(populate_existing=True)
     )
+    if for_update:
+        workflow_query = workflow_query.with_for_update(
+            read=True,
+            of=WorkflowVersion,
+        )
+    workflow = _validate_v2_workflow(db.scalar(workflow_query))
+    binding_query = (
+        select(WorkflowPromptBinding, PromptVersion)
+        .join(PromptVersion, PromptVersion.id == WorkflowPromptBinding.prompt_version_id)
+        .where(WorkflowPromptBinding.workflow_version_id == V2_WORKFLOW_VERSION_ID)
+        .execution_options(populate_existing=True)
+    )
+    if for_update:
+        binding_query = binding_query.with_for_update(
+            read=True,
+            of=(WorkflowPromptBinding, PromptVersion)
+        )
+    rows = list(db.execute(binding_query).all())
     by_node = {binding.node_key: prompt for binding, prompt in rows}
     if len(rows) != len(PROMPT_NODE_ORDER) or set(by_node) != set(PROMPT_NODE_ORDER):
         raise ValueError("research_workflow_prompt_bindings_invalid")
@@ -288,23 +305,56 @@ def load_execution_prompt_dtos(
     db: Session,
     snapshot: ResearchExecutionSnapshot,
 ) -> list[dict[str, object]]:
-    workflow, release_prompts = load_v2_release(db)
+    return _load_execution_prompt_dtos(db, snapshot, for_update=False)
+
+
+def load_publication_execution_prompt_dtos(
+    db: Session,
+    snapshot: ResearchExecutionSnapshot,
+) -> list[dict[str, object]]:
+    """Lock and validate the exact production release at final publication."""
+
+    return _load_execution_prompt_dtos(db, snapshot, for_update=True)
+
+
+def _load_execution_prompt_dtos(
+    db: Session,
+    snapshot: ResearchExecutionSnapshot,
+    *,
+    for_update: bool,
+) -> list[dict[str, object]]:
+    workflow, release_prompts = load_v2_release(db, for_update=for_update)
     if snapshot.workflow_version_id != workflow.id:
         raise ValueError("research_execution_prompt_binding_invalid")
-    rows = list(
-        db.execute(
-            select(ResearchExecutionPromptVersion, WorkflowPromptBinding, PromptVersion)
-            .join(PromptVersion, PromptVersion.id == ResearchExecutionPromptVersion.prompt_version_id)
-            .join(
-                WorkflowPromptBinding,
-                (WorkflowPromptBinding.workflow_version_id == snapshot.workflow_version_id)
-                & (WorkflowPromptBinding.node_key == ResearchExecutionPromptVersion.node_key)
-                & (WorkflowPromptBinding.prompt_version_id == ResearchExecutionPromptVersion.prompt_version_id),
-            )
-            .where(ResearchExecutionPromptVersion.execution_snapshot_id == snapshot.id)
-            .order_by(ResearchExecutionPromptVersion.node_key)
-        ).all()
+    execution_query = (
+        select(ResearchExecutionPromptVersion, WorkflowPromptBinding, PromptVersion)
+        .join(
+            PromptVersion,
+            PromptVersion.id == ResearchExecutionPromptVersion.prompt_version_id,
+        )
+        .join(
+            WorkflowPromptBinding,
+            (WorkflowPromptBinding.workflow_version_id == snapshot.workflow_version_id)
+            & (WorkflowPromptBinding.node_key == ResearchExecutionPromptVersion.node_key)
+            & (
+                WorkflowPromptBinding.prompt_version_id
+                == ResearchExecutionPromptVersion.prompt_version_id
+            ),
+        )
+        .where(ResearchExecutionPromptVersion.execution_snapshot_id == snapshot.id)
+        .order_by(ResearchExecutionPromptVersion.node_key)
+        .execution_options(populate_existing=True)
     )
+    if for_update:
+        execution_query = execution_query.with_for_update(
+            read=True,
+            of=(
+                ResearchExecutionPromptVersion,
+                WorkflowPromptBinding,
+                PromptVersion,
+            )
+        )
+    rows = list(db.execute(execution_query).all())
     by_node = {execution_prompt.node_key: prompt for execution_prompt, _binding, prompt in rows}
     if set(by_node) != set(PROMPT_NODE_ORDER) or len(rows) != len(PROMPT_NODE_ORDER):
         raise ValueError("research_execution_prompt_binding_invalid")

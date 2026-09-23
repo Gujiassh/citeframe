@@ -24,14 +24,16 @@ from ai_pdf_api.services.providers import (
     GenerationProvider,
     get_generation_provider,
 )
+from ai_pdf_api.services.research.research_agent_io_registry import (
+    resolve_registry,
+    resolve_role_contract,
+)
 from ai_pdf_api.services.research.research_context_policy import (
     ResearchContextLimitExceeded,
     ResearchProviderOutputIncomplete,
     assert_provider_output_complete,
     pack_provider_messages,
 )
-from ai_pdf_api.services.research.research_agent_io_registry import resolve_registry, resolve_role_contract
-
 from citeframe_contracts import (
     ApprovedResearchExecution,
     BranchResult,
@@ -41,6 +43,7 @@ from citeframe_contracts import (
     FailureDisposition,
     FrozenPrompt,
     LoadedEvidence,
+    PublicationResult,
     ResearchLedger,
     ResearchState,
     StepLease,
@@ -48,6 +51,7 @@ from citeframe_contracts import (
     ToolExecutionContext,
     VerifiedClaim,
 )
+
 from ai_pdf_worker.research_runtime_core import (
     LEASE_SECONDS,
     ResearchPortError,
@@ -324,24 +328,39 @@ class SqlResearchLedgerAdapter(_ApiPort, ResearchLedger):
         *,
         selection: SynthesisSelection,
         claims: Sequence[VerifiedClaim],
-    ) -> str:
+    ) -> PublicationResult:
         del execution, claims
-        result = self._call(
+        result = self._call_saga(
             "publish_final_report",
-            write=True,
             attempt_id=lease.attempt_id,
             lease_token=lease.lease_token,
             fact_claim_ids=selection.fact_claim_ids,
             unresolved_claim_ids=selection.unresolved_claim_ids,
             now=_now(),
         )
-        artifact_id = str(result)
+        if not isinstance(result, PublicationResult):
+            try:
+                result = PublicationResult(
+                    kind=str(_field(result, "kind")),
+                    artifact_id=_field(result, "artifact_id"),
+                    intent_id=_field(result, "intent_id"),
+                )
+            except Exception as error:
+                raise ResearchPortError("final_publish_result_invalid") from error
+        identifier = result.artifact_id if result.kind == "committed" else result.intent_id
+        if (
+            result.kind not in {"committed", "reconcile_pending"}
+            or not isinstance(identifier, str)
+            or (result.kind == "committed") != (result.artifact_id is not None)
+            or (result.kind == "reconcile_pending") != (result.intent_id is not None)
+        ):
+            raise ResearchPortError("final_publish_result_invalid")
         try:
-            if str(UUID(artifact_id)) != artifact_id:
+            if str(UUID(identifier)) != identifier:
                 raise ValueError
         except ValueError as error:
             raise ResearchPortError("final_publish_identifier_invalid") from error
-        return artifact_id
+        return result
 
     def _complete(self, lease: StepLease, *, output_sha256: str, evidence_count: int, artifact_ids: Sequence[str]) -> None:
         if evidence_count or artifact_ids:

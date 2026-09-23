@@ -9,7 +9,6 @@ from datetime import UTC, datetime
 from ai_pdf_api.core.settings import settings
 from ai_pdf_api.models import (
     Asset,
-    HumanDecision,
     PromptVersion,
     ResearchBudgetLedger,
     ResearchPlanRevision,
@@ -20,6 +19,10 @@ from ai_pdf_api.models import (
     Workspace,
 )
 from ai_pdf_api.schemas.research import CreateResearchRunRequest
+from ai_pdf_api.services.research.research_agent_io_registry import (
+    registry_snapshot_fields,
+    require_current_production_registry,
+)
 from ai_pdf_api.services.research.research_constants import (
     BUDGET_POLICY_VERSION,
     DATA_BOUNDARY_POLICY,
@@ -27,7 +30,6 @@ from ai_pdf_api.services.research.research_constants import (
     RETRY_POLICY_VERSION,
     TERMINAL_RUN_STATUSES,
 )
-from ai_pdf_api.services.research.research_agent_io_registry import require_current_production_registry, registry_snapshot_fields
 from ai_pdf_api.services.research.research_events import append_research_event
 from ai_pdf_api.services.research.research_idempotency import (
     ResearchError,
@@ -41,8 +43,15 @@ from ai_pdf_api.services.research.research_versions_service import (
     ensure_research_versions,
 )
 from ai_pdf_api.services.research.research_views import iso, run_detail, run_summary
+from citeframe_research_persistence import membership as _membership
+from citeframe_research_persistence.cancellation import cancel_research_run_transition
+from citeframe_research_persistence.snapshot_integrity import (
+    build_plan_snapshot_hash_payload,
+)
 from sqlalchemy import and_, func, or_, select, text
 from sqlalchemy.orm import Session
+
+finalize_cancel_if_idle = _membership.finalize_cancel_if_idle
 
 
 def _resolve_assets(db: Session, workspace_id: str, scope: object) -> list[Asset]:
@@ -51,7 +60,11 @@ def _resolve_assets(db: Session, workspace_id: str, scope: object) -> list[Asset
         assets = list(
             db.scalars(
                 select(Asset)
-                .where(Asset.workspace_id == workspace_id, Asset.deleted_at.is_(None), Asset.status == "ready")
+                .where(
+                    Asset.workspace_id == workspace_id,
+                    Asset.deleted_at.is_(None),
+                    Asset.status == "ready",
+                )
                 .order_by(Asset.created_at, Asset.id)
             ).all()
         )
@@ -70,130 +83,17 @@ def _resolve_assets(db: Session, workspace_id: str, scope: object) -> list[Asset
         }
         assets = [by_id[asset_id] for asset_id in requested_ids if asset_id in by_id]
         if len(assets) != len(requested_ids):
-            raise ResearchError("invalid_asset_scope", "Every selected Asset must be ready in this Workspace.", 422)
+            raise ResearchError(
+                "invalid_asset_scope",
+                "Every selected Asset must be ready in this Workspace.",
+                422,
+            )
     if not assets:
-        raise ResearchError("invalid_asset_scope", "Research requires at least one ready Asset.", 422)
+        raise ResearchError(
+            "invalid_asset_scope", "Research requires at least one ready Asset.", 422
+        )
     return assets
 
-def _snapshot_assets(assets: list[Asset] | list[ResearchPlanRevisionAsset]) -> list[dict[str, object]]:
-    snapshots: list[dict[str, object]] = []
-    for order, item in enumerate(assets):
-        if isinstance(item, Asset):
-            snapshots.append(
-                {
-                    "assetId": item.id,
-                    "assetOrder": order,
-                    "assetKind": item.asset_kind,
-                    "assetTitle": item.title,
-                    "processingGeneration": item.current_processing_generation,
-                    "indexVersion": item.current_index_version,
-                }
-            )
-        else:
-            snapshots.append(
-                {
-                    "assetId": item.asset_id,
-                    "assetOrder": item.asset_order,
-                    "assetKind": item.asset_kind_snapshot,
-                    "assetTitle": item.asset_title_snapshot,
-                    "processingGeneration": item.processing_generation_snapshot,
-                    "indexVersion": item.index_version_snapshot,
-                }
-            )
-    return snapshots
-
-def _provider_payload(revision: ResearchPlanRevision) -> dict[str, object]:
-    return {
-        "generationProvider": revision.proposed_generation_provider,
-        "generationModel": revision.proposed_generation_model,
-        "embeddingProvider": revision.proposed_embedding_provider,
-        "embeddingModel": revision.proposed_embedding_model,
-        "embeddingVersion": revision.proposed_embedding_version,
-        "retrievalStrategy": revision.proposed_retrieval_strategy,
-        "retrievalTopK": revision.proposed_retrieval_top_k,
-        "providerConfigFingerprint": revision.proposed_provider_config_fingerprint,
-        "pricingVersion": revision.proposed_pricing_version,
-        "dataBoundaryPolicyVersion": revision.proposed_data_boundary_policy_version,
-    }
-
-def build_plan_snapshot_hash_payload(
-    revision: ResearchPlanRevision,
-    assets: list[Asset] | list[ResearchPlanRevisionAsset],
-    bindings: list[tuple[WorkflowPromptBinding, PromptVersion]],
-) -> dict[str, object]:
-    asset_rows = _snapshot_assets(assets)
-    requested_scope: dict[str, object] = {"mode": revision.scope_mode}
-    if revision.scope_mode == "selected":
-        requested_scope["assetIds"] = [item["assetId"] for item in asset_rows]
-    prompt_versions = [
-        {"nodeKey": binding.node_key, "promptVersionId": prompt.id}
-        for binding, prompt in bindings
-    ]
-    provider = _provider_payload(revision)
-    return {
-        "revisionNumber": revision.revision_number,
-        "question": revision.question_text,
-        "requestedAssetScope": requested_scope,
-        "planningAssetScope": {"assets": asset_rows},
-        "planningExecution": {
-            "workflowVersionId": revision.proposed_workflow_version_id,
-            "plannerPromptVersionId": revision.planner_prompt_version_id,
-            "provider": provider,
-            "budgetPolicyVersion": revision.planning_budget_policy_version,
-            "retryPolicyVersion": revision.planning_retry_policy_version,
-            "limits": {
-                "maxProviderCalls": revision.planning_max_provider_calls,
-                "maxInputTokens": revision.planning_max_input_tokens,
-                "maxOutputTokens": revision.planning_max_output_tokens,
-                "plannerTimeoutSeconds": revision.planning_max_step_timeout_seconds,
-                "providerTimeoutSeconds": revision.planning_max_provider_timeout_seconds,
-                "maxPlannerAttempts": revision.planning_max_step_attempts,
-            },
-            "agentResultSchemaVersion": getattr(revision, "agent_result_schema_version", None),
-            "contextPolicyVersion": getattr(revision, "context_policy_version", None),
-            "compactPolicyVersion": getattr(revision, "compact_policy_version", None),
-        },
-        "proposedResearchExecution": {
-            "workflowVersionId": revision.proposed_workflow_version_id,
-            "promptVersions": prompt_versions,
-            "provider": provider,
-            "budgetPolicyVersion": revision.proposed_budget_policy_version,
-            "retryPolicyVersion": revision.proposed_retry_policy_version,
-            "limits": {
-                "maxProviderCalls": revision.proposed_max_provider_calls,
-                "maxToolCalls": revision.proposed_max_tool_calls,
-                "maxInputTokens": revision.proposed_max_input_tokens,
-                "maxOutputTokens": revision.proposed_max_output_tokens,
-                "maxParallelResearchers": revision.proposed_max_parallel_researchers,
-                "runTimeoutSeconds": revision.proposed_max_run_timeout_seconds,
-                "stepTimeoutSeconds": revision.proposed_max_step_timeout_seconds,
-                "providerTimeoutSeconds": revision.proposed_max_provider_timeout_seconds,
-                "maxAttemptsPerStep": revision.proposed_max_step_attempts,
-            },
-            "agentResultSchemaVersion": getattr(revision, "agent_result_schema_version", None),
-            "contextPolicyVersion": getattr(revision, "context_policy_version", None),
-            "compactPolicyVersion": getattr(revision, "compact_policy_version", None),
-        },
-    }
-
-def build_execution_snapshot_hash_payload(
-    revision: ResearchPlanRevision,
-    decision: HumanDecision,
-    assets: list[ResearchPlanRevisionAsset],
-    bindings: list[tuple[WorkflowPromptBinding, PromptVersion]],
-) -> dict[str, object]:
-    return {
-        "inputVersion": revision.revision_number,
-        "approvalDecisionId": decision.id,
-        "approvedPlanRevisionId": revision.id,
-        "approvedPlanArtifactId": decision.input_artifact_id,
-        "approvedPlanArtifactSha256": decision.input_artifact_sha256,
-        "planningSnapshotSha256": revision.planning_snapshot_sha256,
-        "question": revision.question_text,
-        "scopeMode": revision.scope_mode,
-        "frozenAssets": _snapshot_assets(assets),
-        "execution": build_plan_snapshot_hash_payload(revision, assets, bindings)["proposedResearchExecution"],
-    }
 
 def _add_revision(
     db: Session,
@@ -208,7 +108,9 @@ def _add_revision(
 ) -> tuple[ResearchPlanRevision, ResearchStep]:
     workflow, planner_prompt = ensure_research_versions(db, now)
     if workflow.availability != "active" or planner_prompt.availability != "active":
-        raise ResearchError("research_version_unavailable", "Research versions are not active.", 422)
+        raise ResearchError(
+            "research_version_unavailable", "Research versions are not active.", 422
+        )
     assets = _resolve_assets(db, run.workspace_id, scope)
     workspace = db.get(Workspace, run.workspace_id)
     if workspace is None:
@@ -216,7 +118,10 @@ def _add_revision(
     bindings = list(
         db.execute(
             select(WorkflowPromptBinding, PromptVersion)
-            .join(PromptVersion, PromptVersion.id == WorkflowPromptBinding.prompt_version_id)
+            .join(
+                PromptVersion,
+                PromptVersion.id == WorkflowPromptBinding.prompt_version_id,
+            )
             .where(WorkflowPromptBinding.workflow_version_id == workflow.id)
             .order_by(WorkflowPromptBinding.node_key)
         ).all()
@@ -233,7 +138,9 @@ def _add_revision(
         planner_prompt_version_id=planner_prompt.id,
         proposed_generation_provider=settings.generation_provider,
         proposed_generation_model=settings.generation_model,
-        proposed_provider_config_fingerprint=_profile_fingerprint(retrieval_top_k=workspace.retrieval_top_k),
+        proposed_provider_config_fingerprint=_profile_fingerprint(
+            retrieval_top_k=workspace.retrieval_top_k
+        ),
         proposed_pricing_version=PRICING_VERSION,
         proposed_data_boundary_policy_version=DATA_BOUNDARY_POLICY,
         proposed_embedding_provider=settings.embedding_provider,
@@ -264,9 +171,15 @@ def _add_revision(
         proposed_max_run_timeout_seconds=1800,
         proposed_max_step_timeout_seconds=300,
         proposed_max_provider_timeout_seconds=120,
-        agent_result_schema_version=registry_snapshot_fields(require_current_production_registry())["agentResultSchemaVersion"],
-        context_policy_version=registry_snapshot_fields(require_current_production_registry())["contextPolicyVersion"],
-        compact_policy_version=registry_snapshot_fields(require_current_production_registry())["compactPolicyVersion"],
+        agent_result_schema_version=registry_snapshot_fields(
+            require_current_production_registry()
+        )["agentResultSchemaVersion"],
+        context_policy_version=registry_snapshot_fields(
+            require_current_production_registry()
+        )["contextPolicyVersion"],
+        compact_policy_version=registry_snapshot_fields(
+            require_current_production_registry()
+        )["compactPolicyVersion"],
         planning_snapshot_sha256="0" * 64,
         created_at=now,
     )
@@ -319,6 +232,7 @@ def _add_revision(
     run.current_plan_revision_id = revision.id
     return revision, step
 
+
 def create_research_run(
     db: Session,
     *,
@@ -338,21 +252,35 @@ def create_research_run(
                 {"scope": f"research-create:{workspace_id}"},
             )
         active = tuple(TERMINAL_RUN_STATUSES)
-        user_count = db.scalar(
-            select(func.count()).select_from(ResearchRun).where(
-                ResearchRun.workspace_id == workspace_id,
-                ResearchRun.created_by_user_id == actor_user_id,
-                ResearchRun.status.not_in(active),
+        user_count = (
+            db.scalar(
+                select(func.count())
+                .select_from(ResearchRun)
+                .where(
+                    ResearchRun.workspace_id == workspace_id,
+                    ResearchRun.created_by_user_id == actor_user_id,
+                    ResearchRun.status.not_in(active),
+                )
             )
-        ) or 0
-        workspace_count = db.scalar(
-            select(func.count()).select_from(ResearchRun).where(
-                ResearchRun.workspace_id == workspace_id,
-                ResearchRun.status.not_in(active),
+            or 0
+        )
+        workspace_count = (
+            db.scalar(
+                select(func.count())
+                .select_from(ResearchRun)
+                .where(
+                    ResearchRun.workspace_id == workspace_id,
+                    ResearchRun.status.not_in(active),
+                )
             )
-        ) or 0
+            or 0
+        )
         if user_count >= 2 or workspace_count >= 10:
-            raise ResearchError("research_concurrency_limit", "The active Research run limit has been reached.", 429)
+            raise ResearchError(
+                "research_concurrency_limit",
+                "The active Research run limit has been reached.",
+                429,
+            )
         now = datetime.now(UTC)
         run = ResearchRun(
             workspace_id=workspace_id,
@@ -371,7 +299,11 @@ def create_research_run(
             run,
             event_type="run_created",
             dedupe_key="run-created",
-            data={"status": "planning", "createdByUserId": actor_user_id, "runStateVersion": 1},
+            data={
+                "status": "planning",
+                "createdByUserId": actor_user_id,
+                "runStateVersion": 1,
+            },
             now=now,
         )
         _revision, planner_step = _add_revision(
@@ -416,15 +348,21 @@ def create_research_run(
         execute=execute,
     )
 
+
 def get_research_run(db: Session, workspace_id: str, run_id: str) -> ResearchRun:
     run = db.scalar(
-        select(ResearchRun).where(ResearchRun.id == run_id, ResearchRun.workspace_id == workspace_id)
+        select(ResearchRun).where(
+            ResearchRun.id == run_id, ResearchRun.workspace_id == workspace_id
+        )
     )
     if run is None:
         raise ResearchError("research_run_not_found", "Research run not found.", 404)
     return run
 
-def _get_research_run_for_update(db: Session, workspace_id: str, run_id: str) -> ResearchRun:
+
+def _get_research_run_for_update(
+    db: Session, workspace_id: str, run_id: str
+) -> ResearchRun:
     from citeframe_research_persistence.locks import lock_run
 
     run = lock_run(db, run_id, workspace_id=workspace_id)
@@ -432,17 +370,24 @@ def _get_research_run_for_update(db: Session, workspace_id: str, run_id: str) ->
         raise ResearchError("research_run_not_found", "Research run not found.", 404)
     return run
 
+
 def _encode_cursor(run: ResearchRun) -> str:
     payload = canonical_json({"createdAt": iso(run.created_at), "id": run.id})
     return base64.urlsafe_b64encode(payload).decode("ascii").rstrip("=")
 
+
 def _decode_cursor(cursor: str) -> tuple[datetime, str]:
     try:
-        payload = json.loads(base64.urlsafe_b64decode(cursor + "=" * (-len(cursor) % 4)))
+        payload = json.loads(
+            base64.urlsafe_b64decode(cursor + "=" * (-len(cursor) % 4))
+        )
         created_at = datetime.fromisoformat(payload["createdAt"])
         return created_at, str(payload["id"])
     except Exception as error:
-        raise ResearchError("invalid_cursor", "Research cursor is invalid.", 400) from error
+        raise ResearchError(
+            "invalid_cursor", "Research cursor is invalid.", 400
+        ) from error
+
 
 def list_research_runs(
     db: Session,
@@ -454,7 +399,9 @@ def list_research_runs(
     cursor: str | None,
     limit: int,
 ) -> dict[str, object]:
-    query = select(ResearchRun).where(ResearchRun.workspace_id == workspace_id, ResearchRun.archived_at.is_(None))
+    query = select(ResearchRun).where(
+        ResearchRun.workspace_id == workspace_id, ResearchRun.archived_at.is_(None)
+    )
     if status_filter:
         query = query.where(ResearchRun.status == status_filter)
     if created_by == "me":
@@ -467,7 +414,13 @@ def list_research_runs(
                 and_(ResearchRun.created_at == created_at, ResearchRun.id < run_id),
             )
         )
-    runs = list(db.scalars(query.order_by(ResearchRun.created_at.desc(), ResearchRun.id.desc()).limit(limit + 1)).all())
+    runs = list(
+        db.scalars(
+            query.order_by(ResearchRun.created_at.desc(), ResearchRun.id.desc()).limit(
+                limit + 1
+            )
+        ).all()
+    )
     has_more = len(runs) > limit
     runs = runs[:limit]
     return {
@@ -475,9 +428,6 @@ def list_research_runs(
         "nextCursor": _encode_cursor(runs[-1]) if has_more and runs else None,
     }
 
-
-from citeframe_research_persistence.cancellation import cancel_research_run_transition
-from citeframe_research_persistence.membership import finalize_cancel_if_idle
 
 def cancel_research_run(
     db: Session,

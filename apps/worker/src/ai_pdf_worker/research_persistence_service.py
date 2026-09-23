@@ -4,7 +4,9 @@ from __future__ import annotations
 from types import SimpleNamespace
 
 from ai_pdf_api.db.session import SessionLocal
-from ai_pdf_api.services.research.research_prompt_provenance import load_execution_prompt_dtos
+from ai_pdf_api.services.research.research_prompt_provenance import (
+    load_publication_execution_prompt_dtos,
+)
 from ai_pdf_api.services.research.research_worker_evidence import (
     load_frozen_evidence,
     restore_frozen_evidence,
@@ -23,12 +25,30 @@ from ai_pdf_api.services.research.research_worker_state import (
     load_execution_state,
     load_step_handler_input,
 )
-from ai_pdf_api.services.storage import delete_object_if_exists, upload_bytes
-from citeframe_research_persistence import completion, failure, lease, provider, state, tools
+from ai_pdf_api.services.storage import (
+    PUBLICATION_ORPHAN_OBSERVATION_SECONDS,
+    delete_object_if_exists,
+    delete_publication_object_if_exists,
+    download_publication_bytes,
+    list_publication_object_keys,
+    upload_bytes,
+    upload_publication_bytes,
+)
+from citeframe_research_persistence import (
+    completion,
+    failure,
+    lease,
+    provider,
+    state,
+    tools,
+)
 from citeframe_research_persistence.plan import publish_research_plan
 from citeframe_research_persistence.publication import (
     publish_final_report,
     wait_for_conflict_decision,
+)
+from citeframe_research_persistence.publication_saga import (
+    reconcile_one_publication_intent,
 )
 
 
@@ -62,10 +82,31 @@ def _complete_synthesis(db, **kwargs):
 def _publish_final(db, **kwargs):
     return publish_final_report(
         db,
-        store_bytes=kwargs.pop("store_bytes", upload_bytes),
-        cleanup_bytes=kwargs.pop("cleanup_bytes", delete_object_if_exists),
+        store_bytes=kwargs.pop("store_bytes", upload_publication_bytes),
+        load_bytes=kwargs.pop("load_bytes", download_publication_bytes),
+        list_keys=kwargs.pop("list_keys", list_publication_object_keys),
+        cleanup_bytes=kwargs.pop("cleanup_bytes", delete_publication_object_if_exists),
         committed_session_factory=kwargs.pop("committed_session_factory", SessionLocal),
-        prompt_loader=load_execution_prompt_dtos,
+        observation_seconds=kwargs.pop(
+            "observation_seconds", int(PUBLICATION_ORPHAN_OBSERVATION_SECONDS)
+        ),
+        prompt_loader=load_publication_execution_prompt_dtos,
+        **kwargs,
+    )
+
+
+def _reconcile_publication(db, **kwargs):
+    return reconcile_one_publication_intent(
+        db,
+        store_bytes=kwargs.pop("store_bytes", upload_publication_bytes),
+        load_bytes=kwargs.pop("load_bytes", download_publication_bytes),
+        list_keys=kwargs.pop("list_keys", list_publication_object_keys),
+        cleanup_bytes=kwargs.pop("cleanup_bytes", delete_publication_object_if_exists),
+        committed_session_factory=kwargs.pop("committed_session_factory", SessionLocal),
+        prompt_loader=load_publication_execution_prompt_dtos,
+        observation_seconds=kwargs.pop(
+            "observation_seconds", int(PUBLICATION_ORPHAN_OBSERVATION_SECONDS)
+        ),
         **kwargs,
     )
 
@@ -115,6 +156,7 @@ def build_worker_research_service():
         publish_final_report=_publish_final,
         publish_research_plan=_publish_plan,
         reclaim_expired_research_steps=state.reclaim_expired_research_steps,
+        reconcile_one_publication_intent=_reconcile_publication,
         reconcile_provider_call=provider.reconcile_provider_call,
         reserve_provider_call=_reserve_provider,
         restore_evidence_handles=tools.restore_evidence_handles,

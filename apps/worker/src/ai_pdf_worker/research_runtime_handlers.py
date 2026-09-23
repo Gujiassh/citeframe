@@ -386,7 +386,7 @@ class SingleAttemptStepDispatcher:
         if selection is None or claims is None:
             raise ResearchPortError("research_synthesis_checkpoint_missing")
         try:
-            self._ledger.publish_final(
+            result = self._ledger.publish_final(
                 lease,
                 execution,
                 selection=selection,
@@ -395,6 +395,8 @@ class SingleAttemptStepDispatcher:
         except Exception as error:
             _persist_step_failure(self._ledger, lease, error)
             raise
+        if result.kind == "reconcile_pending":
+            return "waiting", 0
         return "success", 0
 
     @staticmethod

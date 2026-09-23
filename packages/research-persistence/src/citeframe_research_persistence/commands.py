@@ -1,4 +1,5 @@
 """Neutral command surface shared by API and Worker composition roots."""
+
 from .cancellation import cancel_research_run_transition
 from .completion import (
     complete_research_branch,
@@ -24,6 +25,7 @@ from .provider import (
     reserve_provider_call,
 )
 from .publication import publish_final_report, wait_for_conflict_decision
+from .publication_saga import reconcile_one_publication_intent
 from .retry import retry_research_step_transition
 from .state import complete_control_step, reclaim_expired_research_steps
 from .tools import begin_tool_call, complete_tool_call, restore_evidence_handles
@@ -51,6 +53,7 @@ __all__ = [
     "publish_final_report",
     "publish_research_plan",
     "reclaim_expired_research_steps",
+    "reconcile_one_publication_intent",
     "reconcile_provider_call",
     "reserve_provider_call",
     "restore_evidence_handles",

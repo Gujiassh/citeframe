@@ -29,6 +29,7 @@ from ai_pdf_api.services.research.research_worker_provider import (
 )
 from ai_pdf_api.services.research.research_worker_publication import (
     publish_final_report,
+    reconcile_one_publication_intent,
     wait_for_conflict_decision,
 )
 from ai_pdf_api.services.research.research_worker_state import (
@@ -79,13 +80,14 @@ __all__ = [
     "load_completed_branch",
     "load_conflict_resume_state",
     "load_execution_state",
-    "load_step_handler_input",
     "load_frozen_evidence",
     "load_planning_input",
+    "load_step_handler_input",
     "mark_provider_call_sent",
     "publish_final_report",
     "publish_research_plan",
     "reclaim_expired_research_steps",
+    "reconcile_one_publication_intent",
     "reconcile_provider_call",
     "reserve_provider_call",
     "restore_evidence_handles",

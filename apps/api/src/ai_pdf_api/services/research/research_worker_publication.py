@@ -4,18 +4,35 @@ from __future__ import annotations
 from collections.abc import Callable, Sequence
 from datetime import datetime
 
-from sqlalchemy.orm import Session
-
 from ai_pdf_api.services.research import append_research_event
-from ai_pdf_api.services.research.research_prompt_provenance import load_execution_prompt_dtos
+from ai_pdf_api.services.research.research_prompt_provenance import (
+    load_publication_execution_prompt_dtos,
+)
 from ai_pdf_api.services.research.research_worker_lease import _locked_attempt
-from ai_pdf_api.services.storage import delete_object_if_exists, upload_bytes
+from ai_pdf_api.services.storage import (
+    PUBLICATION_ORPHAN_OBSERVATION_SECONDS,
+    delete_object_if_exists,
+    delete_publication_object_if_exists,
+    download_publication_bytes,
+    list_publication_object_keys,
+    upload_bytes,
+    upload_publication_bytes,
+)
+from citeframe_contracts import PublicationResult
 from citeframe_research_persistence.publication import (
     _canonical_final_report,
     _final_commit_state,
+)
+from citeframe_research_persistence.publication import (
     publish_final_report as _publish_final_report,
+)
+from citeframe_research_persistence.publication import (
     wait_for_conflict_decision as _wait_for_conflict_decision,
 )
+from citeframe_research_persistence.publication_saga import (
+    reconcile_one_publication_intent as _reconcile_one_publication_intent,
+)
+from sqlalchemy.orm import Session
 
 
 def publish_final_report(
@@ -25,28 +42,63 @@ def publish_final_report(
     lease_token: str,
     fact_claim_ids: Sequence[str],
     unresolved_claim_ids: Sequence[str],
-    store_bytes: Callable[[str, bytes, str], None] = upload_bytes,
-    cleanup_bytes: Callable[[str], None] = delete_object_if_exists,
+    store_bytes: Callable[[str, bytes, str], None] = upload_publication_bytes,
+    load_bytes: Callable[[str], bytes] = download_publication_bytes,
+    list_keys: Callable[[str], Sequence[str]] = list_publication_object_keys,
+    cleanup_bytes: Callable[[str], None] = delete_publication_object_if_exists,
     committed_session_factory: Callable[[], Session] | None = None,
+    observation_seconds: int = int(PUBLICATION_ORPHAN_OBSERVATION_SECONDS),
     now: datetime | None = None,
-) -> str:
+) -> str | PublicationResult:
     if committed_session_factory is None:
         from ai_pdf_api.db.session import SessionLocal
 
         committed_session_factory = SessionLocal
-    return _publish_final_report(
+    result = _publish_final_report(
         db,
         attempt_id=attempt_id,
         lease_token=lease_token,
         fact_claim_ids=fact_claim_ids,
         unresolved_claim_ids=unresolved_claim_ids,
         store_bytes=store_bytes,
+        load_bytes=load_bytes,
+        list_keys=list_keys,
         cleanup_bytes=cleanup_bytes,
         committed_session_factory=committed_session_factory,
-        prompt_loader=load_execution_prompt_dtos,
+        observation_seconds=observation_seconds,
+        prompt_loader=load_publication_execution_prompt_dtos,
         now=now,
         locked_attempt=_locked_attempt,
         append_event=append_research_event,
+    )
+    return result.artifact_id if result.kind == "committed" else result
+
+
+def reconcile_one_publication_intent(
+    db: Session,
+    *,
+    worker_instance_id: str,
+    store_bytes: Callable[[str, bytes, str], None] = upload_publication_bytes,
+    load_bytes: Callable[[str], bytes] = download_publication_bytes,
+    list_keys: Callable[[str], Sequence[str]] = list_publication_object_keys,
+    cleanup_bytes: Callable[[str], None] = delete_publication_object_if_exists,
+    committed_session_factory: Callable[[], Session] | None = None,
+    observation_seconds: int = int(PUBLICATION_ORPHAN_OBSERVATION_SECONDS),
+) -> bool:
+    if committed_session_factory is None:
+        from ai_pdf_api.db.session import SessionLocal
+
+        committed_session_factory = SessionLocal
+    return _reconcile_one_publication_intent(
+        db,
+        worker_instance_id=worker_instance_id,
+        store_bytes=store_bytes,
+        load_bytes=load_bytes,
+        list_keys=list_keys,
+        cleanup_bytes=cleanup_bytes,
+        committed_session_factory=committed_session_factory,
+        prompt_loader=load_publication_execution_prompt_dtos,
+        observation_seconds=observation_seconds,
     )
 
 
@@ -87,5 +139,6 @@ __all__ = [
     "_canonical_final_report",
     "_final_commit_state",
     "publish_final_report",
+    "reconcile_one_publication_intent",
     "wait_for_conflict_decision",
 ]

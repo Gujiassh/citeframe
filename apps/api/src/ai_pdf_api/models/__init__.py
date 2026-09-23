@@ -86,6 +86,7 @@ from citeframe_persistence.models.research_run import (
     ResearchPlanRevisionAsset,
     ResearchRun,
 )
+from citeframe_persistence.models.research_publication_intent import ResearchPublicationIntent
 from citeframe_persistence.models.research_versions import PromptVersion, WorkflowPromptBinding, WorkflowVersion
 from citeframe_persistence.models.tag import Tag
 from citeframe_persistence.models.user import User
@@ -157,6 +158,7 @@ __all__ = [
     "ResearchPlanRevision",
     "ResearchPlanRevisionAsset",
     "ResearchProviderCall",
+    "ResearchPublicationIntent",
     "ResearchRun",
     "ResearchStep",
     "ResearchStepAttempt",
