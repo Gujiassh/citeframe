@@ -25,8 +25,8 @@ CANDIDATE_FILES = (
     "packages/research-persistence/src/citeframe_research_persistence/__init__.py",
     "packages/research-persistence/src/citeframe_research_persistence/errors.py",
     "packages/research-persistence/src/citeframe_research_persistence/lease.py",
-    "apps/worker/src/ai_pdf_worker/research_runtime_processor.py",
-    "apps/worker/src/ai_pdf_worker/research_runtime_core.py",
+    "apps/worker/src/ai_pdf_worker/research/processor.py",
+    "apps/worker/src/ai_pdf_worker/research/core.py",
     "infra/scripts/run-r15-postgres-admission.py",
 )
 

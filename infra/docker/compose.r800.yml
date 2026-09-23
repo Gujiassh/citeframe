@@ -3,7 +3,9 @@ version: "2.4"
 services:
   provider-stub:
     image: ${AI_PDF_API_IMAGE:-ai-pdf-workspace-api:local}
-    command: ["python", "scripts/provider_r800_stub.py"]
+    command: ["python", "/r800_provider_proofs.py"]
+    volumes:
+      - ../testing/r800_provider_proofs.py:/r800_provider_proofs.py:ro
     restart: unless-stopped
     environment:
       R800_PROVIDER_HOST: 0.0.0.0
@@ -33,6 +35,9 @@ services:
         condition: service_healthy
 
   worker:
+    build:
+      target: evaluation
+    command: ["python", "-m", "ai_pdf_worker.main"]
     environment:
       AI_PDF_OLLAMA_BASE_URL: http://provider-stub:18082
       AI_PDF_OPENAI_API_BASE: http://provider-stub:18082/v1

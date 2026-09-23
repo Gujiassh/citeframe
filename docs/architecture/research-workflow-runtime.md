@@ -247,7 +247,7 @@ Formal model-quality evidence requires the frozen five-round campaign, not a
 single paired directory. Package v5 binds threshold v1 and scorer `r100-v2`.
 
 ```bash
-uv run --project apps/worker python apps/worker/scripts/evaluate_r803_campaign.py \
+uv run --project tools/evaluation python -m citeframe_evaluation.cli.campaign \
   --package docs/evals/r803-evaluation-package-v5.json \
   --campaign-dir docs/evals/artifacts/r803-campaign-YYYYMMDD-vN
 ```
@@ -271,7 +271,7 @@ Worker settings; never add it to the package, command, log, or report. Use a new
 output directory for every execution:
 
 ```bash
-uv run --project apps/worker python apps/worker/scripts/evaluate_r803.py \
+uv run --project tools/evaluation python -m citeframe_evaluation.cli.paired \
   --package docs/evals/r803-evaluation-package-v4.json \
   --output-dir docs/evals/artifacts/r803-YYYYMMDD-vN
 

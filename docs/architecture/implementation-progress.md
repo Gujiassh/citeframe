@@ -17,6 +17,8 @@
 
 ## 2. 当前总状态
 
+2026-09-23 独立目录整理分支状态见 [worker-layout 交付记录](../../specs/v5/worker-layout/plan.md)。该记录只覆盖 `work/research-layout-20260923`；主目录的并行功能实现与最终集成另行验收。
+
 当前项目状态（2026-08-18）：V1-V4、V5-A/B/C/D/F、architecture-hardening 与 PPTX layout/embed preview 已在 main 关闭。产品阶段保持 `internal_preview`；R803 真实模型质量与 M404 用户价值均为 `not_evaluable`。当前唯一执行入口是 `specs/v5/multimodal-agent-product/current-execution-plan.md`，主动 residual 仅包括 ops 真复配和经授权的 V5-E 后置证据。
 
 当前策略与任务入口：`specs/v5/multimodal-agent-product/`。V3/V4 规格、R803 artifact 和 M404 协议继续作为历史合同与后置验收证据。

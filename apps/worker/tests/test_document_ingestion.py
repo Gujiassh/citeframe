@@ -28,22 +28,22 @@ from ai_pdf_api.models import (
     IngestionJob,
 )
 from ai_pdf_api.services.ingestion import process_ingestion_job
-from ai_pdf_worker.document_ingestion import (
+from ai_pdf_worker.ingestion.document_ingestion import (
     DocumentIngestionAdapter,
     delete_document_content,
     parse_markdown_document,
 )
-from ai_pdf_worker.document_markdown import parse_markdown_document as parse_from_markdown_module
-from ai_pdf_worker.pdf_ingestion import PdfIngestionAdapter
+from ai_pdf_worker.ingestion.document_markdown import parse_markdown_document as parse_from_markdown_module
+from ai_pdf_worker.ingestion.pdf_ingestion import PdfIngestionAdapter
 import ai_pdf_worker.main as worker_main
-from ai_pdf_worker.research_executor_contracts import (
+from citeframe_contracts import (
     EvidenceHandle,
     FrozenAsset,
     LoadedEvidence,
     ToolExecutionContext,
 )
-from ai_pdf_worker.research_executor_contracts import ToolPolicyError
-from ai_pdf_worker.research_executor_tools import EvidenceToolRegistry
+from citeframe_contracts import ToolPolicyError
+from ai_pdf_worker.research.tools import EvidenceToolRegistry
 
 MARKDOWN_FIXTURE = """# Intro
 

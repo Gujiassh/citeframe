@@ -1,21 +1,23 @@
 from __future__ import annotations
 
+import os
+from pathlib import Path
 import subprocess
 import sys
 from threading import Barrier, Event, Lock
 from time import monotonic, sleep
 
 import ai_pdf_worker.main as worker_main
-import ai_pdf_worker.research_runtime_handlers as handlers_module
-import ai_pdf_worker.research_runtime_processor as processor_module
+import ai_pdf_worker.research.handlers as handlers_module
+import ai_pdf_worker.research.processor as processor_module
 import pytest
-from ai_pdf_worker.research_runtime_core import ResearchPortError
-from ai_pdf_worker.research_runtime_handlers import (
+from ai_pdf_worker.research.core import ResearchPortError
+from ai_pdf_worker.research.handlers import (
     HUMAN_OWNED_STEP_KINDS,
     PERSISTED_STEP_KINDS,
     SingleAttemptStepDispatcher,
 )
-from ai_pdf_worker.research_runtime_processor import ResearchWorkProcessor
+from ai_pdf_worker.research.processor import ResearchWorkProcessor
 from citeframe_contracts import (
     ApprovedResearchExecution,
     BranchResult,
@@ -587,16 +589,22 @@ def test_research_pool_rejects_serial_production_configuration(monkeypatch: pyte
 
 
 def test_production_runtime_import_does_not_load_langgraph() -> None:
+    root = Path(__file__).resolve().parents[3]
+    source_paths = [root / path for path in (
+        "apps/worker/src", "apps/api/src", "packages/backend-contracts/src",
+        "packages/backend-persistence/src", "packages/research-persistence/src",
+    )]
     completed = subprocess.run(
         [
             sys.executable,
             "-c",
             (
-                "import sys; import ai_pdf_worker.research_runtime, ai_pdf_worker.main; "
+                "import sys; import ai_pdf_worker.research.runtime, ai_pdf_worker.main; "
                 "assert 'langgraph' not in sys.modules; "
-                "assert 'ai_pdf_worker.research_executor_engine' not in sys.modules"
+                "assert 'ai_pdf_worker.research.engine' not in sys.modules"
             ),
         ],
+        env={**os.environ, "PYTHONPATH": os.pathsep.join(map(str, source_paths))},
         check=True,
         text=True,
         capture_output=True,

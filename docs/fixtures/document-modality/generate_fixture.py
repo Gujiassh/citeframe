@@ -41,7 +41,7 @@ def _ensure_worktree_imports() -> None:
             stable_document_block_id,
             text_sha256,
         )
-        from ai_pdf_worker.document_markdown import parse_markdown_document  # noqa: F401
+        from ai_pdf_worker.ingestion.document_markdown import parse_markdown_document  # noqa: F401
     except Exception as error:  # pragma: no cover - import failure is operator-facing
         raise SystemExit(
             "document fixture generator could not import production parser/helpers from "
@@ -58,7 +58,7 @@ def build_fixture(*, source_path: Path = SOURCE) -> dict[str, Any]:
         stable_document_block_id,
         text_sha256,
     )
-    from ai_pdf_worker.document_markdown import parse_markdown_document
+    from ai_pdf_worker.ingestion.document_markdown import parse_markdown_document
 
     source = source_path.read_bytes()
     result = parse_markdown_document(source, mime_type="text/markdown")

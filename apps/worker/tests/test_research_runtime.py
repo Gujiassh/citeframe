@@ -17,7 +17,7 @@ from ai_pdf_api.services.research.research_agent_io_registry import (
     COMPACT_POLICY_VERSION,
     CONTEXT_POLICY_VERSION,
 )
-from ai_pdf_worker.research_executor import (
+from ai_pdf_worker.research.executor import (
     EvidenceHandle,
     FailureDisposition,
     FrozenAsset,
@@ -29,7 +29,7 @@ from ai_pdf_worker.research_executor import (
     StepLease,
     ToolExecutionContext,
 )
-from ai_pdf_worker.research_runtime import (
+from ai_pdf_worker.research.runtime import (
     GenerationResearchAgents,
     LedgeredGeneration,
     ResearchPortError,
@@ -38,7 +38,7 @@ from ai_pdf_worker.research_runtime import (
     SqlResearchLedgerAdapter,
     as_approved_execution,
 )
-from ai_pdf_worker.research_runtime_core import (
+from ai_pdf_worker.research.core import (
     _ApiPort,
     _evidence_handle,
     _persist_step_failure,
@@ -523,7 +523,7 @@ def test_provider_call_reserve_send_reconcile_use_separate_sessions() -> None:
             self.max_output_tokens = max_output_tokens
             return '{"ok":true}'
 
-    from ai_pdf_worker.research_executor import ApprovedResearchExecution
+    from ai_pdf_worker.research.executor import ApprovedResearchExecution
 
     execution = ApprovedResearchExecution(
         "workspace-1", "run-1", "execution-1", "a" * 64, "question", (),
@@ -582,7 +582,7 @@ def test_provider_mark_sent_failure_releases_the_reservation() -> None:
             del max_output_tokens
             raise AssertionError("provider must not be called")
 
-    from ai_pdf_worker.research_executor import ApprovedResearchExecution
+    from ai_pdf_worker.research.executor import ApprovedResearchExecution
 
     execution = ApprovedResearchExecution(
         "workspace-1", "run-1", "execution-1", "a" * 64, "question", (),
@@ -650,7 +650,7 @@ def test_outer_claim_is_reused_without_a_second_lease() -> None:
                 "leaseToken": "lease-2",
             }
 
-    from ai_pdf_worker.research_executor import ApprovedResearchExecution
+    from ai_pdf_worker.research.executor import ApprovedResearchExecution
 
     execution = ApprovedResearchExecution(
         "workspace-1", "run-1", "execution-1", "a" * 64, "question", (),
@@ -918,7 +918,7 @@ def test_api_research_worker_exposes_the_production_runtime_contract() -> None:
 
 
 def test_final_publish_rejects_noncanonical_uppercase_uuid() -> None:
-    from ai_pdf_worker.research_executor import (
+    from ai_pdf_worker.research.executor import (
         ApprovedResearchExecution,
         SynthesisSelection,
     )

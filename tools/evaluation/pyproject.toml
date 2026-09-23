@@ -1,0 +1,35 @@
+[project]
+name = "citeframe-evaluation"
+version = "0.1.0"
+description = "Offline paired evaluation, campaign integrity and Research acceptance tools for Citeframe"
+requires-python = ">=3.12"
+dependencies = ["ai-pdf-worker", "ai-pdf-api", "citeframe-backend-contracts"]
+
+[project.scripts]
+citeframe-evaluate = "citeframe_evaluation.cli.paired:main"
+citeframe-campaign = "citeframe_evaluation.cli.campaign:main"
+citeframe-research-acceptance = "citeframe_evaluation.acceptance.cli:main"
+
+[tool.uv.sources]
+ai-pdf-worker = { path = "../../apps/worker", editable = true }
+ai-pdf-api = { path = "../../apps/api", editable = true }
+citeframe-backend-contracts = { path = "../../packages/backend-contracts", editable = true }
+citeframe-backend-persistence = { path = "../../packages/backend-persistence", editable = true }
+citeframe-research-persistence = { path = "../../packages/research-persistence", editable = true }
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/citeframe_evaluation"]
+
+[dependency-groups]
+dev = ["pytest>=8.4.0"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+markers = [
+  "acceptance: cross-layer or production-workflow acceptance checks",
+  "evaluation: model/evaluation campaign and quality-gate checks",
+]

@@ -21,17 +21,17 @@ from ai_pdf_api.core.research_observability import (
     research_log,
 )
 
-from ai_pdf_worker.audio_ingestion import AudioIngestionAdapter
-from ai_pdf_worker.video_ingestion import VideoIngestionAdapter
-from ai_pdf_worker.document_ingestion import DocumentIngestionAdapter
-from ai_pdf_worker.html_ingestion import HtmlIngestionAdapter
-from ai_pdf_worker.docx_ingestion import DocxIngestionAdapter
-from ai_pdf_worker.image_ingestion import ImageIngestionAdapter
+from ai_pdf_worker.ingestion.audio_ingestion import AudioIngestionAdapter
+from ai_pdf_worker.ingestion.video_ingestion import VideoIngestionAdapter
+from ai_pdf_worker.ingestion.document_ingestion import DocumentIngestionAdapter
+from ai_pdf_worker.ingestion.html_ingestion import HtmlIngestionAdapter
+from ai_pdf_worker.ingestion.docx_ingestion import DocxIngestionAdapter
+from ai_pdf_worker.ingestion.image_ingestion import ImageIngestionAdapter
 from ai_pdf_worker.metrics import WORKER_ACTIVE_JOBS, WORKER_JOBS, start_metrics_server
-from ai_pdf_worker.pdf_ingestion import PdfIngestionAdapter
-from ai_pdf_worker.pptx_ingestion import PptxIngestionAdapter
-from ai_pdf_worker.xlsx_ingestion import XlsxIngestionAdapter
-from ai_pdf_worker.research_runtime import ResearchWorkProcessor, build_default_research_service
+from ai_pdf_worker.ingestion.pdf_ingestion import PdfIngestionAdapter
+from ai_pdf_worker.ingestion.pptx_ingestion import PptxIngestionAdapter
+from ai_pdf_worker.ingestion.xlsx_ingestion import XlsxIngestionAdapter
+from ai_pdf_worker.research.runtime import ResearchWorkProcessor, build_default_research_service
 
 POLL_INTERVAL_SECONDS = 1.0
 RETRY_INITIAL_DELAY_SECONDS = 1.0

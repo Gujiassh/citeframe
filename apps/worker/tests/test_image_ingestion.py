@@ -24,8 +24,8 @@ from ai_pdf_api.models import (
 )
 from ai_pdf_api.services.ingestion import process_ingestion_job
 from ai_pdf_api.services.providers import ModelProviderError
-from ai_pdf_worker.image_ingestion import ImageIngestionAdapter, extract_image_text_with_ocr
-from ai_pdf_worker.ocr import OcrRegionResult, OcrTextResult
+from ai_pdf_worker.ingestion.image_ingestion import ImageIngestionAdapter, extract_image_text_with_ocr
+from ai_pdf_worker.ingestion.ocr import OcrRegionResult, OcrTextResult
 
 REPOSITORY_ROOT = Path(__file__).resolve().parents[3]
 IMAGE_FIXTURE = (
@@ -484,7 +484,7 @@ def test_image_adapter_ingest_fails_closed_on_mismatched_caption_profile_fingerp
 
 def test_image_adapter_rejects_missing_or_empty_caption_profile_fingerprint() -> None:
     from ai_pdf_api.services.providers import ModelProviderError
-    from ai_pdf_worker.image_ingestion import _validate_caption_config
+    from ai_pdf_worker.ingestion.image_ingestion import _validate_caption_config
 
     class Provider:
         provider = "openai"
