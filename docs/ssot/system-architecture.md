@@ -888,3 +888,7 @@ Final adoption and reconciliation lock and recheck the creator membership inside
 ### Issue 27 current-candidate R2 differential scope
 
 The A2 runner now retains raw reports and validates historical invariants plus explicitly approved R2 intent, generation-key, three semantic-identity event UUID and terminal-maintenance deltas. `rawEqual=false` is reported separately from invariant/delta acceptance; unknown differences fail closed. Current candidates execute the production saga with shared frozen Python/SQL time and injected storage capabilities. The field manifest, lifecycle evidence, negative controls and runtime limitations are in `specs/v5/post-v5-optimization/issue27-r2-differential-contract-20260923.md`. Historical artifacts are unchanged. Nullable Step input uses the existing lease-derived hash for both originating/current attempts. Initial Research retry can reload list/detail without an already selected run; this remains a minimal W1 repair.
+
+### Research service-backed recovery acceptance
+
+The isolated PG17/S3/Worker process gate is specified in [issue27 real-service acceptance](../../specs/v5/post-v5-optimization/issue27-real-service-acceptance-20260923.md). It is separate from the historical differential oracle and does not substitute for browser acceptance.

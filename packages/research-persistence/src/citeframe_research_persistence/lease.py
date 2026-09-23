@@ -168,6 +168,8 @@ def _lease_locked_step(
             now=now,
         )
     step.status = "running"
+    step.error_code = None
+    step.error_message = None
     step.current_attempt_number = attempt.attempt_number
     step.state_version += 1
     step.started_at = step.started_at or now
