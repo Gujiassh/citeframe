@@ -28,16 +28,33 @@ def test_policy_uses_real_call_caps_not_cumulative_token_usage(facts):
 
 
 def overlapping(facts):
+    # Synthetic unit inputs only; runtime proofs are captured from received bytes by the test server.
+    from hashlib import sha256
+    from citeframe_evaluation.acceptance.request_proofs import canonical_request
     steps = {s["id"]: s for s in facts["steps"]}
-    candidates = [a for a in facts["attempts"] if steps[a["step_id"]]["step_kind"] == "researcher"
-                  and a["status"] == "succeeded"]
-    for index, a in enumerate(candidates):
+    timeline = {"maxActive": 2, "entries": [], "requestProofs": {"epoch": 1, "entries": []}}
+    for index, a in enumerate(facts["attempts"]):
         a.update(worker_instance_id=f"test-consumer-{index}", started_at="2026-09-24T00:00:00+00:00",
                  finished_at="2026-09-24T00:00:01+00:00")
-    timeline = {"maxActive": 2, "entries": [
-        {"node": "researcher", "sequence": 1, "startedAtNs": 1, "finishedAtNs": 4},
-        {"node": "researcher", "sequence": 2, "startedAtNs": 2, "finishedAtNs": 5},
-    ]}
+    for a in facts["attempts"]:
+        if a["status"] != "succeeded":
+            a.update(started_at="2026-09-23T23:59:58+00:00", finished_at="2026-09-23T23:59:59+00:00")
+    for index, c in enumerate(facts["providerCalls"]):
+        node = steps[c["step_id"]]["step_kind"]
+        body = {"model": c["model"], "input": [{"role": "user", "content": "synthetic-" + c["id"]}],
+                "max_output_tokens": c["reserved_output_tokens"]}
+        digest = canonical_request(node, body)
+        c.update(request_sha256=digest, logical_call_key=node + ":" + digest,
+                 sent_at="2026-09-24T00:00:00+00:00", finished_at="2026-09-24T00:00:01+00:00")
+        attempt = next(a for a in facts["attempts"] if a["id"] == c["attempt_id"])
+        c.update(sent_at=attempt["started_at"], finished_at=attempt["finished_at"])
+        failed = attempt["status"] != "succeeded"
+        raw = json.dumps(body)
+        entry = {"node": node, "sequence": index + 1, "requestSha256": sha256(raw.encode()).hexdigest(),
+                 "startedAtNs": 100 + index, "finishedAtNs": 200 + index}
+        timeline["entries"].append(entry)
+        timeline["requestProofs"]["entries"].append({**entry, "epoch": 1, "rawBody": raw,
+            "path": "/v1/responses", "receivedAtUnixNs": 1790208000500000000 - (2000000000 if failed else 0)})
     return timeline
 
 
@@ -46,7 +63,7 @@ def reclaim_pair(facts):
     attempt = deepcopy(next(a for a in facts["attempts"] if a["step_id"] == step["id"]))
     attempt.update(status="running", attempt_number=1)
     snapshot = next(s for s in facts["snapshots"] if s["id"] == step["execution_snapshot_id"])
-    expected = {"step": deepcopy(step), "snapshot": deepcopy(snapshot), "attempts": [attempt]}
+    expected = {"step": deepcopy(step), "snapshot": deepcopy(snapshot), "snapshotProof": json.loads((Path(__file__).parent / "fixtures/snapshot-proof.json").read_text())["snapshotProof"], "attempts": [attempt]}
     observed = deepcopy(expected)
     observed["attempts"][0]["status"] = "abandoned"
     second = {**attempt, "id": "test-new-attempt", "attempt_number": 2, "status": "succeeded"}
@@ -57,7 +74,8 @@ def reclaim_pair(facts):
 def test_concurrency_requires_raw_overlap_and_distinct_consumers(facts):
     timeline = overlapping(facts)
     assert parallel_passed(parallel_evidence(facts, timeline))
-    timeline["entries"][1].update(startedAtNs=6, finishedAtNs=8)
+    for index, entry in enumerate(timeline["entries"]):
+        entry.update(startedAtNs=index * 10, finishedAtNs=index * 10 + 1)
     assert not parallel_passed(parallel_evidence(facts, timeline))
     timeline = overlapping(facts)
     for a in facts["attempts"]:
@@ -70,7 +88,7 @@ def test_mutation_controls_execute_all_rejections(facts):
     expected, observed = reclaim_pair(facts)
     result = mutation_controls({"facts": facts, "providerTimeline": timeline},
                                {"expected": expected, "observed": observed})
-    assert len(result["checks"]) == 10
+    assert len(result["checks"]) >= 20
     assert all(c["rejected"] for c in result["checks"].values())
 
 

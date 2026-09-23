@@ -231,7 +231,7 @@ def _main_scenario(
     _provider_request(
         "POST",
         "/__r800__/control/configure",
-        payload={"node": "researcher", "failFirst": 1, "delayMs": 150},
+        payload={"node": "researcher", "failFirst": 1, "delayMs": 1500},
     )
     created = _create_run(
         client,
@@ -297,6 +297,7 @@ def _main_scenario(
     ).text
     replay_ids = _event_ids(replay)
     timeline = _provider_request("GET", "/__r800__/control/timeline")
+    timeline["requestProofs"] = _provider_request("GET", "/__r800__/request-proofs")
 
     with session_factory() as db:
         unsupported = db.scalar(
@@ -515,7 +516,9 @@ def _membership_scenario(
         db.delete(membership)
         db.commit()
     denied = client.request("GET", f"/v1/workspaces/{IDS['workspace']}/research-runs/{run['id']}",
-                            actor_id=IDS["member"], expected=(403,))
+                            actor_id=IDS["member"], expected=(404,))
+    assert denied.json()["error"]["code"] == "workspace_not_found"
+    assert "run" not in denied.json() and str(run["id"]) not in denied.text
     processing_error = None
     try:
         processor.process_one()

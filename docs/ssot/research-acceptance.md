@@ -46,3 +46,51 @@ The real membership-removal API refusal and Worker cancellation scenario remains
 Missing/malformed evidence is an error, not an inferred pass. New results contain
 `negativeControls` with this explicit mutation scope. Original schemas, fixture
 IDs and thresholds are unchanged; historical raw results are never overwritten.
+
+## Evidence integrity repair (PR #32)
+
+The 6a830f45 run35897451227 remains failed. Hubble independently reproduced three
+false positives: empty ledger/call collections, a changed snapshot body with an
+unchanged stored hash, and unrelated provider intervals paired with local attempts.
+The corrected gate requires complete planning/execution ledger coverage, per-step
+attempt-number coverage, per-attempt provider/tool counters, unique rows and all
+call-to-ledger/attempt/step/snapshot scope links. Missing evidence fails closed.
+
+Reclaim compares the entire frozen snapshot row and ordered frozen asset/prompt
+rows. It also reconstructs the existing approval hash through the production
+`build_execution_snapshot_hash_payload` and canonical serializer, using the
+persisted revision/decision and frozen execution children. Snapshot policy/body
+fields must match that revision. Snapshot id, timestamps and cost ceilings are
+outside that hash's domain and remain protected by complete before/after equality;
+no stored hash is normalized or re-signed.
+
+The evaluation-only Compose override starts `infra/testing/r800_provider_proofs.py`
+on the existing API image, mounting it read-only. Production images/entry points
+and the historical provider stub are unchanged. This opt-in synthetic-fixture
+server keeps the original wire timeline and adds `/__r800__/request-proofs`, storing
+exact received JSON bytes, route, ticket epoch/sequence and receipt wall time.
+It never records headers. These artifacts contain synthetic prompts/evidence and
+must not be used with real user data or production providers.
+
+The oracle recomputes the raw-wire digest separately from the ledger canonical
+`nodeKey/messages/maxOutputTokens` digest, using actual Responses `input` and
+`max_output_tokens`. It requires one uniquely matching persisted sent call by
+canonical digest, node, model, output limit and receipt within its sent/finished
+window. Each send is used once; repeated retry hashes require unique time windows.
+Every persisted send must be proven. Foreign, missing, duplicate, ambiguous or
+wrong-limit proofs reject the concurrency gate. Overlap must belong to two linked
+researcher requests whose actual attempts have different consumers/branches in
+this run. Original maxActive>=2 remains required.
+
+The bounded researcher delay is1500ms so the existing first503 and one-second retry
+can coexist with a different branch's real request. No runtime cap or polling
+timeout is relaxed. The separate forced-serial project must complete every other
+scenario, retain valid request links and reject concurrency with maxActive=1.
+Membership removal expects exactly404/workspace_not_found with no run payload,
+matching the product's anti-enumeration contract.
+
+Three named Hubble regression tests execute before Docker scenarios in the same
+workflow. Additional controls cover partial row loss, orphan ledgers, missing
+snapshot fields/children, body/hash mismatch and wire-proof tampering. Unit inputs
+are explicitly synthetic; service artifacts are captured from actual received
+requests and persisted rows. Runtime acceptance applies only to its recorded SHA.

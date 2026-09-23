@@ -43,3 +43,20 @@ remain pending until their evidence is produced.
 - Seven Docker harness tests passed; full deployment and serial negative controls pending exact committed SHA.
 - New product defects, if proven by correct orchestration, return to Franklin with narrow ownership rather than changing this lane's business code.
 
+
+## Review repair ledger
+
+- Rejected source:6a830f457d21ba5a6128a93924f91c06df66f5d2; reviewer comment5799938426.
+- Original three counterexample files and CI35897451227 remain unchanged.
+- Repair scope: evidence completeness, frozen snapshot body/hash verification,
+  actual wire-to-ledger-to-attempt linkage; tests, evaluation provider entry point,
+  Compose evaluation override and SSoT. No product scheduling/business contract changes.
+- Runtime also exposed an incorrect403 test expectation (actual anti-enumeration404)
+  and a150ms scenario delay insufficient for real researcher retry overlap. The
+  corrected scenario preserves503/retry and all existing thresholds.
+- Local focused positive/negative tests:16 passed. Full evaluation/architecture suite:
+  132 passed,1 Windows symlink skip; Docker harness7 passed. Same-SHA replay /
+  Docker results will be recorded after the new commit; no forward acceptance claim.
+- Independent owner/reviewer loop remains Descartes→Hubble. Downstream integration:
+  stacked on#26 c2639a0; controller merges only after review. #28/#29/#30 product paths
+  are untouched and keep their separately recorded architecture mapping dependencies.

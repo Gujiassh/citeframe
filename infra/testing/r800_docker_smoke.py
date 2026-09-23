@@ -149,12 +149,17 @@ def main() -> None:
                                            "--", *PRODUCT_PATHS])
         if not args.historical_scenarios_only:
             assert set(product_diff.splitlines()) <= {
+                "infra/docker/compose.r800.yml",
                 "tools/evaluation/src/citeframe_evaluation/acceptance/cli.py",
                 "tools/evaluation/src/citeframe_evaluation/acceptance/scenarios.py",
                 "tools/evaluation/src/citeframe_evaluation/acceptance/drivers.py",
                 "tools/evaluation/src/citeframe_evaluation/acceptance/evidence.py",
                 "tools/evaluation/src/citeframe_evaluation/acceptance/oracles.py",
                 "tools/evaluation/src/citeframe_evaluation/acceptance/controls.py",
+                "tools/evaluation/src/citeframe_evaluation/acceptance/request_proofs.py",
+                "tools/evaluation/src/citeframe_evaluation/acceptance/snapshot_proofs.py",
+                "tools/evaluation/tests/fixtures/snapshot-proof.json",
+                "tools/evaluation/tests/test_acceptance_evidence_links.py",
                 "tools/evaluation/tests/test_r800_research_acceptance.py",
                 "tools/evaluation/tests/test_acceptance_scenario_drivers.py",
                 "tools/evaluation/tests/fixtures/scenario-policy-facts.json",
@@ -162,7 +167,7 @@ def main() -> None:
         (output / "provenance.json").write_text(json.dumps({"productHead": target_head,
             "harnessHead": harness_head, "baselineHead": baseline, "project": project,
             "harnessFiles": {p.name: sha256(p.read_bytes()).hexdigest()
-                             for p in (Path(__file__), harness / "r800_docker_probe.py")}}, indent=2))
+                             for p in (Path(__file__), harness / "r800_docker_probe.py", harness / "r800_provider_proofs.py")}}, indent=2))
         if not args.historical_scenarios_only:
             original_common = run("baseline-common-script", ["git", "show",
                 baseline + ":infra/scripts/compose-common.sh"])
@@ -203,7 +208,10 @@ def main() -> None:
             "ai_pdf", "--dbname", "ai_pdf_workspace", "--no-psqlrc", "-At", "-c", ATTEMPT_TIMELINE_QUERY])
         if args.serial_negative_control:
             assert not scenarios_passed
-            assert scenarios["checks"]["mainCompleted"]["passed"]
+            assert not scenarios["errors"]
+            assert all(check["passed"] for name, check in scenarios["checks"].items() if name != "parallelFanout")
+            assert scenarios["negativeControls"]["checks"]
+            assert not scenarios["checks"]["parallelFanout"]["evidence"]["linkErrors"]
             assert not scenarios["checks"]["parallelFanout"]["passed"]
             assert scenarios["checks"]["parallelFanout"]["evidence"]["maxActive"] == 1
             (output / "serial-negative-control.json").write_text(json.dumps({

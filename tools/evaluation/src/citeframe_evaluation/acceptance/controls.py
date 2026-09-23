@@ -4,6 +4,20 @@ from .oracles import assert_execution_policy, parallel_evidence, parallel_passed
 
 
 def policy_mutations(facts):
+    for missing in ("ledgers", "providerCalls", "toolCalls"):
+        mutated = deepcopy(facts)
+        mutated[missing] = []
+        yield "missing-" + missing, mutated
+    mutated = deepcopy(facts)
+    mutated["ledgers"] = []; mutated["providerCalls"] = []; mutated["toolCalls"] = []
+    yield "all-call-evidence-missing", mutated
+    for name in ("providerCalls", "toolCalls"):
+        mutated = deepcopy(facts)
+        mutated[name].pop()
+        yield "partial-missing-" + name, mutated
+    mutated = deepcopy(facts)
+    mutated["providerCalls"][0]["budget_ledger_id"] = "foreign"
+    yield "orphan-provider-ledger", mutated
     mutated = deepcopy(facts)
     mutated["finals"].append(deepcopy(mutated["finals"][0]))
     yield "duplicate-final", mutated
@@ -44,6 +58,9 @@ def mutation_controls(main, reclaim):
         entry.update(startedAtNs=index * 10, finishedAtNs=index * 10 + 1)
     assert not parallel_passed(parallel_evidence(facts, serial)), "serial_raw_not_rejected"
     results["serial-intervals-with-unchanged-maxActive"] = {"rejected": True}
+    for name, changed in parallel_mutations(timeline):
+        assert not parallel_passed(parallel_evidence(facts, changed)), "negative_control_not_rejected:" + name
+        results[name] = {"rejected": True}
     expected, observed = reclaim["expected"], reclaim["observed"]
     assert reclaim_passed(expected, observed), "positive_reclaim_required"
     changed = deepcopy(observed)
@@ -62,4 +79,39 @@ def mutation_controls(main, reclaim):
     changed["snapshot"]["execution_snapshot_sha256"] = "0" * 64
     assert not reclaim_passed(expected, changed), "snapshot_drift_not_rejected"
     results["snapshot-drift"] = {"rejected": True}
+    for field in ("max_provider_calls", "max_tool_calls", "max_parallel_researchers"):
+        changed = deepcopy(observed)
+        changed["snapshot"][field] += 1000
+        assert not reclaim_passed(expected, changed), "snapshot_body_drift_not_rejected"
+        results["snapshot-body-drift-" + field] = {"rejected": True}
+    changed = deepcopy(observed)
+    del changed["snapshot"]["max_provider_calls"]
+    assert not reclaim_passed(expected, changed), "missing_snapshot_field_not_rejected"
+    results["snapshot-missing-field"] = {"rejected": True}
     return {"scope": "mutated copies of raw runtime facts; no database mutations", "checks": results}
+
+
+def parallel_mutations(timeline):
+    changed = deepcopy(timeline)
+    changed.pop("requestProofs", None)
+    yield "missing-wire-proofs", changed
+    changed = deepcopy(timeline)
+    changed["entries"] = [{"node": "researcher", "sequence": i, "requestSha256": "foreign-request-" + str(i),
+                           "startedAtNs": i, "finishedAtNs": i + 4} for i in (1, 2)]
+    yield "foreign-overlap", changed
+    changed = deepcopy(timeline)
+    changed["requestProofs"]["entries"].append(deepcopy(changed["requestProofs"]["entries"][0]))
+    yield "duplicate-wire-proof", changed
+    changed = deepcopy(timeline)
+    changed["requestProofs"]["entries"].pop()
+    yield "partial-wire-proof", changed
+    changed = deepcopy(timeline)
+    import json
+    from hashlib import sha256
+    proof = next(p for p in changed["requestProofs"]["entries"] if p["node"] == "researcher")
+    body = json.loads(proof["rawBody"])
+    body["max_output_tokens"] += 1
+    proof["rawBody"] = json.dumps(body)
+    proof["requestSha256"] = sha256(proof["rawBody"].encode()).hexdigest()
+    next(e for e in changed["entries"] if e["sequence"] == proof["sequence"])["requestSha256"] = proof["requestSha256"]
+    yield "wrong-wire-output-limit", changed

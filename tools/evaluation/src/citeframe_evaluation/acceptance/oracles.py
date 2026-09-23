@@ -1,27 +1,10 @@
 """Acceptance decisions derived from raw intervals and persisted identity chains."""
 from datetime import datetime
-from itertools import combinations
 
 
 def parallel_evidence(facts, timeline):
-    run = facts["run"]
-    steps = {r["id"]: r for r in facts["steps"]}
-    attempts = [a for a in facts["attempts"] if steps[a["step_id"]]["step_kind"] == "researcher"]
-    pairs = []
-    for a, b in combinations(attempts, 2):
-        sa, sb = steps[a["step_id"]], steps[b["step_id"]]
-        if (a["worker_instance_id"] != b["worker_instance_id"]
-            and sa["branch_key"] != sb["branch_key"] and a["finished_at"] and b["finished_at"]
-            and all(s["run_id"] == run["id"] and s["workspace_id"] == run["workspace_id"] for s in (sa, sb))
-            and all(x["workspace_id"] == run["workspace_id"] for x in (a, b))
-            and max(datetime.fromisoformat(a["started_at"]), datetime.fromisoformat(b["started_at"]))
-                < min(datetime.fromisoformat(a["finished_at"]), datetime.fromisoformat(b["finished_at"]))):
-            pairs.append([a["id"], b["id"]])
-    entries = [e for e in timeline["entries"] if e["node"] == "researcher"]
-    overlaps = [[a["sequence"], b["sequence"]] for a, b in combinations(entries, 2)
-                if max(a["startedAtNs"], b["startedAtNs"]) < min(a["finishedAtNs"], b["finishedAtNs"])]
-    return {"maxActive": timeline["maxActive"], "providerEntries": len(timeline["entries"]),
-            "consumerAttemptPairs": pairs, "providerOverlapPairs": overlaps}
+    from .request_proofs import linked_parallel_evidence
+    return linked_parallel_evidence(facts, timeline)
 
 
 def parallel_passed(evidence):
@@ -30,12 +13,20 @@ def parallel_passed(evidence):
 
 
 def reclaim_passed(expected, facts):
+    from .snapshot_proofs import valid_snapshot
+    try:
+        return _reclaim_passed(expected, facts) and valid_snapshot(expected) and valid_snapshot(facts)
+    except (KeyError, TypeError, ValueError, AssertionError):
+        return False
+
+
+def _reclaim_passed(expected, facts):
     before, after = expected["step"], facts["step"]
     for key in ("id", "run_id", "workspace_id", "execution_snapshot_id", "input_sha256"):
         if before[key] != after[key]:
             return False
     old_snapshot, snapshot = expected["snapshot"], facts["snapshot"]
-    if any(old_snapshot[k] != snapshot[k] for k in ("id", "run_id", "workspace_id", "execution_snapshot_sha256")):
+    if old_snapshot != snapshot or expected.get("snapshotProof") != facts.get("snapshotProof"):
         return False
     if (snapshot["id"] != after["execution_snapshot_id"] or snapshot["run_id"] != after["run_id"]
         or snapshot["workspace_id"] != after["workspace_id"]):
@@ -54,6 +45,13 @@ def reclaim_passed(expected, facts):
 
 
 def assert_execution_policy(facts):
+    try:
+        _assert_execution_policy(facts)
+    except (KeyError, TypeError, ValueError) as error:
+        raise AssertionError("missing_or_invalid_evidence:" + str(error)) from error
+
+
+def _assert_execution_policy(facts):
     """C4 limits calls and per-call context; cumulative tokens are usage only."""
     run = facts["run"]
     assert run["status"] == "completed", "run_not_completed"
@@ -64,6 +62,28 @@ def assert_execution_policy(facts):
     attempts = {a["id"]: a for a in facts["attempts"]}
     snapshots = {s["id"]: s for s in facts["snapshots"]}
     plans = {p["id"]: p for p in facts["plans"]}
+    ledgers = {r["id"]: r for r in facts["ledgers"]}
+    for name in ("steps", "attempts", "snapshots", "plans", "ledgers", "providerCalls", "toolCalls"):
+        assert facts[name], "missing_" + name
+        assert len({r["id"] for r in facts[name]}) == len(facts[name]), "duplicate_" + name
+    assert set(plans) == {s["plan_revision_id"] for s in steps.values() if s["plan_revision_id"]}, "plan_step_coverage"
+    assert set(snapshots) == {s["execution_snapshot_id"] for s in steps.values() if s["execution_snapshot_id"]}, "snapshot_step_coverage"
+    expected_ledgers = {(p, None) for p in plans} | {(None, s) for s in snapshots}
+    actual_ledgers = [(r["plan_revision_id"], r["execution_snapshot_id"]) for r in ledgers.values()]
+    assert len(actual_ledgers) == len(expected_ledgers) and set(actual_ledgers) == expected_ledgers, "ledger_coverage"
+    for s in steps.values():
+        owned = [a for a in attempts.values() if a["step_id"] == s["id"]]
+        assert sorted(a["attempt_number"] for a in owned) == list(range(1, s["current_attempt_number"] + 1)), "step_attempt_coverage"
+    for a in attempts.values():
+        provider = [c for c in facts["providerCalls"] if c["attempt_id"] == a["id"]]
+        tools = [c for c in facts["toolCalls"] if c["attempt_id"] == a["id"]]
+        assert a["provider_call_count"] == sum(c["sent_at"] is not None for c in provider), "attempt_provider_coverage"
+        assert a["tool_call_count"] == len(tools), "attempt_tool_coverage"
+    for c in facts["providerCalls"]:
+        ledger, step = ledgers[c["budget_ledger_id"]], steps[c["step_id"]]
+        assert (ledger["plan_revision_id"], ledger["execution_snapshot_id"]) == (step["plan_revision_id"], step["execution_snapshot_id"]), "call_ledger_scope"
+    for c in facts["toolCalls"]:
+        assert c["execution_snapshot_id"] in snapshots and c["execution_snapshot_id"] == steps[c["step_id"]]["execution_snapshot_id"], "tool_snapshot_scope"
     for name in ("steps", "snapshots", "plans", "ledgers", "providerCalls", "toolCalls", "finals"):
         assert all(r["run_id"] == run["id"] and r["workspace_id"] == run["workspace_id"]
                    for r in facts[name]), "cross_scope_" + name
