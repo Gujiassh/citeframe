@@ -928,3 +928,7 @@ The isolated PG17/S3/Worker process gate is specified in [issue27 real-service a
 ### Research report edition service gate
 
 The stacked feature gate exercises real PostgreSQL first-save/CAS races on two connections, default policy publication and revoked-editor no-write behavior. Scope and API-versus-UI boundaries are recorded in [issue23 real-service acceptance](../../specs/v5/post-v5-optimization/issue23-real-service-acceptance-20260924.md).
+
+### Publication storage deadline admission
+
+Publication child startup and operation share the supervisor's absolute monotonic deadline. Child entry rejects an expired budget before watchdog allocation and rechecks after watchdog startup before invoking the operation. The independent watchdog, exit124,20+2+2-second lifetime budget and30-second orphan observation remain unchanged. This fences observed expiry at admission; it does not retract in-flight remote requests or promise hard real-time scheduling. See [Issue33 contract and narrow differential evidence](../../specs/v5/post-v5-optimization/issue33-storage-deadline-admission-20260924.md).
