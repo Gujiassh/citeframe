@@ -1,0 +1,8 @@
+{
+  "tables": {
+    "research_conflict_turns": {
+      "create_table": "\nCREATE TABLE research_conflict_turns (\n\tstep_id VARCHAR(36) NOT NULL, \n\toperation_number INTEGER NOT NULL, \n\texecution_snapshot_id VARCHAR(36) NOT NULL, \n\tcreated_by_attempt_id VARCHAR(36) NOT NULL, \n\tphase VARCHAR(16) NOT NULL, \n\tstatus VARCHAR(16) NOT NULL, \n\trequest_sha256 VARCHAR(64) NOT NULL, \n\trequest_json JSONB NOT NULL, \n\tresult_sha256 VARCHAR(64), \n\tresult_json JSONB, \n\tPRIMARY KEY (step_id, operation_number), \n\tCONSTRAINT ck_conflict_operation_bound CHECK (operation_number >= 0 AND operation_number < 13), \n\tCONSTRAINT ck_conflict_operation_status CHECK (status IN ('started','succeeded')), \n\tCONSTRAINT ck_conflict_operation_phase CHECK (phase IN ('inspect','search','verify','critic','finish')), \n\tFOREIGN KEY(step_id) REFERENCES research_steps (id), \n\tFOREIGN KEY(execution_snapshot_id) REFERENCES research_execution_snapshots (id), \n\tFOREIGN KEY(created_by_attempt_id) REFERENCES research_step_attempts (id)\n)\n\n",
+      "indexes": []
+    }
+  }
+}

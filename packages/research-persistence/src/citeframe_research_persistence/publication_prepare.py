@@ -28,7 +28,7 @@ from sqlalchemy.orm import Session
 
 from .errors import ResearchError, canonical_json
 from .locks import lock_attempt_chain
-from .publication_render import canonical_final_report
+from .conflict_report import render_final_report
 from .publication_saga_support import (
     MAX_PUBLICATION_BYTES,
     PUBLICATION_CLAIM_SECONDS,
@@ -573,10 +573,8 @@ def _prepare_publication(
             409,
         )
 
-    from .conflict_policy import INVESTIGATION_WORKFLOW_ID
-    from .conflict_report import investigation_report
-    render = (lambda **kwargs: investigation_report(db, run.id, **kwargs)) if snapshot.workflow_version_id == INVESTIGATION_WORKFLOW_ID else canonical_final_report
-    report_bytes = render(
+    report_bytes = render_final_report(
+        db, snapshot,
         fact_claims=[by_id[claim_id] for claim_id in fact_ids],
         unresolved_claims=[by_id[claim_id] for claim_id in unresolved_ids],
     )

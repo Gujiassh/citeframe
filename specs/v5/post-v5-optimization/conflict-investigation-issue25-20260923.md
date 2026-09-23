@@ -1,20 +1,60 @@
 # Issue #25 conflict investigation
 
-## Implementation checkpoint
+## Candidate and dependency
 
-Worktree: `D:/Code/citeframe-conflict-investigation`. Branch: `work/issue25-conflict-investigation`.
-Base: stacked #29, initially `de66244a50a046897f688c2e490e634638237c35`; updating normally to `5bfee6a0f9a7d8466d72b11a961cc5446fa7bca1`. No canonical or architecture checkout writes. The repair1 frozen 1,989-file overlay was verified against embedded input pins and the remote base (only line endings differed) before implementation; overlay content is not a #25 commit.
+- Issue: https://github.com/Gujiassh/citeframe/issues/25
+- Worktree: `D:/Code/citeframe-conflict-investigation`; branch: `work/issue25-conflict-investigation`.
+- Stack: #28 prerequisites → #29 autonomy → #25 investigation. Base is #29 `5bfee6a0f9a7d8466d72b11a961cc5446fa7bca1` (includes #28 `a02dbfbb50826f0a362faa319aa0f1794898fe65`). Local normal merge: `53f66e0`; initial candidate checkpoint: `18f91da`.
+- The initial repair1 1,989-file overlay was verified against embedded recipe pins and remote #29 `de66244`; only line endings differed. Overlay content is upstream input, not part of the #25 feature commits. No canonical or architecture-lane writes.
+- Recipe SHA256: `dad2025355cf034af625f0aec245398197446e7805ec086282f30b6632c895fd`; frozen source manifest: `5bac5ae0b4fc865b8a6c929ae84151906a9e443cf00e3949cc23022b64e915e2`.
 
-The candidate adds frozen workflow v4/Agent IO v3 and an explicit investigator role. Gate operations persist input/result hashes, original sources, inspection conditions, revisions and separate verifier/critic outputs. Each external operation is reserved before dispatch, bounded to three inspections/two supplemental searches; retries replay completed records. Ambiguous external outcomes stop unresolved without redispatch. Gate completion requires a persisted outcome. Historical claims remain original; verified corrections have separate IDs and original/evidence relationships in the investigation journal and report. Unresolved outputs include checked sources, queries, stop reason and gaps.
+## State and persistence contract
 
-The API exposes typed investigation state and Web displays sources, known/unknown conditions, original and corrected conclusions, queries and gaps. Original/user-edited report semantics remain unchanged.
+The candidate adds workflow v4/Agent IO v3 with an explicit investigator role. Existing v2/v3 versions remain frozen. Gate operations persist request/result hashes, original sources, inspection conditions, revisions and separate verifier/critic outputs in `research_conflict_turns`, keyed by step/operation number with snapshot and attempt lineage.
 
-Migration `r2f3a4b5c6d7` follows #23 `q1e2f3a4b5c6`. The p0 installer uses frozen `alembic/release_data/research_v3.json` instead of importing current release defaults; r2 also freezes its v4 seed. Old v2/v3 manifests/readers are retained.
+States are started/succeeded per operation, with phases inspect/search/verify/critic/finish. The Worker allows three inspections and two targeted searches. Persistence caps journal indices, inspections, search count and normalized duplicate queries. A lease reservation precedes dispatch. Completed operations replay; unfinished external operations terminate unresolved without redispatch. Permission, cancellation, budget and frozen-scope guards are reused.
 
-## Evidence and remaining gates
+Corrections retain separate deterministic IDs, original-claim IDs and evidence handles. They must pass the original verifier and combined critic, including other supported findings. Exact source quotes and literal version/environment/time/conditions are required; unavailable conditions remain null. Original claims are not rewritten. The current candidate resolves the complete conflict set together; partially successful revisions are retained as intermediate turn history, while final unresolved output keeps originals and important gaps.
 
-This is an implementation checkpoint, not acceptance. Initial deterministic Worker investigation tests: 11 passed. Initial persistence tests: 8 passed, one cancel fixture setup failure being corrected. Broader API/Worker tests exposed version-default fixture assumptions and Worker prompt projection updates; fixes and reruns are in progress. TypeScript check passed once. Logs, input pins and pre-change manifest are in worktree-local `.local-issue25/` and excluded from commits.
+Preparation and final adoption share a workflow-selected renderer. Adoption checks current journal hashes, frozen source fingerprints, original claim/evidence links, source tool ownership and attempt provenance. Journal tampering after upload prevents artifact adoption and triggers compensation. The Markdown publication envelope remains final-report-v1, selected by frozen workflow; v4 adds original conclusions, verified revisions, source excerpts/conditions, queries, reason and gaps. Historical artifact Claim associations still refer to originals; the API's separate conflictInvestigation field and report appendix carry corrected conclusions. Existing edited-report persistence is untouched.
 
-No paid provider or credential files used. No service listeners found on 3000/8000/5432/9000 and no docker/psql/pg_ctl command available on PATH. Real PostgreSQL, process restart, migrated API/Worker/object-store and visible service-backed UI acceptance remain blocked. Deterministic fixtures do not establish real retrieval quality. CI, independent Critical review and exact-head runtime evidence remain required; PR must stay draft and no merge is authorized.
+## Migration and deployment
 
-Next: incorporate upstream #29 normally, finish persistence/migration/runtime/DTO/UI regression coverage, verify delta scope, publish stacked draft closes #25 and hand to Hubble. Subsequent prerequisite updates must be merged normally and relevant regressions repeated.
+- `p0d1e2f3a4b5` now installs the checked-in v3 JSON release data using reflected SQL tables, independent of runtime publisher defaults. It keeps v3 five-role/autonomy semantics.
+- `r2f3a4b5c6d7` follows q1, creates the journal and installs frozen v4 six-role release data. Downgrade is forward-only to avoid losing investigative history.
+- Deploy #28/#29 dependencies first, run migrations through r2, then deploy matching API/Worker/Web together. Do not deploy a Worker lacking the v4 prompt/IO contract against a new default v4 run.
+- SQLite migration-slice tests compare p0/q1/r2 applied together with p0 followed by q1/r2 in a new process. They compare actual workflow/prompt/hash/schema rows and prohibit invoking the runtime publisher. This does not establish full production PostgreSQL-chain compatibility.
+
+## Verification ledger (2026-09-23)
+
+The deterministic suites use own-worktree PYTHONPATH with the existing Worker virtualenv interpreter; no paid provider or credential files were used. Supplemental retrieval tests inject a local embedding/retrieval fixture, while exercising real frozen-evidence services and ledger writes. Publication tests use production service functions with SQLite and an in-memory object store.
+
+Commands from the worktree:
+
+```powershell
+$root=(Get-Location).Path
+$env:PYTHONPATH=(@("$root/apps/api/src","$root/apps/worker/src") + (Get-ChildItem packages -Directory | ForEach-Object { "$($_.FullName)/src" })) -join ';'
+$env:PYTHONDONTWRITEBYTECODE='1'
+$tests=Get-ChildItem apps/api/tests/test_research*.py | ForEach-Object FullName
+& D:/Code/citeframe/apps/worker/.venv/Scripts/python.exe -m pytest @tests apps/api/tests/test_persistence_boundary.py -q
+$tests=Get-ChildItem apps/worker/tests/test_research*.py | ForEach-Object FullName
+& D:/Code/citeframe/apps/worker/.venv/Scripts/python.exe -m pytest @tests -q
+pnpm --dir apps/web test
+pnpm --dir apps/web exec tsc --noEmit
+pnpm --dir apps/web lint
+pnpm --dir apps/web build
+```
+
+Final broad results: API Research/persistence boundary 275 passed, 1 skipped; Worker Research 107 passed; Web unit tests 140 passed; TypeScript, lint and production build passed. The final rerun includes source-provenance, tamper-compensation and targeted-search ledger cases. Logs are retained locally under `.local-issue25/`; see `docs/evals/issue25-conflict-investigation-20260923.md` for the evidence map.
+
+Browser command: `pnpm --dir apps/web exec playwright test --config ../../.local-issue25/playwright.config.mts --grep Investigation`. Local configuration starts only this worktree on unused port 3305 and launches installed Chrome with an isolated profile. Four mocked-API scenarios passed: resolved source lineage, unresolved gaps, cancelled state, historical no-journal run; reload preserves returned state. Screenshots were visually inspected for source conditions and gaps. This is frontend regression coverage, not real-service or retrieval-quality acceptance. Mock session avatar warnings remain outside #25.
+
+## Acceptance gates
+
+- PASS (deterministic scope): bounded orchestration, source-backed condition checks, verifier/critic requirement, no-new/repeated-query stop, budget stop, replay/ambiguous-outcome behavior, cancellation/permission checkpoint guards, frozen source/tool lineage, migration-slice restart, report adoption and post-upload tamper compensation.
+- PASS (frontend fixture scope): sources, original/corrected conclusions, queries, unknown conditions, gaps, historical absence and reload; tsc/lint/build.
+- BLOCKED: no local PostgreSQL/docker/psql/pg_ctl available and no live API/Worker/object-store services configured for this lane. Full database migration chain, service process restart and a visible service-backed end-to-end walkthrough remain unverified.
+- BLOCKED: real provider/retrieval-quality acceptance has no service/fee authorization. Deterministic fixtures do not demonstrate quality improvement.
+- PENDING: remote CI, independent Hubble Critical review and any further upstream #29 delta regression.
+
+The PR stays draft. No merge, release acceptance or completion of issue #25 is claimed. Subsequent #29 changes must be merged normally with the feature delta preserved.

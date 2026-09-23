@@ -23,9 +23,10 @@ def submit_policy_decision(db, run, decision, *, action, now):
 
 def decision_origin_is_valid(decision, workflow_version_id):
     from .autonomy import AUTONOMOUS_WORKFLOW_ID
+    from .conflict_policy import INVESTIGATION_WORKFLOW_ID
     if decision.decision_origin == "human":
         return bool(decision.decided_by_user_id)
     return (decision.decision_origin == "policy"
-            and workflow_version_id == AUTONOMOUS_WORKFLOW_ID
+            and workflow_version_id in {AUTONOMOUS_WORKFLOW_ID, INVESTIGATION_WORKFLOW_ID}
             and decision.decided_by_user_id is None
             and decision.comment_text == "research-autonomy-v1")

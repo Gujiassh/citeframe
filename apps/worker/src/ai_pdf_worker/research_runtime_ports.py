@@ -258,6 +258,9 @@ class SqlResearchLedgerAdapter(_ApiPort, ResearchLedger):
     def wait_for_conflict_decision(self, lease: StepLease, conflicts: Sequence[str]) -> None:
         self._call("wait_for_conflict_decision", write=True, attempt_id=lease.attempt_id, lease_token=lease.lease_token, conflict_claim_ids=tuple(conflicts), now=_now())
 
+    def investigation_outcome(self, run_id):
+        return self._call("investigation_outcome", run_id=run_id)
+
     def complete_synthesis(self, lease: StepLease, selection: SynthesisSelection) -> None:
         self._call("complete_research_synthesis", write=True, attempt_id=lease.attempt_id, lease_token=lease.lease_token, fact_claim_ids=selection.fact_claim_ids, unresolved_claim_ids=selection.unresolved_claim_ids, now=_now())
 

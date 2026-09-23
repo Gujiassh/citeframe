@@ -376,6 +376,14 @@ class SingleAttemptStepDispatcher:
             if claim.verification_status == "supported"
             and claim.conflict_status == "resolved_unresolved"
         ]
+        if execution.workflow_version_id == INVESTIGATION_WORKFLOW_ID:
+            outcome = self._ledger.investigation_outcome(execution.run_id)
+            if outcome is not None:
+                # Retain all supported findings and investigative gaps when the
+                # bounded investigation consumed the remaining provider budget.
+                selection = SynthesisSelection(tuple(c.id for c in publishable), tuple(c.id for c in unresolved))
+                self._ledger.complete_synthesis(lease, selection)
+                return "success", 0
         try:
             selection = agents.synthesizer(
                 execution.question,

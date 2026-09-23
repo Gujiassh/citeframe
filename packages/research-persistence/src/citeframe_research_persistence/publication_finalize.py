@@ -37,7 +37,7 @@ from .membership import finalize_cancel_if_idle
 from .automatic_decisions import decision_origin_is_valid
 from .publication_adoption import lock_creator_membership, tool_attempt_is_replayable
 from .publication_prepare import _commit_phase
-from .publication_render import canonical_final_report
+from .conflict_report import render_final_report
 from .publication_saga_support import (
     _COMPENSATION_SWEEP_PENDING,
     PUBLICATION_IDLE_SWEEP_SECONDS,
@@ -896,14 +896,20 @@ def _finalize(
             and by_id[item].conflict_status == "resolved_unresolved"
             for item in unresolved_ids
         )
-        frozen_report_matches_claims = bool(
-            claims_valid
-            and canonical_final_report(
-                fact_claims=[by_id[item] for item in fact_ids],
-                unresolved_claims=[by_id[item] for item in unresolved_ids],
+        try:
+            frozen_report_matches_claims = bool(
+                claims_valid
+                and render_final_report(
+                    db, snapshot,
+                    fact_claims=[by_id[item] for item in fact_ids],
+                    unresolved_claims=[by_id[item] for item in unresolved_ids],
+                )
+                == bytes(intent.payload_bytes)
             )
-            == bytes(intent.payload_bytes)
-        )
+        except ResearchError as error:
+            if error.code != "research_state_conflict":
+                raise
+            frozen_report_matches_claims = False
         synthesizer = db.scalar(
             select(ResearchStep)
             .where(

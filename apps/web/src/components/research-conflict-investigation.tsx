@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import type { ConflictInvestigation } from "@/lib/research/types";
 import { useTranslation } from "@/lib/i18n-context";
 
@@ -11,6 +12,7 @@ const labels = {
 export function ResearchConflictInvestigation({ investigation }: { investigation: ConflictInvestigation | null | undefined }) {
   const { locale } = useTranslation();
   const copy = labels[locale];
+  const [sourcesOpen, setSourcesOpen] = useState(false);
   if (!investigation) return null;
   return (
     <section className="border-t border-border py-5" aria-label={copy.title}>
@@ -25,10 +27,10 @@ export function ResearchConflictInvestigation({ investigation }: { investigation
         <h5 className="font-medium">{copy.revisions}</h5>
         <ul className="mt-2 space-y-2">{investigation.revisions.map(claim => <li key={claim.id}>
           <p>{claim.text}</p><p className="text-zinc-500">{copy.lineage}: {claim.originalClaimIds.join(", ")}</p>
-          <p>{claim.evidenceHandleIds.map(id => <a className="mr-2 underline" key={id} href={`#investigation-source-${id}`}>{id}</a>)}</p>
+          <p>{claim.evidenceHandleIds.map(id => <a className="mr-2 underline" key={id} onClick={() => setSourcesOpen(true)} href={`#investigation-source-${id}`}>{id}</a>)}</p>
         </li>)}</ul>
       </div> : null}
-      <details className="mt-3 text-xs">
+      <details className="mt-3 text-xs" open={sourcesOpen} onToggle={event => setSourcesOpen(event.currentTarget.open)}>
         <summary>{copy.sources}</summary>
         <ul className="mt-2 space-y-3">{investigation.sources.map(source => {
           const conditions = investigation.inspections.find(item => item.evidenceHandleId === source.id);

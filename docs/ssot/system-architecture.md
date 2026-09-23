@@ -892,3 +892,14 @@ Adaptive model turns are persisted under a bounded step/turn key, with frozen ex
 ## Publication adoption authorization (2026-09-23)
 
 Final adoption and reconciliation lock and recheck the creator membership inside the commit transaction, after the Run/Step/Attempt/intent chain. Revocation triggers cancellation and compensating cleanup without publishing a final artifact. Successful evidence from a terminated prior attempt remains reusable only within the same Step, frozen input and execution snapshot. See `specs/v5/post-v5-optimization/issue27-adoption-repair-20260923.md` for the test scope and pending PostgreSQL/runtime gates.
+
+
+## Conflict investigation candidate (issue #25, workflow v4)
+
+Workflow `40000000-0000-4000-8000-000000000001` adds the frozen investigator role and Agent IO `research-agent-results-v3`. The v2/v3 release readers and prompt bindings remain version-selected. Migration p0 installs a checked-in historical v3 seed; r2 installs the v4 seed and `research_conflict_turns` after q1.
+
+The Worker orchestrates bounded investigation at the conflict decision gate. The research-persistence package owns the lease-guarded write-once journal, frozen source validation, and report projection. Each external inspect/search/verify/critic operation has a reservation and immutable result hash; an ambiguous prior operation is not dispatched again. Completed operations replay across attempts. The loop allows three inspections and two distinct supplemental queries, uses frozen authorized assets and the existing provider/tool budget ledger, and stops unresolved on insufficient evidence, duplicate queries, no new source content, budget exhaustion or ambiguous outcomes.
+
+Original ResearchClaim rows retain their text and original evidence relationships. The journal stores separate deterministic correction IDs, original-claim IDs, evidence handles and verifier/critic results. Final report preparation and adoption use the same workflow-selected renderer and revalidate journal hashes plus source/claim/tool provenance. Existing `final-report-v1` is the Markdown publication envelope; workflow v4 selects the investigation appendix. Existing artifact Claim associations continue to describe historical originals; corrected conclusions and their status are exposed separately through `conflictInvestigation` and the report appendix. User report edits do not mutate the original report or journal.
+
+The investigation currently resolves the complete conflicted set together: all revisions must pass verification and the combined critic must return no conflict. Otherwise the final report retains the unresolved originals and gaps. Service-backed PostgreSQL/Worker/Web acceptance and independent Critical review are still required. See `specs/v5/post-v5-optimization/conflict-investigation-issue25-20260923.md` for evidence scope and deployment gates.

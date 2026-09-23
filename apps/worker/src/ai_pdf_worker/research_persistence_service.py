@@ -4,7 +4,7 @@ from __future__ import annotations
 from ai_pdf_api.services.research.research_auto_progress import auto_start_plan
 
 from citeframe_research_persistence.adaptive_turns import adaptive_turn
-from citeframe_research_persistence.conflict_investigation import conflict_turn
+from citeframe_research_persistence.conflict_investigation import conflict_turn, investigation_outcome
 
 from types import SimpleNamespace
 
@@ -140,6 +140,7 @@ def build_worker_research_service():
     return SimpleNamespace(
         adaptive_turn=adaptive_turn,
         conflict_turn=conflict_turn,
+        investigation_outcome=investigation_outcome,
         begin_tool_call=tools.begin_tool_call,
         cancel_provider_reservation=provider.cancel_provider_reservation,
         claim_next_research_step=lease.claim_next_research_step,
