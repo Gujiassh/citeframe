@@ -57,3 +57,12 @@ SHA256SUMS 与 campaign 目录保持原样。新代码的 implementation/closure
 
 [旧新文件映射](../../specs/v5/worker-layout/file-mapping.json) 与
 [集成/验收记录](../../specs/v5/worker-layout/plan.md) 是本次迁移交付入口。
+
+### Deployment runtime evidence
+
+The fixed-82ec portable PostgreSQL/S3 and visible report/PDF/history path has passed
+independent review. The distinct R800 evaluation-image → production backup/restore
+script → ordinary Compose Worker-consumption gate is exercised by
+`.github/workflows/r800-deployment.yml` and the external harness under `infra/testing/`.
+Product source and harness source SHAs are recorded separately. See the worker-layout
+plan and PR #26 for results and remaining acceptance boundaries.

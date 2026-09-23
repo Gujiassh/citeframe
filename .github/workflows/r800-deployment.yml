@@ -1,0 +1,55 @@
+name: R800 deployment script smoke
+
+on:
+  pull_request:
+    paths:
+      - 'infra/testing/r800_docker_*.py'
+      - 'infra/testing/test_r800_docker_smoke.py'
+      - '.github/workflows/r800-deployment.yml'
+      - 'infra/docker/**'
+      - 'infra/scripts/*deployment.sh'
+      - 'tools/evaluation/**'
+      - 'apps/worker/**'
+
+permissions:
+  contents: read
+
+jobs:
+  r800-deployment:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          path: harness
+          fetch-depth: 0
+      - uses: actions/checkout@v4
+        with:
+          ref: 82ecb8149831c9ab148291778598b251ac6558fd
+          path: product
+          fetch-depth: 0
+      - name: Use the runner's existing Compose v2 through the scripts' CLI name
+        run: |
+          docker version
+          docker compose version
+          mkdir -p "$RUNNER_TEMP/r800-bin"
+          printf '#!/usr/bin/env bash\nexec docker compose "$@"\n' > "$RUNNER_TEMP/r800-bin/docker-compose"
+          chmod +x "$RUNNER_TEMP/r800-bin/docker-compose"
+          echo "$RUNNER_TEMP/r800-bin" >> "$GITHUB_PATH"
+      - name: Fixed product SHA with separately versioned external harness
+        run: |
+          python3 -m unittest discover -s harness/infra/testing -p test_r800_docker_smoke.py -v
+          python3 harness/infra/testing/r800_docker_smoke.py --source product --output "$RUNNER_TEMP/r800-evidence"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: r800-deployment-${{ github.event.pull_request.head.sha }}
+          retention-days: 7
+          path: |
+            ${{ runner.temp }}/r800-evidence/*.json
+            ${{ runner.temp }}/r800-evidence/*.out
+            ${{ runner.temp }}/r800-evidence/*.err
+            ${{ runner.temp }}/r800-evidence/*.txt
+            ${{ runner.temp }}/r800-evidence/backup/SHA256SUMS
+            ${{ runner.temp }}/r800-evidence/backup/manifest.env

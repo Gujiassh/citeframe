@@ -143,3 +143,39 @@ apps/worker/tests/test_architecture_boundaries.py -q --tb=short` passed with
 **122 passed, 1 skipped** (Windows directory-symlink privilege); the existing
 Starlette deprecation warning remains. The controlled-clock parity test covers all
 24 outputs in each timing mode. Remote CI must rerun the previously skipped gates.
+
+## Remaining deployment-script runtime gate (2026-09-24)
+
+Independent review closed the fixed `82ecb8149831c9ab148291778598b251ac6558fd`
+portable PostgreSQL/S3 restore, new dual-Worker workload and visible report/PDF/history
+checks. Its live DB/object checks and independent Chrome walkthrough are recorded
+in PR #26. MinIO/Docker script execution was not part of that portable result.
+
+The remaining gate covers the changed evaluation image/Compose/CLI boundary as
+consumed by the original deployment backup and restore scripts. A separate
+`R800 deployment script smoke` CI workflow now uses an existing GitHub-hosted
+Docker runner; it makes no local process-policy or system changes. It checks out
+fixed product SHA `82ecb814` separately from the new, explicitly hashed harness
+commit and asserts equality of product/package/image/script inputs against the
+harness commit. New harness files are not attributed to the old SHA.
+
+`infra/testing/r800_docker_smoke.py` creates one disposable named Compose project,
+uses the repository's pinned PostgreSQL/MinIO/mc images, builds the actual images,
+executes migration and evaluation seed/run-scenarios/snapshot/verify entry points,
+and calls unmodified `backup-deployment.sh` / `restore-deployment.sh`. It inspects
+the normally started Worker command and PID 1, then submits a new API task and
+polls HTTP without a processor in the probe. Persisted successful attempts must
+match that Worker, and the readable final artifact bytes must match the DB hash.
+Original backup object bytes are compared with live restored S3.
+
+The existing acceptance scenarios use their own in-process processor; that phase
+is recorded only as CLI/scenario evidence. Post-restore consumption is a separate
+HTTP-only probe of the daemon created by the original script's normal Compose up.
+
+CI uploads redacted command/config/image evidence, logs, snapshots, verification,
+object hashes, new-task result and cleanup checks. Secret env files, DB dumps and
+raw object bytes are excluded from uploaded artifacts. This is a bounded
+engineering smoke, not model-quality, vendor-matrix or combined-feature acceptance.
+Local negative controls cover worker identity/status, no in-process polling,
+redaction and ephemeral-port allocation. Actual Docker results remain pending
+until the new CI job runs; no merge is authorized here.
