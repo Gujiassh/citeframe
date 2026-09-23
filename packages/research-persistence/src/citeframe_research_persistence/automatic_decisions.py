@@ -19,3 +19,13 @@ def submit_policy_decision(db, run, decision, *, action, now):
               "inputArtifactSha256": decision.input_artifact_sha256, "action": action,
               "actorUserId": None, "decisionOrigin": "policy", "policyId": "research-autonomy-v1", "decisionStateVersion": decision.state_version,
               "runStateVersion": run.state_version}, now=now)
+
+
+def decision_origin_is_valid(decision, workflow_version_id):
+    from .autonomy import AUTONOMOUS_WORKFLOW_ID
+    if decision.decision_origin == "human":
+        return bool(decision.decided_by_user_id)
+    return (decision.decision_origin == "policy"
+            and workflow_version_id == AUTONOMOUS_WORKFLOW_ID
+            and decision.decided_by_user_id is None
+            and decision.comment_text == "research-autonomy-v1")

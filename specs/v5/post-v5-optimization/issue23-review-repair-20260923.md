@@ -123,3 +123,14 @@ For editor browser tests, use cwd `apps/web`, set `PLAYWRIGHT_START_WEB=1` and `
 - Controller approval and publication of the scoped prerequisite PR/base SHA, followed by feature PR integration. A locally assembled source tree is not a published dependency.
 - Real PostgreSQL full migration chain, multi-session save/lease/revocation races, process restart, and actual migrated API/object-store/Worker/Web user walkthrough. No listeners were found on local 3000/8000/5432/9000 during the repair check. No shared service was started or migrated.
 - Paid provider/retrieval quality acceptance requires explicit runtime and budget approval. Fixture tests do not establish recall improvements.
+
+
+## Published stack follow-up (2026-09-23)
+
+PR #29 now integrates prerequisite adoption repair a02dbfbb by a normal merge. Final conflict publication accepts policy provenance only for frozen autonomous v3 with null human actor and the recorded policy identifier; historical human provenance remains valid. Four policy adoption tests cover success, forged actor, unknown policy and historical-workflow rejection.
+
+The historical R803 evaluator incorrectly imported the moving production Agent IO version constant after production switched to v2. It now uses the immutable V1_REGISTRY version paired with its existing frozen workflow v2 prompts and schemas. Historical artifacts, fixture text and binding hashes are unchanged. Local isolated evaluation: 101 passed / 1 skipped; this is frozen-evidence evaluation, not real retrieval recall or paid provider evidence.
+
+API CI now installs the actual Web parser dependency for production-serializer-to-parser tests. The two new metadata delta fixtures retain their pinned hashes; each hash check restores its original LF/CRLF serialization across Git checkout platforms. Image/document round-trip tests target their named migration revisions, while whole-chain downgrade still asserts the new adaptive forward-only safety gate. PostgreSQL execution remains a CI/runtime gate; no live local PG results are claimed.
+
+Initial PR CI exposed additional A2 harness clock/storage/version compatibility work. That work is being repaired in the prerequisite branch and must be integrated into this stack before acceptance. No merge approval.

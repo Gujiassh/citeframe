@@ -534,7 +534,7 @@ def test_image_enable_migration_round_trip() -> None:
         command.upgrade(config, IMAGE_ENABLE_PREVIOUS_HEAD)
         with create_engine(database_url).connect() as connection:
             assert connection.scalar(text("SELECT enabled FROM asset_types WHERE kind='image'")) is False
-        command.upgrade(config, "head")
+        command.upgrade(config, "a3c5e7f9b1d4")
         with create_engine(database_url).connect() as connection:
             assert connection.scalar(text("SELECT enabled FROM asset_types WHERE kind='image'")) is True
         command.downgrade(config, IMAGE_ENABLE_PREVIOUS_HEAD)
@@ -586,7 +586,7 @@ def test_postgres_asset_migration_preserves_legacy_evidence_contract() -> None:
         source_snapshot = _payload_snapshot(source_url)
         _dump_and_restore(source_url, restored_url)
         assert _payload_snapshot(restored_url) == source_snapshot
-        with pytest.raises(RuntimeError, match="irreversible"):
+        with pytest.raises(RuntimeError, match="Adaptive checkpoints cannot be dropped"):
             command.downgrade(config, LEGACY_HEAD)
     finally:
         settings.database_url = original_url
@@ -696,7 +696,7 @@ def test_document_modality_migration_round_trip() -> None:
             assert connection.scalar(
                 text("SELECT COUNT(*) FROM asset_types WHERE kind='document'")
             ) == 0
-        command.upgrade(config, "head")
+        command.upgrade(config, "f9a1b2c3d4e5")
         with create_engine(database_url).connect() as connection:
             assert connection.execute(
                 text(
@@ -742,7 +742,7 @@ def test_document_modality_migration_round_trip() -> None:
                 text("SELECT to_regclass('document_locator_details')")
             ) is None
         # Re-upgrade and refuse populated document modality downgrade.
-        command.upgrade(config, "head")
+        command.upgrade(config, "f9a1b2c3d4e5")
         with create_engine(database_url).begin() as connection:
             user_id = str(uuid4())
             workspace_id = str(uuid4())
