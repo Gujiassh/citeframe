@@ -32,7 +32,7 @@ infrastructure are frozen before any further paid provider run.
 
 Threshold SHA-256 is bound into package v5. Package/threshold/scorer implementation
 SHA, Quick/Research prompt-binding hashes, a deterministic recursive AST import closure rooted at
-`ai_pdf_worker.r803_evaluation_campaign` (exact sorted path→SHA map + digest),
+`citeframe_evaluation.campaign` (exact sorted path→SHA map + digest),
 provider-profile fingerprint, and the planned five-round order are frozen into
 `campaign-plan.json` before the first provider call of a formal campaign. Formal
 evidence requires `provider=None` so the runner uses the configured frozen provider;
@@ -138,7 +138,7 @@ logical call key, and raw output SHA-256.
 ## Campaign Runner
 
 ```bash
-uv run --project apps/worker python apps/worker/scripts/evaluate_r803_campaign.py \
+uv run --project tools/evaluation python -m citeframe_evaluation.cli.campaign \
   --package docs/evals/r803-evaluation-package-v5.json \
   --campaign-dir docs/evals/artifacts/r803-campaign-YYYYMMDD-vN
 ```

@@ -2,6 +2,10 @@
 
 后台任务消费者入口。
 
+源码入口为 `ai_pdf_worker.main`；`ingestion/` 承载模态解析和摄取 adapter，`research/` 承载运行时、handler、模型角色、Evidence 工具与持久化/provider adapter。目录合同见 [Worker SSoT](../../docs/ssot/worker-layout.md)。
+
+离线评测与 Research 确定性验收通过 [tools/evaluation](../../tools/evaluation/README.md) 独立安装和运行，不随生产 Worker 包分发。
+
 当前状态：
 - 轮询持久化的 `ingestion_jobs` 队列
 - 生产 registry 已消费 PDF 和 Image `ingest`；PDF 将页面 layout/OCR/表格/图表/页内图片拆成类型化 ContentUnit，Image 将 canonical PNG、OCR/caption 区域拆成类型化 ContentUnit 并写入 embedding
@@ -20,7 +24,7 @@
 本地启动：
 
 ```bash
-cd /home/cc/code/citeframe
+cd <repository-root>
 AI_PDF_EMBEDDING_PROVIDER=ollama AI_PDF_EMBEDDING_MODEL=qwen3-embedding:0.6b uv run --python 3.12 --project apps/worker python -m ai_pdf_worker.main
 ```
 

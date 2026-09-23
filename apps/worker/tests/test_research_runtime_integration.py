@@ -22,11 +22,11 @@ from ai_pdf_api.core.settings import settings
 from ai_pdf_api.services import research_worker
 from ai_pdf_api.services.capabilities import current_execution_profile_fingerprint
 from ai_pdf_api.services.research.research_constants import DATA_BOUNDARY_POLICY, PRICING_VERSION
-from ai_pdf_worker.research_executor import (
+from ai_pdf_worker.research.executor import (
     ApprovedResearchExecution,
     FrozenAsset,
 )
-from ai_pdf_worker.research_runtime import (
+from ai_pdf_worker.research.runtime import (
     LedgeredGeneration,
     ResearchWorkProcessor,
     SqlResearchLedgerAdapter,

@@ -10,7 +10,7 @@ import pytest
 from PIL import Image
 
 from ai_pdf_api.modalities.ingestion import IngestionError
-from ai_pdf_worker.image import (
+from ai_pdf_worker.ingestion.image import (
     EXIF_ORIENTATION_TAG,
     MAX_IMAGE_PIXELS,
     _validate_decoded_header,

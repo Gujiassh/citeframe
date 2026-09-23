@@ -37,8 +37,8 @@ CANDIDATE_FILES = (
     L_BUDGET_SCENARIO,
     ROOT / "infra/scripts/r2_scenario_l_worker.py",
     ROOT / "packages/research-persistence/src/citeframe_research_persistence/lease.py",
-    ROOT / "apps/worker/src/ai_pdf_worker/research_runtime_processor.py",
-    ROOT / "apps/worker/src/ai_pdf_worker/research_persistence_service.py",
+    ROOT / "apps/worker/src/ai_pdf_worker/research/processor.py",
+    ROOT / "apps/worker/src/ai_pdf_worker/research/persistence.py",
 )
 SCENARIOS = (
     "identity_probe",

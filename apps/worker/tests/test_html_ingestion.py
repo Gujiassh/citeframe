@@ -26,8 +26,8 @@ from ai_pdf_api.models import (
     HtmlLocatorDetail,
     HtmlNormalizedContent,
 )
-from ai_pdf_worker.html_ingestion import HtmlIngestionAdapter
-from ai_pdf_worker.html_parse import parse_html_document
+from ai_pdf_worker.ingestion.html_ingestion import HtmlIngestionAdapter
+from ai_pdf_worker.ingestion.html_parse import parse_html_document
 
 HTML_FIXTURE = """<!DOCTYPE html>
 <html>

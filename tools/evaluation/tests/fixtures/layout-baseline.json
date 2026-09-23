@@ -1,0 +1,2734 @@
+[
+  {
+    "case": "r100-compare-rise-drop",
+    "execution": {
+      "calls": [
+        {
+          "attempt_number": 1,
+          "input_tokens": 10,
+          "logical_call_key": "r100-compare-rise-drop:quick:0:quick",
+          "node_key": "quick",
+          "output_tokens": 5,
+          "status": "succeeded",
+          "usage_final": true
+        }
+      ],
+      "case_key": "r100-compare-rise-drop",
+      "conflict_detected": true,
+      "conflict_resolution": null,
+      "evidence_ids": [
+        "answer-pdf-chart",
+        "answer-image-trend"
+      ],
+      "failure_code": null,
+      "mode": "quick",
+      "observed_claims": [
+        {
+          "conflicted": true,
+          "evidence_ids": [
+            "answer-pdf-chart"
+          ],
+          "text": "The PDF trend rises after the third point."
+        },
+        {
+          "conflicted": true,
+          "evidence_ids": [
+            "answer-image-trend"
+          ],
+          "text": "The image says Release 4 begins the sustained drop."
+        }
+      ],
+      "observed_disposition": "answer",
+      "output": "The PDF trend rises after the third point, while the image says Release 4 begins the sustained drop.",
+      "parallel_speedup": null
+    },
+    "mode": "quick",
+    "package": "r803-evaluation-package-v4.json",
+    "score": {
+      "caseKey": "r100-compare-rise-drop",
+      "caseType": "comparison",
+      "claimSupportRate": {
+        "notEvaluableReason": null,
+        "sampleCount": 2,
+        "value": 1.0
+      },
+      "claims": [
+        {
+          "claimKey": "pdf-rise",
+          "conflictResult": "detected",
+          "expectedEvidenceCount": 1,
+          "failureCode": null,
+          "locatorResult": "accurate",
+          "observedEvidenceCount": 1,
+          "supportResult": "supported"
+        },
+        {
+          "claimKey": "image-drop",
+          "conflictResult": "detected",
+          "expectedEvidenceCount": 1,
+          "failureCode": null,
+          "locatorResult": "accurate",
+          "observedEvidenceCount": 1,
+          "supportResult": "supported"
+        }
+      ],
+      "conflictDetectionRate": {
+        "notEvaluableReason": null,
+        "sampleCount": 1,
+        "value": 1.0
+      },
+      "cost": {
+        "amountMicros": 0,
+        "currency": "USD"
+      },
+      "evidencePrecision": {
+        "notEvaluableReason": null,
+        "sampleCount": 1,
+        "value": 1.0
+      },
+      "evidenceRecall": {
+        "notEvaluableReason": null,
+        "sampleCount": 1,
+        "value": 1.0
+      },
+      "expectedDisposition": "answer",
+      "failureCode": null,
+      "humanInterventionCount": 0,
+      "humanWaitMs": 0,
+      "locatorAccuracy": {
+        "notEvaluableReason": null,
+        "sampleCount": 1,
+        "value": 1.0
+      },
+      "observedDisposition": "answer",
+      "providerCalls": 1,
+      "refusalCorrectness": {
+        "notEvaluableReason": "not_refusal_case",
+        "sampleCount": 0,
+        "value": null
+      },
+      "unsupportedClaimCount": 0
+    }
+  },
+  {
+    "case": "r100-compare-rise-drop",
+    "execution": {
+      "calls": [
+        {
+          "attempt_number": 1,
+          "input_tokens": 10,
+          "logical_call_key": "r100-compare-rise-drop:planner:0:planner",
+          "node_key": "planner",
+          "output_tokens": 5,
+          "status": "succeeded",
+          "usage_final": true
+        },
+        {
+          "attempt_number": 1,
+          "input_tokens": 10,
+          "logical_call_key": "r100-compare-rise-drop:researcher:0:researcher",
+          "node_key": "researcher",
+          "output_tokens": 5,
+          "status": "succeeded",
+          "usage_final": true
+        },
+        {
+          "attempt_number": 1,
+          "input_tokens": 10,
+          "logical_call_key": "r100-compare-rise-drop:verifier:0:verifier",
+          "node_key": "verifier",
+          "output_tokens": 5,
+          "status": "succeeded",
+          "usage_final": true
+        },
+        {
+          "attempt_number": 1,
+          "input_tokens": 10,
+          "logical_call_key": "r100-compare-rise-drop:critic:0:critic",
+          "node_key": "critic",
+          "output_tokens": 5,
+          "status": "succeeded",
+          "usage_final": true
+        },
+        {
+          "attempt_number": 1,
+          "input_tokens": 10,
+          "logical_call_key": "r100-compare-rise-drop:synthesizer:0:synthesizer",
+          "node_key": "synthesizer",
+          "output_tokens": 5,
+          "status": "succeeded",
+          "usage_final": true
+        }
+      ],
+      "case_key": "r100-compare-rise-drop",
+      "conflict_detected": true,
+      "conflict_resolution": "evaluation_keep_as_unresolved",
+      "evidence_ids": [
+        "answer-image-trend",
+        "answer-pdf-chart"
+      ],
+      "failure_code": null,
+      "mode": "research",
+      "observed_claims": [
+        {
+          "conflicted": true,
+          "evidence_ids": [
+            "answer-image-trend"
+          ],
+          "text": "image-coordinate: Observation: latency falls after the third release. Release 4 begins the sustained drop."
+        },
+        {
+          "conflicted": true,
+          "evidence_ids": [
+            "answer-pdf-chart"
+          ],
+          "text": "pdf-coordinate: Figure 1. Trend rises after the third point. Supporting caption in a separate region."
+        }
+      ],
+      "observed_disposition": "answer",
+      "output": "image-coordinate: Observation: latency falls after the third release. Release 4 begins the sustained drop.\npdf-coordinate: Figure 1. Trend rises after the third point. Supporting caption in a separate region.",
+      "parallel_speedup": null
+    },
+    "mode": "research",
+    "package": "r803-evaluation-package-v4.json",
+    "score": {
+      "caseKey": "r100-compare-rise-drop",
+      "caseType": "comparison",
+      "claimSupportRate": {
+        "notEvaluableReason": null,
+        "sampleCount": 2,
+        "value": 1.0
+      },
+      "claims": [
+        {
+          "claimKey": "pdf-rise",
+          "conflictResult": "detected",
+          "expectedEvidenceCount": 1,
+          "failureCode": null,
+          "locatorResult": "accurate",
+          "observedEvidenceCount": 1,
+          "supportResult": "supported"
+        },
+        {
+          "claimKey": "image-drop",
+          "conflictResult": "detected",
+          "expectedEvidenceCount": 1,
+          "failureCode": null,
+          "locatorResult": "accurate",
+          "observedEvidenceCount": 1,
+          "supportResult": "supported"
+        }
+      ],
+      "conflictDetectionRate": {
+        "notEvaluableReason": null,
+        "sampleCount": 1,
+        "value": 1.0
+      },
+      "cost": {
+        "amountMicros": 0,
+        "currency": "USD"
+      },
+      "evidencePrecision": {
+        "notEvaluableReason": null,
+        "sampleCount": 1,
+        "value": 1.0
+      },
+      "evidenceRecall": {
+        "notEvaluableReason": null,
+        "sampleCount": 1,
+        "value": 1.0
+      },
+      "expectedDisposition": "answer",
+      "failureCode": null,
+      "humanInterventionCount": 0,
+      "humanWaitMs": 0,
+      "locatorAccuracy": {
+        "notEvaluableReason": null,
+        "sampleCount": 1,
+        "value": 1.0
+      },
+      "observedDisposition": "answer",
+      "providerCalls": 5,
+      "refusalCorrectness": {
+        "notEvaluableReason": "not_refusal_case",
+        "sampleCount": 0,
+        "value": null
+      },
+      "unsupportedClaimCount": 0
+    }
+  },
+  {
+    "case": "r100-synthesize-table-constraint",
+    "execution": {
+      "calls": [
+        {
+          "attempt_number": 1,
+          "input_tokens": 10,
+          "logical_call_key": "r100-synthesize-table-constraint:quick:0:quick",
+          "node_key": "quick",
+          "output_tokens": 5,
+          "status": "succeeded",
+          "usage_final": true
+        }
+      ],
+      "case_key": "r100-synthesize-table-constraint",
+      "conflict_detected": false,
+      "conflict_resolution": null,
+      "evidence_ids": [
+        "answer-pdf-table",
+        "answer-image-constraint"
+      ],
+      "failure_code": null,
+      "mode": "quick",
+      "observed_claims": [
+        {
+          "conflicted": false,
+          "evidence_ids": [
+            "answer-pdf-table"
+          ],
+          "text": "Atlas has a score of 91.4."
+        },
+        {
+          "conflicted": false,
+          "evidence_ids": [
+            "answer-image-constraint"
+          ],
+          "text": "Verify the chart and caption together."
+        }
+      ],
+      "observed_disposition": "answer",
+      "output": "Atlas has a score of 91.4. Verify the chart and caption together.",
+      "parallel_speedup": null
+    },
+    "mode": "quick",
+    "package": "r803-evaluation-package-v4.json",
+    "score": {
+      "caseKey": "r100-synthesize-table-constraint",
+      "caseType": "synthesis",
+      "claimSupportRate": {
+        "notEvaluableReason": null,
+        "sampleCount": 2,
+        "value": 1.0
+      },
+      "claims": [
+        {
+          "claimKey": "atlas-score",
+          "conflictResult": "none",
+          "expectedEvidenceCount": 1,
+          "failureCode": null,
+          "locatorResult": "accurate",
+          "observedEvidenceCount": 1,
+          "supportResult": "supported"
+        },
+        {
+          "claimKey": "verify-pair",
+          "conflictResult": "none",
+          "expectedEvidenceCount": 1,
+          "failureCode": null,
+          "locatorResult": "accurate",
+          "observedEvidenceCount": 1,
+          "supportResult": "supported"
+        }
+      ],
+      "conflictDetectionRate": {
+        "notEvaluableReason": null,
+        "sampleCount": 1,
+        "value": 1.0
+      },
+      "cost": {
+        "amountMicros": 0,
+        "currency": "USD"
+      },
+      "evidencePrecision": {
+        "notEvaluableReason": null,
+        "sampleCount": 1,
+        "value": 1.0
+      },
+      "evidenceRecall": {
+        "notEvaluableReason": null,
+        "sampleCount": 1,
+        "value": 1.0
+      },
+      "expectedDisposition": "answer",
+      "failureCode": null,
+      "humanInterventionCount": 0,
+      "humanWaitMs": 0,
+      "locatorAccuracy": {
+        "notEvaluableReason": null,
+        "sampleCount": 1,
+        "value": 1.0
+      },
+      "observedDisposition": "answer",
+      "providerCalls": 1,
+      "refusalCorrectness": {
+        "notEvaluableReason": "not_refusal_case",
+        "sampleCount": 0,
+        "value": null
+      },
+      "unsupportedClaimCount": 0
+    }
+  },
+  {
+    "case": "r100-synthesize-table-constraint",
+    "execution": {
+      "calls": [
+        {
+          "attempt_number": 1,
+          "input_tokens": 10,
+          "logical_call_key": "r100-synthesize-table-constraint:planner:0:planner",
+          "node_key": "planner",
+          "output_tokens": 5,
+          "status": "succeeded",
+          "usage_final": true
+        },
+        {
+          "attempt_number": 1,
+          "input_tokens": 10,
+          "logical_call_key": "r100-synthesize-table-constraint:researcher:0:researcher",
+          "node_key": "researcher",
+          "output_tokens": 5,
+          "status": "succeeded",
+          "usage_final": true
+        },
+        {
+          "attempt_number": 1,
+          "input_tokens": 10,
+          "logical_call_key": "r100-synthesize-table-constraint:verifier:0:verifier",
+          "node_key": "verifier",
+          "output_tokens": 5,
+          "status": "succeeded",
+          "usage_final": true
+        },
+        {
+          "attempt_number": 1,
+          "input_tokens": 10,
+          "logical_call_key": "r100-synthesize-table-constraint:critic:0:critic",
+          "node_key": "critic",
+          "output_tokens": 5,
+          "status": "succeeded",
+          "usage_final": true
+        },
+        {
+          "attempt_number": 1,
+          "input_tokens": 10,
+          "logical_call_key": "r100-synthesize-table-constraint:synthesizer:0:synthesizer",
+          "node_key": "synthesizer",
+          "output_tokens": 5,
+          "status": "succeeded",
+          "usage_final": true
+        }
+      ],
+      "case_key": "r100-synthesize-table-constraint",
+      "conflict_detected": false,
+      "conflict_resolution": null,
+      "evidence_ids": [
+        "answer-image-constraint",
+        "answer-pdf-table"
+      ],
+      "failure_code": null,
+      "mode": "research",
+      "observed_claims": [
+        {
+          "conflicted": false,
+          "evidence_ids": [
+            "answer-image-constraint"
+          ],
+          "text": "image-coordinate: Release 4 begins the sustained drop. Verify chart and caption together."
+        },
+        {
+          "conflicted": false,
+          "evidence_ids": [
+            "answer-pdf-table"
+          ],
+          "text": "pdf-artifact-matrix: | Model | Score |\n| --- | --- |\n| Atlas | 91.4 |"
+        }
+      ],
+      "observed_disposition": "answer",
+      "output": "image-coordinate: Release 4 begins the sustained drop. Verify chart and caption together.\npdf-artifact-matrix: | Model | Score |\n| --- | --- |\n| Atlas | 91.4 |",
+      "parallel_speedup": null
+    },
+    "mode": "research",
+    "package": "r803-evaluation-package-v4.json",
+    "score": {
+      "caseKey": "r100-synthesize-table-constraint",
+      "caseType": "synthesis",
+      "claimSupportRate": {
+        "notEvaluableReason": null,
+        "sampleCount": 2,
+        "value": 1.0
+      },
+      "claims": [
+        {
+          "claimKey": "atlas-score",
+          "conflictResult": "none",
+          "expectedEvidenceCount": 1,
+          "failureCode": null,
+          "locatorResult": "accurate",
+          "observedEvidenceCount": 1,
+          "supportResult": "supported"
+        },
+        {
+          "claimKey": "verify-pair",
+          "conflictResult": "none",
+          "expectedEvidenceCount": 1,
+          "failureCode": null,
+          "locatorResult": "accurate",
+          "observedEvidenceCount": 1,
+          "supportResult": "supported"
+        }
+      ],
+      "conflictDetectionRate": {
+        "notEvaluableReason": null,
+        "sampleCount": 1,
+        "value": 1.0
+      },
+      "cost": {
+        "amountMicros": 0,
+        "currency": "USD"
+      },
+      "evidencePrecision": {
+        "notEvaluableReason": null,
+        "sampleCount": 1,
+        "value": 1.0
+      },
+      "evidenceRecall": {
+        "notEvaluableReason": null,
+        "sampleCount": 1,
+        "value": 1.0
+      },
+      "expectedDisposition": "answer",
+      "failureCode": null,
+      "humanInterventionCount": 0,
+      "humanWaitMs": 0,
+      "locatorAccuracy": {
+        "notEvaluableReason": null,
+        "sampleCount": 1,
+        "value": 1.0
+      },
+      "observedDisposition": "answer",
+      "providerCalls": 5,
+      "refusalCorrectness": {
+        "notEvaluableReason": "not_refusal_case",
+        "sampleCount": 0,
+        "value": null
+      },
+      "unsupportedClaimCount": 0
+    }
+  },
+  {
+    "case": "r100-conflict-direction",
+    "execution": {
+      "calls": [
+        {
+          "attempt_number": 1,
+          "input_tokens": 10,
+          "logical_call_key": "r100-conflict-direction:quick:0:quick",
+          "node_key": "quick",
+          "output_tokens": 5,
+          "status": "succeeded",
+          "usage_final": true
+        }
+      ],
+      "case_key": "r100-conflict-direction",
+      "conflict_detected": true,
+      "conflict_resolution": null,
+      "evidence_ids": [
+        "answer-pdf-chart",
+        "answer-image-trend"
+      ],
+      "failure_code": null,
+      "mode": "quick",
+      "observed_claims": [
+        {
+          "conflicted": true,
+          "evidence_ids": [
+            "answer-pdf-chart"
+          ],
+          "text": "The PDF trend rises after the third point."
+        },
+        {
+          "conflicted": true,
+          "evidence_ids": [
+            "answer-image-trend"
+          ],
+          "text": "The image observation falls in a sustained drop."
+        }
+      ],
+      "observed_disposition": "answer",
+      "output": "They conflict: the PDF trend rises, while the image observation falls in a sustained drop.",
+      "parallel_speedup": null
+    },
+    "mode": "quick",
+    "package": "r803-evaluation-package-v4.json",
+    "score": {
+      "caseKey": "r100-conflict-direction",
+      "caseType": "conflict",
+      "claimSupportRate": {
+        "notEvaluableReason": null,
+        "sampleCount": 2,
+        "value": 1.0
+      },
+      "claims": [
+        {
+          "claimKey": "pdf-direction",
+          "conflictResult": "detected",
+          "expectedEvidenceCount": 1,
+          "failureCode": null,
+          "locatorResult": "accurate",
+          "observedEvidenceCount": 1,
+          "supportResult": "supported"
+        },
+        {
+          "claimKey": "image-direction",
+          "conflictResult": "detected",
+          "expectedEvidenceCount": 1,
+          "failureCode": null,
+          "locatorResult": "accurate",
+          "observedEvidenceCount": 1,
+          "supportResult": "supported"
+        }
+      ],
+      "conflictDetectionRate": {
+        "notEvaluableReason": null,
+        "sampleCount": 1,
+        "value": 1.0
+      },
+      "cost": {
+        "amountMicros": 0,
+        "currency": "USD"
+      },
+      "evidencePrecision": {
+        "notEvaluableReason": null,
+        "sampleCount": 1,
+        "value": 1.0
+      },
+      "evidenceRecall": {
+        "notEvaluableReason": null,
+        "sampleCount": 1,
+        "value": 1.0
+      },
+      "expectedDisposition": "answer",
+      "failureCode": null,
+      "humanInterventionCount": 0,
+      "humanWaitMs": 0,
+      "locatorAccuracy": {
+        "notEvaluableReason": null,
+        "sampleCount": 1,
+        "value": 1.0
+      },
+      "observedDisposition": "answer",
+      "providerCalls": 1,
+      "refusalCorrectness": {
+        "notEvaluableReason": "not_refusal_case",
+        "sampleCount": 0,
+        "value": null
+      },
+      "unsupportedClaimCount": 0
+    }
+  },
+  {
+    "case": "r100-conflict-direction",
+    "execution": {
+      "calls": [
+        {
+          "attempt_number": 1,
+          "input_tokens": 10,
+          "logical_call_key": "r100-conflict-direction:planner:0:planner",
+          "node_key": "planner",
+          "output_tokens": 5,
+          "status": "succeeded",
+          "usage_final": true
+        },
+        {
+          "attempt_number": 1,
+          "input_tokens": 10,
+          "logical_call_key": "r100-conflict-direction:researcher:0:researcher",
+          "node_key": "researcher",
+          "output_tokens": 5,
+          "status": "succeeded",
+          "usage_final": true
+        },
+        {
+          "attempt_number": 1,
+          "input_tokens": 10,
+          "logical_call_key": "r100-conflict-direction:verifier:0:verifier",
+          "node_key": "verifier",
+          "output_tokens": 5,
+          "status": "succeeded",
+          "usage_final": true
+        },
+        {
+          "attempt_number": 1,
+          "input_tokens": 10,
+          "logical_call_key": "r100-conflict-direction:critic:0:critic",
+          "node_key": "critic",
+          "output_tokens": 5,
+          "status": "succeeded",
+          "usage_final": true
+        },
+        {
+          "attempt_number": 1,
+          "input_tokens": 10,
+          "logical_call_key": "r100-conflict-direction:synthesizer:0:synthesizer",
+          "node_key": "synthesizer",
+          "output_tokens": 5,
+          "status": "succeeded",
+          "usage_final": true
+        }
+      ],
+      "case_key": "r100-conflict-direction",
+      "conflict_detected": true,
+      "conflict_resolution": "evaluation_keep_as_unresolved",
+      "evidence_ids": [
+        "answer-image-trend",
+        "answer-pdf-chart"
+      ],
+      "failure_code": null,
+      "mode": "research",
+      "observed_claims": [
+        {
+          "conflicted": true,
+          "evidence_ids": [
+            "answer-image-trend"
+          ],
+          "text": "image-coordinate: Observation: latency falls after the third release. Release 4 begins the sustained drop."
+        },
+        {
+          "conflicted": true,
+          "evidence_ids": [
+            "answer-pdf-chart"
+          ],
+          "text": "pdf-coordinate: Figure 1. Trend rises after the third point. Supporting caption in a separate region."
+        }
+      ],
+      "observed_disposition": "answer",
+      "output": "image-coordinate: Observation: latency falls after the third release. Release 4 begins the sustained drop.\npdf-coordinate: Figure 1. Trend rises after the third point. Supporting caption in a separate region.",
+      "parallel_speedup": null
+    },
+    "mode": "research",
+    "package": "r803-evaluation-package-v4.json",
+    "score": {
+      "caseKey": "r100-conflict-direction",
+      "caseType": "conflict",
+      "claimSupportRate": {
+        "notEvaluableReason": null,
+        "sampleCount": 2,
+        "value": 1.0
+      },
+      "claims": [
+        {
+          "claimKey": "pdf-direction",
+          "conflictResult": "detected",
+          "expectedEvidenceCount": 1,
+          "failureCode": null,
+          "locatorResult": "accurate",
+          "observedEvidenceCount": 1,
+          "supportResult": "supported"
+        },
+        {
+          "claimKey": "image-direction",
+          "conflictResult": "detected",
+          "expectedEvidenceCount": 1,
+          "failureCode": null,
+          "locatorResult": "accurate",
+          "observedEvidenceCount": 1,
+          "supportResult": "supported"
+        }
+      ],
+      "conflictDetectionRate": {
+        "notEvaluableReason": null,
+        "sampleCount": 1,
+        "value": 1.0
+      },
+      "cost": {
+        "amountMicros": 0,
+        "currency": "USD"
+      },
+      "evidencePrecision": {
+        "notEvaluableReason": null,
+        "sampleCount": 1,
+        "value": 1.0
+      },
+      "evidenceRecall": {
+        "notEvaluableReason": null,
+        "sampleCount": 1,
+        "value": 1.0
+      },
+      "expectedDisposition": "answer",
+      "failureCode": null,
+      "humanInterventionCount": 0,
+      "humanWaitMs": 0,
+      "locatorAccuracy": {
+        "notEvaluableReason": null,
+        "sampleCount": 1,
+        "value": 1.0
+      },
+      "observedDisposition": "answer",
+      "providerCalls": 5,
+      "refusalCorrectness": {
+        "notEvaluableReason": "not_refusal_case",
+        "sampleCount": 0,
+        "value": null
+      },
+      "unsupportedClaimCount": 0
+    }
+  },
+  {
+    "case": "r100-locate-chart-caption",
+    "execution": {
+      "calls": [
+        {
+          "attempt_number": 1,
+          "input_tokens": 10,
+          "logical_call_key": "r100-locate-chart-caption:quick:0:quick",
+          "node_key": "quick",
+          "output_tokens": 5,
+          "status": "succeeded",
+          "usage_final": true
+        }
+      ],
+      "case_key": "r100-locate-chart-caption",
+      "conflict_detected": false,
+      "conflict_resolution": null,
+      "evidence_ids": [
+        "answer-image-constraint"
+      ],
+      "failure_code": null,
+      "mode": "quick",
+      "observed_claims": [
+        {
+          "conflicted": false,
+          "evidence_ids": [
+            "answer-image-constraint"
+          ],
+          "text": "Verify the chart and caption together."
+        }
+      ],
+      "observed_disposition": "answer",
+      "output": "Verify the chart and caption together.",
+      "parallel_speedup": null
+    },
+    "mode": "quick",
+    "package": "r803-evaluation-package-v4.json",
+    "score": {
+      "caseKey": "r100-locate-chart-caption",
+      "caseType": "evidence_gap",
+      "claimSupportRate": {
+        "notEvaluableReason": null,
+        "sampleCount": 1,
+        "value": 1.0
+      },
+      "claims": [
+        {
+          "claimKey": "paired-evidence",
+          "conflictResult": "none",
+          "expectedEvidenceCount": 1,
+          "failureCode": null,
+          "locatorResult": "accurate",
+          "observedEvidenceCount": 1,
+          "supportResult": "supported"
+        }
+      ],
+      "conflictDetectionRate": {
+        "notEvaluableReason": null,
+        "sampleCount": 1,
+        "value": 1.0
+      },
+      "cost": {
+        "amountMicros": 0,
+        "currency": "USD"
+      },
+      "evidencePrecision": {
+        "notEvaluableReason": null,
+        "sampleCount": 1,
+        "value": 1.0
+      },
+      "evidenceRecall": {
+        "notEvaluableReason": null,
+        "sampleCount": 1,
+        "value": 1.0
+      },
+      "expectedDisposition": "answer",
+      "failureCode": null,
+      "humanInterventionCount": 0,
+      "humanWaitMs": 0,
+      "locatorAccuracy": {
+        "notEvaluableReason": null,
+        "sampleCount": 1,
+        "value": 1.0
+      },
+      "observedDisposition": "answer",
+      "providerCalls": 1,
+      "refusalCorrectness": {
+        "notEvaluableReason": "not_refusal_case",
+        "sampleCount": 0,
+        "value": null
+      },
+      "unsupportedClaimCount": 0
+    }
+  },
+  {
+    "case": "r100-locate-chart-caption",
+    "execution": {
+      "calls": [
+        {
+          "attempt_number": 1,
+          "input_tokens": 10,
+          "logical_call_key": "r100-locate-chart-caption:planner:0:planner",
+          "node_key": "planner",
+          "output_tokens": 5,
+          "status": "succeeded",
+          "usage_final": true
+        },
+        {
+          "attempt_number": 1,
+          "input_tokens": 10,
+          "logical_call_key": "r100-locate-chart-caption:researcher:0:researcher",
+          "node_key": "researcher",
+          "output_tokens": 5,
+          "status": "succeeded",
+          "usage_final": true
+        },
+        {
+          "attempt_number": 1,
+          "input_tokens": 10,
+          "logical_call_key": "r100-locate-chart-caption:verifier:0:verifier",
+          "node_key": "verifier",
+          "output_tokens": 5,
+          "status": "succeeded",
+          "usage_final": true
+        },
+        {
+          "attempt_number": 1,
+          "input_tokens": 10,
+          "logical_call_key": "r100-locate-chart-caption:critic:0:critic",
+          "node_key": "critic",
+          "output_tokens": 5,
+          "status": "succeeded",
+          "usage_final": true
+        },
+        {
+          "attempt_number": 1,
+          "input_tokens": 10,
+          "logical_call_key": "r100-locate-chart-caption:synthesizer:0:synthesizer",
+          "node_key": "synthesizer",
+          "output_tokens": 5,
+          "status": "succeeded",
+          "usage_final": true
+        }
+      ],
+      "case_key": "r100-locate-chart-caption",
+      "conflict_detected": false,
+      "conflict_resolution": null,
+      "evidence_ids": [
+        "answer-image-constraint"
+      ],
+      "failure_code": null,
+      "mode": "research",
+      "observed_claims": [
+        {
+          "conflicted": false,
+          "evidence_ids": [
+            "answer-image-constraint"
+          ],
+          "text": "image-coordinate: Release 4 begins the sustained drop. Verify chart and caption together."
+        }
+      ],
+      "observed_disposition": "answer",
+      "output": "image-coordinate: Release 4 begins the sustained drop. Verify chart and caption together.",
+      "parallel_speedup": null
+    },
+    "mode": "research",
+    "package": "r803-evaluation-package-v4.json",
+    "score": {
+      "caseKey": "r100-locate-chart-caption",
+      "caseType": "evidence_gap",
+      "claimSupportRate": {
+        "notEvaluableReason": null,
+        "sampleCount": 1,
+        "value": 1.0
+      },
+      "claims": [
+        {
+          "claimKey": "paired-evidence",
+          "conflictResult": "none",
+          "expectedEvidenceCount": 1,
+          "failureCode": null,
+          "locatorResult": "accurate",
+          "observedEvidenceCount": 1,
+          "supportResult": "supported"
+        }
+      ],
+      "conflictDetectionRate": {
+        "notEvaluableReason": null,
+        "sampleCount": 1,
+        "value": 1.0
+      },
+      "cost": {
+        "amountMicros": 0,
+        "currency": "USD"
+      },
+      "evidencePrecision": {
+        "notEvaluableReason": null,
+        "sampleCount": 1,
+        "value": 1.0
+      },
+      "evidenceRecall": {
+        "notEvaluableReason": null,
+        "sampleCount": 1,
+        "value": 1.0
+      },
+      "expectedDisposition": "answer",
+      "failureCode": null,
+      "humanInterventionCount": 0,
+      "humanWaitMs": 0,
+      "locatorAccuracy": {
+        "notEvaluableReason": null,
+        "sampleCount": 1,
+        "value": 1.0
+      },
+      "observedDisposition": "answer",
+      "providerCalls": 5,
+      "refusalCorrectness": {
+        "notEvaluableReason": "not_refusal_case",
+        "sampleCount": 0,
+        "value": null
+      },
+      "unsupportedClaimCount": 0
+    }
+  },
+  {
+    "case": "r100-refuse-energy",
+    "execution": {
+      "calls": [
+        {
+          "attempt_number": 1,
+          "input_tokens": 10,
+          "logical_call_key": "r100-refuse-energy:quick:0:quick",
+          "node_key": "quick",
+          "output_tokens": 5,
+          "status": "succeeded",
+          "usage_final": true
+        }
+      ],
+      "case_key": "r100-refuse-energy",
+      "conflict_detected": false,
+      "conflict_resolution": null,
+      "evidence_ids": [],
+      "failure_code": null,
+      "mode": "quick",
+      "observed_claims": [],
+      "observed_disposition": "refuse",
+      "output": "The selected assets do not contain supporting evidence for Atlas energy consumption.",
+      "parallel_speedup": null
+    },
+    "mode": "quick",
+    "package": "r803-evaluation-package-v4.json",
+    "score": {
+      "caseKey": "r100-refuse-energy",
+      "caseType": "insufficiency",
+      "claimSupportRate": {
+        "notEvaluableReason": "no_expected_claims",
+        "sampleCount": 0,
+        "value": null
+      },
+      "claims": [],
+      "conflictDetectionRate": {
+        "notEvaluableReason": null,
+        "sampleCount": 1,
+        "value": 1.0
+      },
+      "cost": {
+        "amountMicros": 0,
+        "currency": "USD"
+      },
+      "evidencePrecision": {
+        "notEvaluableReason": null,
+        "sampleCount": 1,
+        "value": 1.0
+      },
+      "evidenceRecall": {
+        "notEvaluableReason": null,
+        "sampleCount": 1,
+        "value": 1.0
+      },
+      "expectedDisposition": "refuse",
+      "failureCode": null,
+      "humanInterventionCount": 0,
+      "humanWaitMs": 0,
+      "locatorAccuracy": {
+        "notEvaluableReason": null,
+        "sampleCount": 1,
+        "value": 1.0
+      },
+      "observedDisposition": "refuse",
+      "providerCalls": 1,
+      "refusalCorrectness": {
+        "notEvaluableReason": null,
+        "sampleCount": 1,
+        "value": 1.0
+      },
+      "unsupportedClaimCount": 0
+    }
+  },
+  {
+    "case": "r100-refuse-energy",
+    "execution": {
+      "calls": [
+        {
+          "attempt_number": 1,
+          "input_tokens": 10,
+          "logical_call_key": "r100-refuse-energy:planner:0:planner",
+          "node_key": "planner",
+          "output_tokens": 5,
+          "status": "succeeded",
+          "usage_final": true
+        },
+        {
+          "attempt_number": 1,
+          "input_tokens": 10,
+          "logical_call_key": "r100-refuse-energy:researcher:0:researcher",
+          "node_key": "researcher",
+          "output_tokens": 5,
+          "status": "succeeded",
+          "usage_final": true
+        },
+        {
+          "attempt_number": 1,
+          "input_tokens": 10,
+          "logical_call_key": "r100-refuse-energy:verifier:0:verifier",
+          "node_key": "verifier",
+          "output_tokens": 5,
+          "status": "succeeded",
+          "usage_final": true
+        },
+        {
+          "attempt_number": 1,
+          "input_tokens": 10,
+          "logical_call_key": "r100-refuse-energy:critic:0:critic",
+          "node_key": "critic",
+          "output_tokens": 5,
+          "status": "succeeded",
+          "usage_final": true
+        },
+        {
+          "attempt_number": 1,
+          "input_tokens": 10,
+          "logical_call_key": "r100-refuse-energy:synthesizer:0:synthesizer",
+          "node_key": "synthesizer",
+          "output_tokens": 5,
+          "status": "succeeded",
+          "usage_final": true
+        }
+      ],
+      "case_key": "r100-refuse-energy",
+      "conflict_detected": false,
+      "conflict_resolution": null,
+      "evidence_ids": [],
+      "failure_code": null,
+      "mode": "research",
+      "observed_claims": [],
+      "observed_disposition": "refuse",
+      "output": "The selected assets do not contain supporting evidence for this question.",
+      "parallel_speedup": null
+    },
+    "mode": "research",
+    "package": "r803-evaluation-package-v4.json",
+    "score": {
+      "caseKey": "r100-refuse-energy",
+      "caseType": "insufficiency",
+      "claimSupportRate": {
+        "notEvaluableReason": "no_expected_claims",
+        "sampleCount": 0,
+        "value": null
+      },
+      "claims": [],
+      "conflictDetectionRate": {
+        "notEvaluableReason": null,
+        "sampleCount": 1,
+        "value": 1.0
+      },
+      "cost": {
+        "amountMicros": 0,
+        "currency": "USD"
+      },
+      "evidencePrecision": {
+        "notEvaluableReason": null,
+        "sampleCount": 1,
+        "value": 1.0
+      },
+      "evidenceRecall": {
+        "notEvaluableReason": null,
+        "sampleCount": 1,
+        "value": 1.0
+      },
+      "expectedDisposition": "refuse",
+      "failureCode": null,
+      "humanInterventionCount": 0,
+      "humanWaitMs": 0,
+      "locatorAccuracy": {
+        "notEvaluableReason": null,
+        "sampleCount": 1,
+        "value": 1.0
+      },
+      "observedDisposition": "refuse",
+      "providerCalls": 5,
+      "refusalCorrectness": {
+        "notEvaluableReason": null,
+        "sampleCount": 1,
+        "value": 1.0
+      },
+      "unsupportedClaimCount": 0
+    }
+  },
+  {
+    "case": "r100-refuse-customer",
+    "execution": {
+      "calls": [
+        {
+          "attempt_number": 1,
+          "input_tokens": 10,
+          "logical_call_key": "r100-refuse-customer:quick:0:quick",
+          "node_key": "quick",
+          "output_tokens": 5,
+          "status": "succeeded",
+          "usage_final": true
+        }
+      ],
+      "case_key": "r100-refuse-customer",
+      "conflict_detected": false,
+      "conflict_resolution": null,
+      "evidence_ids": [],
+      "failure_code": null,
+      "mode": "quick",
+      "observed_claims": [],
+      "observed_disposition": "refuse",
+      "output": "The selected assets do not contain supporting evidence identifying a production customer.",
+      "parallel_speedup": null
+    },
+    "mode": "quick",
+    "package": "r803-evaluation-package-v4.json",
+    "score": {
+      "caseKey": "r100-refuse-customer",
+      "caseType": "insufficiency",
+      "claimSupportRate": {
+        "notEvaluableReason": "no_expected_claims",
+        "sampleCount": 0,
+        "value": null
+      },
+      "claims": [],
+      "conflictDetectionRate": {
+        "notEvaluableReason": null,
+        "sampleCount": 1,
+        "value": 1.0
+      },
+      "cost": {
+        "amountMicros": 0,
+        "currency": "USD"
+      },
+      "evidencePrecision": {
+        "notEvaluableReason": null,
+        "sampleCount": 1,
+        "value": 1.0
+      },
+      "evidenceRecall": {
+        "notEvaluableReason": null,
+        "sampleCount": 1,
+        "value": 1.0
+      },
+      "expectedDisposition": "refuse",
+      "failureCode": null,
+      "humanInterventionCount": 0,
+      "humanWaitMs": 0,
+      "locatorAccuracy": {
+        "notEvaluableReason": null,
+        "sampleCount": 1,
+        "value": 1.0
+      },
+      "observedDisposition": "refuse",
+      "providerCalls": 1,
+      "refusalCorrectness": {
+        "notEvaluableReason": null,
+        "sampleCount": 1,
+        "value": 1.0
+      },
+      "unsupportedClaimCount": 0
+    }
+  },
+  {
+    "case": "r100-refuse-customer",
+    "execution": {
+      "calls": [
+        {
+          "attempt_number": 1,
+          "input_tokens": 10,
+          "logical_call_key": "r100-refuse-customer:planner:0:planner",
+          "node_key": "planner",
+          "output_tokens": 5,
+          "status": "succeeded",
+          "usage_final": true
+        },
+        {
+          "attempt_number": 1,
+          "input_tokens": 10,
+          "logical_call_key": "r100-refuse-customer:researcher:0:researcher",
+          "node_key": "researcher",
+          "output_tokens": 5,
+          "status": "succeeded",
+          "usage_final": true
+        },
+        {
+          "attempt_number": 1,
+          "input_tokens": 10,
+          "logical_call_key": "r100-refuse-customer:verifier:0:verifier",
+          "node_key": "verifier",
+          "output_tokens": 5,
+          "status": "succeeded",
+          "usage_final": true
+        },
+        {
+          "attempt_number": 1,
+          "input_tokens": 10,
+          "logical_call_key": "r100-refuse-customer:critic:0:critic",
+          "node_key": "critic",
+          "output_tokens": 5,
+          "status": "succeeded",
+          "usage_final": true
+        },
+        {
+          "attempt_number": 1,
+          "input_tokens": 10,
+          "logical_call_key": "r100-refuse-customer:synthesizer:0:synthesizer",
+          "node_key": "synthesizer",
+          "output_tokens": 5,
+          "status": "succeeded",
+          "usage_final": true
+        }
+      ],
+      "case_key": "r100-refuse-customer",
+      "conflict_detected": false,
+      "conflict_resolution": null,
+      "evidence_ids": [],
+      "failure_code": null,
+      "mode": "research",
+      "observed_claims": [],
+      "observed_disposition": "refuse",
+      "output": "The selected assets do not contain supporting evidence for this question.",
+      "parallel_speedup": null
+    },
+    "mode": "research",
+    "package": "r803-evaluation-package-v4.json",
+    "score": {
+      "caseKey": "r100-refuse-customer",
+      "caseType": "insufficiency",
+      "claimSupportRate": {
+        "notEvaluableReason": "no_expected_claims",
+        "sampleCount": 0,
+        "value": null
+      },
+      "claims": [],
+      "conflictDetectionRate": {
+        "notEvaluableReason": null,
+        "sampleCount": 1,
+        "value": 1.0
+      },
+      "cost": {
+        "amountMicros": 0,
+        "currency": "USD"
+      },
+      "evidencePrecision": {
+        "notEvaluableReason": null,
+        "sampleCount": 1,
+        "value": 1.0
+      },
+      "evidenceRecall": {
+        "notEvaluableReason": null,
+        "sampleCount": 1,
+        "value": 1.0
+      },
+      "expectedDisposition": "refuse",
+      "failureCode": null,
+      "humanInterventionCount": 0,
+      "humanWaitMs": 0,
+      "locatorAccuracy": {
+        "notEvaluableReason": null,
+        "sampleCount": 1,
+        "value": 1.0
+      },
+      "observedDisposition": "refuse",
+      "providerCalls": 5,
+      "refusalCorrectness": {
+        "notEvaluableReason": null,
+        "sampleCount": 1,
+        "value": 1.0
+      },
+      "unsupportedClaimCount": 0
+    }
+  },
+  {
+    "case": "r100-compare-rise-drop",
+    "execution": {
+      "calls": [
+        {
+          "attempt_number": 1,
+          "input_tokens": 10,
+          "logical_call_key": "r100-compare-rise-drop:quick:0:quick",
+          "node_key": "quick",
+          "output_tokens": 5,
+          "status": "succeeded",
+          "usage_final": true
+        }
+      ],
+      "case_key": "r100-compare-rise-drop",
+      "conflict_detected": true,
+      "conflict_resolution": null,
+      "evidence_ids": [
+        "answer-pdf-chart",
+        "answer-image-trend"
+      ],
+      "failure_code": null,
+      "mode": "quick",
+      "observed_claims": [
+        {
+          "conflicted": true,
+          "evidence_ids": [
+            "answer-pdf-chart"
+          ],
+          "text": "The PDF trend rises after the third point."
+        },
+        {
+          "conflicted": true,
+          "evidence_ids": [
+            "answer-image-trend"
+          ],
+          "text": "The image says Release 4 begins the sustained drop."
+        }
+      ],
+      "observed_disposition": "answer",
+      "output": "The PDF trend rises after the third point, while the image says Release 4 begins the sustained drop.",
+      "parallel_speedup": null
+    },
+    "mode": "quick",
+    "package": "r803-evaluation-package-v5.json",
+    "score": {
+      "caseKey": "r100-compare-rise-drop",
+      "caseType": "comparison",
+      "claimSupportRate": {
+        "notEvaluableReason": null,
+        "sampleCount": 2,
+        "value": 1.0
+      },
+      "claims": [
+        {
+          "claimKey": "pdf-rise",
+          "conflictResult": "detected",
+          "expectedEvidenceCount": 1,
+          "failureCode": null,
+          "locatorResult": "accurate",
+          "observedEvidenceCount": 1,
+          "supportResult": "supported"
+        },
+        {
+          "claimKey": "image-drop",
+          "conflictResult": "detected",
+          "expectedEvidenceCount": 1,
+          "failureCode": null,
+          "locatorResult": "accurate",
+          "observedEvidenceCount": 1,
+          "supportResult": "supported"
+        }
+      ],
+      "conflictDetectionRate": {
+        "notEvaluableReason": null,
+        "sampleCount": 1,
+        "value": 1.0
+      },
+      "cost": {
+        "amountMicros": 0,
+        "currency": "USD"
+      },
+      "evidencePrecision": {
+        "notEvaluableReason": null,
+        "sampleCount": 1,
+        "value": 1.0
+      },
+      "evidenceRecall": {
+        "notEvaluableReason": null,
+        "sampleCount": 1,
+        "value": 1.0
+      },
+      "expectedDisposition": "answer",
+      "failureCode": null,
+      "humanInterventionCount": 0,
+      "humanWaitMs": 0,
+      "locatorAccuracy": {
+        "notEvaluableReason": null,
+        "sampleCount": 1,
+        "value": 1.0
+      },
+      "observedDisposition": "answer",
+      "providerCalls": 1,
+      "refusalCorrectness": {
+        "notEvaluableReason": "not_refusal_case",
+        "sampleCount": 0,
+        "value": null
+      },
+      "unsupportedClaimCount": 0
+    }
+  },
+  {
+    "case": "r100-compare-rise-drop",
+    "execution": {
+      "calls": [
+        {
+          "attempt_number": 1,
+          "input_tokens": 10,
+          "logical_call_key": "r100-compare-rise-drop:planner:0:planner",
+          "node_key": "planner",
+          "output_tokens": 5,
+          "status": "succeeded",
+          "usage_final": true
+        },
+        {
+          "attempt_number": 1,
+          "input_tokens": 10,
+          "logical_call_key": "r100-compare-rise-drop:researcher:0:researcher",
+          "node_key": "researcher",
+          "output_tokens": 5,
+          "status": "succeeded",
+          "usage_final": true
+        },
+        {
+          "attempt_number": 1,
+          "input_tokens": 10,
+          "logical_call_key": "r100-compare-rise-drop:verifier:0:verifier",
+          "node_key": "verifier",
+          "output_tokens": 5,
+          "status": "succeeded",
+          "usage_final": true
+        },
+        {
+          "attempt_number": 1,
+          "input_tokens": 10,
+          "logical_call_key": "r100-compare-rise-drop:critic:0:critic",
+          "node_key": "critic",
+          "output_tokens": 5,
+          "status": "succeeded",
+          "usage_final": true
+        },
+        {
+          "attempt_number": 1,
+          "input_tokens": 10,
+          "logical_call_key": "r100-compare-rise-drop:synthesizer:0:synthesizer",
+          "node_key": "synthesizer",
+          "output_tokens": 5,
+          "status": "succeeded",
+          "usage_final": true
+        }
+      ],
+      "case_key": "r100-compare-rise-drop",
+      "conflict_detected": true,
+      "conflict_resolution": "evaluation_keep_as_unresolved",
+      "evidence_ids": [
+        "answer-image-trend",
+        "answer-pdf-chart"
+      ],
+      "failure_code": null,
+      "mode": "research",
+      "observed_claims": [
+        {
+          "conflicted": true,
+          "evidence_ids": [
+            "answer-image-trend"
+          ],
+          "text": "image-coordinate: Observation: latency falls after the third release. Release 4 begins the sustained drop."
+        },
+        {
+          "conflicted": true,
+          "evidence_ids": [
+            "answer-pdf-chart"
+          ],
+          "text": "pdf-coordinate: Figure 1. Trend rises after the third point. Supporting caption in a separate region."
+        }
+      ],
+      "observed_disposition": "answer",
+      "output": "image-coordinate: Observation: latency falls after the third release. Release 4 begins the sustained drop.\npdf-coordinate: Figure 1. Trend rises after the third point. Supporting caption in a separate region.",
+      "parallel_speedup": null
+    },
+    "mode": "research",
+    "package": "r803-evaluation-package-v5.json",
+    "score": {
+      "caseKey": "r100-compare-rise-drop",
+      "caseType": "comparison",
+      "claimSupportRate": {
+        "notEvaluableReason": null,
+        "sampleCount": 2,
+        "value": 1.0
+      },
+      "claims": [
+        {
+          "claimKey": "pdf-rise",
+          "conflictResult": "detected",
+          "expectedEvidenceCount": 1,
+          "failureCode": null,
+          "locatorResult": "accurate",
+          "observedEvidenceCount": 1,
+          "supportResult": "supported"
+        },
+        {
+          "claimKey": "image-drop",
+          "conflictResult": "detected",
+          "expectedEvidenceCount": 1,
+          "failureCode": null,
+          "locatorResult": "accurate",
+          "observedEvidenceCount": 1,
+          "supportResult": "supported"
+        }
+      ],
+      "conflictDetectionRate": {
+        "notEvaluableReason": null,
+        "sampleCount": 1,
+        "value": 1.0
+      },
+      "cost": {
+        "amountMicros": 0,
+        "currency": "USD"
+      },
+      "evidencePrecision": {
+        "notEvaluableReason": null,
+        "sampleCount": 1,
+        "value": 1.0
+      },
+      "evidenceRecall": {
+        "notEvaluableReason": null,
+        "sampleCount": 1,
+        "value": 1.0
+      },
+      "expectedDisposition": "answer",
+      "failureCode": null,
+      "humanInterventionCount": 0,
+      "humanWaitMs": 0,
+      "locatorAccuracy": {
+        "notEvaluableReason": null,
+        "sampleCount": 1,
+        "value": 1.0
+      },
+      "observedDisposition": "answer",
+      "providerCalls": 5,
+      "refusalCorrectness": {
+        "notEvaluableReason": "not_refusal_case",
+        "sampleCount": 0,
+        "value": null
+      },
+      "unsupportedClaimCount": 0
+    }
+  },
+  {
+    "case": "r100-synthesize-table-constraint",
+    "execution": {
+      "calls": [
+        {
+          "attempt_number": 1,
+          "input_tokens": 10,
+          "logical_call_key": "r100-synthesize-table-constraint:quick:0:quick",
+          "node_key": "quick",
+          "output_tokens": 5,
+          "status": "succeeded",
+          "usage_final": true
+        }
+      ],
+      "case_key": "r100-synthesize-table-constraint",
+      "conflict_detected": false,
+      "conflict_resolution": null,
+      "evidence_ids": [
+        "answer-pdf-table",
+        "answer-image-constraint"
+      ],
+      "failure_code": null,
+      "mode": "quick",
+      "observed_claims": [
+        {
+          "conflicted": false,
+          "evidence_ids": [
+            "answer-pdf-table"
+          ],
+          "text": "Atlas has a score of 91.4."
+        },
+        {
+          "conflicted": false,
+          "evidence_ids": [
+            "answer-image-constraint"
+          ],
+          "text": "Verify the chart and caption together."
+        }
+      ],
+      "observed_disposition": "answer",
+      "output": "Atlas has a score of 91.4. Verify the chart and caption together.",
+      "parallel_speedup": null
+    },
+    "mode": "quick",
+    "package": "r803-evaluation-package-v5.json",
+    "score": {
+      "caseKey": "r100-synthesize-table-constraint",
+      "caseType": "synthesis",
+      "claimSupportRate": {
+        "notEvaluableReason": null,
+        "sampleCount": 2,
+        "value": 1.0
+      },
+      "claims": [
+        {
+          "claimKey": "atlas-score",
+          "conflictResult": "none",
+          "expectedEvidenceCount": 1,
+          "failureCode": null,
+          "locatorResult": "accurate",
+          "observedEvidenceCount": 1,
+          "supportResult": "supported"
+        },
+        {
+          "claimKey": "verify-pair",
+          "conflictResult": "none",
+          "expectedEvidenceCount": 1,
+          "failureCode": null,
+          "locatorResult": "accurate",
+          "observedEvidenceCount": 1,
+          "supportResult": "supported"
+        }
+      ],
+      "conflictDetectionRate": {
+        "notEvaluableReason": null,
+        "sampleCount": 1,
+        "value": 1.0
+      },
+      "cost": {
+        "amountMicros": 0,
+        "currency": "USD"
+      },
+      "evidencePrecision": {
+        "notEvaluableReason": null,
+        "sampleCount": 1,
+        "value": 1.0
+      },
+      "evidenceRecall": {
+        "notEvaluableReason": null,
+        "sampleCount": 1,
+        "value": 1.0
+      },
+      "expectedDisposition": "answer",
+      "failureCode": null,
+      "humanInterventionCount": 0,
+      "humanWaitMs": 0,
+      "locatorAccuracy": {
+        "notEvaluableReason": null,
+        "sampleCount": 1,
+        "value": 1.0
+      },
+      "observedDisposition": "answer",
+      "providerCalls": 1,
+      "refusalCorrectness": {
+        "notEvaluableReason": "not_refusal_case",
+        "sampleCount": 0,
+        "value": null
+      },
+      "unsupportedClaimCount": 0
+    }
+  },
+  {
+    "case": "r100-synthesize-table-constraint",
+    "execution": {
+      "calls": [
+        {
+          "attempt_number": 1,
+          "input_tokens": 10,
+          "logical_call_key": "r100-synthesize-table-constraint:planner:0:planner",
+          "node_key": "planner",
+          "output_tokens": 5,
+          "status": "succeeded",
+          "usage_final": true
+        },
+        {
+          "attempt_number": 1,
+          "input_tokens": 10,
+          "logical_call_key": "r100-synthesize-table-constraint:researcher:0:researcher",
+          "node_key": "researcher",
+          "output_tokens": 5,
+          "status": "succeeded",
+          "usage_final": true
+        },
+        {
+          "attempt_number": 1,
+          "input_tokens": 10,
+          "logical_call_key": "r100-synthesize-table-constraint:verifier:0:verifier",
+          "node_key": "verifier",
+          "output_tokens": 5,
+          "status": "succeeded",
+          "usage_final": true
+        },
+        {
+          "attempt_number": 1,
+          "input_tokens": 10,
+          "logical_call_key": "r100-synthesize-table-constraint:critic:0:critic",
+          "node_key": "critic",
+          "output_tokens": 5,
+          "status": "succeeded",
+          "usage_final": true
+        },
+        {
+          "attempt_number": 1,
+          "input_tokens": 10,
+          "logical_call_key": "r100-synthesize-table-constraint:synthesizer:0:synthesizer",
+          "node_key": "synthesizer",
+          "output_tokens": 5,
+          "status": "succeeded",
+          "usage_final": true
+        }
+      ],
+      "case_key": "r100-synthesize-table-constraint",
+      "conflict_detected": false,
+      "conflict_resolution": null,
+      "evidence_ids": [
+        "answer-image-constraint",
+        "answer-pdf-table"
+      ],
+      "failure_code": null,
+      "mode": "research",
+      "observed_claims": [
+        {
+          "conflicted": false,
+          "evidence_ids": [
+            "answer-image-constraint"
+          ],
+          "text": "image-coordinate: Release 4 begins the sustained drop. Verify chart and caption together."
+        },
+        {
+          "conflicted": false,
+          "evidence_ids": [
+            "answer-pdf-table"
+          ],
+          "text": "pdf-artifact-matrix: | Model | Score |\n| --- | --- |\n| Atlas | 91.4 |"
+        }
+      ],
+      "observed_disposition": "answer",
+      "output": "image-coordinate: Release 4 begins the sustained drop. Verify chart and caption together.\npdf-artifact-matrix: | Model | Score |\n| --- | --- |\n| Atlas | 91.4 |",
+      "parallel_speedup": null
+    },
+    "mode": "research",
+    "package": "r803-evaluation-package-v5.json",
+    "score": {
+      "caseKey": "r100-synthesize-table-constraint",
+      "caseType": "synthesis",
+      "claimSupportRate": {
+        "notEvaluableReason": null,
+        "sampleCount": 2,
+        "value": 1.0
+      },
+      "claims": [
+        {
+          "claimKey": "atlas-score",
+          "conflictResult": "none",
+          "expectedEvidenceCount": 1,
+          "failureCode": null,
+          "locatorResult": "accurate",
+          "observedEvidenceCount": 1,
+          "supportResult": "supported"
+        },
+        {
+          "claimKey": "verify-pair",
+          "conflictResult": "none",
+          "expectedEvidenceCount": 1,
+          "failureCode": null,
+          "locatorResult": "accurate",
+          "observedEvidenceCount": 1,
+          "supportResult": "supported"
+        }
+      ],
+      "conflictDetectionRate": {
+        "notEvaluableReason": null,
+        "sampleCount": 1,
+        "value": 1.0
+      },
+      "cost": {
+        "amountMicros": 0,
+        "currency": "USD"
+      },
+      "evidencePrecision": {
+        "notEvaluableReason": null,
+        "sampleCount": 1,
+        "value": 1.0
+      },
+      "evidenceRecall": {
+        "notEvaluableReason": null,
+        "sampleCount": 1,
+        "value": 1.0
+      },
+      "expectedDisposition": "answer",
+      "failureCode": null,
+      "humanInterventionCount": 0,
+      "humanWaitMs": 0,
+      "locatorAccuracy": {
+        "notEvaluableReason": null,
+        "sampleCount": 1,
+        "value": 1.0
+      },
+      "observedDisposition": "answer",
+      "providerCalls": 5,
+      "refusalCorrectness": {
+        "notEvaluableReason": "not_refusal_case",
+        "sampleCount": 0,
+        "value": null
+      },
+      "unsupportedClaimCount": 0
+    }
+  },
+  {
+    "case": "r100-conflict-direction",
+    "execution": {
+      "calls": [
+        {
+          "attempt_number": 1,
+          "input_tokens": 10,
+          "logical_call_key": "r100-conflict-direction:quick:0:quick",
+          "node_key": "quick",
+          "output_tokens": 5,
+          "status": "succeeded",
+          "usage_final": true
+        }
+      ],
+      "case_key": "r100-conflict-direction",
+      "conflict_detected": true,
+      "conflict_resolution": null,
+      "evidence_ids": [
+        "answer-pdf-chart",
+        "answer-image-trend"
+      ],
+      "failure_code": null,
+      "mode": "quick",
+      "observed_claims": [
+        {
+          "conflicted": true,
+          "evidence_ids": [
+            "answer-pdf-chart"
+          ],
+          "text": "The PDF trend rises after the third point."
+        },
+        {
+          "conflicted": true,
+          "evidence_ids": [
+            "answer-image-trend"
+          ],
+          "text": "The image observation falls in a sustained drop."
+        }
+      ],
+      "observed_disposition": "answer",
+      "output": "They conflict: the PDF trend rises, while the image observation falls in a sustained drop.",
+      "parallel_speedup": null
+    },
+    "mode": "quick",
+    "package": "r803-evaluation-package-v5.json",
+    "score": {
+      "caseKey": "r100-conflict-direction",
+      "caseType": "conflict",
+      "claimSupportRate": {
+        "notEvaluableReason": null,
+        "sampleCount": 2,
+        "value": 1.0
+      },
+      "claims": [
+        {
+          "claimKey": "pdf-direction",
+          "conflictResult": "detected",
+          "expectedEvidenceCount": 1,
+          "failureCode": null,
+          "locatorResult": "accurate",
+          "observedEvidenceCount": 1,
+          "supportResult": "supported"
+        },
+        {
+          "claimKey": "image-direction",
+          "conflictResult": "detected",
+          "expectedEvidenceCount": 1,
+          "failureCode": null,
+          "locatorResult": "accurate",
+          "observedEvidenceCount": 1,
+          "supportResult": "supported"
+        }
+      ],
+      "conflictDetectionRate": {
+        "notEvaluableReason": null,
+        "sampleCount": 1,
+        "value": 1.0
+      },
+      "cost": {
+        "amountMicros": 0,
+        "currency": "USD"
+      },
+      "evidencePrecision": {
+        "notEvaluableReason": null,
+        "sampleCount": 1,
+        "value": 1.0
+      },
+      "evidenceRecall": {
+        "notEvaluableReason": null,
+        "sampleCount": 1,
+        "value": 1.0
+      },
+      "expectedDisposition": "answer",
+      "failureCode": null,
+      "humanInterventionCount": 0,
+      "humanWaitMs": 0,
+      "locatorAccuracy": {
+        "notEvaluableReason": null,
+        "sampleCount": 1,
+        "value": 1.0
+      },
+      "observedDisposition": "answer",
+      "providerCalls": 1,
+      "refusalCorrectness": {
+        "notEvaluableReason": "not_refusal_case",
+        "sampleCount": 0,
+        "value": null
+      },
+      "unsupportedClaimCount": 0
+    }
+  },
+  {
+    "case": "r100-conflict-direction",
+    "execution": {
+      "calls": [
+        {
+          "attempt_number": 1,
+          "input_tokens": 10,
+          "logical_call_key": "r100-conflict-direction:planner:0:planner",
+          "node_key": "planner",
+          "output_tokens": 5,
+          "status": "succeeded",
+          "usage_final": true
+        },
+        {
+          "attempt_number": 1,
+          "input_tokens": 10,
+          "logical_call_key": "r100-conflict-direction:researcher:0:researcher",
+          "node_key": "researcher",
+          "output_tokens": 5,
+          "status": "succeeded",
+          "usage_final": true
+        },
+        {
+          "attempt_number": 1,
+          "input_tokens": 10,
+          "logical_call_key": "r100-conflict-direction:verifier:0:verifier",
+          "node_key": "verifier",
+          "output_tokens": 5,
+          "status": "succeeded",
+          "usage_final": true
+        },
+        {
+          "attempt_number": 1,
+          "input_tokens": 10,
+          "logical_call_key": "r100-conflict-direction:critic:0:critic",
+          "node_key": "critic",
+          "output_tokens": 5,
+          "status": "succeeded",
+          "usage_final": true
+        },
+        {
+          "attempt_number": 1,
+          "input_tokens": 10,
+          "logical_call_key": "r100-conflict-direction:synthesizer:0:synthesizer",
+          "node_key": "synthesizer",
+          "output_tokens": 5,
+          "status": "succeeded",
+          "usage_final": true
+        }
+      ],
+      "case_key": "r100-conflict-direction",
+      "conflict_detected": true,
+      "conflict_resolution": "evaluation_keep_as_unresolved",
+      "evidence_ids": [
+        "answer-image-trend",
+        "answer-pdf-chart"
+      ],
+      "failure_code": null,
+      "mode": "research",
+      "observed_claims": [
+        {
+          "conflicted": true,
+          "evidence_ids": [
+            "answer-image-trend"
+          ],
+          "text": "image-coordinate: Observation: latency falls after the third release. Release 4 begins the sustained drop."
+        },
+        {
+          "conflicted": true,
+          "evidence_ids": [
+            "answer-pdf-chart"
+          ],
+          "text": "pdf-coordinate: Figure 1. Trend rises after the third point. Supporting caption in a separate region."
+        }
+      ],
+      "observed_disposition": "answer",
+      "output": "image-coordinate: Observation: latency falls after the third release. Release 4 begins the sustained drop.\npdf-coordinate: Figure 1. Trend rises after the third point. Supporting caption in a separate region.",
+      "parallel_speedup": null
+    },
+    "mode": "research",
+    "package": "r803-evaluation-package-v5.json",
+    "score": {
+      "caseKey": "r100-conflict-direction",
+      "caseType": "conflict",
+      "claimSupportRate": {
+        "notEvaluableReason": null,
+        "sampleCount": 2,
+        "value": 1.0
+      },
+      "claims": [
+        {
+          "claimKey": "pdf-direction",
+          "conflictResult": "detected",
+          "expectedEvidenceCount": 1,
+          "failureCode": null,
+          "locatorResult": "accurate",
+          "observedEvidenceCount": 1,
+          "supportResult": "supported"
+        },
+        {
+          "claimKey": "image-direction",
+          "conflictResult": "detected",
+          "expectedEvidenceCount": 1,
+          "failureCode": null,
+          "locatorResult": "accurate",
+          "observedEvidenceCount": 1,
+          "supportResult": "supported"
+        }
+      ],
+      "conflictDetectionRate": {
+        "notEvaluableReason": null,
+        "sampleCount": 1,
+        "value": 1.0
+      },
+      "cost": {
+        "amountMicros": 0,
+        "currency": "USD"
+      },
+      "evidencePrecision": {
+        "notEvaluableReason": null,
+        "sampleCount": 1,
+        "value": 1.0
+      },
+      "evidenceRecall": {
+        "notEvaluableReason": null,
+        "sampleCount": 1,
+        "value": 1.0
+      },
+      "expectedDisposition": "answer",
+      "failureCode": null,
+      "humanInterventionCount": 0,
+      "humanWaitMs": 0,
+      "locatorAccuracy": {
+        "notEvaluableReason": null,
+        "sampleCount": 1,
+        "value": 1.0
+      },
+      "observedDisposition": "answer",
+      "providerCalls": 5,
+      "refusalCorrectness": {
+        "notEvaluableReason": "not_refusal_case",
+        "sampleCount": 0,
+        "value": null
+      },
+      "unsupportedClaimCount": 0
+    }
+  },
+  {
+    "case": "r100-locate-chart-caption",
+    "execution": {
+      "calls": [
+        {
+          "attempt_number": 1,
+          "input_tokens": 10,
+          "logical_call_key": "r100-locate-chart-caption:quick:0:quick",
+          "node_key": "quick",
+          "output_tokens": 5,
+          "status": "succeeded",
+          "usage_final": true
+        }
+      ],
+      "case_key": "r100-locate-chart-caption",
+      "conflict_detected": false,
+      "conflict_resolution": null,
+      "evidence_ids": [
+        "answer-image-constraint"
+      ],
+      "failure_code": null,
+      "mode": "quick",
+      "observed_claims": [
+        {
+          "conflicted": false,
+          "evidence_ids": [
+            "answer-image-constraint"
+          ],
+          "text": "Verify the chart and caption together."
+        }
+      ],
+      "observed_disposition": "answer",
+      "output": "Verify the chart and caption together.",
+      "parallel_speedup": null
+    },
+    "mode": "quick",
+    "package": "r803-evaluation-package-v5.json",
+    "score": {
+      "caseKey": "r100-locate-chart-caption",
+      "caseType": "evidence_gap",
+      "claimSupportRate": {
+        "notEvaluableReason": null,
+        "sampleCount": 1,
+        "value": 1.0
+      },
+      "claims": [
+        {
+          "claimKey": "paired-evidence",
+          "conflictResult": "none",
+          "expectedEvidenceCount": 1,
+          "failureCode": null,
+          "locatorResult": "accurate",
+          "observedEvidenceCount": 1,
+          "supportResult": "supported"
+        }
+      ],
+      "conflictDetectionRate": {
+        "notEvaluableReason": null,
+        "sampleCount": 1,
+        "value": 1.0
+      },
+      "cost": {
+        "amountMicros": 0,
+        "currency": "USD"
+      },
+      "evidencePrecision": {
+        "notEvaluableReason": null,
+        "sampleCount": 1,
+        "value": 1.0
+      },
+      "evidenceRecall": {
+        "notEvaluableReason": null,
+        "sampleCount": 1,
+        "value": 1.0
+      },
+      "expectedDisposition": "answer",
+      "failureCode": null,
+      "humanInterventionCount": 0,
+      "humanWaitMs": 0,
+      "locatorAccuracy": {
+        "notEvaluableReason": null,
+        "sampleCount": 1,
+        "value": 1.0
+      },
+      "observedDisposition": "answer",
+      "providerCalls": 1,
+      "refusalCorrectness": {
+        "notEvaluableReason": "not_refusal_case",
+        "sampleCount": 0,
+        "value": null
+      },
+      "unsupportedClaimCount": 0
+    }
+  },
+  {
+    "case": "r100-locate-chart-caption",
+    "execution": {
+      "calls": [
+        {
+          "attempt_number": 1,
+          "input_tokens": 10,
+          "logical_call_key": "r100-locate-chart-caption:planner:0:planner",
+          "node_key": "planner",
+          "output_tokens": 5,
+          "status": "succeeded",
+          "usage_final": true
+        },
+        {
+          "attempt_number": 1,
+          "input_tokens": 10,
+          "logical_call_key": "r100-locate-chart-caption:researcher:0:researcher",
+          "node_key": "researcher",
+          "output_tokens": 5,
+          "status": "succeeded",
+          "usage_final": true
+        },
+        {
+          "attempt_number": 1,
+          "input_tokens": 10,
+          "logical_call_key": "r100-locate-chart-caption:verifier:0:verifier",
+          "node_key": "verifier",
+          "output_tokens": 5,
+          "status": "succeeded",
+          "usage_final": true
+        },
+        {
+          "attempt_number": 1,
+          "input_tokens": 10,
+          "logical_call_key": "r100-locate-chart-caption:critic:0:critic",
+          "node_key": "critic",
+          "output_tokens": 5,
+          "status": "succeeded",
+          "usage_final": true
+        },
+        {
+          "attempt_number": 1,
+          "input_tokens": 10,
+          "logical_call_key": "r100-locate-chart-caption:synthesizer:0:synthesizer",
+          "node_key": "synthesizer",
+          "output_tokens": 5,
+          "status": "succeeded",
+          "usage_final": true
+        }
+      ],
+      "case_key": "r100-locate-chart-caption",
+      "conflict_detected": false,
+      "conflict_resolution": null,
+      "evidence_ids": [
+        "answer-image-constraint"
+      ],
+      "failure_code": null,
+      "mode": "research",
+      "observed_claims": [
+        {
+          "conflicted": false,
+          "evidence_ids": [
+            "answer-image-constraint"
+          ],
+          "text": "image-coordinate: Release 4 begins the sustained drop. Verify chart and caption together."
+        }
+      ],
+      "observed_disposition": "answer",
+      "output": "image-coordinate: Release 4 begins the sustained drop. Verify chart and caption together.",
+      "parallel_speedup": null
+    },
+    "mode": "research",
+    "package": "r803-evaluation-package-v5.json",
+    "score": {
+      "caseKey": "r100-locate-chart-caption",
+      "caseType": "evidence_gap",
+      "claimSupportRate": {
+        "notEvaluableReason": null,
+        "sampleCount": 1,
+        "value": 1.0
+      },
+      "claims": [
+        {
+          "claimKey": "paired-evidence",
+          "conflictResult": "none",
+          "expectedEvidenceCount": 1,
+          "failureCode": null,
+          "locatorResult": "accurate",
+          "observedEvidenceCount": 1,
+          "supportResult": "supported"
+        }
+      ],
+      "conflictDetectionRate": {
+        "notEvaluableReason": null,
+        "sampleCount": 1,
+        "value": 1.0
+      },
+      "cost": {
+        "amountMicros": 0,
+        "currency": "USD"
+      },
+      "evidencePrecision": {
+        "notEvaluableReason": null,
+        "sampleCount": 1,
+        "value": 1.0
+      },
+      "evidenceRecall": {
+        "notEvaluableReason": null,
+        "sampleCount": 1,
+        "value": 1.0
+      },
+      "expectedDisposition": "answer",
+      "failureCode": null,
+      "humanInterventionCount": 0,
+      "humanWaitMs": 0,
+      "locatorAccuracy": {
+        "notEvaluableReason": null,
+        "sampleCount": 1,
+        "value": 1.0
+      },
+      "observedDisposition": "answer",
+      "providerCalls": 5,
+      "refusalCorrectness": {
+        "notEvaluableReason": "not_refusal_case",
+        "sampleCount": 0,
+        "value": null
+      },
+      "unsupportedClaimCount": 0
+    }
+  },
+  {
+    "case": "r100-refuse-energy",
+    "execution": {
+      "calls": [
+        {
+          "attempt_number": 1,
+          "input_tokens": 10,
+          "logical_call_key": "r100-refuse-energy:quick:0:quick",
+          "node_key": "quick",
+          "output_tokens": 5,
+          "status": "succeeded",
+          "usage_final": true
+        }
+      ],
+      "case_key": "r100-refuse-energy",
+      "conflict_detected": false,
+      "conflict_resolution": null,
+      "evidence_ids": [],
+      "failure_code": null,
+      "mode": "quick",
+      "observed_claims": [],
+      "observed_disposition": "refuse",
+      "output": "The selected assets do not contain supporting evidence for Atlas energy consumption.",
+      "parallel_speedup": null
+    },
+    "mode": "quick",
+    "package": "r803-evaluation-package-v5.json",
+    "score": {
+      "caseKey": "r100-refuse-energy",
+      "caseType": "insufficiency",
+      "claimSupportRate": {
+        "notEvaluableReason": "no_expected_claims",
+        "sampleCount": 0,
+        "value": null
+      },
+      "claims": [],
+      "conflictDetectionRate": {
+        "notEvaluableReason": null,
+        "sampleCount": 1,
+        "value": 1.0
+      },
+      "cost": {
+        "amountMicros": 0,
+        "currency": "USD"
+      },
+      "evidencePrecision": {
+        "notEvaluableReason": null,
+        "sampleCount": 1,
+        "value": 1.0
+      },
+      "evidenceRecall": {
+        "notEvaluableReason": null,
+        "sampleCount": 1,
+        "value": 1.0
+      },
+      "expectedDisposition": "refuse",
+      "failureCode": null,
+      "humanInterventionCount": 0,
+      "humanWaitMs": 0,
+      "locatorAccuracy": {
+        "notEvaluableReason": null,
+        "sampleCount": 1,
+        "value": 1.0
+      },
+      "observedDisposition": "refuse",
+      "providerCalls": 1,
+      "refusalCorrectness": {
+        "notEvaluableReason": null,
+        "sampleCount": 1,
+        "value": 1.0
+      },
+      "unsupportedClaimCount": 0
+    }
+  },
+  {
+    "case": "r100-refuse-energy",
+    "execution": {
+      "calls": [
+        {
+          "attempt_number": 1,
+          "input_tokens": 10,
+          "logical_call_key": "r100-refuse-energy:planner:0:planner",
+          "node_key": "planner",
+          "output_tokens": 5,
+          "status": "succeeded",
+          "usage_final": true
+        },
+        {
+          "attempt_number": 1,
+          "input_tokens": 10,
+          "logical_call_key": "r100-refuse-energy:researcher:0:researcher",
+          "node_key": "researcher",
+          "output_tokens": 5,
+          "status": "succeeded",
+          "usage_final": true
+        },
+        {
+          "attempt_number": 1,
+          "input_tokens": 10,
+          "logical_call_key": "r100-refuse-energy:verifier:0:verifier",
+          "node_key": "verifier",
+          "output_tokens": 5,
+          "status": "succeeded",
+          "usage_final": true
+        },
+        {
+          "attempt_number": 1,
+          "input_tokens": 10,
+          "logical_call_key": "r100-refuse-energy:critic:0:critic",
+          "node_key": "critic",
+          "output_tokens": 5,
+          "status": "succeeded",
+          "usage_final": true
+        },
+        {
+          "attempt_number": 1,
+          "input_tokens": 10,
+          "logical_call_key": "r100-refuse-energy:synthesizer:0:synthesizer",
+          "node_key": "synthesizer",
+          "output_tokens": 5,
+          "status": "succeeded",
+          "usage_final": true
+        }
+      ],
+      "case_key": "r100-refuse-energy",
+      "conflict_detected": false,
+      "conflict_resolution": null,
+      "evidence_ids": [],
+      "failure_code": null,
+      "mode": "research",
+      "observed_claims": [],
+      "observed_disposition": "refuse",
+      "output": "The selected assets do not contain supporting evidence for this question.",
+      "parallel_speedup": null
+    },
+    "mode": "research",
+    "package": "r803-evaluation-package-v5.json",
+    "score": {
+      "caseKey": "r100-refuse-energy",
+      "caseType": "insufficiency",
+      "claimSupportRate": {
+        "notEvaluableReason": "no_expected_claims",
+        "sampleCount": 0,
+        "value": null
+      },
+      "claims": [],
+      "conflictDetectionRate": {
+        "notEvaluableReason": null,
+        "sampleCount": 1,
+        "value": 1.0
+      },
+      "cost": {
+        "amountMicros": 0,
+        "currency": "USD"
+      },
+      "evidencePrecision": {
+        "notEvaluableReason": null,
+        "sampleCount": 1,
+        "value": 1.0
+      },
+      "evidenceRecall": {
+        "notEvaluableReason": null,
+        "sampleCount": 1,
+        "value": 1.0
+      },
+      "expectedDisposition": "refuse",
+      "failureCode": null,
+      "humanInterventionCount": 0,
+      "humanWaitMs": 0,
+      "locatorAccuracy": {
+        "notEvaluableReason": null,
+        "sampleCount": 1,
+        "value": 1.0
+      },
+      "observedDisposition": "refuse",
+      "providerCalls": 5,
+      "refusalCorrectness": {
+        "notEvaluableReason": null,
+        "sampleCount": 1,
+        "value": 1.0
+      },
+      "unsupportedClaimCount": 0
+    }
+  },
+  {
+    "case": "r100-refuse-customer",
+    "execution": {
+      "calls": [
+        {
+          "attempt_number": 1,
+          "input_tokens": 10,
+          "logical_call_key": "r100-refuse-customer:quick:0:quick",
+          "node_key": "quick",
+          "output_tokens": 5,
+          "status": "succeeded",
+          "usage_final": true
+        }
+      ],
+      "case_key": "r100-refuse-customer",
+      "conflict_detected": false,
+      "conflict_resolution": null,
+      "evidence_ids": [],
+      "failure_code": null,
+      "mode": "quick",
+      "observed_claims": [],
+      "observed_disposition": "refuse",
+      "output": "The selected assets do not contain supporting evidence identifying a production customer.",
+      "parallel_speedup": null
+    },
+    "mode": "quick",
+    "package": "r803-evaluation-package-v5.json",
+    "score": {
+      "caseKey": "r100-refuse-customer",
+      "caseType": "insufficiency",
+      "claimSupportRate": {
+        "notEvaluableReason": "no_expected_claims",
+        "sampleCount": 0,
+        "value": null
+      },
+      "claims": [],
+      "conflictDetectionRate": {
+        "notEvaluableReason": null,
+        "sampleCount": 1,
+        "value": 1.0
+      },
+      "cost": {
+        "amountMicros": 0,
+        "currency": "USD"
+      },
+      "evidencePrecision": {
+        "notEvaluableReason": null,
+        "sampleCount": 1,
+        "value": 1.0
+      },
+      "evidenceRecall": {
+        "notEvaluableReason": null,
+        "sampleCount": 1,
+        "value": 1.0
+      },
+      "expectedDisposition": "refuse",
+      "failureCode": null,
+      "humanInterventionCount": 0,
+      "humanWaitMs": 0,
+      "locatorAccuracy": {
+        "notEvaluableReason": null,
+        "sampleCount": 1,
+        "value": 1.0
+      },
+      "observedDisposition": "refuse",
+      "providerCalls": 1,
+      "refusalCorrectness": {
+        "notEvaluableReason": null,
+        "sampleCount": 1,
+        "value": 1.0
+      },
+      "unsupportedClaimCount": 0
+    }
+  },
+  {
+    "case": "r100-refuse-customer",
+    "execution": {
+      "calls": [
+        {
+          "attempt_number": 1,
+          "input_tokens": 10,
+          "logical_call_key": "r100-refuse-customer:planner:0:planner",
+          "node_key": "planner",
+          "output_tokens": 5,
+          "status": "succeeded",
+          "usage_final": true
+        },
+        {
+          "attempt_number": 1,
+          "input_tokens": 10,
+          "logical_call_key": "r100-refuse-customer:researcher:0:researcher",
+          "node_key": "researcher",
+          "output_tokens": 5,
+          "status": "succeeded",
+          "usage_final": true
+        },
+        {
+          "attempt_number": 1,
+          "input_tokens": 10,
+          "logical_call_key": "r100-refuse-customer:verifier:0:verifier",
+          "node_key": "verifier",
+          "output_tokens": 5,
+          "status": "succeeded",
+          "usage_final": true
+        },
+        {
+          "attempt_number": 1,
+          "input_tokens": 10,
+          "logical_call_key": "r100-refuse-customer:critic:0:critic",
+          "node_key": "critic",
+          "output_tokens": 5,
+          "status": "succeeded",
+          "usage_final": true
+        },
+        {
+          "attempt_number": 1,
+          "input_tokens": 10,
+          "logical_call_key": "r100-refuse-customer:synthesizer:0:synthesizer",
+          "node_key": "synthesizer",
+          "output_tokens": 5,
+          "status": "succeeded",
+          "usage_final": true
+        }
+      ],
+      "case_key": "r100-refuse-customer",
+      "conflict_detected": false,
+      "conflict_resolution": null,
+      "evidence_ids": [],
+      "failure_code": null,
+      "mode": "research",
+      "observed_claims": [],
+      "observed_disposition": "refuse",
+      "output": "The selected assets do not contain supporting evidence for this question.",
+      "parallel_speedup": null
+    },
+    "mode": "research",
+    "package": "r803-evaluation-package-v5.json",
+    "score": {
+      "caseKey": "r100-refuse-customer",
+      "caseType": "insufficiency",
+      "claimSupportRate": {
+        "notEvaluableReason": "no_expected_claims",
+        "sampleCount": 0,
+        "value": null
+      },
+      "claims": [],
+      "conflictDetectionRate": {
+        "notEvaluableReason": null,
+        "sampleCount": 1,
+        "value": 1.0
+      },
+      "cost": {
+        "amountMicros": 0,
+        "currency": "USD"
+      },
+      "evidencePrecision": {
+        "notEvaluableReason": null,
+        "sampleCount": 1,
+        "value": 1.0
+      },
+      "evidenceRecall": {
+        "notEvaluableReason": null,
+        "sampleCount": 1,
+        "value": 1.0
+      },
+      "expectedDisposition": "refuse",
+      "failureCode": null,
+      "humanInterventionCount": 0,
+      "humanWaitMs": 0,
+      "locatorAccuracy": {
+        "notEvaluableReason": null,
+        "sampleCount": 1,
+        "value": 1.0
+      },
+      "observedDisposition": "refuse",
+      "providerCalls": 5,
+      "refusalCorrectness": {
+        "notEvaluableReason": null,
+        "sampleCount": 1,
+        "value": 1.0
+      },
+      "unsupportedClaimCount": 0
+    }
+  }
+]

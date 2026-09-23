@@ -36,3 +36,6 @@ apps/web/test-results/
 
 # Local env profiles (secrets)
 infra/env/*.local.env
+
+# Isolated local baseline snapshots and verification output
+.local-validation/

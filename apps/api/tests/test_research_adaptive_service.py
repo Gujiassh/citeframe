@@ -18,7 +18,7 @@ from ai_pdf_api.services.retrieval import RetrievedContent
 from ai_pdf_api.services.research.research_idempotency import ResearchError
 from research_worker_test_support import lease_default_step, sha256
 sys.path.insert(0, str(Path(__file__).resolve().parents[2] / 'worker' / 'src'))
-from ai_pdf_worker.research_adaptive_retrieval import research_adaptively
+from ai_pdf_worker.research.adaptive_retrieval import research_adaptively
 
 
 @pytest.mark.parametrize('stop', [None, 'budget', 'cancel'])

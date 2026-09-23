@@ -58,3 +58,17 @@ ENV PYTHONPATH=/app/packages/backend-contracts/src:/app/packages/backend-persist
 RUN python -c 'from pathlib import Path; import citeframe_contracts, citeframe_persistence, citeframe_research_persistence; p = Path(citeframe_research_persistence.__file__).resolve(); assert "/app/apps/api" not in str(p), p; print("backend-package-import-smoke=pass")'
 
 CMD ["python", "-m", "ai_pdf_worker.main"]
+
+# Tooling is opt-in; production API/Worker targets do not include evaluation code.
+FROM worker AS evaluation
+USER root
+COPY tools/evaluation /app/tools/evaluation
+COPY docs/evals/*.json /app/docs/evals/
+COPY docs/fixtures /app/docs/fixtures
+RUN chown -R app:app /app/tools /app/docs
+USER app
+WORKDIR /app
+ENV CITEFRAME_REPO_ROOT=/app \
+    PYTHONPATH=/app/tools/evaluation/src:/app/packages/backend-contracts/src:/app/packages/backend-persistence/src:/app/packages/research-persistence/src:/app/apps/api/src:/app/apps/worker/src
+RUN python -m citeframe_evaluation.cli.campaign --help
+CMD ["python", "-m", "citeframe_evaluation.cli.campaign", "--help"]

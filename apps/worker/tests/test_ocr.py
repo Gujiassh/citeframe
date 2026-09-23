@@ -1,8 +1,8 @@
 import numpy as np
 import pytest
 
-import ai_pdf_worker.ocr as ocr_module
-from ai_pdf_worker.ocr import (
+import ai_pdf_worker.ingestion.ocr as ocr_module
+from ai_pdf_worker.ingestion.ocr import (
     _recognized_blocks,
     _recognized_content,
     _recognized_text,
