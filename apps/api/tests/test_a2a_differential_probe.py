@@ -62,6 +62,10 @@ def _id(name: str) -> str:
     return str(uuid5(NAMESPACE_URL, f"citeframe/a2a-differential/{name}"))
 
 
+class _RawNormalizer:
+    value = staticmethod(_raw_json_value)
+
+
 class _Normalizer:
     """Normalize only the proven process worker-instance runtime identity."""
 
@@ -95,7 +99,18 @@ class _Normalizer:
         return base64.b64encode(_canonical(self.value(value))).decode()
 
 
+def _sqlite_clock(connection, _record):
+    import sqlite3
+    if isinstance(connection, sqlite3.Connection):
+        connection.create_function("current_timestamp", 0,
+            lambda: NOW.strftime("%Y-%m-%d %H:%M:%S"))
+
+
 def _install_determinism() -> None:
+    from sqlalchemy import event
+    from sqlalchemy.engine import Engine
+    if not event.contains(Engine, "connect", _sqlite_clock):
+        event.listen(Engine, "connect", _sqlite_clock)
     lock = threading.Lock()
     uuid_counter = 0
     token_counter = 0
@@ -645,6 +660,7 @@ def _lease_retry_cancel_reclaim(path: Path, normalizer: _Normalizer) -> dict[str
             "transitions": [_raw_bytes_b64(_event_row(event)) for event in events]
         }
         results["_transitionDbRows"] = _database_rows(db, _Normalizer())
+        results["_rawTransitionDbRows"] = _database_rows(db, _RawNormalizer())
     engine.dispose()
     print("a2a_probe stage=transitions_done", flush=True)
     return results
@@ -697,6 +713,34 @@ def _process_one_flow(path: Path, normalizer: _Normalizer) -> dict[str, object]:
     Base.metadata.create_all(engine)
     sessions = sessionmaker(bind=engine, autoflush=False, expire_on_commit=False, future=True)
     objects: dict[str, bytes] = {}
+    publication_lifecycle: list[dict[str, object]] = []
+    from sqlalchemy import event
+    from sqlalchemy.orm import Session
+
+    def observe_publication_commit(_session):
+        # Read a separately committed view; do not mutate production saga decisions.
+        from ai_pdf_api.models import ResearchStepAttempt, WorkspaceMembership
+        with Session(engine) as reader:
+            rows = _database_rows(reader, normalizer)
+            intents = rows.get("research_publication_intents", [])
+            if intents:
+                origin = reader.get(ResearchStepAttempt, intents[0]["attempt_id"])
+                origin_run = reader.get(ResearchRun, intents[0]["run_id"])
+                member = reader.scalar(select(WorkspaceMembership).where(
+                    WorkspaceMembership.workspace_id == origin_run.workspace_id,
+                    WorkspaceMembership.user_id == origin_run.created_by_user_id))
+                owner = origin.worker_instance_id
+                authorization = {"creatorId": origin_run.created_by_user_id,
+                                 "role": member.role if member else None}
+        if intents and (not publication_lifecycle or
+                        publication_lifecycle[-1]["rows"]["research_publication_intents"] != intents):
+            publication_lifecycle.append({"rows": rows,
+                "producerWorkerInstanceId": owner, "authorization": authorization,
+                "objectPayloads": {
+                key: base64.b64encode(value).decode() for key, value in sorted(objects.items())
+                if key.startswith("research/")}})
+
+    event.listen(sessions, "after_commit", observe_publication_commit)
     from ai_pdf_api.services.research import research_views
     research_views.download_bytes = lambda key: objects[key]
     seed_state(
@@ -836,6 +880,11 @@ def _process_one_flow(path: Path, normalizer: _Normalizer) -> dict[str, object]:
     else:
         # Candidate production composition keeps only capability adapters outside neutral persistence.
         composition.upload_bytes = store_bytes
+        composition.upload_publication_bytes = store_bytes
+        composition.download_publication_bytes = lambda key: objects[key]
+        composition.list_publication_object_keys = lambda prefix: tuple(sorted(
+            key for key in objects if key.startswith(prefix)))
+        composition.delete_publication_object_if_exists = cleanup_bytes
         composition.delete_object_if_exists = cleanup_bytes
         composition.SessionLocal = sessions
         composition.search_frozen_evidence = injected_search
@@ -966,14 +1015,29 @@ def _process_one_flow(path: Path, normalizer: _Normalizer) -> dict[str, object]:
         with sessions() as db:
             current = db.get(ResearchRun, run_id)
             assert current is not None and current.status == "completed"
+        with sessions() as db:
+            before_maintenance = _database_rows(db, normalizer)
+        provider_before_maintenance = list(provider.calls)
+        maintenance_outputs = []
+        if composition is not None and hasattr(composition, "reconcile_one_publication_intent"):
+            maintenance_outputs.append(processor.process_one())
+            assert maintenance_outputs == [True]
+            outputs.extend(maintenance_outputs)
         outputs.append(processor.process_one())
         assert outputs[-1] is False
+        with sessions() as db:
+            after_maintenance = _database_rows(db, normalizer)
+        assert provider.calls == provider_before_maintenance
         print("a2a_probe stage=process_resume_done", flush=True)
 
     with sessions() as db:
         run = db.get(ResearchRun, run_id)
         assert run is not None
         rows = _database_rows(db, normalizer)
+        raw_rows = _database_rows(db, _RawNormalizer())
+        from sqlalchemy import inspect
+        inspector = inspect(db.bind)
+        schema_columns = {table: sorted(c["name"] for c in inspector.get_columns(table)) for table in rows}
         event_types = [row["event_type"] for row in rows["research_events"]]
         step_kinds = [row["step_kind"] for row in rows["research_steps"]]
         from ai_pdf_api.models import ResearchEvent
@@ -1007,10 +1071,20 @@ def _process_one_flow(path: Path, normalizer: _Normalizer) -> dict[str, object]:
     engine.dispose()
     return {
         "normalizedDbRows": rows,
+        "_rawDbRows": raw_rows,
+        "_schemaColumns": schema_columns,
         "terminalProcessSemantics": normalizer.value(final),
         "_schedulerEvidence": {
             "processOneOutputs": outputs,
-            "handledAttemptCount": sum(1 for item in outputs if item),
+            "handledAttemptCount": sum(1 for item in outputs if item) - len(maintenance_outputs),
+            "maintenanceCallCount": len(maintenance_outputs),
+        },
+        "_publicationLifecycle": publication_lifecycle,
+        "_publicationMaintenance": {
+            "before": before_maintenance, "after": after_maintenance,
+            "outputs": [*maintenance_outputs, False],
+            "providerCallsBefore": provider_before_maintenance,
+            "providerCallsAfter": list(provider.calls),
         },
         "_processExactEventBytes": process_event_bytes,
         "_processExactPayloadBytes": {
@@ -1037,8 +1111,12 @@ def test_generate_executable_differential_report(tmp_path: Path) -> None:
     process = _process_one_flow(tmp_path / "process-one.db", normalizer)
     transition_rows = semantics.pop("_transitionDbRows")
     process_rows = process.pop("normalizedDbRows")
+    raw_rows = {"transitions": semantics.pop("_rawTransitionDbRows"), "processOne": process.pop("_rawDbRows")}
+    schema_columns = process.pop("_schemaColumns")
     composition = process.pop("_composition")
     scheduler = process.pop("_schedulerEvidence")
+    maintenance = process.pop("_publicationMaintenance")
+    lifecycle = process.pop("_publicationLifecycle")
     semantics["normalizedDbRows"] = {
         "transitions": transition_rows,
         "processOne": process_rows,
@@ -1070,6 +1148,10 @@ def test_generate_executable_differential_report(tmp_path: Path) -> None:
         "label": os.environ.get("A2A_DIFFERENTIAL_LABEL"),
         "composition": composition,
         "schedulerEvidence": scheduler,
+        "publicationMaintenance": maintenance,
+        "publicationLifecycle": lifecycle,
+        "rawDatabaseRows": raw_rows,
+        "researchTableColumns": schema_columns,
         "semantics": semantics,
     }
     Path(OUTPUT).write_bytes(_canonical(report) + b"\n")

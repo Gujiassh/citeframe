@@ -14,6 +14,8 @@ import tarfile
 import tempfile
 from pathlib import Path
 
+from a2a_r2_delta import compare
+
 BASELINE_REF = "d1b5945e977445e4db6bf56ef54cf61607ead2e2"
 BASELINE_ARCHIVE_PATHS = (
     "apps/api",
@@ -251,7 +253,7 @@ def _validate_scheduler_evidence(label: str, payload: object) -> dict[str, objec
         or len(outputs) < 2
         or outputs[-1] is not False
         or any(item is not True for item in outputs[:-1])
-        or handled != len(outputs) - 1
+        or handled != len(outputs) - 1 - payload.get("maintenanceCallCount", 0)
     ):
         raise RuntimeError(f"{label} scheduler evidence is invalid: {payload}")
     return payload
@@ -357,10 +359,14 @@ def run(
     missing = REQUIRED_AREAS - set(baseline_semantics)
     if missing:
         raise RuntimeError(f"probe coverage missing: {sorted(missing)}")
-    equal = _canonical(baseline_semantics) == _canonical(candidate_semantics)
+    comparison = compare(baseline, candidate)
+    equal = comparison["rawEqual"]
     result: dict[str, object] = {
-        "schemaVersion": "citeframe-a2a-executable-differential-v1",
+        "schemaVersion": "citeframe-a2a-r2-explicit-differential-v2",
+        **comparison,
         "baselineRef": resolved,
+        "rawBaselineReport": baseline,
+        "rawCandidateReport": candidate,
         "candidateHead": subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=root, text=True).strip(),
         "candidateSemanticWorktreeSha256": semantic_before,
         "candidateSemanticDirty": semantic_dirty,
@@ -373,7 +379,7 @@ def run(
         "candidateWorkerEnvironment": candidate_environment,
         "schedulerDelta": {
             "allowed": True,
-            "rule": "process_one_claims_exactly_one_attempt; terminal DB/payload/Event semantics remain equal",
+            "rule": "one attempt per call plus one identified R2 terminal sweep; approved intent/key/event-ID deltas only",
             "baseline": baseline_scheduler,
             "candidate": candidate_scheduler,
         },
@@ -424,14 +430,14 @@ def main() -> int:
         return 2
     print(
         "a2a_differential "
-        f"status={'pass' if result['equal'] else 'fail'} "
+        f"status={'pass' if result['accepted'] else 'fail'} "
         f"baseline={result['baselineRef']} candidate={result['candidateHead']} "
         f"semantic={result['candidateSemanticWorktreeSha256']} "
         f"repair={result['repairSnapshotSha256']} "
         f"dirty={str(result['repairSnapshotDirty']).lower()} "
         f"coverage={len(result['coverage'])}"
     )
-    if not result["equal"]:
+    if not result["accepted"]:
         print(result.get("diff", ""), file=sys.stderr)
         return 1
     return 0

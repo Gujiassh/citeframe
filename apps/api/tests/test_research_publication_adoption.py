@@ -87,15 +87,29 @@ def retry_evidence(f, fact):
     return old, next(t for t in tools if t.tool_name == "evidence.search")
 
 
-@pytest.mark.parametrize("corrupt", [None, "step", "snapshot", "failed_tool", "input", "running_origin"])
+@pytest.mark.parametrize("corrupt", [None, "implicit_input", "step", "snapshot", "failed_tool", "input", "current_input", "null_origin", "null_current", "workspace", "run", "running_origin"])
 def test_retry_evidence_reaches_final_publication(research_worker_db, corrupt):
     f = research_worker_db
     fact, unresolved = make_final_publication_chain(f)
+    if corrupt in {"implicit_input", "null_origin", "null_current"}:
+        producer = f.db.get(ResearchStep, fact.produced_by_step_id)
+        producer.input_sha256 = None
+        origin = f.db.scalar(select(ResearchStepAttempt).where(ResearchStepAttempt.step_id == producer.id))
+        origin.input_sha256 = sha256(producer.id)
+        f.db.commit()
     old, tool = retry_evidence(f, fact)
     if corrupt == "step": tool.step_id = f.step.id
     if corrupt == "snapshot": tool.execution_snapshot_id = str(uuid4())
     if corrupt == "failed_tool": tool.status = "failed"
     if corrupt == "input": old.input_sha256 = sha256("different-scope")
+    if corrupt in {"current_input", "null_current"}:
+        current = f.db.scalar(select(ResearchStepAttempt).where(
+            ResearchStepAttempt.step_id == old.step_id,
+            ResearchStepAttempt.attempt_number == 2))
+        current.input_sha256 = sha256("different-current-input")
+    if corrupt == "null_origin": old.input_sha256 = sha256("wrong-null-fallback")
+    if corrupt == "workspace": tool.workspace_id = str(uuid4())
+    if corrupt == "run": tool.run_id = str(uuid4())
     if corrupt == "running_origin": old.status = "running"
     f.db.commit()
     lease = lease_default_step(f)
@@ -106,7 +120,35 @@ def test_retry_evidence_reaches_final_publication(research_worker_db, corrupt):
     f.db.expire_all()
     intent = f.db.scalar(select(ResearchPublicationIntent).where(ResearchPublicationIntent.attempt_id == lease.attempt_id))
     count = f.db.scalar(select(func.count()).select_from(ResearchArtifact).where(ResearchArtifact.artifact_kind == "final_report"))
-    if corrupt is None:
+    if corrupt in {None, "implicit_input"}:
         assert intent.status == "committed" and f.run.status == "completed" and count == 1
     else:
         assert intent.status == "compensating" and count == 0 and not store.objects
+
+
+def test_single_nullable_input_keeps_persisted_event_identity(research_worker_db):
+    from ai_pdf_api.services.research.research_artifacts import serialize_sse_event
+    from sqlalchemy.orm import Session
+    f = research_worker_db
+    fact, unresolved = make_final_publication_chain(f)
+    producer = f.db.get(ResearchStep, fact.produced_by_step_id)
+    producer.input_sha256 = None
+    origin = f.db.scalar(select(ResearchStepAttempt).where(ResearchStepAttempt.step_id == producer.id))
+    origin.input_sha256 = sha256(producer.id)
+    f.db.commit()
+    lease = lease_default_step(f)
+    store = MemoryPublicationStore()
+    args = dict(attempt_id=lease.attempt_id, lease_token=lease.lease_token,
+        fact_claim_ids=(fact.id,), unresolved_claim_ids=(unresolved.id,),
+        **local_publication_callbacks(f, store))
+    artifact = publish_final_report(f.db, **args)
+    def events(session):
+        return [serialize_sse_event(e) for e in session.scalars(select(ResearchEvent)
+            .where(ResearchEvent.run_id == f.run.id).order_by(ResearchEvent.seq))]
+    before = events(f.db)
+    assert artifact and f.run.status == "completed"
+    assert publish_final_report(f.db, **args) == artifact
+    assert events(f.db) == before
+    with Session(f.db.bind) as restarted_reader:
+        assert events(restarted_reader) == before
+    assert len(store.put_keys) == 1
