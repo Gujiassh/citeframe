@@ -5,7 +5,7 @@ import json
 
 
 def verify_feature_negative_controls(payload):
-    from a2a_feature_history_oracle import compare_historical_feature
+    from a2a_conflict_feature_oracle import compare_conflict_history as compare_historical_feature
     baseline = payload["rawBaselineReport"]
     source = payload["rawCandidateReport"]
     assert compare_historical_feature(baseline, source)["accepted"]

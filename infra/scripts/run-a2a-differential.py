@@ -15,7 +15,7 @@ import tempfile
 from pathlib import Path
 
 from a2a_r2_delta import compare
-from a2a_feature_history_oracle import compare_historical_feature
+from a2a_conflict_feature_oracle import compare_conflict_history as compare_historical_feature
 
 BASELINE_REF = "d1b5945e977445e4db6bf56ef54cf61607ead2e2"
 BASELINE_ARCHIVE_PATHS = (
@@ -48,6 +48,7 @@ def _run_probe(
     historical_state: Path | None = None,
     current_scenario: bool = False,
     stored_approvals: bool = False,
+    v3_restore: bool = False,
 ) -> None:
     paths = [
         root / "apps/api/src",
@@ -84,8 +85,10 @@ def _run_probe(
         "VIRTUAL_ENV",
     ):
         env.pop(inherited, None)
-    for key in ("A2A_HISTORICAL_STATE", "A2A_CURRENT_SCENARIO", "A2A_STORED_APPROVALS"):
+    for key in ("A2A_HISTORICAL_STATE", "A2A_CURRENT_SCENARIO", "A2A_STORED_APPROVALS", "A2A_V3_RESTORE"):
         env.pop(key, None)
+    if v3_restore:
+        env["A2A_V3_RESTORE"] = "1"
     if stored_approvals:
         env["A2A_STORED_APPROVALS"] = "1"
     if historical_state is not None:
@@ -339,6 +342,10 @@ def run(
         _run_probe(root=root, probe=probe, output=current_report, uv=uv, label="candidate", current_scenario=True)
         _run_probe(root=root, probe=probe, output=stored_report, uv=uv, label="candidate",
                    historical_state=baseline_report, stored_approvals=True)
+        v3_report = temp / "v3-restored.json"
+        _run_probe(root=root,probe=probe,output=v3_report,uv=uv,label="candidate",current_scenario=True,
+            historical_state=root/"apps/api/tests/fixtures/research-v3-created-b1f7423.json",v3_restore=True)
+        v3 = json.loads(v3_report.read_text(encoding="utf-8"))
         current = json.loads(current_report.read_text(encoding="utf-8"))
         stored = json.loads(stored_report.read_text(encoding="utf-8"))
         baseline = json.loads(baseline_report.read_text(encoding="utf-8"))
@@ -346,7 +353,7 @@ def run(
         parser_evidence = []
         for name, report, schema, origin in (("legacy", baseline, "1", "human"),
                 ("restored-new-human", candidate, "2", "human"), ("stored-replay", stored, "1", "human"),
-                ("current-default", current, "2", "policy")):
+                ("current-default", current, "2", "policy"), ("restored-v3", v3, "2", "policy")):
             wire = temp / f"{name}.sse"
             wire.write_text(report["productionSseWire"], encoding="utf-8")
             parsed = subprocess.run([shutil.which("node"), "--import", "tsx", "scripts/check-research-history-sse.mjs",
@@ -395,7 +402,7 @@ def run(
     comparison = compare_historical_feature(baseline, candidate)
     stored_comparison = compare_historical_feature(baseline, stored, stored_responses=True)
     equal = _canonical(baseline_semantics) == _canonical(candidate_semantics)
-    require_current = current["workflowEvidence"]["result"] == "completed" and current["scenario"] == "B-current-default"
+    require_current = current["workflowEvidence"]["result"] == "completed" and current["scenario"] == "B-current-default" and v3["workflowEvidence"]["result"] == "completed" and v3["scenario"] == "C-historical-v3"
     comparison["accepted"] = comparison["accepted"] and stored_comparison["accepted"] and require_current
     candidate_head = subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=root, text=True).strip()
     result: dict[str, object] = {
@@ -411,10 +418,11 @@ def run(
         "rawCurrentDefaultSha256": hashlib.sha256(_canonical(current)).hexdigest(),
         "rawStoredReplayReport": stored,
         "rawCurrentDefaultReport": current,
+        "rawV3RestoredReport": v3,
         "historicalStoredReplay": stored_comparison,
         "productionConsumerEvidence": parser_evidence,
         "workflowScenarios": {name: {**report["workflowEvidence"], "candidateHead": candidate_head}
-                              for name, report in (("A", candidate), ("AStored", stored), ("B", current))},
+                              for name, report in (("A", candidate), ("AStored", stored), ("B", current), ("C", v3))},
         "historicalRecoveryExecution": {"newProviderCalls": stored["semantics"]["terminalProcessSemantics"]["providerNodes"],
             "scheduler": stored["schedulerEvidence"], "replayedResponsesUnchanged": True},
         "candidateHead": candidate_head,

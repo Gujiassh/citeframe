@@ -418,6 +418,7 @@ def test_third_distinct_search_cannot_be_reserved(research_worker_db):
         call(f, lease, number=2, phase="search", request={"query": "third"})
 
 
+@pytest.mark.parametrize("completed", [False, True])
 @pytest.mark.parametrize("explicit_input", [False, True])
 @pytest.mark.parametrize(
     "mutation",
@@ -431,7 +432,7 @@ def test_third_distinct_search_cannot_be_reserved(research_worker_db):
         "evidence_run",
     ],
 )
-def test_live_gate_source_hash_and_scope(research_worker_db, explicit_input, mutation):
+def test_live_gate_source_hash_and_scope(research_worker_db, explicit_input, mutation, completed):
     from dataclasses import asdict
     from uuid import uuid4
     from ai_pdf_api.services.research.research_worker_evidence import (
@@ -447,6 +448,11 @@ def test_live_gate_source_hash_and_scope(research_worker_db, explicit_input, mut
     lease = gate(f)
     attempt = f.db.get(ResearchStepAttempt, lease.attempt_id)
     assert attempt.input_sha256 == (f.step.input_sha256 or sha256(f.step.id))
+    if completed:
+        f.step.status = attempt.status = "succeeded"
+        f.step.finished_at = attempt.finished_at = f.now
+        attempt.lease_expires_at = None
+        f.db.commit()
     handle = seed_frozen_evidence(f, lease.attempt_id)
     value = asdict(
         _evidence_handle(_frozen_evidence_value(f.db, handle, branch_key="conflicts"))

@@ -749,7 +749,8 @@ def _process_one_flow(path: Path, normalizer: _Normalizer) -> dict[str, object]:
     approval_checkpoint = None
     decision_requests = []
     historical_report = None
-    assert not (autonomous and history_path)
+    v3_restore = os.environ.get("A2A_V3_RESTORE") == "1"
+    assert not (autonomous and history_path) or v3_restore
     if history_path:
         from a2a_historical_state import restore_created_state
         historical_report = json.loads(Path(history_path).read_text(encoding="utf-8"))
@@ -837,6 +838,13 @@ def _process_one_flow(path: Path, normalizer: _Normalizer) -> dict[str, object]:
                 }
                 if "nextQuery" in variables.get("resultSchema", {}).get("properties", {}):
                     value["nextQuery"] = None
+            elif "investigation" in variables:
+                node = "investigator"
+                evidence = variables["investigation"]["evidence"]
+                value = {"inspections": [{"evidenceHandleId": e["id"], "quote": e["excerpt"],
+                    "version": None, "environment": None, "time": None, "conditions": None} for e in evidence],
+                    "revisions": [], "nextQuery": "Check the conflicting fixture version", "gaps": ["No version distinction is documented."],
+                    "reason": "The source does not establish a version-specific correction."}
             elif "reasonTaxonomy" in variables:
                 node = "verifier"
                 value = {"claims": [{"id": item["id"], "status": "supported"} for item in variables["claims"]]}
@@ -1103,8 +1111,11 @@ def _process_one_flow(path: Path, normalizer: _Normalizer) -> dict[str, object]:
         from a2a_historical_state import workflow_evidence
         workflow = workflow_evidence(db, run)
         if autonomous:
-            from a2a_current_acceptance import assert_current_completion
-            assert_current_completion(rows, objects, api_payload_bytes, workflow)
+            from a2a_conflict_current_acceptance import assert_v4_completion, assert_v3_restored
+            if v3_restore:
+                assert_v3_restored(rows, objects, api_payload_bytes, workflow, historical_report)
+            else:
+                assert_v4_completion(rows, objects, api_payload_bytes, workflow)
         final = {
             "idleAfterTerminal": outputs[-1],
             "providerNodes": provider.calls,
@@ -1219,7 +1230,7 @@ def test_generate_executable_differential_report(tmp_path: Path) -> None:
         "historicalDecisionRequests": decision_requests,
         "productionSseWire": sse_wire,
         "workflowEvidence": workflow,
-        "scenario": "B-current-default" if os.environ.get("A2A_CURRENT_SCENARIO") else "A-historical-v2",
+        "scenario": "C-historical-v3" if os.environ.get("A2A_V3_RESTORE") else "B-current-default" if os.environ.get("A2A_CURRENT_SCENARIO") else "A-historical-v2",
         "historicalCreatedState": created_state,
         "restoredHistoricalStateSha256": restored_sha,
         "semantics": semantics,

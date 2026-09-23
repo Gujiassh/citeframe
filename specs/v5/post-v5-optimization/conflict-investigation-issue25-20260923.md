@@ -69,3 +69,14 @@ A 14-case null/explicit-input matrix covers valid current attempts and wrong att
 The dependency base remains #29 `5bfee6a`; nullable **finished-attempt replay** still depends on Franklin's pending #29 integration of #28's adoption fix. This local live-gate repair does not establish that pending combined path.
 
 CI at prior HEAD `d619d719` passed all Worker jobs and both Web jobs. API reported 837 passed, 2 skipped, 3 failures: two existing A2 pending-human-plan assumptions are handed back to Franklin; the third was the asset migration test expecting q1's downgrade error while r2 now rejects first. The latter test now expects r2's forward-only message. That PostgreSQL assertion needs a new CI run; no local PostgreSQL run is claimed. PR remains draft and the real-service acceptance gates stay open.
+
+
+## Explicit v4 feature oracle and upstream integration
+
+Normally merged #29 `b1f7423e5595d81d408d89de4ca565825e5c4e3b` in `ab704253d63c89ef95af287239a71eeffd79a850`. Both appended browser-test groups and SSoT sections were retained when resolving the two append conflicts. The R2 difference whitelist and F1 historical comparator remain unchanged.
+
+Issue #25 adds `a2a_conflict_feature_oracle.py` as an explicit F2 projection before F1/R2: historical investigation table schema must be exact and its rows empty in all snapshots; only a null investigation field on a recognized historical run DTO may be removed; the current default must be v4/Agent IO v3 before projecting the default-version observation for the v3-era comparator. Existing historical responses and events retain their original handling. R2 still rejects unapproved changes.
+
+The current-default B scenario now executes actual POST creation, production scheduling, investigator, real frozen evidence service with scripted retrieval, durable no-new-evidence termination and final publication. Its separate feature assertions check v4 prompt identities, journal hashes/phases/snapshot/attempt lineage, source linkage, original claims and unresolved report gaps. A and AStored continue to restore historical v2 state and idempotency records. C restores an original persisted v3 creation state exported by the fixed #29 b1f7423 runner, installs v4 beside it, and completes with the original v3 manifest/prompts/IO and no investigation journal. This C evidence starts before approval; it does not claim recovery of a pre-existing approved v3 snapshot.
+
+The exploratory dirty-worktree runner passed A/AStored/B/C and five real serialized-SSE→Web-parser checks. Its report is `.local-issue25/v4-feature-integration.json`; it is not same-HEAD acceptance. On that raw report, all 33 R2, 6 F1 and 10 F2 negative controls reject; nullable running/completed-attempt source plus publication/migration targeted suite: 64 passed. A clean committed-head rerun is required for delivery. PostgreSQL/object-store/process/UI production acceptance remains open.
