@@ -1,4 +1,5 @@
 """Permission and replay provenance checks at publication adoption."""
+import hashlib
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 from citeframe_persistence.models import ResearchStep, ResearchStepAttempt, ResearchToolCall, WorkspaceMembership
@@ -26,7 +27,8 @@ def tool_attempt_is_replayable(
         origin is not None
         and origin.workspace_id == producer.workspace_id
         and origin.step_id == producer.id
-        and origin.input_sha256 == producer.input_sha256 == current.input_sha256
+        and origin.input_sha256 == current.input_sha256
+        == (producer.input_sha256 or hashlib.sha256(producer.id.encode("utf-8")).hexdigest())
         and origin.finished_at is not None
         and tool.tool_name == "evidence.search" and tool.tool_version == 1
         and tool.error_code is None and tool.error_message is None

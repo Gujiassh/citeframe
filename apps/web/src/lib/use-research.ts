@@ -51,6 +51,8 @@ export function useResearch(workspaceId: string, selectedAssetIds: string[], cur
   const [snapshot, setSnapshot] = useState<ResearchSnapshot | null>(null);
   const [runList, setRunList] = useState<{ workspaceId: string; items: ResearchRunSummary[] } | null>(null);
   const [loading, setLoading] = useState(false);
+  const refreshRequestId = useRef(0);
+  const [initialRefresh, setInitialRefresh] = useState<{ workspaceId: string; id: number } | null>(null);
   const [streamStatus, setStreamStatus] = useState<{
     workspaceId: string;
     runId: string;
@@ -84,6 +86,7 @@ export function useResearch(workspaceId: string, selectedAssetIds: string[], cur
 
   useEffect(() => {
     workspaceIdRef.current = workspaceId;
+    refreshRequestId.current += 1;
   }, [workspaceId]);
 
   useEffect(() => {
@@ -98,7 +101,7 @@ export function useResearch(workspaceId: string, selectedAssetIds: string[], cur
     return items;
   }, [workspaceId]);
 
-  const refresh = useCallback(async (runId: string) => {
+  const refresh = useCallback(async (runId: string, isCurrent: () => boolean = () => true) => {
     const [runPayload, artifactPayload] = await Promise.all([
       getResearchRun(workspaceId, runId),
       listResearchArtifacts(workspaceId, runId),
@@ -128,7 +131,7 @@ export function useResearch(workspaceId: string, selectedAssetIds: string[], cur
     )) {
       throw new Error("The conflict report does not match the pending decision.");
     }
-    if (workspaceIdRef.current === workspaceId) {
+    if (workspaceIdRef.current === workspaceId && isCurrent()) {
       setSnapshot({
         workspaceId,
         run: runPayload.run,
@@ -198,6 +201,30 @@ export function useResearch(workspaceId: string, selectedAssetIds: string[], cur
     return () => controller.abort();
   }, [refresh, runId, runStatus, workspaceId]);
 
+  const refreshCurrent = useCallback(async () => {
+    if (run) return refresh(run.id);
+    if (!workspaceId) return null;
+    const id = ++refreshRequestId.current;
+    const isCurrent = () => workspaceIdRef.current === workspaceId && refreshRequestId.current === id;
+    setInitialRefresh({ workspaceId, id });
+    setFailure(null);
+    try {
+      const items = await refreshList();
+      if (!isCurrent()) return null;
+      const selected = snapshotRef.current;
+      if (selected?.workspaceId === workspaceId) return selected.run;
+      const latest = latestResearchRun(items);
+      return latest ? await refresh(latest.id, isCurrent) : null;
+    } catch (reason) {
+      if (isCurrent()) {
+        setFailure({ workspaceId, message: failureMessage(reason, "Failed to load research runs.") });
+      }
+      return null;
+    } finally {
+      setInitialRefresh((pending) => pending?.id === id ? null : pending);
+    }
+  }, [refresh, refreshList, run, workspaceId]);
+
   const mutate = useCallback(async (action: () => Promise<{ run: ResearchRunDetail }>) => {
     setLoading(true);
     setFailure(null);
@@ -220,11 +247,14 @@ export function useResearch(workspaceId: string, selectedAssetIds: string[], cur
     conflictArtifactContent,
     conflictArtifactDetail,
     canManage,
-    loading,
+    loading: loading || initialRefresh?.workspaceId === workspaceId,
     streamState,
     error,
     start: (question: string) => mutate(() => createResearchRun(workspaceId, question, selectedAssetIds)),
-    selectRun: (nextRunId: string) => refresh(nextRunId),
+    selectRun: (nextRunId: string) => {
+      refreshRequestId.current += 1;
+      return refresh(nextRunId);
+    },
     approve: () => run && canManage ? mutate(() => approveResearchPlan(workspaceId, run)) : Promise.resolve(),
     revisePlan: (question: string, comment: string) => run && canManage
       ? mutate(() => reviseResearchPlan(workspaceId, run, question, comment))
@@ -237,6 +267,6 @@ export function useResearch(workspaceId: string, selectedAssetIds: string[], cur
       ? mutate(() => retryResearchStep(workspaceId, run, step))
       : Promise.resolve(),
     cancel: () => run && canManage ? mutate(() => cancelResearchRun(workspaceId, run)) : Promise.resolve(),
-    refresh: () => run ? refresh(run.id) : Promise.resolve(null),
+    refresh: refreshCurrent,
   };
 }

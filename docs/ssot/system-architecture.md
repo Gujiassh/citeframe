@@ -892,3 +892,7 @@ Adaptive model turns are persisted under a bounded step/turn key, with frozen ex
 ## Publication adoption authorization (2026-09-23)
 
 Final adoption and reconciliation lock and recheck the creator membership inside the commit transaction, after the Run/Step/Attempt/intent chain. Revocation triggers cancellation and compensating cleanup without publishing a final artifact. Successful evidence from a terminated prior attempt remains reusable only within the same Step, frozen input and execution snapshot. See `specs/v5/post-v5-optimization/issue27-adoption-repair-20260923.md` for the test scope and pending PostgreSQL/runtime gates.
+
+### Issue 27 current-candidate R2 differential scope
+
+The A2 runner now retains raw reports and validates historical invariants plus explicitly approved R2 intent, generation-key, three semantic-identity event UUID and terminal-maintenance deltas. `rawEqual=false` is reported separately from invariant/delta acceptance; unknown differences fail closed. Current candidates execute the production saga with shared frozen Python/SQL time and injected storage capabilities. The field manifest, lifecycle evidence, negative controls and runtime limitations are in `specs/v5/post-v5-optimization/issue27-r2-differential-contract-20260923.md`. Historical artifacts are unchanged. Nullable Step input uses the existing lease-derived hash for both originating/current attempts. Initial Research retry can reload list/detail without an already selected run; this remains a minimal W1 repair.
