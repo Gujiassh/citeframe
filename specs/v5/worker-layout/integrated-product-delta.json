@@ -328,11 +328,11 @@
     },
     {
       "path": "apps/api/tests/test_research_autonomy.py",
-      "integratedBlob": "7d61fca525007a7d37cb08d7b0eb415b45e8793a",
+      "integratedBlob": "a2904564ae06a1898a23af5877dffebfa703d5a6",
       "reviewedSourceHead": "b691406fdc7d38e3f93578b36aaddafe7dbf992f",
       "reviewedSourcePath": "apps/api/tests/test_research_autonomy.py",
       "reviewedSourceBlob": "4b603192382b1b41d9824aa82e271bdef0117d16",
-      "transformation": "explicit feature deployment oracle/negative-control delta; see stack-integration spec"
+      "transformation": "explicit feature deployment oracle and request-context/approval binding controls; see stack-integration spec"
     },
     {
       "path": "apps/api/tests/test_research_migration.py",
@@ -875,8 +875,8 @@
       "reviewedSourceHead": "5ed02c8b7b5f357f58d1c3fd270ead0718e7afbf",
       "reviewedSourcePath": "tools/evaluation/src/citeframe_evaluation/acceptance/scenarios.py",
       "reviewedSourceBlob": "53314182d169accb1521be62af882b5c99be1bd6",
-      "transformation": "explicit feature deployment oracle extracted from scenario lifecycle; see stack-integration spec",
-      "integratedBlob": "e82803c2f6ace485c5890509d9b180c874c81182"
+      "transformation": "explicit feature deployment oracle and request-context/approval binding controls; see stack-integration spec",
+      "integratedBlob": "28db04a8e05ae7067d0902c48fad1edc64f91b19"
     },
     {
       "path": "tools/evaluation/src/citeframe_evaluation/provider.py",

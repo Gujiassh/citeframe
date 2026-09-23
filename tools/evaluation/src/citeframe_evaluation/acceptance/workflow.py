@@ -34,11 +34,17 @@ def workflow_facts(sessions, run_id):
                   "release": release, "promptVersions": prompts, "snapshotId": None}
         if run.approved_execution_snapshot_id:
             snapshot = db.get(ResearchExecutionSnapshot, run.approved_execution_snapshot_id)
+            assert (snapshot.run_id, snapshot.workspace_id, snapshot.approved_plan_revision_id) == (
+                run.id, run.workspace_id, revision.id), "snapshot_request_binding_mismatch"
             proof = snapshot_proof(db, snapshot)
             assert snapshot.workflow_version_id == workflow_id
             assert valid_snapshot({"snapshot": row(snapshot), "snapshotProof": proof})
             assert {p["node_key"]: p["prompt_version_id"] for p in proof["prompts"]} == prompts
             decision = proof["decision"]
+            assert (decision["id"], decision["run_id"], decision["workspace_id"],
+                    decision["decision_type"], decision["input_snapshot_sha256"]) == (
+                snapshot.approval_decision_id, run.id, run.workspace_id,
+                "plan_approval", revision.planning_snapshot_sha256), "approval_request_binding_mismatch"
             if workflow_id == V3_WORKFLOW_VERSION_ID:
                 assert decision["decision_origin"] == "policy" and decision["decided_by_user_id"] is None
                 assert decision["status"] == "submitted" and decision["action"] == "approve"
