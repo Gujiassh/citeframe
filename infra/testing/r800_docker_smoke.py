@@ -57,6 +57,7 @@ def main() -> None:
     parser.add_argument("--source", type=Path, required=True)
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--historical-scenarios-only", action="store_true")
+    parser.add_argument("--serial-negative-control", action="store_true")
     args = parser.parse_args()
     source, output = args.source.resolve(), args.output.resolve()
     harness = Path(__file__).resolve().parent
@@ -143,14 +144,20 @@ def main() -> None:
         assert not run("source-status", ["git", "status", "--porcelain"]).strip()
         expected = "50af19dc3b79fbb677d9ac66c005b77cbe76f3d9" if args.historical_scenarios_only else harness_head
         assert target_head == expected, "Unexpected product source SHA"
-        baseline = "82ecb8149831c9ab148291778598b251ac6558fd"
+        baseline = "c2639a071dbdc9deb18c46098637c19cfaca88a7"
         product_diff = run("product-diff", ["git", "diff", "--name-only", baseline, target_head,
                                            "--", *PRODUCT_PATHS])
         if not args.historical_scenarios_only:
             assert set(product_diff.splitlines()) <= {
                 "tools/evaluation/src/citeframe_evaluation/acceptance/cli.py",
-                "tools/evaluation/tests/test_acceptance_cli_output.py",
-                "infra/scripts/compose-common.sh",
+                "tools/evaluation/src/citeframe_evaluation/acceptance/scenarios.py",
+                "tools/evaluation/src/citeframe_evaluation/acceptance/drivers.py",
+                "tools/evaluation/src/citeframe_evaluation/acceptance/evidence.py",
+                "tools/evaluation/src/citeframe_evaluation/acceptance/oracles.py",
+                "tools/evaluation/src/citeframe_evaluation/acceptance/controls.py",
+                "tools/evaluation/tests/test_r800_research_acceptance.py",
+                "tools/evaluation/tests/test_acceptance_scenario_drivers.py",
+                "tools/evaluation/tests/fixtures/scenario-policy-facts.json",
             }, product_diff
         (output / "provenance.json").write_text(json.dumps({"productHead": target_head,
             "harnessHead": harness_head, "baselineHead": baseline, "project": project,
@@ -181,7 +188,8 @@ def main() -> None:
         run("api", compose + ["up", "-d", "api"])
         wait_ready()
         cli("seed", "seed")
-        raw_scenarios = cli("scenarios", "run-scenarios")
+        raw_scenarios = cli("scenarios", "run-scenarios",
+                            *(["--serial-main"] if args.serial_negative_control else []))
         if args.historical_scenarios_only:
             # Preserve raw stdout; only separate this observed legacy diagnostic for attribution.
             warning = "warning: The `fitz` API is deprecated and will be removed in future. Use `import pymupdf` instead.\n"
@@ -193,6 +201,16 @@ def main() -> None:
             "import urllib.request; print(urllib.request.urlopen('http://127.0.0.1:18082/__r800__/control/timeline').read().decode())"])
         run("scenario-attempt-timeline", compose + ["exec", "-T", "postgres", "psql", "--username",
             "ai_pdf", "--dbname", "ai_pdf_workspace", "--no-psqlrc", "-At", "-c", ATTEMPT_TIMELINE_QUERY])
+        if args.serial_negative_control:
+            assert not scenarios_passed
+            assert scenarios["checks"]["mainCompleted"]["passed"]
+            assert not scenarios["checks"]["parallelFanout"]["passed"]
+            assert scenarios["checks"]["parallelFanout"]["evidence"]["maxActive"] == 1
+            (output / "serial-negative-control.json").write_text(json.dumps({
+                "expectedRejectionObserved": True, "scenarioGatePassed": False,
+                "scope": "Actual fresh Docker runtime forced to one synchronous consumer",
+            }, indent=2))
+            return
         if args.historical_scenarios_only:
             return
         cli("before", "snapshot")
@@ -231,7 +249,8 @@ def main() -> None:
             cleanup_ok = cleanup_ok and commands[-1]["exitCode"] == 0 and not remaining.strip()
         env_file.unlink(missing_ok=True)
         # Backups are synthetic but do not publish DB dumps or credentials in CI artifacts.
-        report = {"mode": "historical-scenario-attribution" if args.historical_scenarios_only else "deployment",
+        report = {"mode": ("serial-negative-control" if args.serial_negative_control else
+                           "historical-scenario-attribution" if args.historical_scenarios_only else "deployment"),
                   "passed": success and cleanup_ok and scenarios_passed,
                   "deploymentGatePassed": success, "defaultRegistryPassed": success, "scenarioGatePassed": scenarios_passed, "cleanupPassed": cleanup_ok, "modelQuality": "not_evaluated", "project": project}
         (output / "result.json").write_text(json.dumps(report, indent=2))

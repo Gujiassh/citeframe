@@ -124,7 +124,7 @@ def test_scenario_gate_fails_when_any_check_is_blocked(monkeypatch) -> None:
     monkeypatch.setattr(
         scenarios,
         "_main_scenario",
-        lambda *_args: (
+        lambda *_args, **_kwargs: (
             {"id": "main", "status": "completed"},
             {"mainCompleted": scenarios._check(True, evidence={})},
         ),
@@ -132,7 +132,7 @@ def test_scenario_gate_fails_when_any_check_is_blocked(monkeypatch) -> None:
     monkeypatch.setattr(
         scenarios,
         "_reclaim_scenario",
-        lambda *_args: (
+        lambda *_args, **_kwargs: (
             {"id": "reclaim", "status": "queued"},
             scenarios._check(False, evidence={}, blocked="step_claim_raced"),
         ),
@@ -140,7 +140,7 @@ def test_scenario_gate_fails_when_any_check_is_blocked(monkeypatch) -> None:
     monkeypatch.setattr(
         scenarios,
         "_cancel_scenario",
-        lambda *_args: (
+        lambda *_args, **_kwargs: (
             {"id": "cancel", "status": "cancelled"},
             scenarios._check(True, evidence={}),
         ),
@@ -148,7 +148,7 @@ def test_scenario_gate_fails_when_any_check_is_blocked(monkeypatch) -> None:
     monkeypatch.setattr(
         scenarios,
         "_membership_scenario",
-        lambda *_args: (
+        lambda *_args, **_kwargs: (
             {"id": "membership", "status": "cancelled"},
             scenarios._check(True, evidence={}),
         ),

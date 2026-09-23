@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import re
+from contextlib import nullcontext
 import time
 from collections.abc import Callable, Iterable
 from datetime import UTC, datetime, timedelta
@@ -29,6 +30,10 @@ from citeframe_evaluation.acceptance.common import (
     PROVIDER_BASE_URL,
     SCHEMA_VERSION,
 )
+from citeframe_evaluation.acceptance.controls import mutation_controls
+from citeframe_evaluation.acceptance.drivers import consumers, wait_for_reclaim
+from citeframe_evaluation.acceptance.evidence import execution_facts, reclaim_facts
+from citeframe_evaluation.acceptance.oracles import parallel_evidence, parallel_passed, reclaim_passed, assert_execution_policy
 from ai_pdf_worker.research.runtime import (
     ResearchWorkProcessor,
     build_default_research_service,
@@ -220,6 +225,7 @@ def _main_scenario(
     client: ResearchHttpClient,
     processor: ResearchWorkProcessor,
     session_factory: Callable[[], Session],
+    *, serial_main: bool = False,
 ) -> tuple[dict[str, object], dict[str, dict[str, object]]]:
     _provider_request("POST", "/__r800__/control/reset", payload={})
     _provider_request(
@@ -239,24 +245,25 @@ def _main_scenario(
         {"awaiting_plan_approval", "failed"},
         processor=processor,
     )
-    if run["status"] == "awaiting_plan_approval":
-        run = _submit_plan(client, run)
-        run, later_errors = _process_until(
-            client,
-            str(run["id"]),
-            {"awaiting_human_decision", "completed", "failed", "awaiting_retry"},
-            processor=processor,
-        )
-        worker_errors.extend(later_errors)
-    if run["status"] == "awaiting_human_decision":
-        run = _submit_conflict(client, run)
-        run, later_errors = _process_until(
-            client,
-            str(run["id"]),
-            {"completed", "failed", "awaiting_retry"},
-            processor=processor,
-        )
-        worker_errors.extend(later_errors)
+    with nullcontext() if serial_main else consumers(session_factory):
+        if run["status"] == "awaiting_plan_approval":
+            run = _submit_plan(client, run)
+            run, later_errors = _process_until(
+                client,
+                str(run["id"]),
+                {"awaiting_human_decision", "completed", "failed", "awaiting_retry"},
+                processor=processor if serial_main else None,
+            )
+            worker_errors.extend(later_errors)
+        if run["status"] == "awaiting_human_decision":
+            run = _submit_conflict(client, run)
+            run, later_errors = _process_until(
+                client,
+                str(run["id"]),
+                {"completed", "failed", "awaiting_retry"},
+                processor=processor if serial_main else None,
+            )
+            worker_errors.extend(later_errors)
 
     artifacts_response = client.request(
         "GET",
@@ -344,6 +351,9 @@ def _main_scenario(
             )
         ) or 0
 
+    facts = execution_facts(session_factory, str(run["id"]))
+    concurrency = parallel_evidence(facts, timeline)
+    assert_execution_policy(facts)
     entries = timeline.get("entries", [])
     transient_entries = [entry for entry in entries if entry.get("httpStatus") == 503]
     main_checks = {
@@ -352,8 +362,8 @@ def _main_scenario(
             evidence={"runId": run["id"], "status": run["status"], "workerErrors": worker_errors},
         ),
         "parallelFanout": _check(
-            int(timeline.get("maxActive", 0)) >= 2,
-            evidence={"maxActive": timeline.get("maxActive"), "providerEntries": len(entries)},
+            parallel_passed(concurrency),
+            evidence={**concurrency, "facts": facts, "providerTimeline": timeline},
         ),
         "unsupportedWithheld": _check(
             unsupported > 0 and final_links == 0,
@@ -418,27 +428,22 @@ def _reclaim_scenario(
     claimed = processor.claim()
     if claimed is None or claimed.run_id != run["id"]:
         return run, _check(False, evidence={"claimed": False}, blocked="step_claim_raced")
+    expected = reclaim_facts(session_factory, claimed.lease.step_id)
     with session_factory() as db:
         attempt = db.get(ResearchStepAttempt, claimed.lease.attempt_id)
         if attempt is None:
             return run, _check(False, evidence={"attempt": None}, blocked="attempt_missing")
         attempt.lease_expires_at = datetime.now(UTC) - timedelta(seconds=5)
         db.commit()
-    processor.process_one()
-    with session_factory() as db:
-        original = db.get(ResearchStepAttempt, claimed.lease.attempt_id)
-        attempts = list(
-            db.scalars(
-                select(ResearchStepAttempt)
-                .where(ResearchStepAttempt.step_id == claimed.lease.step_id)
-                .order_by(ResearchStepAttempt.attempt_number)
-            ).all()
-        )
-        passed = original is not None and original.status == "abandoned" and len(attempts) >= 2
-        evidence = {
-            "originalAttemptStatus": original.status if original else None,
-            "attemptNumbers": [item.attempt_number for item in attempts],
-        }
+    observed, observation_count = wait_for_reclaim(
+        processor, lambda: reclaim_facts(session_factory, claimed.lease.step_id),
+        lambda facts: reclaim_passed(expected, facts),
+    )
+    passed = reclaim_passed(expected, observed)
+    original = next(a for a in observed["attempts"] if a["id"] == claimed.lease.attempt_id)
+    evidence = {"originalAttemptStatus": original["status"],
+                "attemptNumbers": [a["attempt_number"] for a in observed["attempts"]],
+                "expected": expected, "observed": observed, "observations": observation_count}
     current = client.run(str(run["id"]))
     if current["status"] not in {"completed", "failed", "cancelled"}:
         client.request(
@@ -509,6 +514,8 @@ def _membership_scenario(
             return run, _check(False, evidence={}, blocked="membership_missing")
         db.delete(membership)
         db.commit()
+    denied = client.request("GET", f"/v1/workspaces/{IDS['workspace']}/research-runs/{run['id']}",
+                            actor_id=IDS["member"], expected=(403,))
     processing_error = None
     try:
         processor.process_one()
@@ -534,6 +541,8 @@ def _membership_scenario(
             "status": observed["status"],
             "eventTypes": events,
             "workerResult": processing_error,
+            "removedMemberHttpStatus": denied.status_code,
+            "removedMemberResponse": denied.json(),
         },
     )
 
@@ -543,6 +552,7 @@ def run_scenarios(
     client: ResearchHttpClient | None = None,
     processor: ResearchWorkProcessor | None = None,
     session_factory: Callable[[], Session] = SessionLocal,
+    serial_main: bool = False,
 ) -> dict[str, object]:
     owns_client = client is None
     client = client or ResearchHttpClient()
@@ -554,8 +564,9 @@ def run_scenarios(
     checks: dict[str, dict[str, object]] = {}
     runs: dict[str, object] = {}
     errors: list[dict[str, str]] = []
+    controls: dict[str, object] = {}
     try:
-        main_run, main_checks = _main_scenario(client, processor, session_factory)
+        main_run, main_checks = _main_scenario(client, processor, session_factory, serial_main=serial_main)
         runs["main"] = main_run
         checks.update(main_checks)
         reclaim_run, reclaim_check = _reclaim_scenario(client, processor, session_factory)
@@ -569,6 +580,7 @@ def run_scenarios(
         )
         runs["membershipRemoval"] = membership_run
         checks["membershipRemoval"] = membership_check
+        controls = mutation_controls(main_checks["parallelFanout"]["evidence"], reclaim_check["evidence"])
     except Exception as error:  # noqa: BLE001 - a scenario exception must fail the aggregate gate
         errors.append({"type": type(error).__name__, "message": str(error)[:500]})
         checks["scenarioExecution"] = _check(
@@ -590,4 +602,5 @@ def run_scenarios(
         "checks": checks,
         "runs": runs,
         "errors": errors,
+        "negativeControls": controls,
     }

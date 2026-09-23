@@ -50,6 +50,9 @@ jobs:
         run: |
           python3 -m unittest discover -s harness/infra/testing -p test_r800_docker_smoke.py -v
           python3 harness/infra/testing/r800_docker_smoke.py --source product --output "$RUNNER_TEMP/r800-evidence"
+      - name: Actual forced-serial negative control in a fresh isolated project
+        if: ${{ !cancelled() }}
+        run: python3 harness/infra/testing/r800_docker_smoke.py --source product --output "$RUNNER_TEMP/r800-serial" --serial-negative-control
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -66,3 +69,7 @@ jobs:
             ${{ runner.temp }}/r800-baseline/*.out
             ${{ runner.temp }}/r800-baseline/*.err
             ${{ runner.temp }}/r800-baseline/*.txt
+            ${{ runner.temp }}/r800-serial/*.json
+            ${{ runner.temp }}/r800-serial/*.out
+            ${{ runner.temp }}/r800-serial/*.err
+            ${{ runner.temp }}/r800-serial/*.txt

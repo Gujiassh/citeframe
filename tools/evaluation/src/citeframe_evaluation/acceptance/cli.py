@@ -34,7 +34,8 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Run Citeframe R800 Research acceptance.")
     subparsers = parser.add_subparsers(dest="command", required=True)
     subparsers.add_parser("seed")
-    subparsers.add_parser("run-scenarios")
+    scenarios = subparsers.add_parser("run-scenarios")
+    scenarios.add_argument("--serial-main", action="store_true", help="Force serial consumption as a negative control")
     subparsers.add_parser("snapshot")
     verify = subparsers.add_parser("verify")
     verify.add_argument("--before", type=Path, required=True)
@@ -56,7 +57,7 @@ def main(argv: list[str] | None = None) -> int:
         )
         return 0
     if args.command == "run-scenarios":
-        _write_json(run_scenarios())
+        _write_json(run_scenarios(serial_main=args.serial_main))
         return 0
     if args.command == "snapshot":
         _write_json(snapshot_state())
