@@ -1,0 +1,67 @@
+name: Issue 25 service recovery
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - "apps/**"
+      - "packages/**"
+      - "infra/testing/**"
+      - ".github/workflows/issue25-services.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  conflict-services:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    services:
+      postgres:
+        image: pgvector/pgvector:pg17
+        env:
+          POSTGRES_USER: ai_pdf
+          POSTGRES_PASSWORD: ai_pdf_dev
+          POSTGRES_DB: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U ai_pdf -d postgres"
+          --health-interval 5s --health-timeout 5s --health-retries 20
+    env:
+      CITEFRAME_TEST_POSTGRES_URL: postgresql+psycopg://ai_pdf:ai_pdf_dev@127.0.0.1:5432/postgres
+      AI_PDF_MINIO_ENDPOINT: 127.0.0.1:9000
+      CITEFRAME_TEST_S3_BUCKET: pr25-service-recovery
+      AI_PDF_MINIO_ACCESS_KEY: fixture-service
+      AI_PDF_MINIO_SECRET_KEY: isolated-service-fixture-only
+      AI_PDF_MINIO_SECURE: "false"
+      PYTHONUTF8: "1"
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          fetch-depth: 0
+      - uses: astral-sh/setup-uv@v6
+      - run: uv sync --project apps/worker --frozen --dev
+      - name: Start isolated S3-compatible storage
+        run: |
+          docker run -d --name issue25-s3 -p 127.0.0.1:9000:9000 \
+            -e MINIO_ROOT_USER="$AI_PDF_MINIO_ACCESS_KEY" \
+            -e MINIO_ROOT_PASSWORD="$AI_PDF_MINIO_SECRET_KEY" \
+            quay.io/minio/minio:RELEASE.2025-09-07T16-13-09Z@sha256:14cea493d9a34af32f524e538b8346cf79f3321eff8e708c1e2960462bd8936e server /data
+          for i in $(seq 1 60); do
+            if curl -fsS http://127.0.0.1:9000/minio/health/live >/dev/null; then exit 0; fi
+            sleep 1
+          done
+          docker logs issue25-s3
+          exit 1
+      - name: Exercise real HTTP, PostgreSQL, S3 and worker recovery
+        run: |
+          git rev-parse HEAD
+          uv run --project apps/worker pytest infra/testing/test_issue25_services.py infra/testing/test_issue25_service_limits.py -vv --tb=short --basetemp .local-issue25/ci-services
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: issue25-service-evidence
+          path: .local-issue25/ci-services
+          retention-days: 7

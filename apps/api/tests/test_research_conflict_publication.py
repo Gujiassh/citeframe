@@ -121,6 +121,7 @@ def test_v4_journal_survives_final_publication_adoption(
         state={
             "conflicts": [original.id],
             "verified_claims": [
+                VerifiedClaim(fact.id, fact.statement_text, (source.id,), "supported", "none"),
                 VerifiedClaim(
                     original.id,
                     original.statement_text,

@@ -104,3 +104,10 @@ $env:PYTHONUTF8='1'
 The report must identify the public delivery commit, `repairSnapshotDirty=false`, `candidateSemanticDirty=false`, accepted A/AStored/B/C scenarios and five production Web SSE parser results. Its exact SHA/results are recorded in draft PR #30 and the linked dev-workbench delivery checkpoint; exploratory dirty reports do not substitute for it. C remains a restored pre-approval v3 task, not recovery of an already approved v3 snapshot.
 
 Local full-suite failures, the six unavailable PostgreSQL checks, actual object-store/service restart and visible real-service UI acceptance remain open. CI for #29 cfc passed all six jobs; that is prerequisite evidence only. #30 requires its own current-SHA CI and independent Hubble review. All stacked PRs remain draft and unmerged.
+
+
+## Service rework and review repairs (2026-09-24)
+
+Journal replay and final projection bind origin/current Attempt lineage and frozen inputs. Critic validation requires the complete unchanged supported fact set plus verified revisions. New integrity regressions are red against e27 and green on this delta. The service fixture now upgrades an already-approved v3 snapshot to a default-v4 deployment, finishes it under old bindings, edits and restarts the API, and separately verifies new tasks select v4. Real PostgreSQL fresh/staged migration and actual API-produced resolved/unresolved pages have passed locally.
+
+The crash matrix intentionally uses process exit86 and natural short fixture lease expiry; it does not modify database clocks or synthesize recovery rows. It exposed a prerequisite Step-error lifecycle defect: reclaimed gates succeed on attempt 2 with stale lease_expired, which correctly fails final adoption. Franklin is repairing that R2 transition; recovery acceptance remains open until normal dependency integration and rerun. Original journal rows, original claims and external-call counts are exact recovery oracles. Detailed commands, results and pending gates are in `docs/evals/issue25-conflict-investigation-20260923.md`.

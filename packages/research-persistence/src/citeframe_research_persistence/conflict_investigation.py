@@ -15,6 +15,7 @@ from .conflict_policy import (
 )
 from .errors import ResearchError, canonical_json, canonical_sha256
 from .lease import _locked_attempt
+from .conflict_journal_integrity import current_attempt, validate_record
 
 
 def conflict_turn(
@@ -49,11 +50,13 @@ def conflict_turn(
             "Investigation context exceeds its bound.",
             409,
         )
+    current = current_attempt(db, step)
     request_hash = canonical_sha256(request)
     row = db.get(
         ResearchConflictTurn, (step.id, operation_number), populate_existing=True
     )
     if row is not None:
+        validate_record(db, step, row, current)
         if (
             row.execution_snapshot_id != snapshot.id
             or row.phase != phase
@@ -172,6 +175,8 @@ def investigation_details(db, run_id):
         )
     )
     for row in rows:
+        step = db.get(ResearchStep, row.step_id, populate_existing=True)
+        validate_record(db, step, row)
         if canonical_sha256(row.request_json) != row.request_sha256 or (
             row.result_json is not None
             and canonical_sha256(row.result_json) != row.result_sha256
@@ -260,6 +265,8 @@ def _validate_outcome(db, step, request, result):
             "Resolution requires verification and conflict review.",
             409,
         )
+    for record in records:
+        validate_record(db, step, record)
     inspection, verification, critique = records[-3:]
     from .conflict_contract import validate_investigation
 
@@ -284,12 +291,9 @@ def _validate_outcome(db, step, request, result):
         )
     checked = verification.result_json.get("claims", [])
     by_id = {c["id"]: c for c in checked}
-    if critique.request_json["claims"][-len(checked) :] != checked:
-        raise ResearchError(
-            "research_state_conflict",
-            "Conflict review omitted verified revisions.",
-            409,
-        )
+    from .conflict_review_integrity import validate_combined_review
+
+    validate_combined_review(db, step, critique.request_json["claims"], checked)
     if (
         len(checked) != len(revisions)
         or set(by_id) != {c["id"] for c in revisions}
@@ -314,6 +318,8 @@ def investigation_view(db, run_id, run_status):
         if rows[-1]["phase"] == "finish" and rows[-1]["status"] == "succeeded"
         else None
     )
+    if final is not None:
+        final = investigation_outcome(db, run_id)
     inspection = next((r for r in reversed(rows) if r["phase"] == "inspect"), None)
     payload = final or (
         inspection["result"]
