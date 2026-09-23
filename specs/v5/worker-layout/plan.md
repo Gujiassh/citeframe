@@ -179,3 +179,29 @@ engineering smoke, not model-quality, vendor-matrix or combined-feature acceptan
 Local negative controls cover worker identity/status, no in-process polling,
 redaction and ephemeral-port allocation. Actual Docker results remain pending
 until the new CI job runs; no merge is authorized here.
+
+### First Docker execution and CLI correction
+
+CI `35889744846` actually built the three images and ran pinned PostgreSQL/MinIO,
+migrations, seed and scenarios against clean `82ecb814`. Its original stdout and
+scores are retained. Dependency import printed a PyMuPDF `fitz` diagnostic before
+CLI JSON, causing JSON decoding to fail. The acceptance CLI now directs import-time
+diagnostics to stderr; the JSON payload, fixtures, scoring and exit semantics are
+unchanged. A subprocess regression injects a noisy import and requires parseable
+stdout plus the retained stderr diagnostic.
+
+The first run also reported `parallelFanout` (maxActive=1) and `leaseReclaim`
+(only attempt 1, abandoned) failures. These are not marked pass or weakened.
+CI now runs old baseline `50af19dc`'s original script and the new candidate module
+against the same pinned services/provider settings on the same runner, retaining
+provider/attempt timelines. The baseline's exact known diagnostic is separated
+only for attribution while raw stdout is preserved; candidate output must parse
+directly without filtering. The candidate proceeds to collect independent
+backup/restore/daemon-consumption evidence even if scenario checks fail. Scenario,
+deployment and cleanup gates are separate; an unsuccessful aggregate remains red.
+
+The new product CLI SHA supersedes the fixed-82ec lock for this Docker rerun.
+The workflow checks out the exact PR SHA and explicitly verifies that the only
+product-input changes relative to 82ec are this CLI correction and its regression.
+The original non-CLI API/Worker/image/backup/restore inputs remain identical.
+Portable/UI conclusions retain their original fixed-SHA attribution.

@@ -3,19 +3,23 @@
 from __future__ import annotations
 
 import argparse
+from contextlib import redirect_stdout
 import json
+import sys
 from pathlib import Path
 
-from ai_pdf_api.db.session import SessionLocal
-from ai_pdf_api.services.storage import (
-    build_storage_client,
-    delete_object_if_exists,
-    ensure_bucket_exists,
-    upload_bytes,
-)
-from citeframe_evaluation.acceptance.fixture import seed_state
-from citeframe_evaluation.acceptance.scenarios import run_scenarios
-from citeframe_evaluation.acceptance.snapshot import snapshot_state, verify_snapshots
+# Third-party import diagnostics must not corrupt the machine-readable CLI stream.
+with redirect_stdout(sys.stderr):
+    from ai_pdf_api.db.session import SessionLocal
+    from ai_pdf_api.services.storage import (
+        build_storage_client,
+        delete_object_if_exists,
+        ensure_bucket_exists,
+        upload_bytes,
+    )
+    from citeframe_evaluation.acceptance.fixture import seed_state
+    from citeframe_evaluation.acceptance.scenarios import run_scenarios
+    from citeframe_evaluation.acceptance.snapshot import snapshot_state, verify_snapshots
 
 
 def _write_json(value: object, output: Path | None = None) -> None:

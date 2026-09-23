@@ -2,6 +2,8 @@
 from __future__ import annotations
 
 import argparse
+from contextlib import redirect_stdout
+import sys
 from hashlib import sha256
 import json
 from pathlib import Path
@@ -90,5 +92,6 @@ if __name__ == "__main__":
     parser.add_argument("mode", choices=["exercise", "objects"])
     parser.add_argument("--backup", type=Path)
     args = parser.parse_args()
-    result = exercise() if args.mode == "exercise" else objects(args.backup)
+    with redirect_stdout(sys.stderr):
+        result = exercise() if args.mode == "exercise" else objects(args.backup)
     print(json.dumps(result, indent=2, default=str))

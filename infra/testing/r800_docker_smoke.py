@@ -41,6 +41,7 @@ def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--source", type=Path, required=True)
     parser.add_argument("--output", type=Path, required=True)
+    parser.add_argument("--historical-scenarios-only", action="store_true")
     args = parser.parse_args()
     source, output = args.source.resolve(), args.output.resolve()
     harness = Path(__file__).resolve().parent
@@ -86,8 +87,12 @@ def main() -> None:
         return result.stdout
 
     def cli(name, *arguments):
-        return run(name, compose + ["run", "--rm", "-T", "--no-deps", "worker", "python", "-m",
-                                    "citeframe_evaluation.acceptance.cli", *arguments])
+        entry = (["python", "scripts/r800_research_acceptance.py"] if args.historical_scenarios_only
+                 else ["python", "-m", "citeframe_evaluation.acceptance.cli"])
+        output_text = run(name, compose + ["run", "--rm", "-T", "--no-deps", "worker", *entry, *arguments])
+        if not args.historical_scenarios_only:
+            json.loads(output_text)
+        return output_text
 
     def wait_ready():
         for _ in range(90):
@@ -115,27 +120,52 @@ def main() -> None:
         return "worker-1"
 
     success = False
+    scenarios_passed = False
     try:
         target_head = run("source-head", ["git", "rev-parse", "HEAD"]).strip()
         harness_head = subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=harness, text=True).strip()
         assert not run("source-status", ["git", "status", "--porcelain"]).strip()
-        # The newly committed harness is never attributed to the fixed product SHA.
-        product_diff = run("product-diff", ["git", "diff", "--exit-code", target_head, harness_head,
+        expected = "50af19dc3b79fbb677d9ac66c005b77cbe76f3d9" if args.historical_scenarios_only else harness_head
+        assert target_head == expected, "Unexpected product source SHA"
+        baseline = "82ecb8149831c9ab148291778598b251ac6558fd"
+        product_diff = run("product-diff", ["git", "diff", "--name-only", baseline, target_head,
                                            "--", *PRODUCT_PATHS])
-        assert not product_diff
+        if not args.historical_scenarios_only:
+            assert set(product_diff.splitlines()) <= {
+                "tools/evaluation/src/citeframe_evaluation/acceptance/cli.py",
+                "tools/evaluation/tests/test_acceptance_cli_output.py",
+            }, product_diff
         (output / "provenance.json").write_text(json.dumps({"productHead": target_head,
-            "harnessHead": harness_head, "project": project,
+            "harnessHead": harness_head, "baselineHead": baseline, "project": project,
             "harnessFiles": {p.name: sha256(p.read_bytes()).hexdigest()
                              for p in (Path(__file__), harness / "r800_docker_probe.py")}}, indent=2))
         run("compose-redacted", compose + ["config"])
-        run("build", compose + ["build", "api", "worker", "web"], timeout=1200)
+        targets = ["api", "worker"] if args.historical_scenarios_only else ["api", "worker", "web"]
+        run("build", compose + ["build", *targets], timeout=1200)
         run("infrastructure", compose + ["up", "-d", "postgres", "minio", "redis", "provider-stub"])
         run("migration", compose + ["run", "--rm", "-T", "migration"])
         run("api", compose + ["up", "-d", "api"])
         wait_ready()
         cli("seed", "seed")
-        scenarios = json.loads(cli("scenarios", "run-scenarios"))
-        assert scenarios["engineeringGate"] == "pass", scenarios
+        raw_scenarios = cli("scenarios", "run-scenarios")
+        if args.historical_scenarios_only:
+            # Preserve raw stdout; only separate this observed legacy diagnostic for attribution.
+            warning = "warning: The `fitz` API is deprecated and will be removed in future. Use `import pymupdf` instead.\n"
+            raw_scenarios = raw_scenarios.removeprefix(warning)
+        scenarios = json.loads(raw_scenarios)
+        scenarios_passed = scenarios["engineeringGate"] == "pass"
+        (output / "scenario-summary.json").write_text(json.dumps(scenarios, indent=2))
+        run("scenario-provider-timeline", compose + ["exec", "-T", "provider-stub", "python", "-c",
+            "import urllib.request; print(urllib.request.urlopen('http://127.0.0.1:18082/__r800__/control/timeline').read().decode())"])
+        query = ("SELECT coalesce(json_agg(t), '[]') FROM (SELECT r.question, s.step_kind, s.step_key, "
+                 "s.status AS step_status, a.attempt_number, a.status, a.worker_instance_id, "
+                 "a.lease_expires_at, a.heartbeat_at, a.started_at, a.finished_at "
+                 "FROM research_step_attempts a JOIN research_steps s ON s.id=a.step_id "
+                 "JOIN research_runs r ON r.id=s.run_id ORDER BY a.started_at) t")
+        run("scenario-attempt-timeline", compose + ["exec", "-T", "postgres", "psql", "--username",
+            "ai_pdf", "--dbname", "ai_pdf_workspace", "--no-psqlrc", "-At", "-c", query])
+        if args.historical_scenarios_only:
+            return
         cli("before", "snapshot")
         script_args = ["--env-file", str(env_file), "--project", project]
         run("backup", ["bash", str(source / "infra/scripts/backup-deployment.sh"),
@@ -172,13 +202,17 @@ def main() -> None:
             cleanup_ok = cleanup_ok and commands[-1]["exitCode"] == 0 and not remaining.strip()
         env_file.unlink(missing_ok=True)
         # Backups are synthetic but do not publish DB dumps or credentials in CI artifacts.
-        report = {"passed": success and cleanup_ok, "cleanupPassed": cleanup_ok, "modelQuality": "not_evaluated", "project": project}
+        report = {"mode": "historical-scenario-attribution" if args.historical_scenarios_only else "deployment",
+                  "passed": success and cleanup_ok and scenarios_passed,
+                  "deploymentGatePassed": success, "scenarioGatePassed": scenarios_passed, "cleanupPassed": cleanup_ok, "modelQuality": "not_evaluated", "project": project}
         (output / "result.json").write_text(json.dumps(report, indent=2))
         for path in output.rglob("*"):
             if path.is_file() and path.suffix in {".out", ".err", ".json", ".txt", ".env"}:
                 path.write_text(scrub(path.read_text(), private))
         if not cleanup_ok:
             raise RuntimeError("Disposable Compose cleanup failed")
+    if not scenarios_passed:
+        raise RuntimeError("Historical R800 scenario gate failed; see scenarios.out")
 
 
 if __name__ == "__main__":
