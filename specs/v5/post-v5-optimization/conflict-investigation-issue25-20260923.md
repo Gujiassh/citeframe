@@ -116,3 +116,8 @@ The crash matrix intentionally uses process exit86 and natural short fixture lea
 ### Integrated prerequisite and acceptance scope
 
 Dependency #29 e607aaeb (including #28 e8f71d8) is normally merged. The recovered-Step error lifecycle repair now allows actual conflict recovery to reach final publication; the exploratory complete PG/S3/process matrix is 19/19 passed. Final fixed-HEAD evidence is emitted per test case by the committed harness and recorded in the PR/workbench ledger. Approved-v3 coverage starts after a researcher has completed, preserves the submitted approval plus snapshot/prompts/assets, and resumes report/edit semantics under the old binding after v4 becomes default. Login fixtures validate HTTP 200 and actor identity before visible-UI handoff. Browser session/UI acceptance is still blocked by frontend process startup policy, and Windows storage timing instability remains explicitly open.
+
+
+### Same-head service proof and inherited-fixture compatibility
+
+Clean e8b015b passed the full 19-case real-service matrix; per-case source records and the twelve-boundary recovery matrix preserve exact provenance and accounting. The inherited R2/W1 service provider also needs an explicit frozen-v4 investigator branch; its old five-role implementation raises KeyError before publication. The #25 extension returns source-inspected bounded unresolved output, preserving all historical fixture responses and prerequisite recovery/edit assertions. New provider contract RED/GREEN is 1 failed/6 passed versus 7 passed. Final combined CI includes these provider checks and both complete real-service workflows; UI/session remains a separate blocked gate.

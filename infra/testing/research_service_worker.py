@@ -62,6 +62,26 @@ class FixtureGeneration:
             }
             if "nextQuery" in v["resultSchema"].get("properties", {}):
                 result["nextQuery"] = None
+        elif "investigation" in v:
+            result = {
+                "inspections": [
+                    {
+                        "evidenceHandleId": item["id"],
+                        "quote": item["excerpt"],
+                        "version": None,
+                        "environment": None,
+                        "time": None,
+                        "conditions": None,
+                    }
+                    for item in v["investigation"]["evidence"]
+                ],
+                "revisions": [],
+                "nextQuery": None,
+                "gaps": [
+                    "The fixture source does not establish conditions resolving the conflict."
+                ],
+                "reason": "Inspected the original source; no source-backed correction is available.",
+            }
         elif "reasonTaxonomy" in v:
             result = {
                 "claims": [
