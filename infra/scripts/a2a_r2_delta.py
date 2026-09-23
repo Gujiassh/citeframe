@@ -81,7 +81,7 @@ def map_terminal_events(baseline, candidate, final):
     return mapping
 
 
-def compare(baseline, candidate):
+def compare(baseline, candidate, *, candidate_business_calls=8):
     left, right = baseline["semantics"], deepcopy(candidate["semantics"])
     raw_equal = canonical(left) == canonical(right)
     errors, mapping, object_mapping = [], [], []
@@ -117,8 +117,8 @@ def compare(baseline, candidate):
         require(bm["outputs"] == [False] and bm["providerCallsBefore"] == bm["providerCallsAfter"], "baseline.maintenance")
         require(baseline["schedulerEvidence"] == {"handledAttemptCount": 3, "maintenanceCallCount": 0,
                 "processOneOutputs": [True] * 3 + [False]}, "baseline.schedule")
-        require(candidate["schedulerEvidence"] == {"handledAttemptCount": 8, "maintenanceCallCount": 1,
-                "processOneOutputs": [True] * 9 + [False]}, "candidate.schedule")
+        require(candidate["schedulerEvidence"] == {"handledAttemptCount": candidate_business_calls, "maintenanceCallCount": 1,
+                "processOneOutputs": [True] * (candidate_business_calls + 1) + [False]}, "candidate.schedule")
     except (ValueError, KeyError, TypeError, IndexError) as error:
         errors.append(str(error))
     unknown = differences(left, right)

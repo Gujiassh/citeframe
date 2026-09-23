@@ -43,6 +43,11 @@ def test_a2a_historical_invariants_and_explicit_r2_delta(tmp_path: Path) -> None
     assert payload["r2DeltaValid"] is True
     assert payload["unknownDifferences"] == []
     assert payload["accepted"] is True
+    assert payload["historicalStoredReplay"]["accepted"] is True
+    assert payload["workflowScenarios"]["A"]["workflowVersion"] == 2
+    assert payload["workflowScenarios"]["AStored"]["workflowVersion"] == 2
+    assert payload["workflowScenarios"]["B"]["workflowVersion"] == 3
+    assert len(payload["productionConsumerEvidence"]) == 4
     from a2a_r2_negative_controls import verify_negative_controls
     verify_negative_controls(payload)
     assert payload["baselineRef"] == "d1b5945e977445e4db6bf56ef54cf61607ead2e2"
@@ -116,8 +121,8 @@ def test_a2a_historical_invariants_and_explicit_r2_delta(tmp_path: Path) -> None
     assert semantics["terminalProcessSemantics"]["runStatus"] == "completed"
 
     rows = semantics["normalizedDbRows"]
-    assert len(rows["transitions"]) == 30
-    assert len(rows["processOne"]) == 30
+    assert len(rows["transitions"]) == 32
+    assert len(rows["processOne"]) == 32
     assert len(rows["transitions"]["research_step_retry_requests"]) == 1
     assert len(rows["transitions"]["research_idempotency_records"]) >= 4
     assert len(rows["processOne"]["research_idempotency_records"]) == 3
