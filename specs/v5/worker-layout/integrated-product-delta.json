@@ -5,7 +5,8 @@
     "b691406fdc7d38e3f93578b36aaddafe7dbf992f",
     "ed478a865068492107218dd9dcdff566a8efc6b8",
     "a927682b32456db6fe7639e0855181f9ee0858c8",
-    "0e5e3209d28a6b29b9d05e1f4cc947e17d636048"
+    "0e5e3209d28a6b29b9d05e1f4cc947e17d636048",
+    "06b30a986e0916b54b7c8eefe815347c4e5bcf06"
   ],
   "scope": "PR30 issue25 v4 conflict investigation plus normal architecture/prerequisite merges; exact owner-prepared blobs/provenance, new integration and v4 oracle pending independent Hubble review",
   "functionalOracle": [
@@ -482,6 +483,14 @@
         "reviewedSourceBlob": "3168536b4d864ceb6889d48fb3546d9b4ae9bf8b",
         "transformation": "identical-reviewed-bytes"
       }
+    },
+    {
+      "path": "apps/api/tests/test_conflict_deployment_projection.py",
+      "integratedBlob": "55db06c39b7bb97b6a81bbc947cfe9c3d1250786",
+      "reviewedSourceHead": "06b30a986e0916b54b7c8eefe815347c4e5bcf06",
+      "reviewedSourcePath": "apps/api/tests/test_research_conflict_publication.py",
+      "reviewedSourceBlob": "782dc521cd24a362693c19d2097117caa8a6d37c",
+      "transformation": "new-real-model-oracle-tests-derived-from-existing-production-publication-fixture; no-journal-and-v4-positive-plus-eight-foreign-relations"
     },
     {
       "path": "apps/api/tests/test_layout_probe_paths.py",
@@ -1365,19 +1374,35 @@
     },
     {
       "path": "tools/evaluation/src/citeframe_evaluation/acceptance/conflicts.py",
-      "integratedBlob": "e73600cfa87f98ad6814d7f3503e6400043d5d33",
-      "reviewedSourceHead": "0e5e3209d28a6b29b9d05e1f4cc947e17d636048",
+      "integratedBlob": "5070620be4c91e00c30edf43acd2d11d5d99027d",
+      "reviewedSourceHead": "06b30a986e0916b54b7c8eefe815347c4e5bcf06",
       "reviewedSourcePath": "tools/evaluation/src/citeframe_evaluation/acceptance/conflicts.py",
       "reviewedSourceBlob": "e73600cfa87f98ad6814d7f3503e6400043d5d33",
-      "transformation": "explicit-v4-feature-deployment-oracle; preserves-v2-v3-release-contracts-and-ecc-request-binding; independent-review-pending"
+      "transformation": "validate-real-Step-snapshot-attempt-scope-and-input; reuse-closed-source-contract; bind-finish-claim-set",
+      "inheritedProvenance": {
+        "path": "tools/evaluation/src/citeframe_evaluation/acceptance/conflicts.py",
+        "integratedBlob": "e73600cfa87f98ad6814d7f3503e6400043d5d33",
+        "reviewedSourceHead": "0e5e3209d28a6b29b9d05e1f4cc947e17d636048",
+        "reviewedSourcePath": "tools/evaluation/src/citeframe_evaluation/acceptance/conflicts.py",
+        "reviewedSourceBlob": "e73600cfa87f98ad6814d7f3503e6400043d5d33",
+        "transformation": "explicit-v4-feature-deployment-oracle; preserves-v2-v3-release-contracts-and-ecc-request-binding; independent-review-pending"
+      }
     },
     {
       "path": "tools/evaluation/src/citeframe_evaluation/acceptance/evidence.py",
-      "integratedBlob": "3055b37bbb423e2002c4d56f4d38aec652b7998b",
-      "reviewedSourceHead": "0e5e3209d28a6b29b9d05e1f4cc947e17d636048",
+      "integratedBlob": "fb2b815705288a87b562a062f7f3e7ae285c4e1a",
+      "reviewedSourceHead": "06b30a986e0916b54b7c8eefe815347c4e5bcf06",
       "reviewedSourcePath": "tools/evaluation/src/citeframe_evaluation/acceptance/evidence.py",
       "reviewedSourceBlob": "3055b37bbb423e2002c4d56f4d38aec652b7998b",
-      "transformation": "explicit-v4-feature-deployment-oracle; preserves-v2-v3-release-contracts-and-ecc-request-binding; independent-review-pending"
+      "transformation": "query-real-Step-foreign-key; retain-raw-journal-columns; validate-linked-persisted-scope",
+      "inheritedProvenance": {
+        "path": "tools/evaluation/src/citeframe_evaluation/acceptance/evidence.py",
+        "integratedBlob": "3055b37bbb423e2002c4d56f4d38aec652b7998b",
+        "reviewedSourceHead": "0e5e3209d28a6b29b9d05e1f4cc947e17d636048",
+        "reviewedSourcePath": "tools/evaluation/src/citeframe_evaluation/acceptance/evidence.py",
+        "reviewedSourceBlob": "3055b37bbb423e2002c4d56f4d38aec652b7998b",
+        "transformation": "explicit-v4-feature-deployment-oracle; preserves-v2-v3-release-contracts-and-ecc-request-binding; independent-review-pending"
+      }
     },
     {
       "path": "tools/evaluation/src/citeframe_evaluation/acceptance/request_proofs.py",
@@ -1461,11 +1486,19 @@
     },
     {
       "path": "tools/evaluation/tests/test_conflict_workflow_integration.py",
-      "integratedBlob": "5409ec30381fa9fb0eaf36b2ae927b3f29f34732",
-      "reviewedSourceHead": "0e5e3209d28a6b29b9d05e1f4cc947e17d636048",
+      "integratedBlob": "0d7dc3975161d1d1978d98de413a361b1416751e",
+      "reviewedSourceHead": "06b30a986e0916b54b7c8eefe815347c4e5bcf06",
       "reviewedSourcePath": "tools/evaluation/tests/test_conflict_workflow_integration.py",
       "reviewedSourceBlob": "5409ec30381fa9fb0eaf36b2ae927b3f29f34732",
-      "transformation": "explicit-v4-feature-deployment-oracle; preserves-v2-v3-release-contracts-and-ecc-request-binding; independent-review-pending"
+      "transformation": "real-model-shaped-fixture; rehashed-semantic-rejection-controls; nullable-input-positive",
+      "inheritedProvenance": {
+        "path": "tools/evaluation/tests/test_conflict_workflow_integration.py",
+        "integratedBlob": "5409ec30381fa9fb0eaf36b2ae927b3f29f34732",
+        "reviewedSourceHead": "0e5e3209d28a6b29b9d05e1f4cc947e17d636048",
+        "reviewedSourcePath": "tools/evaluation/tests/test_conflict_workflow_integration.py",
+        "reviewedSourceBlob": "5409ec30381fa9fb0eaf36b2ae927b3f29f34732",
+        "transformation": "explicit-v4-feature-deployment-oracle; preserves-v2-v3-release-contracts-and-ecc-request-binding; independent-review-pending"
+      }
     }
   ]
 }

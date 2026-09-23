@@ -99,3 +99,5 @@ The #29 feature integration also maps adaptive retrieval and historical V1 promp
 ### Issue25 conflict investigation mapping
 
 PR30 adds `ai_pdf_worker.research.conflict_investigation`; its durable operations remain in `research.adapters.ledger` and `research.adapters.generation`. Production has no offline-evaluation dependency or revived flat import shim. The explicit current-release deployment oracle requires v4 with journal/wire provenance, while historical v2/v3 remain bound to their original snapshots. The exact142-path manifest and source lineage are recorded in the stack integration spec. The user-facing7d6 fixture is a separately frozen source, not evidence for the new architecture candidate.
+
+The PR30 offline-oracle follow-up preserves raw journal columns and proves ownership through persisted Step/snapshot/attempt foreign keys. Its source inspections use the production closed validation contract and finish claim-set binding. The manifest now pins143 product/test paths, including a real-model projection regression; production schema and historical artifact bytes are unchanged.

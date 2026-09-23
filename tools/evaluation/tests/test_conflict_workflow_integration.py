@@ -41,27 +41,28 @@ def proof():
                "evidence": [{"id": "source", "excerpt": "Immutable source"}]}
     result = {"inspections": [{"evidenceHandleId": "source", "quote": "Immutable source",
               "version": None, "environment": None, "time": None, "conditions": None}],
-              "revisions": [], "nextQuery": None, "gaps": ["missing conditions"]}
+              "revisions": [], "nextQuery": None, "gaps": ["missing conditions"], "reason": "Source conditions remain unknown."}
     outcome = {"resolved": False, "reason": "insufficient_evidence", "revisions": [], "queries": [],
                "gaps": result["gaps"], "inspections": result["inspections"],
                "originalClaims": request["claims"], "evidence": request["evidence"]}
-    common = dict(step_id="gate", execution_snapshot_id="snapshot", workspace_id="workspace", run_id="run",
+    common = dict(step_id="gate", execution_snapshot_id="snapshot",
                   created_by_attempt_id="attempt", status="succeeded")
     turns = []
     for n,(phase,req,res) in enumerate([("inspect",request,result),("finish",{"conflictClaimIds":["claim"]},outcome)]):
         turns.append(dict(common, phase=phase,operation_number=n,request_json=req,result_json=res,
                           request_sha256=digest(req),result_sha256=digest(res)))
-    return dict(conflictTurns=turns, snapshots=[dict(id="snapshot", workflow_version_id=V4_WORKFLOW_VERSION_ID)],
+    return dict(run=dict(id="run", workspace_id="workspace"), conflictTurns=turns,
+        snapshots=[dict(id="snapshot", workflow_version_id=V4_WORKFLOW_VERSION_ID, run_id="run", workspace_id="workspace")],
         steps=[dict(id="gate", step_kind="conflict_decision_gate", status="succeeded",run_id="run",workspace_id="workspace",
-                    execution_snapshot_id="snapshot",input_sha256="input")],
-        attempts=[dict(id="attempt",step_id="gate",workspace_id="workspace",status="succeeded",input_sha256="input")])
+                    execution_snapshot_id="snapshot",input_sha256="input",current_attempt_number=1)],
+        attempts=[dict(id="attempt",step_id="gate",workspace_id="workspace",status="succeeded",input_sha256="input",attempt_number=1)])
 
 
 def test_fixture_journal_and_actual_role_link(proof):
     assert len(assert_fixture_investigation(proof, required=True)) == 2
     body = {"input": [{"role": "user", "content": json.dumps({"investigation": proof["conflictTurns"][0]["request_json"]})}]}
     assert_role_step(proof, proof["steps"][0], proof["attempts"][0], "investigator", body)
-    for field in ("created_by_attempt_id", "workspace_id", "run_id", "execution_snapshot_id", "request_sha256"):
+    for field in ("created_by_attempt_id", "step_id", "execution_snapshot_id", "request_sha256"):
         changed = deepcopy(proof)
         changed["conflictTurns"][0][field] = "foreign"
         with pytest.raises(AssertionError, match="unproven_investigator_send"):
@@ -106,3 +107,30 @@ def test_http_fixture_investigator_contract_is_source_backed_and_bounded(monkeyp
     body["input"][0]["content"] = json.dumps(payload)
     with pytest.raises(AssertionError, match="unknown_investigator_contract"):
         ProofHandler._generation_output(body)
+
+
+@pytest.mark.parametrize("mutation", ["quote", "conditions", "missing_source", "unknown_field", "finish_claims"])
+def test_fixture_journal_rejects_rehashed_semantic_forgery(proof, mutation):
+    inspect, finish = proof["conflictTurns"]
+    if mutation == "finish_claims":
+        finish["request_json"] = {"conflictClaimIds": ["foreign"]}
+        finish["request_sha256"] = digest(finish["request_json"])
+    elif mutation in {"quote", "conditions"}:
+        for turn in (inspect, finish):
+            turn["result_json"]["inspections"][0][mutation] = "FABRICATED NOT IN SOURCE"
+    elif mutation == "missing_source":
+        for turn in (inspect, finish):
+            turn["result_json"]["inspections"] = []
+    else:
+        inspect["result_json"]["unrecognized"] = True
+    for turn in (inspect, finish):
+        turn["result_sha256"] = digest(turn["result_json"])
+    with pytest.raises(AssertionError):
+        assert_fixture_investigation(proof, required=True)
+
+
+def test_nullable_step_input_uses_the_persisted_attempt_fallback(proof):
+    from hashlib import sha256
+    proof["steps"][0]["input_sha256"] = None
+    proof["attempts"][0]["input_sha256"] = sha256(b"gate").hexdigest()
+    assert_fixture_investigation(proof, required=True)

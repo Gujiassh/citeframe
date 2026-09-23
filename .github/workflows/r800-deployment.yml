@@ -54,7 +54,7 @@ jobs:
       - name: Verify current feature contracts without human policy substitution
         working-directory: product
         run: |
-          uv run --project tools/evaluation pytest apps/api/tests/test_research_autonomy.py apps/api/tests/test_research_policy_publication.py apps/api/tests/test_research_adaptive_recovery.py apps/api/tests/test_research_adaptive_service.py apps/api/tests/test_research_report_edit.py -q
+          uv run --project tools/evaluation pytest apps/api/tests/test_conflict_deployment_projection.py apps/api/tests/test_research_autonomy.py apps/api/tests/test_research_policy_publication.py apps/api/tests/test_research_adaptive_recovery.py apps/api/tests/test_research_adaptive_service.py apps/api/tests/test_research_report_edit.py -q
           uv run --project tools/evaluation pytest tools/evaluation/tests/test_acceptance_evidence_links.py tools/evaluation/tests/test_acceptance_scenario_drivers.py tools/evaluation/tests/test_conflict_workflow_integration.py -q
       - name: Use the runner's existing Compose v2 through the scripts' CLI name
         run: |
