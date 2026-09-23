@@ -299,8 +299,9 @@ def test_worker_gate_persists_sources_correction_and_rechecks_across_sessions(
     assert [c.statement_text for c in originals] == ["Use A", "Use B"]
 
 
+@pytest.mark.parametrize("nullable_input", [False, True])
 def test_v4_gate_search_load_uses_frozen_evidence_service_and_dedup_ledger(
-    research_worker_db, monkeypatch
+    research_worker_db, monkeypatch, nullable_input
 ):
     from ai_pdf_api.services.research.research_worker import (
         search_frozen_evidence,
@@ -310,6 +311,8 @@ def test_v4_gate_search_load_uses_frozen_evidence_service_and_dedup_ledger(
     from research_worker_test_support import seed_frozen_evidence
 
     f = research_worker_db
+    if nullable_input:
+        f.step.input_sha256 = None
     lease = gate(f)
     from types import SimpleNamespace as N
     from citeframe_persistence.models import ResearchEvidenceSnapshot, EvidenceLocator
@@ -361,6 +364,20 @@ def test_v4_gate_search_load_uses_frozen_evidence_service_and_dedup_ledger(
     )
     found = search_frozen_evidence(f.db, **context, **search)
     assert found and all(h.owner_step_id == f.step.id for h in found)
+    from dataclasses import asdict
+    from ai_pdf_worker.research_runtime_core import _evidence_handle
+    from citeframe_research_persistence.conflict_provenance import validate_sources
+
+    validate_sources(
+        f.db,
+        f.step,
+        [],
+        {
+            "originalClaims": [],
+            "evidence": [asdict(_evidence_handle(h)) for h in found],
+        },
+    )
+
     load = dict(
         tool_call_key="investigation-1:load",
         evidence_handle_ids=tuple(h.evidence_handle for h in found),
@@ -399,3 +416,60 @@ def test_third_distinct_search_cannot_be_reserved(research_worker_db):
         )
     with pytest.raises(ResearchError, match="limit"):
         call(f, lease, number=2, phase="search", request={"query": "third"})
+
+
+@pytest.mark.parametrize("explicit_input", [False, True])
+@pytest.mark.parametrize(
+    "mutation",
+    [
+        None,
+        "attempt_hash",
+        "step_hash",
+        "tool_workspace",
+        "tool_snapshot",
+        "handle_run",
+        "evidence_run",
+    ],
+)
+def test_live_gate_source_hash_and_scope(research_worker_db, explicit_input, mutation):
+    from dataclasses import asdict
+    from uuid import uuid4
+    from ai_pdf_api.services.research.research_worker_evidence import (
+        _frozen_evidence_value,
+    )
+    from ai_pdf_worker.research_runtime_core import _evidence_handle
+    from citeframe_persistence.models import ResearchEvidenceSnapshot, ResearchToolCall
+    from citeframe_research_persistence.conflict_provenance import validate_sources
+    from research_worker_test_support import seed_frozen_evidence, sha256
+
+    f = research_worker_db
+    f.step.input_sha256 = sha256("explicit gate input") if explicit_input else None
+    lease = gate(f)
+    attempt = f.db.get(ResearchStepAttempt, lease.attempt_id)
+    assert attempt.input_sha256 == (f.step.input_sha256 or sha256(f.step.id))
+    handle = seed_frozen_evidence(f, lease.attempt_id)
+    value = asdict(
+        _evidence_handle(_frozen_evidence_value(f.db, handle, branch_key="conflicts"))
+    )
+    tool = f.db.get(ResearchToolCall, handle.created_by_tool_call_id)
+    if mutation == "attempt_hash":
+        attempt.input_sha256 = sha256("wrong attempt")
+    elif mutation == "step_hash":
+        f.step.input_sha256 = sha256("changed step")
+    elif mutation == "tool_workspace":
+        tool.workspace_id = str(uuid4())
+    elif mutation == "tool_snapshot":
+        tool.execution_snapshot_id = str(uuid4())
+    elif mutation == "handle_run":
+        handle.run_id = str(uuid4())
+    elif mutation == "evidence_run":
+        f.db.get(ResearchEvidenceSnapshot, handle.evidence_snapshot_id).run_id = str(
+            uuid4()
+        )
+    f.db.commit()
+    outcome = {"originalClaims": [], "evidence": [value]}
+    if mutation:
+        with pytest.raises(ResearchError, match="provenance"):
+            validate_sources(f.db, f.step, [], outcome)
+    else:
+        validate_sources(f.db, f.step, [], outcome)

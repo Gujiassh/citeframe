@@ -1,5 +1,7 @@
 """Validate journal source references against frozen evidence and its tool ledger."""
 
+import hashlib
+
 from sqlalchemy import select
 from citeframe_persistence.models import (
     ResearchClaimEvidence,
@@ -64,10 +66,17 @@ def validate_sources(db, step, originals, outcome):
             and current
             and producer.id == step.id
             and current.status == "running"
+            and producer.status == "running"
+            and current.workspace_id == step.workspace_id
+            and current.finished_at is None
             and tool
             and tool.attempt_id == current.id
             and tool.tool_name == "evidence.search"
-            and current.input_sha256 == producer.input_sha256
+            and current.input_sha256
+            == (
+                producer.input_sha256
+                or hashlib.sha256(producer.id.encode("utf-8")).hexdigest()
+            )
         )
         replay = bool(
             producer
@@ -83,6 +92,13 @@ def validate_sources(db, step, originals, outcome):
             or handle.run_id != step.run_id
             or handle.workspace_id != step.workspace_id
             or handle.execution_snapshot_id != step.execution_snapshot_id
+            or evidence.run_id != step.run_id
+            or evidence.workspace_id != step.workspace_id
+            or evidence.captured_by_step_id != handle.owner_step_id
+            or tool.workspace_id != step.workspace_id
+            or tool.tool_version != 1
+            or tool.error_code is not None
+            or tool.error_message is not None
             or tool.status != "succeeded"
             or tool.run_id != step.run_id
             or tool.execution_snapshot_id != step.execution_snapshot_id

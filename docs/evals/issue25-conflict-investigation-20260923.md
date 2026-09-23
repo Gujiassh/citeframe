@@ -27,3 +27,14 @@ Base: #29 `5bfee6a0f9a7d8466d72b11a961cc5446fa7bca1`. Feature branch: `work/issu
 Keep draft until remote CI, independent Critical review, full PostgreSQL migration/restart and real service-backed user walkthrough pass. Future prerequisite fixes must enter this branch by normal merge from an explicitly named #29 SHA, followed by affected regression. #28/#29/#25 merge ordering remains controlled by the main owner.
 
 Reproduction commands and exact migration limitations are in the linked feature spec. Local pre-change and final-delta manifests are retained under `.local-issue25/`; no prerequisite overlay or unrelated canonical dirty state is in the feature commits.
+
+
+## Hubble P1 follow-up: nullable live-gate input
+
+Independent review found that lease creation permits a null Step input and stores SHA256(step.id) on its Attempt, while the investigation live-gate source validator compared against raw null. The correction uses the exact lease hash rule and retains wrong-hash rejection. Source validation also checks tool workspace and evidence run/workspace/capture ownership explicitly.
+
+A 14-case null/explicit-input matrix covers valid current attempts and wrong attempt hash, changed Step hash, tool workspace/snapshot, handle run and evidence run. Before the fix, the nullable positive and two scope-negative cases failed; after the fix all pass. The frozen search/load service integration now covers both null and explicit Step input and invokes source validation on the newly retrieved handles. Targeted investigation/publication/adoption tests: 41 passed. Broad API Research plus boundary: 290 passed, 1 skipped. These results use local deterministic/SQLite fixtures.
+
+The dependency base remains #29 `5bfee6a`; nullable **finished-attempt replay** still depends on Franklin's pending #29 integration of #28's adoption fix. This local live-gate repair does not establish that pending combined path.
+
+CI at prior HEAD `d619d719` passed all Worker jobs and both Web jobs. API reported 837 passed, 2 skipped, 3 failures: two existing A2 pending-human-plan assumptions are handed back to Franklin; the third was the asset migration test expecting q1's downgrade error while r2 now rejects first. The latter test now expects r2's forward-only message. That PostgreSQL assertion needs a new CI run; no local PostgreSQL run is claimed. PR remains draft and the real-service acceptance gates stay open.
