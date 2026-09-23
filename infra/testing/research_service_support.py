@@ -110,13 +110,16 @@ class ServiceHarness:
             "research_budget_ledgers",
             "research_provider_calls",
             "research_events",
+            "research_report_edits",
         ]
         with self.engine.connect() as connection:
             state = {
                 table: [
                     dict(row)
                     for row in connection.execute(
-                        text(f"SELECT * FROM {table} ORDER BY id")
+                        text(
+                            f"SELECT * FROM {table} ORDER BY {'run_id' if table == 'research_report_edits' else 'id'}"
+                        )
                     ).mappings()
                 ]
                 for table in tables

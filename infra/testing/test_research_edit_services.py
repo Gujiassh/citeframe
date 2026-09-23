@@ -6,7 +6,8 @@ import hashlib
 import json
 import os
 from concurrent.futures import ThreadPoolExecutor
-from threading import Barrier
+from threading import Barrier, Event
+from time import monotonic, sleep
 
 import pytest
 
@@ -91,6 +92,7 @@ def test_default_policy_report_two_connection_editing(tmp_path):
         assert db.get(ResearchReportEdit, run_id) is None
     evidence = []
     for version in (0, 1):
+        h.snapshot(f"edit-race-{version}-before")
         barrier = Barrier(2)
 
         def save(editor, barrier=barrier, version=version):
@@ -132,10 +134,59 @@ def test_default_policy_report_two_connection_editing(tmp_path):
             refreshed.status_code == 200
             and refreshed.json()["markdown"] == winner["markdown"]
         )
+        for result, editor in zip(results, ("A", "B"), strict=True):
+            result["request"] = {
+                **base,
+                "expectedVersion": version,
+                "markdown": f"# Editor {editor} version {version}",
+            }
+        h.snapshot(f"edit-race-{version}-after")
         evidence.append(results)
-    # A committed revocation on a second physical connection must prevent further writes.
-    with sessions() as revoker:
+    h.snapshot("revocation-before")
+    connected = Event()
+    saver_state = {}
+
+    def blocked_save():
+        with sessions() as db:
+            saver_state["pid"] = db.scalar(text("SELECT pg_backend_pid()"))
+            connected.set()
+            try:
+                save_report_edit(
+                    db,
+                    workspace_id=IDS["workspace"],
+                    run_id=run_id,
+                    user_id=IDS["creator"],
+                    payload=SaveResearchReportEditRequest(
+                        **base,
+                        expectedVersion=2,
+                        markdown="must not persist after lock wait",
+                    ),
+                )
+            except ResearchError as error:
+                db.rollback()
+                return {"status": error.status_code, "code": error.code}
+            raise AssertionError("Revoked editor saved after waiting for the Run lock")
+
+    with ThreadPoolExecutor(max_workers=1) as pool, sessions() as revoker:
         revoke_pid = revoker.scalar(text("SELECT pg_backend_pid()"))
+        revoker.scalar(
+            select(ResearchRun).where(ResearchRun.id == run_id).with_for_update()
+        )
+        pending = pool.submit(blocked_save)
+        assert connected.wait(10)
+        assert saver_state["pid"] != revoke_pid
+        deadline = monotonic() + 10
+        while True:
+            blockers = revoker.scalar(
+                text("SELECT pg_blocking_pids(:pid)"), {"pid": saver_state["pid"]}
+            )
+            if revoke_pid in blockers:
+                break
+            assert monotonic() < deadline, (
+                "Save did not reach the expected PostgreSQL row lock"
+            )
+            sleep(0.05)
+        saver_state["blockingPids"] = blockers
         revoker.execute(
             delete(WorkspaceMembership).where(
                 WorkspaceMembership.workspace_id == IDS["workspace"],
@@ -143,6 +194,12 @@ def test_default_policy_report_two_connection_editing(tmp_path):
             )
         )
         revoker.commit()
+        saver_state["response"] = pending.result(timeout=15)
+        assert saver_state["response"] == {
+            "status": 403,
+            "code": "research_permission_denied",
+        }
+    h.snapshot("revocation-after")
     response = client.put(
         url,
         headers=headers("revoked-editor-save"),
@@ -166,6 +223,7 @@ def test_default_policy_report_two_connection_editing(tmp_path):
                 "workers": h.processes,
                 "connections": evidence,
                 "revokerPid": revoke_pid,
+                "blockedSaver": saver_state,
                 "revokedStatus": response.status_code,
                 "result": "pass",
             },
@@ -174,4 +232,3 @@ def test_default_policy_report_two_connection_editing(tmp_path):
         ),
         encoding="utf-8",
     )
-
