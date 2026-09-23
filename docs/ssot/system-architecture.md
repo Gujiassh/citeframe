@@ -912,7 +912,6 @@ The A2 runner now retains raw reports and validates historical invariants plus e
 
 The current candidate executes isolated historical v2 restore, historical approved-task/idempotency replay, and real default-v3 POST-create-to-publication scenarios. F1 additions for newly generated human decision events/responses are verified by a separate feature oracle; existing schema1 events and old-key HTTP responses remain unchanged. Decision POST replay serializes only explicitly persisted fields while retaining the response model's datetime encoding. See `specs/v5/post-v5-optimization/issue23-versioned-workflow-acceptance-20260923.md`. The checks use SQLite and scripted capabilities; real PostgreSQL saga/process/object-store/UI acceptance remains open.
 
-<<<<<<< HEAD
 
 ### Issue 25 versioned oracle and dependency integration
 
@@ -922,7 +921,6 @@ Issue #25 normally merges #29 through `cfc0e728` (including #28 `ae3fd6f`). Defa
 ### Issue 25 journal integrity and service recovery
 
 Journal replay validates frozen Step/current Attempt inputs and origin Attempt ownership, input, ordering and terminal state before trusting payload hashes. Publication and API outcome validation require the combined critic input to contain every supported unaffected claim and all verified revisions with unchanged evidence links. Service acceptance uses actual PostgreSQL, S3, HTTP and separate Worker/API processes; only generation/embedding capabilities are fixture-injected. Already-approved v3 upgrade/edit persistence and fresh/staged PostgreSQL release equality have direct local evidence. A recovered Step retaining lease_expired currently blocks final adoption and is assigned to the prerequisite R2 owner; the adoption oracle remains unchanged. Full crash recovery and visible UI gates remain open.
-=======
 ### Research service-backed recovery acceptance
 
 The isolated PG17/S3/Worker process gate is specified in [issue27 real-service acceptance](../../specs/v5/post-v5-optimization/issue27-real-service-acceptance-20260923.md). It is separate from the historical differential oracle and does not substitute for browser acceptance.
@@ -930,4 +928,3 @@ The isolated PG17/S3/Worker process gate is specified in [issue27 real-service a
 ### Research report edition service gate
 
 The stacked feature gate exercises real PostgreSQL first-save/CAS races on two connections, default policy publication and revoked-editor no-write behavior. Scope and API-versus-UI boundaries are recorded in [issue23 real-service acceptance](../../specs/v5/post-v5-optimization/issue23-real-service-acceptance-20260924.md).
->>>>>>> 86e710f2b9b03a58b91d5d37d16e79c9e1c8c357
