@@ -1072,6 +1072,16 @@ def _process_one_flow(path: Path, normalizer: _Normalizer) -> dict[str, object]:
         with sessions() as db:
             after_maintenance = _database_rows(db, normalizer)
         assert provider.calls == provider_before_maintenance
+        # Diagnostic errors allocate request IDs. Exercise them only after all
+        # business events exist, so they cannot shift the frozen UUID workload.
+        replay_requests = historical_report["historicalDecisionRequests"] if stored_approvals else decision_requests
+        for request in replay_requests:
+            rejected = client.post(request["path"],
+                headers={**headers, "Idempotency-Key": request["key"]},
+                json={**request["body"], "comment": "changed original request"})
+            assert rejected.status_code == 409 and rejected.json()["error"]["code"] == "idempotency_key_reused"
+        with sessions() as db:
+            assert _database_rows(db, normalizer) == after_maintenance
         print("a2a_probe stage=process_resume_done", flush=True)
 
     with sessions() as db:
