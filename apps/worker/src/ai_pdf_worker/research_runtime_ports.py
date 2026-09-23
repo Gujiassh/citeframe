@@ -438,6 +438,11 @@ class LedgeredGeneration(_ApiPort):
     def execution(self) -> ApprovedResearchExecution:
         return self._execution
 
+    def conflict_turn(self, lease, operation, phase, request, result=None):
+        return self._call("conflict_turn", write=True, attempt_id=lease.attempt_id,
+            lease_token=lease.lease_token, operation_number=operation, phase=phase,
+            request=request, result=result, now=_now())
+
     def adaptive_turn(self, lease: StepLease, turn: int, request: dict, result: dict | None = None):
         return self._call("adaptive_turn", write=True, attempt_id=lease.attempt_id,
                           lease_token=lease.lease_token, turn_number=turn,

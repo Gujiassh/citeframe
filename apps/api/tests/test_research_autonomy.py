@@ -166,6 +166,9 @@ def test_workflow_release_rejects_cross_version_prompt_binding(research_app):
         V2_PROMPT_VERSION_IDS, V3_WORKFLOW_VERSION_ID)
     _, db, _ = research_app
     install_historical_v2(db)
+    from ai_pdf_api.services.research.research_versions_service import publish_research_versions_for_release
+    publish_research_versions_for_release(db, datetime.now(UTC), workflow_id=V3_WORKFLOW_VERSION_ID)
+    db.flush()
     binding=db.get(WorkflowPromptBinding, (V3_WORKFLOW_VERSION_ID,"researchers"))
     binding.prompt_version_id=V2_PROMPT_VERSION_IDS["researchers"]
     db.commit()

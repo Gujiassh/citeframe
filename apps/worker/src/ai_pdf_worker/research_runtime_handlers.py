@@ -1,6 +1,7 @@
 """Database-authoritative single-attempt Research step handlers."""
 
 from __future__ import annotations
+from citeframe_research_persistence.conflict_policy import INVESTIGATION_WORKFLOW_ID
 
 import logging
 from collections.abc import Iterator, Sequence
@@ -334,8 +335,22 @@ class SingleAttemptStepDispatcher:
         if conflicts is None:
             raise ResearchPortError("research_conflict_state_missing")
         if conflicts:
+            if _execution.workflow_version_id == INVESTIGATION_WORKFLOW_ID:
+                from ai_pdf_worker.research_conflict_investigation import investigate
+                context = ToolExecutionContext(workspace_id=_execution.workspace_id, run_id=_execution.run_id,
+                    execution_snapshot_id=_execution.execution_snapshot_id,
+                    execution_snapshot_sha256=_execution.snapshot_sha256, step_id=lease.step_id,
+                    attempt_id=lease.attempt_id, branch_key="conflicts", frozen_assets=_execution.frozen_assets)
+                tools = lambda number: EvidenceToolRegistry(SqlEvidenceToolPort(self._sessions, self._service), context,
+                    call_key_namespace=f"investigation-{number}:")
+                try:
+                    investigate(execution=_execution, state=state, agents=_agents, lease=lease, tools=tools,
+                        checkpoint=_agents._generation.conflict_turn)
+                except Exception as error:
+                    _persist_step_failure(self._ledger, lease, error)
+                    raise
             self._ledger.wait_for_conflict_decision(lease, conflicts)
-            return ("success" if _execution.workflow_version_id == AUTONOMOUS_WORKFLOW_ID else "waiting"), 0
+            return ("success" if _execution.workflow_version_id in {AUTONOMOUS_WORKFLOW_ID, INVESTIGATION_WORKFLOW_ID} else "waiting"), 0
         self._ledger.complete_control_step(lease)
         return "success", 0
 
@@ -369,7 +384,7 @@ class SingleAttemptStepDispatcher:
                 lease,
             )
             self._validate_selection(selection, publishable, unresolved)
-            if execution.workflow_version_id == AUTONOMOUS_WORKFLOW_ID:
+            if execution.workflow_version_id in {AUTONOMOUS_WORKFLOW_ID, INVESTIGATION_WORKFLOW_ID}:
                 selection = SynthesisSelection(selection.fact_claim_ids, tuple(claim.id for claim in unresolved))
         except Exception as error:
             _persist_step_failure(self._ledger, lease, error)

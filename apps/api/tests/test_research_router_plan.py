@@ -20,10 +20,10 @@ from ai_pdf_api.services.research import (
 )
 from ai_pdf_api.services.research.research_idempotency import canonical_sha256
 from ai_pdf_api.services.research.research_prompt_provenance import (
-    PROMPT_NODE_ORDER,
+    V4_PROMPT_NODE_ORDER as PROMPT_NODE_ORDER,
     V2_PROMPT_SPECS,
-    V3_PROMPT_VERSION_IDS as V2_PROMPT_VERSION_IDS,
-    V3_WORKFLOW_VERSION_ID as V2_WORKFLOW_VERSION_ID,
+    V4_PROMPT_VERSION_IDS as V2_PROMPT_VERSION_IDS,
+    V4_WORKFLOW_VERSION_ID as V2_WORKFLOW_VERSION_ID,
     prompt_contract_sha256,
     v2_workflow_manifest,
 )

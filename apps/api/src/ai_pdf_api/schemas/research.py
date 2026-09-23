@@ -310,7 +310,55 @@ class ResearchRunSummary(ResearchModel):
     finished_at: datetime | None
 
 
+class ConflictInspection(ResearchModel):
+    evidence_handle_id: str
+    quote: str
+    version: str | None
+    environment: str | None
+    time: str | None
+    conditions: str | None
+
+
+class ConflictClaim(ResearchModel):
+    id: str
+    text: str
+    evidence_handle_ids: list[str]
+
+
+class ConflictRevision(ConflictClaim):
+    original_claim_ids: list[str]
+
+
+class ConflictSource(ResearchModel):
+    id: str
+    asset_id: str
+    locator_id: str
+    excerpt: str
+    fingerprint: str
+
+
+class ConflictOperation(ResearchModel):
+    number: int
+    phase: Literal["inspect", "search", "verify", "critic", "finish"]
+    status: Literal["started", "succeeded"]
+
+
+class ConflictInvestigation(ResearchModel):
+    status: Literal["running", "resolved", "unresolved", "cancelled", "failed"]
+    phase: Literal["inspect", "search", "verify", "critic", "finish"]
+    reason: str | None
+    explanation: str | None
+    operations: list[ConflictOperation]
+    queries: list[str]
+    inspections: list[ConflictInspection]
+    gaps: list[str]
+    original_claims: list[ConflictClaim]
+    revisions: list[ConflictRevision]
+    sources: list[ConflictSource]
+
+
 class ResearchRunDetail(ResearchRunSummary):
+    conflict_investigation: ConflictInvestigation | None = None
     frozen_asset_scope: FrozenAssetScope | None
     plan: ResearchPlan | None
     research_execution: ApprovedResearchExecutionSnapshot | None

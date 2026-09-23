@@ -144,7 +144,11 @@ ADAPTIVE_AGENT_RESULT_SCHEMAS["researcher"]["properties"]["nextQuery"] = {
     "type": ["string", "null"], "minLength": 1, "maxLength": 1000,
 }
 
+from citeframe_research_persistence.conflict_contract import INVESTIGATOR_SCHEMA, validate_investigation
+
 _SCHEMAS_BY_ID: dict[str, dict[str, object]] = {
+    "research.investigator.v3": INVESTIGATOR_SCHEMA,
+    **{f"research.{key}.v3": schema for key, schema in ADAPTIVE_AGENT_RESULT_SCHEMAS.items()},
     **{f"research.{key}.v2": schema for key, schema in ADAPTIVE_AGENT_RESULT_SCHEMAS.items()},
     **{
         f"research.{node_key}.v1": schema
@@ -279,6 +283,7 @@ def validators_for_registry(
     validators = {
         "research-agent-validator.v1": validate_agent_result,
         "research-agent-validator.v2": validate_adaptive_agent_result,
+        "research-agent-validator.v3": validate_conflict_agent_result,
         "research-agent-validator.legacy-v0": validate_legacy_agent_result,
     }
     resolved: dict[str, Callable[[str, dict[str, Any]], None]] = {}
@@ -382,3 +387,10 @@ def validate_adaptive_agent_result(node_key: str, value: dict[str, Any]) -> None
     if query is not None and (not isinstance(query, str) or not 1 <= len(query.strip()) <= 1000):
         raise ValueError("researcher query invalid")
     validate_legacy_agent_result(node_key, {"claims": value["claims"]})
+
+
+def validate_conflict_agent_result(node_key, value):
+    if node_key == "investigator":
+        validate_investigation(value)
+    else:
+        validate_adaptive_agent_result(node_key, value)

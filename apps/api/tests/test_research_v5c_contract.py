@@ -46,14 +46,14 @@ def test_production_registry_is_strict_and_versioned() -> None:
     assert entry.agent_result_schema_version == AGENT_RESULT_SCHEMA_VERSION
     assert entry.context_policy_version == CONTEXT_POLICY_VERSION
     assert entry.compact_policy_version == COMPACT_POLICY_VERSION
-    assert set(entry.roles) == {"planner", "researcher", "verifier", "critic", "synthesizer"}
+    assert set(entry.roles) == {"planner", "researcher", "verifier", "critic", "synthesizer", "investigator"}
     assert current_production_versions() == {
         "agentResultSchemaVersion": AGENT_RESULT_SCHEMA_VERSION,
         "contextPolicyVersion": CONTEXT_POLICY_VERSION,
         "compactPolicyVersion": COMPACT_POLICY_VERSION,
     }
     assert all(
-        role.validator_key == "research-agent-validator.v2"
+        role.validator_key == "research-agent-validator.v3"
         and role.runtime_adapter_key == "research-runtime-adapter.v1"
         for role in entry.roles.values()
     )
@@ -66,6 +66,7 @@ def test_production_registry_is_strict_and_versioned() -> None:
         "verifier": "research-claim-dto.v1",
         "critic": "research-conflict-dto.v1",
         "synthesizer": "research-artifact-dto.v1",
+        "investigator": "research-investigation-dto.v1",
     }
 
 
@@ -174,7 +175,7 @@ def test_f1_registry_role_metadata_freeze() -> None:
             role.api_projection_key,
             role.prompt_key,
             role.prompt_node_key,
-        ) == (expected[0].replace(".v1", ".v2"), "research-agent-validator.v2", *expected[2:])
+        ) == (expected[0].replace(".v1", ".v3"), "research-agent-validator.v3", *expected[2:])
         assert role.schema_version == AGENT_RESULT_SCHEMA_VERSION
 
     historical = resolve_registry(agent_result_schema_version="research-agent-results-v1",

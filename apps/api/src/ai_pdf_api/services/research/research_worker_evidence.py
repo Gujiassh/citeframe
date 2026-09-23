@@ -47,6 +47,7 @@ from ai_pdf_api.services.research.research_worker_types import (
     LoadedFrozenEvidence,
 )
 from ai_pdf_api.services.retrieval import retrieve_query_content
+from citeframe_research_persistence.conflict_policy import investigation_step
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
@@ -66,8 +67,8 @@ def _frozen_execution_context(
     if (
         run.id != run_id
         or step.id != step_id
-        or step.branch_key != branch_key
-        or step.step_kind != "researcher"
+        or ("conflicts" if investigation_step(step, snapshot) else step.branch_key) != branch_key
+        or (step.step_kind != "researcher" and not investigation_step(step, snapshot))
         or step.execution_snapshot_id != execution_snapshot_id
         or snapshot is None
         or snapshot.run_id != run.id
@@ -553,8 +554,11 @@ def restore_frozen_evidence(
         execution_snapshot_id=execution_snapshot_id,
         owner_step_id=owner_step_id,
     )
-    assert step is not None and step.branch_key is not None
+    snapshot = db.get(ResearchExecutionSnapshot, execution_snapshot_id)
+    assert step is not None
+    branch_key = "conflicts" if investigation_step(step, snapshot) else step.branch_key
+    assert branch_key is not None
     return [
-        _frozen_evidence_value(db, handle, branch_key=step.branch_key)
+        _frozen_evidence_value(db, handle, branch_key=branch_key)
         for handle in handles
     ]

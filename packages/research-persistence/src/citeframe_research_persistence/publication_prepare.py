@@ -573,7 +573,10 @@ def _prepare_publication(
             409,
         )
 
-    report_bytes = canonical_final_report(
+    from .conflict_policy import INVESTIGATION_WORKFLOW_ID
+    from .conflict_report import investigation_report
+    render = (lambda **kwargs: investigation_report(db, run.id, **kwargs)) if snapshot.workflow_version_id == INVESTIGATION_WORKFLOW_ID else canonical_final_report
+    report_bytes = render(
         fact_claims=[by_id[claim_id] for claim_id in fact_ids],
         unresolved_claims=[by_id[claim_id] for claim_id in unresolved_ids],
     )

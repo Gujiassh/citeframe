@@ -5,6 +5,7 @@ from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 from citeframe_persistence.models import ResearchBudgetLedger, ResearchEvidenceHandle, ResearchExecutionSnapshot, ResearchRun, ResearchStep, ResearchStepAttempt, ResearchToolCall
 from .errors import ResearchError
+from .conflict_policy import investigation_step
 from .lease import _active_attempt_chain, _ledger_and_limits, _locked_attempt_chain
 from .types import ToolCallReservation
 
@@ -19,7 +20,7 @@ def begin_tool_call(
 ) -> ToolCallReservation:
     started_at = now or datetime.now(UTC)
     _run, step, attempt = _active_attempt_chain(db, attempt_id, now=started_at)
-    if step.execution_snapshot_id is None or step.step_kind != "researcher":
+    if step.execution_snapshot_id is None or (step.step_kind != "researcher" and not investigation_step(step, db.get(ResearchExecutionSnapshot, step.execution_snapshot_id))):
         raise ResearchError("research_state_conflict", "Research tool attempt is not running.", 409)
     if tool_name not in {"evidence.search", "evidence.load"} or not tool_call_key or len(tool_call_key) > 160:
         raise ValueError("invalid Research tool call")
@@ -189,7 +190,7 @@ def restore_evidence_handles(
         or step.run_id != run.id
         or step.workspace_id != run.workspace_id
         or step.execution_snapshot_id != snapshot.id
-        or step.step_kind != "researcher"
+        or (step.step_kind != "researcher" and not investigation_step(step, snapshot))
     ):
         raise ResearchError("research_state_conflict", "Research Evidence handle chain is invalid.", 409)
     handles = list(

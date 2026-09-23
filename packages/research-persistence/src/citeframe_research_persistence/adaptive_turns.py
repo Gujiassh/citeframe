@@ -13,7 +13,7 @@ def adaptive_turn(db, *, attempt_id, lease_token, turn_number, request, result=N
     _, step, attempt = _locked_attempt(db, attempt_id=attempt_id, lease_token=lease_token, now=now or datetime.now(UTC))
     snapshot = db.get(ResearchExecutionSnapshot, step.execution_snapshot_id)
     if (step.step_kind != "researcher" or snapshot is None
-            or snapshot.agent_result_schema_version != ADAPTIVE_SCHEMA_VERSION
+            or snapshot.agent_result_schema_version not in {ADAPTIVE_SCHEMA_VERSION, "research-agent-results-v3"}
             or type(turn_number) is not int or not 0 <= turn_number <= MAX_SUPPLEMENTAL_SEARCHES):
         raise ResearchError("research_state_conflict", "Invalid adaptive turn scope.", 409)
     query = request.get("toolContracts", {}).get("retrievalQuery")

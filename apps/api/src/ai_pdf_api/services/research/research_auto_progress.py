@@ -1,3 +1,4 @@
+from citeframe_research_persistence.conflict_policy import INVESTIGATION_WORKFLOW_ID
 """API-owned validated materialization injected into plan publication."""
 from citeframe_research_persistence.automatic_decisions import submit_policy_decision
 from citeframe_research_persistence.membership import ensure_creator_membership
