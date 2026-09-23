@@ -1,6 +1,10 @@
 """Worker composition root for neutral Research persistence commands."""
 from __future__ import annotations
 
+from ai_pdf_api.services.research.research_auto_progress import auto_start_plan
+
+from citeframe_research_persistence.adaptive_turns import adaptive_turn
+
 from types import SimpleNamespace
 
 from ai_pdf_api.db.session import SessionLocal
@@ -55,6 +59,7 @@ from citeframe_research_persistence.publication_saga import (
 def _publish_plan(db, **kwargs):
     return publish_research_plan(
         db,
+        auto_start=auto_start_plan,
         store_bytes=kwargs.pop("store_bytes", upload_bytes),
         cleanup_bytes=kwargs.pop("cleanup_bytes", delete_object_if_exists),
         **kwargs,
@@ -132,6 +137,7 @@ def build_worker_research_service():
     """Compose neutral transitions with API-owned storage/read capability adapters."""
 
     return SimpleNamespace(
+        adaptive_turn=adaptive_turn,
         begin_tool_call=tools.begin_tool_call,
         cancel_provider_reservation=provider.cancel_provider_reservation,
         claim_next_research_step=lease.claim_next_research_step,

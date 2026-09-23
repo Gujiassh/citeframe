@@ -7,6 +7,7 @@ from uuid import uuid4
 
 from citeframe_persistence.models import (
     HumanDecision,
+    HumanDecisionClaim,
     ResearchArtifact,
     ResearchArtifactClaim,
     ResearchArtifactPromptVersion,
@@ -19,7 +20,9 @@ from sqlalchemy.orm import Session
 
 from .errors import ResearchError, canonical_json
 from .events import append_research_event
-from .lease import _locked_attempt
+from .lease import _locked_attempt, complete_research_step
+from .autonomy import AUTONOMOUS_WORKFLOW_ID
+from .automatic_decisions import submit_policy_decision
 from .publication_render import canonical_final_report as _canonical_final_report
 from .publication_saga import final_commit_state as _final_commit_state
 from .publication_saga import publish_final_report
@@ -159,6 +162,25 @@ def wait_for_conflict_decision(
         )
         db.add(decision)
         db.flush()
+        if snapshot.workflow_version_id == AUTONOMOUS_WORKFLOW_ID:
+            def retain_unresolved(session, current_run, current_step, current_attempt):
+                for claim in claims:
+                    claim.conflict_status = "resolved_unresolved"
+                    session.add(HumanDecisionClaim(decision_id=decision.id, claim_id=claim.id,
+                                                   disposition="leave_unresolved"))
+                submit_policy_decision(session, current_run, decision,
+                                       action="keep_as_unresolved", now=requested_at)
+                return 0, [artifact.id]
+            complete_research_step(db, attempt_id=attempt_id, lease_token=lease_token,
+                output_sha256=payload_sha256, complete=retain_unresolved, now=requested_at)
+            run.state_version += 1
+            append_event(db, run, event_type="artifact_published",
+                dedupe_key=f"artifact-published:{artifact.id}",
+                data={"artifactId": artifact.id, "artifactKind": artifact.artifact_kind,
+                      "visibility": artifact.visibility, "byteSize": artifact.byte_size,
+                      "sha256": artifact.content_sha256, "runStateVersion": run.state_version}, now=requested_at)
+            db.flush()
+            return decision.id
         attempt.status = "succeeded"
         attempt.output_sha256 = payload_sha256
         attempt.finished_at = requested_at

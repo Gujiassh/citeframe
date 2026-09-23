@@ -879,3 +879,12 @@ Document/Page/Chunk 已通过受控迁移切换为 Asset/Representation/ContentU
 - **Ingestion Worker** may import shared models and write Representations/ContentUnits under the modality adapter contract on the **shared Session** passed by the API orchestrator (current fact; not a completed process-isolated boundary).
 - **Research Worker** uses neutral persistence commands and Worker-owned UoW/session composition. Accepted R1 runtime runs one claimed Attempt per handler in independent loops and excludes LangGraph from runtime imports. Schema/migration ownership remains API.
 - **Chat** attaches generation images only via `modalities.visual_enrichment` (no direct kind-specific crop imports).
+
+## 2026-09-23 bounded research and report-edition candidate
+
+The current working-tree candidate adds immutable research workflow v3/Agent I/O v2: validated automatic plan materialization, nonblocking unresolved-conflict reporting, up to two branch-local supplemental queries, and independent unverified Markdown editions. Existing v2 plans retain their frozen approval path. New migrations are `o9c0d1e2f3a4` and `p0d1e2f3a4b5`, following inherited R2 `n8b9c0d1e2f3`; they have not been applied to shared services. Generated artifacts, evidence, and historical evaluation records remain unchanged. Automated/fixture-browser evidence is bounded; real migrated-service UI acceptance and architecture integration are pending. See `specs/v5/post-v5-optimization/research-autonomy-20260923.md` and `report-edit-20260923.md` for contracts, ownership, exact tests, and remaining gates. The prior media runtime dependency task remains unclosed.
+
+
+## Research recovery and editing contracts — 2026-09-23 repair
+
+Adaptive model turns are persisted under a bounded step/turn key, with frozen execution binding and request/result hashes. Recovery replays committed decisions and the existing successful tool ledger; it does not require nondeterministic model responses to repeat. The added migration `q1e2f3a4b5c6` must follow the previously recorded R2/editor/autonomy chain. Decision SSE version 2 carries explicit human/policy provenance; historical human version-1 events remain readable. Editor saves include the displayed original ID/hash and reject an obsolete base before the first write. No shared migration or real-service acceptance has been performed. The repaired candidate and isolated prerequisite/feature assembly evidence are tracked in `specs/v5/post-v5-optimization/issue23-review-repair-20260923.md`; architecture PR #26 remains separate.

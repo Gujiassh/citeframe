@@ -14,6 +14,7 @@ from citeframe_persistence.models import (
     ResearchStep,
 )
 from .errors import ResearchError, canonical_json
+from .autonomy import AUTONOMOUS_WORKFLOW_ID
 from .events import append_research_event
 from .lease import _locked_attempt
 from .types import PlanSubproblemDraft
@@ -37,6 +38,7 @@ def publish_research_plan(
     now: datetime | None = None,
     locked_attempt: Callable[..., tuple[object, object, object]] = _locked_attempt,
     append_event: Callable[..., object] = append_research_event,
+    auto_start: Callable[..., None] | None = None,
 ) -> dict[str, object]:
     published_at = now or datetime.now(UTC)
     run, step, attempt = locked_attempt(
@@ -211,57 +213,62 @@ def publish_research_plan(
             },
             now=published_at,
         )
-        run.state_version += 1
-        append_event(
-            db,
-            run,
-            event_type="step_waiting",
-            dedupe_key=f"step-waiting:{gate.id}:{decision.id}",
-            step_id=gate.id,
-            data={
-                "stepId": gate.id,
-                "stepKind": gate.step_kind,
-                "decisionId": decision.id,
-                "decisionType": decision.decision_type,
-                "stepStateVersion": gate.state_version,
-                "decisionStateVersion": decision.state_version,
-                "runStateVersion": run.state_version,
-            },
-            now=published_at,
-        )
-        run.state_version += 1
-        append_event(
-            db,
-            run,
-            event_type="approval_requested",
-            dedupe_key=f"approval-requested:{decision.id}",
-            data={
-                "decisionId": decision.id,
-                "decisionType": decision.decision_type,
-                "inputArtifactId": artifact.id,
-                "inputArtifactSha256": artifact.content_sha256,
-                "decisionStateVersion": decision.state_version,
-                "runStateVersion": run.state_version,
-            },
-            now=published_at,
-        )
-        previous_status = run.status
-        run.status = "awaiting_plan_approval"
-        run.state_version += 1
-        run.updated_at = published_at
-        append_event(
-            db,
-            run,
-            event_type="run_status_changed",
-            dedupe_key=f"planning-complete:{revision.id}",
-            data={
-                "previousStatus": previous_status,
-                "status": run.status,
-                "runStateVersion": run.state_version,
-                "reasonCode": None,
-            },
-            now=published_at,
-        )
+        if revision.proposed_workflow_version_id == AUTONOMOUS_WORKFLOW_ID:
+            if auto_start is None:
+                raise ResearchError("research_execution_policy_unavailable", "Automatic plan materializer is unavailable.", 503)
+            auto_start(db, run, decision, revision, published_at)
+        else:
+            run.state_version += 1
+            append_event(
+                db,
+                run,
+                event_type="step_waiting",
+                dedupe_key=f"step-waiting:{gate.id}:{decision.id}",
+                step_id=gate.id,
+                data={
+                    "stepId": gate.id,
+                    "stepKind": gate.step_kind,
+                    "decisionId": decision.id,
+                    "decisionType": decision.decision_type,
+                    "stepStateVersion": gate.state_version,
+                    "decisionStateVersion": decision.state_version,
+                    "runStateVersion": run.state_version,
+                },
+                now=published_at,
+            )
+            run.state_version += 1
+            append_event(
+                db,
+                run,
+                event_type="approval_requested",
+                dedupe_key=f"approval-requested:{decision.id}",
+                data={
+                    "decisionId": decision.id,
+                    "decisionType": decision.decision_type,
+                    "inputArtifactId": artifact.id,
+                    "inputArtifactSha256": artifact.content_sha256,
+                    "decisionStateVersion": decision.state_version,
+                    "runStateVersion": run.state_version,
+                },
+                now=published_at,
+            )
+            previous_status = run.status
+            run.status = "awaiting_plan_approval"
+            run.state_version += 1
+            run.updated_at = published_at
+            append_event(
+                db,
+                run,
+                event_type="run_status_changed",
+                dedupe_key=f"planning-complete:{revision.id}",
+                data={
+                    "previousStatus": previous_status,
+                    "status": run.status,
+                    "runStateVersion": run.state_version,
+                    "reasonCode": None,
+                },
+                now=published_at,
+            )
         db.flush()
     except Exception:
         db.rollback()

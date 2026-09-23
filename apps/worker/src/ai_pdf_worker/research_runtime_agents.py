@@ -135,6 +135,12 @@ class GenerationResearchAgents:
         retrieval_top_k = int(getattr(self._generation.execution, "retrieval_top_k", 0) or 0)
         if retrieval_top_k < 1:
             raise ResearchExecutionError("research_retrieval_top_k_unavailable")
+        from citeframe_research_persistence.autonomy import ADAPTIVE_SCHEMA_VERSION
+        if self._registry.agent_result_schema_version == ADAPTIVE_SCHEMA_VERSION:
+            from ai_pdf_worker.research_adaptive_retrieval import research_adaptively
+            return research_adaptively(subproblem, tools, lease, top_k=retrieval_top_k,
+                result_schema=self._result_schemas["researcher"], generate_json=self._json,
+                checkpoint=self._generation.adaptive_turn)
         handles = tuple(
             tools.search(
                 query=subproblem.question,

@@ -269,6 +269,7 @@ class ResearchStepDto(ResearchModel):
 
 
 class HumanDecisionDto(ResearchModel):
+    decision_origin: Literal["human", "policy"] = "human"
     id: str
     run_id: str
     gate_step_id: str

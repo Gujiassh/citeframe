@@ -31,6 +31,9 @@ from ai_pdf_worker.research_runtime_agents import GenerationResearchAgents
 
 
 class _FakeGeneration:
+    def adaptive_turn(self, *args):
+        return None
+
     def __init__(self, execution: ApprovedResearchExecution, raw: str) -> None:
         self.execution = execution
         self.raw = raw
@@ -78,6 +81,12 @@ class _FakeTools:
         class Handle:
             def __init__(self, handle_id: str) -> None:
                 self.id = handle_id
+                self.asset_id = "asset-1"
+                self.representation_id = "rep-1"
+                self.processing_generation = 1
+                self.index_version = 1
+                self.parser_version = "parser-1"
+                self.excerpt = handle_id
 
         return [Handle("h1"), Handle("h2"), Handle("h3")][:top_k]
 
@@ -218,7 +227,7 @@ def test_current_registry_binds_strict_researcher_schema_to_prompt() -> None:
     execution = _execution()
     generation = _FakeGeneration(
         execution,
-        json.dumps({"claims": [{"text": "fact", "evidenceHandleIds": ["h1"]}]}),
+        json.dumps({"claims": [{"text": "fact", "evidenceHandleIds": ["h1"]}], "nextQuery": None}),
     )
     agents = GenerationResearchAgents(generation)  # type: ignore[arg-type]
     agents.researcher(
@@ -227,14 +236,15 @@ def test_current_registry_binds_strict_researcher_schema_to_prompt() -> None:
         StepLease(step_id="step-1", attempt_id="attempt-1", attempt_number=1, lease_token="tok"),
     )
     packed_variables = json.loads(str(generation.messages[1]["content"]))
-    assert packed_variables["resultSchema"]["properties"]["claims"]["minItems"] == 1
+    assert packed_variables["resultSchema"]["properties"]["claims"]["minItems"] == 0
+    assert "nextQuery" in packed_variables["resultSchema"]["required"]
 
 
 def test_researcher_uses_frozen_retrieval_top_k() -> None:
     execution = _execution(retrieval_top_k=3)
     generation = _FakeGeneration(
         execution,
-        json.dumps({"claims": [{"text": "fact", "evidenceHandleIds": ["h1"]}]}),
+        json.dumps({"claims": [{"text": "fact", "evidenceHandleIds": ["h1"]}], "nextQuery": None}),
     )
     agents = GenerationResearchAgents(generation)  # type: ignore[arg-type]
     top_k_seen: list[int] = []
@@ -346,11 +356,11 @@ def test_f1_executable_registry_runtime_bindings() -> None:
     assert set(production_validators) == set(payloads)
     for node_key, payload in payloads.items():
         role = resolve_role_contract(production, node_key)
-        assert role.result_schema_id == f"research.{node_key}.v1"
-        assert role.validator_key == "research-agent-validator.v1"
+        assert role.result_schema_id == f"research.{node_key}.v2"
+        assert role.validator_key == "research-agent-validator.v2"
         assert role.runtime_adapter_key == "research-runtime-adapter.v1"
         assert production_schemas[node_key]["type"] == "object"
-        production_validators[node_key](node_key, payload)
+        production_validators[node_key](node_key, {**payload, "nextQuery": None} if node_key == "researcher" else payload)
     # Production researcher must reject empty claims.
     with pytest.raises(ValueError):
         production_validators["researcher"]("researcher", {"claims": []})

@@ -53,7 +53,7 @@ def test_production_registry_is_strict_and_versioned() -> None:
         "compactPolicyVersion": COMPACT_POLICY_VERSION,
     }
     assert all(
-        role.validator_key == "research-agent-validator.v1"
+        role.validator_key == "research-agent-validator.v2"
         and role.runtime_adapter_key == "research-runtime-adapter.v1"
         for role in entry.roles.values()
     )
@@ -174,8 +174,15 @@ def test_f1_registry_role_metadata_freeze() -> None:
             role.api_projection_key,
             role.prompt_key,
             role.prompt_node_key,
-        ) == expected
+        ) == (expected[0].replace(".v1", ".v2"), "research-agent-validator.v2", *expected[2:])
         assert role.schema_version == AGENT_RESULT_SCHEMA_VERSION
+
+    historical = resolve_registry(agent_result_schema_version="research-agent-results-v1",
+        context_policy_version=CONTEXT_POLICY_VERSION, compact_policy_version=COMPACT_POLICY_VERSION)
+    for node_key, expected in expected_bindings.items():
+        role = resolve_role_contract(historical, node_key)
+        assert (role.result_schema_id, role.validator_key, role.runtime_adapter_key,
+                role.api_projection_key, role.prompt_key, role.prompt_node_key) == expected
 
     legacy = resolve_registry(
         agent_result_schema_version=AGENT_RESULT_SCHEMA_VERSION_LEGACY,

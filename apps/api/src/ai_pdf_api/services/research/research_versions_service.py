@@ -17,9 +17,9 @@ from ai_pdf_api.services.research.research_constants import (
 )
 from ai_pdf_api.services.research.research_idempotency import ResearchError, canonical_sha256
 from ai_pdf_api.services.research.research_prompt_provenance import (
-    V2_PROMPT_SPECS,
+    V3_PROMPT_SPECS,
     load_v2_release,
-    v2_workflow_manifest,
+    v3_workflow_manifest,
 )
 from sqlalchemy.orm import Session
 
@@ -52,12 +52,12 @@ def _matches_frozen_profile_fingerprint(
 
 
 def _workflow_manifest() -> dict[str, object]:
-    return v2_workflow_manifest()
+    return v3_workflow_manifest()
 
 
-def ensure_research_versions(db: Session, _now: datetime | None = None) -> tuple[WorkflowVersion, PromptVersion]:
+def ensure_research_versions(db: Session, _now: datetime | None = None, *, workflow_id: str = WORKFLOW_VERSION_ID) -> tuple[WorkflowVersion, PromptVersion]:
     try:
-        workflow, prompts = load_v2_release(db)
+        workflow, prompts = load_v2_release(db, workflow_id=workflow_id)
     except ValueError as error:
         raise ResearchError(
             "research_provider_not_configured",
@@ -75,7 +75,7 @@ def publish_research_versions_for_release(db: Session, now: datetime) -> tuple[W
     workflow = WorkflowVersion(
         id=WORKFLOW_VERSION_ID,
         workflow_key=WORKFLOW_KEY,
-        version_number=2,
+        version_number=3,
         availability="active",
         manifest_schema_version="2",
         manifest_json=manifest,
@@ -87,13 +87,13 @@ def publish_research_versions_for_release(db: Session, now: datetime) -> tuple[W
     db.flush()
 
     prompts: list[PromptVersion] = []
-    for node_key, spec in V2_PROMPT_SPECS.items():
+    for node_key, spec in V3_PROMPT_SPECS.items():
         template = spec.template_text
         variable_schema = spec.variables_schema
         prompt = PromptVersion(
             id=PROMPT_VERSION_IDS[node_key],
             prompt_key=spec.prompt_key,
-            version_number=2,
+            version_number=3,
             step_kind=spec.step_kind,
             availability="active",
             template_text=template,

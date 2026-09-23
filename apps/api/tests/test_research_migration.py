@@ -213,9 +213,9 @@ def test_prompt_v2_migration_refuses_downgrade_for_every_business_reference(
     assert not any(str(call.args[0]).lstrip().startswith("DELETE") for call in bind.execute.call_args_list)
 
 
-def test_alembic_has_one_evolvable_head_after_publication_intents() -> None:
+def test_alembic_has_one_evolvable_head_after_autonomy() -> None:
     config = Config(str(Path(__file__).parents[1] / "alembic.ini"))
-    assert ScriptDirectory.from_config(config).get_heads() == ["n8b9c0d1e2f3"]
+    assert ScriptDirectory.from_config(config).get_heads() == ["q1e2f3a4b5c6"]
 
 
 def test_v5c_migrations_backfill_legacy_registry_and_allow_unknown_cost(monkeypatch: pytest.MonkeyPatch) -> None:
@@ -265,3 +265,25 @@ def test_v5c_migrations_backfill_legacy_registry_and_allow_unknown_cost(monkeypa
         ("research_provider_calls", "reserved_cost_microunits"),
     }
     assert all(call.kwargs["nullable"] is True for call in cost_alter.call_args_list)
+
+
+def test_adaptive_turn_migration_adds_only_bounded_checkpoint_table():
+    import importlib.util
+    from sqlalchemy.exc import IntegrityError
+    path = Path(__file__).parents[1] / "alembic/versions/q1e2f3a4b5c6_research_adaptive_turns.py"
+    spec = importlib.util.spec_from_file_location("adaptive_migration", path)
+    migration = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(migration)
+    assert migration.down_revision == "p0d1e2f3a4b5"
+    engine = create_engine("sqlite://")
+    Base.metadata.create_all(engine)
+    with engine.begin() as connection:
+        Base.metadata.tables["research_adaptive_turns"].drop(connection)
+        before = set(inspect(connection).get_table_names())
+        with Operations.context(MigrationContext.configure(connection)):
+            migration.upgrade()
+        assert set(inspect(connection).get_table_names()) - before == {"research_adaptive_turns"}
+        assert len(inspect(connection).get_check_constraints("research_adaptive_turns")) == 1
+        with Operations.context(MigrationContext.configure(connection)):
+            with pytest.raises(RuntimeError, match="checkpoints"):
+                migration.downgrade()

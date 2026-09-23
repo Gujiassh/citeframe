@@ -46,6 +46,8 @@ from ai_pdf_api.services.research import (
     serialize_sse_event,
 )
 from ai_pdf_api.services.research.research_views import run_detail, verified_artifact_bytes
+from ai_pdf_api.schemas.research_report_edit import ResearchReportEditResponse, SaveResearchReportEditRequest
+from ai_pdf_api.services.research.research_report_edit import read_report_edit, save_report_edit
 
 
 def _error_response(
@@ -373,6 +375,32 @@ def read_artifact_content(
             "ETag": artifact.content_sha256,
             "Cache-Control": "private, immutable",
         },
+    )
+
+
+@router.get("/{run_id}/report-edit", response_model=ResearchReportEditResponse)
+def read_final_report_edit(
+    workspace_id: str,
+    run_id: str,
+    user_id: str = Depends(require_user_id),
+    db: Session = Depends(get_db),
+) -> dict[str, object]:
+    get_accessible_workspace(db, user_id, workspace_id)
+    run = get_research_run(db, workspace_id, run_id)
+    return read_report_edit(db, run)
+
+
+@router.put("/{run_id}/report-edit", response_model=ResearchReportEditResponse)
+def save_final_report_edit(
+    workspace_id: str,
+    run_id: str,
+    payload: SaveResearchReportEditRequest,
+    user_id: str = Depends(require_user_id),
+    db: Session = Depends(get_db),
+) -> dict[str, object]:
+    get_accessible_workspace(db, user_id, workspace_id)
+    return save_report_edit(
+        db, workspace_id=workspace_id, run_id=run_id, user_id=user_id, payload=payload,
     )
 
 

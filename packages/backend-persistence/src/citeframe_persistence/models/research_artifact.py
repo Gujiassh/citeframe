@@ -173,6 +173,7 @@ class HumanDecision(Base):
         CheckConstraint(
             "decision_type IN ('plan_approval','conflict_resolution')", name="ck_human_decisions_type"
         ),
+        CheckConstraint("decision_origin IN ('human','policy')", name="ck_human_decisions_origin"),
         CheckConstraint(
             "status IN ('pending','submitted','expired','cancelled','superseded')",
             name="ck_human_decisions_status",
@@ -183,7 +184,7 @@ class HumanDecision(Base):
             name="ck_human_decisions_action",
         ),
         CheckConstraint(
-            "(status = 'submitted' AND decided_by_user_id IS NOT NULL AND action IS NOT NULL AND decided_at IS NOT NULL) "
+            "(status = 'submitted' AND (decided_by_user_id IS NOT NULL OR decision_origin = 'policy') AND action IS NOT NULL AND decided_at IS NOT NULL) "
             "OR status <> 'submitted'",
             name="ck_human_decisions_submitted_fields",
         ),
@@ -193,6 +194,7 @@ class HumanDecision(Base):
     workspace_id: Mapped[str] = mapped_column(String(36), ForeignKey("workspaces.id"))
     run_id: Mapped[str] = mapped_column(String(36), ForeignKey("research_runs.id"))
     gate_step_id: Mapped[str] = mapped_column(String(36), ForeignKey("research_steps.id"))
+    decision_origin: Mapped[str] = mapped_column(String(16), default="human", server_default="human")
     decision_type: Mapped[str] = mapped_column(String(32))
     request_number: Mapped[int] = mapped_column(Integer)
     status: Mapped[str] = mapped_column(String(16), default="pending")
