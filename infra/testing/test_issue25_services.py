@@ -91,7 +91,11 @@ def test_approved_v3_snapshot_survives_default_v4_upgrade_and_edit(
     d.start_api()
     d.seed()
     d.create("Already approved v3 task must retain all bindings")
-    d.work(steps=1)
+    d.work(steps=2)
+    assert any(
+        row["step_kind"] == "researcher" and row["status"] == "succeeded"
+        for row in d.rows("research_steps")
+    )
     before = d.binding()
     assert before["snapshot"]["workflow_version_id"] == V3
     assert len(before["approval"]) == 1
@@ -104,6 +108,15 @@ def test_approved_v3_snapshot_survives_default_v4_upgrade_and_edit(
         row["prompt_version_id"].startswith("30000000") for row in before["prompts"]
     )
     d.capture("approved-before-upgrade", before)
+    d.capture(
+        "execution-before-upgrade",
+        {
+            "steps": d.rows("research_steps"),
+            "attempts": d.rows("research_step_attempts"),
+            "claims": d.rows("research_claims"),
+            "artifacts": d.rows("research_artifacts"),
+        },
+    )
     d.stop_api()
     d.migrate(ROOT)
     assert {r["id"] for r in d.rows("workflow_versions")} >= {V3, V4}

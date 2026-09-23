@@ -66,3 +66,4 @@ jobs:
           name: issue25-service-evidence
           path: .local-issue25/ci-services
           retention-days: 7
+          include-hidden-files: true
