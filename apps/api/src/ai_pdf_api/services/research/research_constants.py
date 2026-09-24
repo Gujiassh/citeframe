@@ -1,10 +1,10 @@
 from datetime import timedelta
 
 from ai_pdf_api.services.research.research_prompt_provenance import (
-    V2_PROMPT_SPECS,
-    V2_PROMPT_VERSION_IDS,
-    V2_RELEASE_ID,
-    V2_WORKFLOW_VERSION_ID,
+    V3_PROMPT_SPECS,
+    V3_PROMPT_VERSION_IDS,
+    V3_RELEASE_ID,
+    V3_WORKFLOW_VERSION_ID,
 )
 
 TERMINAL_RUN_STATUSES = {"completed", "failed", "cancelled"}
@@ -53,12 +53,12 @@ EVENT_FIELDS = {
     "run_cancelled": {"status", "reasonCode", "runStateVersion"},
 }
 RETRYABLE_FAILURE_CODES = {"provider_timeout", "provider_temporarily_unavailable", "tool_temporarily_unavailable"}
-RELEASE_ID = V2_RELEASE_ID
+RELEASE_ID = V3_RELEASE_ID
 WORKFLOW_KEY = "evidence_research"
-WORKFLOW_VERSION_ID = V2_WORKFLOW_VERSION_ID
-PROMPT_VERSION_IDS = V2_PROMPT_VERSION_IDS
+WORKFLOW_VERSION_ID = V3_WORKFLOW_VERSION_ID
+PROMPT_VERSION_IDS = V3_PROMPT_VERSION_IDS
 PROMPT_VERSION_HASHES = {
-    node_key: spec.template_sha256 for node_key, spec in V2_PROMPT_SPECS.items()
+    node_key: spec.template_sha256 for node_key, spec in V3_PROMPT_SPECS.items()
 }
 DATA_BOUNDARY_POLICY = "research-data-boundary-v1"
 PRICING_VERSION = "research-pricing-v1"
@@ -67,7 +67,7 @@ RETRY_POLICY_VERSION = "research-retry-v1"
 IDEMPOTENCY_TTL = timedelta(hours=24)
 
 # V5-C production Agent I/O / context packing versions (new Runs bind these).
-AGENT_RESULT_SCHEMA_VERSION = "research-agent-results-v1"
+AGENT_RESULT_SCHEMA_VERSION = "research-agent-results-v2"
 CONTEXT_POLICY_VERSION = "research-context-policy-v1"
 COMPACT_POLICY_VERSION = "research-compact-policy-v1"
 AGENT_RESULT_SCHEMA_VERSION_LEGACY = "research-agent-results-legacy-v0"

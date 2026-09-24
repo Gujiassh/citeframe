@@ -12,14 +12,14 @@ import {
   X,
 } from "lucide-react";
 import { useState } from "react";
-import ReactMarkdown from "react-markdown";
-import remarkGfm from "remark-gfm";
 
 import { getLocatorSummary } from "@/lib/evidence/types";
 import { useTranslation, type TranslationKey } from "@/lib/i18n-context";
 import { getResearchArtifactContentUrl } from "@/lib/research/client";
 import { getFrozenResearchProfile, RUN_STATUS_KEYS, STEP_KIND_KEYS, STEP_STATUS_KEYS } from "@/lib/research/presentation";
 import type { ResearchStreamState } from "@/lib/use-research";
+import { ResearchReportEditor } from "./research-report-editor";
+
 import type {
   ResearchArtifactDetail,
   ResearchArtifactEvidence,
@@ -29,13 +29,7 @@ import type {
   ResearchStep,
 } from "@/lib/research/types";
 
-export function ResearchReportMarkdown({ content }: { content: string }) {
-  return (
-    <ReactMarkdown remarkPlugins={[remarkGfm]} skipHtml>
-      {content}
-    </ReactMarkdown>
-  );
-}
+export { ResearchReportMarkdown } from "./research-report-markdown";
 
 type Props = {
   workspaceId: string;
@@ -140,6 +134,7 @@ export function ResearchRunPanel({
   const planDecision = run.pendingDecisions.find((item) => item.type === "plan_approval");
   const conflictDecision = run.pendingDecisions.find((item) => item.type === "conflict_resolution");
   const trace = artifacts.find((item) => item.kind === "trace_export");
+  const finalArtifact = artifacts.find((item) => item.kind === "final_report");
   const conflictReportReady = Boolean(
     conflictDecision
     && conflictArtifactContent
@@ -379,15 +374,24 @@ export function ResearchRunPanel({
         <section className="py-5">
           <div className="flex items-center justify-between gap-3">
             <h4 className="text-xs font-semibold text-zinc-950 dark:text-white">{t("research.report")}</h4>
-            <span className="font-mono text-[10px] text-zinc-500">{artifacts.find((item) => item.kind === "final_report")?.sha256.slice(0, 12)}</span>
+            <span className="font-mono text-[10px] text-zinc-500">{finalArtifact?.sha256.slice(0, 12)}</span>
           </div>
-          <article className="mt-3 max-w-none text-sm leading-6 text-zinc-700 [&_a]:text-emerald-700 [&_a]:underline [&_h1]:mb-3 [&_h1]:mt-6 [&_h1]:text-lg [&_h1]:font-semibold [&_h2]:mb-2 [&_h2]:mt-5 [&_h2]:text-base [&_h2]:font-semibold [&_li]:my-1 [&_ol]:my-3 [&_ol]:list-decimal [&_ol]:pl-5 [&_p]:my-3 [&_strong]:font-semibold [&_strong]:text-zinc-950 [&_ul]:my-3 [&_ul]:list-disc [&_ul]:pl-5 dark:text-zinc-200 dark:[&_a]:text-emerald-400 dark:[&_strong]:text-white">
-            <ResearchReportMarkdown content={artifactContent} />
-          </article>
+          {finalArtifact ? (
+            <ResearchReportEditor
+              key={`${run.id}:${finalArtifact.id}:${finalArtifact.sha256}`}
+              workspaceId={workspaceId}
+              runId={run.id}
+              originalArtifactId={finalArtifact.id}
+              originalSha256={finalArtifact.sha256}
+              originalMarkdown={artifactContent}
+              canEdit={canManage}
+              completed={run.status === "completed"}
+            />
+          ) : null}
 
           {artifactDetail?.evidence.length ? (
             <div className="mt-5 border-t border-border pt-4">
-              <h5 className="text-[10px] font-bold uppercase text-zinc-500">{t("research.reportEvidence")}</h5>
+              <h5 className="text-[10px] font-bold uppercase text-zinc-500">Original evidence</h5>
               <div className="mt-2 divide-y divide-border border-y border-border">
                 {artifactDetail.evidence.map((evidence) => (
                   <button

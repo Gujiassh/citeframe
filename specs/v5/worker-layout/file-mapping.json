@@ -69,5 +69,6 @@
   "apps/worker/tests/test_r803_campaign_v5.py": "tools/evaluation/tests/test_r803_campaign_v5.py",
   "apps/worker/tests/test_r803_evaluation.py": "tools/evaluation/tests/test_r803_evaluation.py",
   "apps/worker/tests/test_r803_windows_directory_fsync.py": "tools/evaluation/tests/test_r803_windows_directory_fsync.py",
-  "apps/worker/tests/test_r800_research_acceptance.py": "tools/evaluation/tests/test_r800_research_acceptance.py"
+  "apps/worker/tests/test_r800_research_acceptance.py": "tools/evaluation/tests/test_r800_research_acceptance.py",
+  "apps/worker/src/ai_pdf_worker/research_adaptive_retrieval.py": "apps/worker/src/ai_pdf_worker/research/adaptive_retrieval.py"
 }

@@ -62,7 +62,8 @@ class EvidenceContractTests(unittest.TestCase):
                              for node in calls))
         polls = [node for node in calls if isinstance(node.func, ast.Name)
                  and node.func.id == "_process_until"]
-        self.assertEqual(len(polls), 2)
+        self.assertEqual(len(polls), 1)
+        self.assertFalse(any(isinstance(node.func, ast.Name) and node.func.id == "_submit_plan" for node in calls))
         self.assertTrue(all(not any(k.arg == "processor" for k in node.keywords) for node in polls))
 
 

@@ -1,0 +1,8 @@
+{
+  "tables": {
+    "research_adaptive_turns": {
+      "create_table": "\nCREATE TABLE research_adaptive_turns (\n\tstep_id VARCHAR(36) NOT NULL, \n\tturn_number INTEGER NOT NULL, \n\texecution_snapshot_id VARCHAR(36) NOT NULL, \n\tcreated_by_attempt_id VARCHAR(36) NOT NULL, \n\tquery VARCHAR(4000) NOT NULL, \n\trequest_sha256 VARCHAR(64) NOT NULL, \n\tresult_sha256 VARCHAR(64) NOT NULL, \n\tresult_json JSONB NOT NULL, \n\tPRIMARY KEY (step_id, turn_number), \n\tCONSTRAINT ck_research_adaptive_turn_bound CHECK (turn_number >= 0 AND turn_number <= 2), \n\tFOREIGN KEY(step_id) REFERENCES research_steps (id), \n\tFOREIGN KEY(execution_snapshot_id) REFERENCES research_execution_snapshots (id), \n\tFOREIGN KEY(created_by_attempt_id) REFERENCES research_step_attempts (id)\n)\n\n",
+      "indexes": []
+    }
+  }
+}

@@ -178,13 +178,16 @@ def v2_workflow_manifest() -> dict[str, object]:
     }
 
 
-def _validate_v2_workflow(workflow: WorkflowVersion | None) -> WorkflowVersion:
-    manifest = v2_workflow_manifest()
+def _validate_v2_workflow(workflow: WorkflowVersion | None, *, autonomous: bool = False) -> WorkflowVersion:
+    manifest = v3_workflow_manifest() if autonomous else v2_workflow_manifest()
+    workflow_id = V3_WORKFLOW_VERSION_ID if autonomous else V2_WORKFLOW_VERSION_ID
+    release_id = V3_RELEASE_ID if autonomous else V2_RELEASE_ID
+    version = 3 if autonomous else 2
     if (
         workflow is None
-        or workflow.id != V2_WORKFLOW_VERSION_ID
+        or workflow.id != workflow_id
         or workflow.workflow_key != "evidence_research"
-        or workflow.version_number != 2
+        or workflow.version_number != version
         or workflow.availability != "active"
         or workflow.manifest_schema_version != "2"
         or workflow.manifest_json != manifest
@@ -198,7 +201,7 @@ def _validate_v2_workflow(workflow: WorkflowVersion | None) -> WorkflowVersion:
             ).encode("utf-8")
         ).hexdigest()
         or workflow.created_by_user_id is not None
-        or workflow.created_by_release_id != V2_RELEASE_ID
+        or workflow.created_by_release_id != release_id
         or workflow.retired_at is not None
     ):
         raise ValueError("research_workflow_release_invalid")
@@ -206,12 +209,15 @@ def _validate_v2_workflow(workflow: WorkflowVersion | None) -> WorkflowVersion:
 
 
 def _validate_v2_prompt(prompt: PromptVersion, *, node_key: str) -> PromptReleaseSpec:
-    spec = V2_PROMPT_SPECS.get(node_key)
+    autonomous = prompt.id in V3_PROMPT_VERSION_IDS.values()
+    specs = V3_PROMPT_SPECS if autonomous else V2_PROMPT_SPECS
+    ids = V3_PROMPT_VERSION_IDS if autonomous else V2_PROMPT_VERSION_IDS
+    spec = specs.get(node_key)
     if (
         spec is None
-        or prompt.id != V2_PROMPT_VERSION_IDS[node_key]
+        or prompt.id != ids[node_key]
         or prompt.prompt_key != spec.prompt_key
-        or prompt.version_number != 2
+        or prompt.version_number != (3 if autonomous else 2)
         or prompt.step_kind != spec.step_kind
         or prompt.availability != "active"
         or prompt.template_text != spec.template_text
@@ -219,7 +225,7 @@ def _validate_v2_prompt(prompt: PromptVersion, *, node_key: str) -> PromptReleas
         or prompt.variables_schema_json != spec.variables_schema
         or prompt.template_sha256 != spec.template_sha256
         or prompt.created_by_user_id is not None
-        or prompt.created_by_release_id != V2_RELEASE_ID
+        or prompt.created_by_release_id != (V3_RELEASE_ID if autonomous else V2_RELEASE_ID)
         or prompt.retired_at is not None
     ):
         raise ValueError("research_prompt_contract_invalid")
@@ -230,10 +236,11 @@ def load_v2_release(
     db: Session,
     *,
     for_update: bool = False,
+    workflow_id: str = V2_WORKFLOW_VERSION_ID,
 ) -> tuple[WorkflowVersion, dict[str, PromptVersion]]:
     workflow_query = (
         select(WorkflowVersion)
-        .where(WorkflowVersion.id == V2_WORKFLOW_VERSION_ID)
+        .where(WorkflowVersion.id == workflow_id)
         .execution_options(populate_existing=True)
     )
     if for_update:
@@ -241,11 +248,11 @@ def load_v2_release(
             read=True,
             of=WorkflowVersion,
         )
-    workflow = _validate_v2_workflow(db.scalar(workflow_query))
+    workflow = _validate_v2_workflow(db.scalar(workflow_query), autonomous=workflow_id == V3_WORKFLOW_VERSION_ID)
     binding_query = (
         select(WorkflowPromptBinding, PromptVersion)
         .join(PromptVersion, PromptVersion.id == WorkflowPromptBinding.prompt_version_id)
-        .where(WorkflowPromptBinding.workflow_version_id == V2_WORKFLOW_VERSION_ID)
+        .where(WorkflowPromptBinding.workflow_version_id == workflow_id)
         .execution_options(populate_existing=True)
     )
     if for_update:
@@ -257,7 +264,10 @@ def load_v2_release(
     by_node = {binding.node_key: prompt for binding, prompt in rows}
     if len(rows) != len(PROMPT_NODE_ORDER) or set(by_node) != set(PROMPT_NODE_ORDER):
         raise ValueError("research_workflow_prompt_bindings_invalid")
+    expected_ids = V3_PROMPT_VERSION_IDS if workflow_id == V3_WORKFLOW_VERSION_ID else V2_PROMPT_VERSION_IDS
     for node_key in PROMPT_NODE_ORDER:
+        if by_node[node_key].id != expected_ids[node_key]:
+            raise ValueError("research_workflow_prompt_bindings_invalid")
         _validate_v2_prompt(by_node[node_key], node_key=node_key)
     return workflow, by_node
 
@@ -278,10 +288,10 @@ def prompt_version_dto(prompt: PromptVersion, *, node_key: str) -> dict[str, obj
 
 
 def load_planner_prompt_dto(db: Session, revision: ResearchPlanRevision) -> dict[str, object]:
-    workflow, prompts = load_v2_release(db)
+    workflow, prompts = load_v2_release(db, workflow_id=revision.proposed_workflow_version_id)
     if (
         revision.proposed_workflow_version_id != workflow.id
-        or revision.planner_prompt_version_id != V2_PROMPT_VERSION_IDS["planner"]
+        or revision.planner_prompt_version_id != prompts["planner"].id
     ):
         raise ValueError("research_planner_prompt_binding_invalid")
     row = db.execute(
@@ -323,7 +333,7 @@ def _load_execution_prompt_dtos(
     *,
     for_update: bool,
 ) -> list[dict[str, object]]:
-    workflow, release_prompts = load_v2_release(db, for_update=for_update)
+    workflow, release_prompts = load_v2_release(db, for_update=for_update, workflow_id=snapshot.workflow_version_id)
     if snapshot.workflow_version_id != workflow.id:
         raise ValueError("research_execution_prompt_binding_invalid")
     execution_query = (
@@ -361,3 +371,37 @@ def _load_execution_prompt_dtos(
     if any(by_node[node_key] is not release_prompts[node_key] for node_key in PROMPT_NODE_ORDER):
         raise ValueError("research_execution_prompt_binding_invalid")
     return [prompt_version_dto(by_node[node_key], node_key=node_key) for node_key in PROMPT_NODE_ORDER]
+
+
+from dataclasses import replace as _replace
+from citeframe_research_persistence.autonomy import AUTONOMOUS_WORKFLOW_ID, MAX_SUPPLEMENTAL_SEARCHES
+
+V3_WORKFLOW_VERSION_ID = AUTONOMOUS_WORKFLOW_ID
+V3_RELEASE_ID = "citeframe-research-v3"
+V3_PROMPT_VERSION_IDS = {
+    node: f"30000000-0000-4000-8000-0000000001{index:02d}"
+    for index, node in enumerate(PROMPT_NODE_ORDER, start=1)
+}
+V3_PROMPT_SPECS = dict(V2_PROMPT_SPECS)
+V3_PROMPT_SPECS["researchers"] = _replace(
+    V2_PROMPT_SPECS["researchers"],
+    template_text=V2_PROMPT_SPECS["researchers"].template_text +
+    " When evidence is missing, return a bounded nextQuery naming the missing information; "
+    "the runtime alone may search within the frozen subproblem scope. Return null nextQuery to stop. "
+    "Respect remainingSearches; never request another data source. Claims may be empty when evidence is absent.",
+)
+V3_PROMPT_SPECS["synthesizer"] = _replace(
+    V2_PROMPT_SPECS["synthesizer"],
+    template_text=V2_PROMPT_SPECS["synthesizer"].template_text.replace(
+        "only human-retained conflicts", "all policy-retained unresolved conflicts"
+    ),
+)
+
+def v3_workflow_manifest() -> dict[str, object]:
+    manifest = v2_workflow_manifest()
+    manifest["autonomy"] = {
+        "plan": "validated_auto_start", "conflicts": "keep_as_unresolved",
+        "maxSupplementalSearches": MAX_SUPPLEMENTAL_SEARCHES,
+        "agentResultSchemaVersion": "research-agent-results-v2",
+    }
+    return manifest

@@ -55,6 +55,15 @@ jobs:
           /usr/lib/postgresql/17/bin/pg_dump --version
       - run: uv sync --project apps/api --frozen --extra dev
       - run: uv run --project apps/api python -c 'import citeframe_contracts, citeframe_persistence, citeframe_research_persistence; print("backend-contracts-persistence-research-import-smoke=pass")'
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.33.4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - name: Install Web parser dependencies for cross-layer API tests
+        run: pnpm install --frozen-lockfile
       - run: uv run --project apps/api pytest apps/api/tests
       - run: uv run --project apps/api alembic -c apps/api/alembic.ini upgrade head
       - run: uv run --project apps/api alembic -c apps/api/alembic.ini check

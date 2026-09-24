@@ -22,21 +22,20 @@ def exercise() -> dict:
     from ai_pdf_api.db.session import SessionLocal
     from citeframe_evaluation.acceptance.common import IDS
     from citeframe_evaluation.acceptance.scenarios import (
-        ResearchHttpClient, _create_run, _process_until, _submit_plan,
+        ResearchHttpClient, _create_run, _process_until,
     )
+
+    from citeframe_evaluation.acceptance.workflow import assert_policy_completion
 
     client = ResearchHttpClient()
     try:
         created = _create_run(client, actor_id=IDS["creator"], key=str(uuid4()),
                               question="Describe supported evidence after Docker restore.")
         run_id = created["id"]
-        run, _ = _process_until(client, run_id, {"awaiting_plan_approval", "failed"},
-                                timeout_seconds=180)
-        assert run["status"] == "awaiting_plan_approval", run
-        _submit_plan(client, run)
         run, _ = _process_until(client, run_id, {"completed", "failed", "awaiting_retry"},
                                 timeout_seconds=180)
         assert run["status"] == "completed", run
+        workflow = assert_policy_completion(SessionLocal, run_id)
         base = f"/v1/workspaces/{IDS['workspace']}/research-runs/{run_id}"
         artifacts = client.request("GET", base + "/artifacts", actor_id=IDS["creator"]).json()["items"]
         final = next(item for item in artifacts if item["kind"] == "final_report")
@@ -56,7 +55,7 @@ def exercise() -> dict:
         import os
         assert_attempts(attempts, os.environ["SMOKE_EXPECTED_WORKER"])
         assert sha256(content).hexdigest() == artifact["content_sha256"]
-        return {"runId": run_id, "status": run["status"], "attempts": attempts,
+        return {"runId": run_id, "status": run["status"], "workflowEvidence": workflow, "attempts": attempts,
                 "artifactId": final["id"], "artifactSha256": artifact["content_sha256"],
                 "objectKey": artifact["object_key"], "readableReport": content.decode("utf-8"),
                 "providerScope": "deterministic local HTTP; no model quality claim"}

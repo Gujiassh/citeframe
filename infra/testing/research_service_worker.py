@@ -60,6 +60,8 @@ class FixtureGeneration:
                     }
                 ]
             }
+            if "nextQuery" in v["resultSchema"].get("properties", {}):
+                result["nextQuery"] = None
         elif "reasonTaxonomy" in v:
             result = {
                 "claims": [

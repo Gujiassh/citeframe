@@ -1,6 +1,8 @@
 """API storage composition facade for neutral Research plan publication."""
 from __future__ import annotations
 
+from ai_pdf_api.services.research.research_auto_progress import auto_start_plan
+
 from collections.abc import Callable, Sequence
 from datetime import datetime
 
@@ -44,6 +46,7 @@ def publish_research_plan(
             now=now,
             locked_attempt=_locked_attempt,
             append_event=append_research_event,
+            auto_start=auto_start_plan,
         )
         db.commit()
         return result

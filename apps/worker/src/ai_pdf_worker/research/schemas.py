@@ -137,7 +137,15 @@ LEGACY_AGENT_RESULT_SCHEMAS["researcher"]["properties"] = deepcopy(
 )
 LEGACY_AGENT_RESULT_SCHEMAS["researcher"]["properties"]["claims"].pop("minItems", None)  # type: ignore[index]
 
+ADAPTIVE_AGENT_RESULT_SCHEMAS = deepcopy(AGENT_RESULT_SCHEMAS)
+ADAPTIVE_AGENT_RESULT_SCHEMAS["researcher"]["required"] = ["claims", "nextQuery"]
+ADAPTIVE_AGENT_RESULT_SCHEMAS["researcher"]["properties"]["claims"]["minItems"] = 0
+ADAPTIVE_AGENT_RESULT_SCHEMAS["researcher"]["properties"]["nextQuery"] = {
+    "type": ["string", "null"], "minLength": 1, "maxLength": 1000,
+}
+
 _SCHEMAS_BY_ID: dict[str, dict[str, object]] = {
+    **{f"research.{key}.v2": schema for key, schema in ADAPTIVE_AGENT_RESULT_SCHEMAS.items()},
     **{
         f"research.{node_key}.v1": schema
         for node_key, schema in AGENT_RESULT_SCHEMAS.items()
@@ -270,6 +278,7 @@ def validators_for_registry(
 ) -> dict[str, Callable[[str, dict[str, Any]], None]]:
     validators = {
         "research-agent-validator.v1": validate_agent_result,
+        "research-agent-validator.v2": validate_adaptive_agent_result,
         "research-agent-validator.legacy-v0": validate_legacy_agent_result,
     }
     resolved: dict[str, Callable[[str, dict[str, Any]], None]] = {}
@@ -361,3 +370,15 @@ def production_registry_versions() -> dict[str, str]:
         "compactPolicyVersion": entry.compact_policy_version,
         "roleCount": str(len(PRODUCTION_REGISTRY.roles)),
     }
+
+
+def validate_adaptive_agent_result(node_key: str, value: dict[str, Any]) -> None:
+    if node_key != "researcher":
+        validate_agent_result(node_key, value)
+        return
+    if set(value) != {"claims", "nextQuery"}:
+        raise ValueError("researcher schema mismatch")
+    query = value["nextQuery"]
+    if query is not None and (not isinstance(query, str) or not 1 <= len(query.strip()) <= 1000):
+        raise ValueError("researcher query invalid")
+    validate_legacy_agent_result(node_key, {"claims": value["claims"]})

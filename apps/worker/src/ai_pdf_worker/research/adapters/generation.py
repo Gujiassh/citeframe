@@ -68,6 +68,12 @@ class LedgeredGeneration(_ApiPort):
     def execution(self) -> ApprovedResearchExecution:
         return self._execution
 
+    def adaptive_turn(self, lease: StepLease, turn: int, request: dict, result: dict | None = None):
+        return self._call("adaptive_turn", write=True, attempt_id=lease.attempt_id,
+                          lease_token=lease.lease_token, turn_number=turn,
+                          request=request, result=result, now=_now())
+
+
     def generate(
         self, lease: StepLease, *, node_key: str, messages: list[GenerationMessage]
     ) -> str:

@@ -113,3 +113,30 @@ def test_proof_server_captures_exact_wire_without_headers(monkeypatch):
         server.shutdown()
         server.server_close()
         thread.join(timeout=5)
+
+
+@pytest.mark.parametrize("adaptive", [False, True])
+def test_fixture_provider_obeys_wire_result_schema_without_changing_historical_bytes(monkeypatch, adaptive):
+    root = Path(__file__).resolve().parents[3]
+    monkeypatch.syspath_prepend(str(root / "apps/api/scripts"))
+    monkeypatch.syspath_prepend(str(root / "infra/testing"))
+    from r800_provider_proofs import ProofHandler, stub
+    from ai_pdf_worker.research.schemas import AGENT_RESULT_SCHEMAS, ADAPTIVE_AGENT_RESULT_SCHEMAS, validate_adaptive_agent_result
+    schema = (ADAPTIVE_AGENT_RESULT_SCHEMAS if adaptive else AGENT_RESULT_SCHEMAS)["researcher"]
+    payload = {"subproblem": {"question": "Supported fixture"}, "resultSchema": schema,
+               "toolContracts": {"evidence": [{"evidenceHandle": "123e4567-e89b-42d3-a456-426614174000", "content": "fixture"}]}}
+    body = {"model": "fixture", "input": [{"role": "system", "content": "Evidence researcher"},
+            {"role": "user", "content": json.dumps(payload)}]}
+    observed = ProofHandler._generation_output(body)
+    old = stub.R800ProviderHandler._generation_output(body)
+    if adaptive:
+        result = json.loads(observed["output_text"])
+        validate_adaptive_agent_result("researcher", result)
+        assert result.pop("nextQuery") is None
+        assert result == json.loads(old["output_text"])
+    else:
+        assert observed == old
+    payload["resultSchema"] = {"required": ["claims", "unexpected"]}
+    body["input"][1]["content"] = json.dumps(payload)
+    with pytest.raises(AssertionError, match="unknown_researcher_contract"):
+        ProofHandler._generation_output(body)

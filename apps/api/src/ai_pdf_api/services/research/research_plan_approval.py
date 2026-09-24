@@ -27,9 +27,7 @@ from ai_pdf_api.services.research.research_constants import (
     BUDGET_POLICY_VERSION,
     DATA_BOUNDARY_POLICY,
     PRICING_VERSION,
-    PROMPT_VERSION_IDS,
     RETRY_POLICY_VERSION,
-    WORKFLOW_VERSION_ID,
 )
 from ai_pdf_api.services.research.research_idempotency import (
     ResearchError,
@@ -102,7 +100,7 @@ def _approve_plan(
             raise ResearchError(
                 "stale_plan_snapshot", "A frozen Asset changed after planning.", 409
             )
-    workflow, planner_prompt = ensure_research_versions(db)
+    workflow, planner_prompt = ensure_research_versions(db, workflow_id=revision.proposed_workflow_version_id)
     bindings = list(
         db.execute(
             select(WorkflowPromptBinding, PromptVersion)
@@ -119,8 +117,8 @@ def _approve_plan(
     )
     workspace = db.get(Workspace, run.workspace_id)
     expected_policy = (
-        WORKFLOW_VERSION_ID,
-        PROMPT_VERSION_IDS["planner"],
+        workflow.id,
+        planner_prompt.id,
         settings.generation_provider,
         settings.generation_model,
         # Fingerprint compared via dual-read below; keep placeholder slot shape stable.

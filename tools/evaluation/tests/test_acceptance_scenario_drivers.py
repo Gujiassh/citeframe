@@ -120,3 +120,36 @@ def test_bounded_wait_does_not_accept_other_step_success(monkeypatch, facts):
         lambda: observed if processor.calls >= 2 else current,
         lambda f: reclaim_passed(expected, f), timeout_seconds=3)
     assert processor.calls == 2 and reclaim_passed(expected, result)
+
+
+@pytest.mark.parametrize("workflow_id,status,snapshot", [
+    ("20000000-0000-4000-8000-000000000001", "awaiting_plan_approval", None),
+    ("30000000-0000-4000-8000-000000000001", "queued", "frozen-snapshot"),
+])
+def test_plan_boundary_observes_the_persisted_workflow(workflow_id, status, snapshot):
+    from citeframe_evaluation.acceptance.workflow import wait_plan_boundary
+    states = iter([dict(workflowId=workflow_id, status="planning", snapshotId=None),
+                   dict(workflowId=workflow_id, status=status, snapshotId=snapshot)])
+    calls = []
+    result = wait_plan_boundary(lambda: next(states), lambda: calls.append("process") or True)
+    assert result["snapshotId"] == snapshot and calls == ["process"]
+
+
+@pytest.mark.parametrize("workflow_id,status", [
+    ("unknown", "planning"),
+    ("30000000-0000-4000-8000-000000000001", "awaiting_plan_approval"),
+    ("30000000-0000-4000-8000-000000000001", "awaiting_human_decision"),
+    ("30000000-0000-4000-8000-000000000001", "failed"),
+])
+def test_plan_boundary_rejects_unknown_release_and_policy_human_gates(workflow_id, status):
+    from citeframe_evaluation.acceptance.workflow import wait_plan_boundary
+    with pytest.raises(AssertionError):
+        wait_plan_boundary(lambda: dict(workflowId=workflow_id, status=status, snapshotId=None),
+                           lambda: pytest.fail("invalid state must not drive a worker"))
+
+
+def test_plan_boundary_does_not_accept_a_queued_run_without_snapshot():
+    from citeframe_evaluation.acceptance.workflow import wait_plan_boundary, V3_WORKFLOW_VERSION_ID
+    with pytest.raises(TimeoutError):
+        wait_plan_boundary(lambda: dict(workflowId=V3_WORKFLOW_VERSION_ID, status="queued", snapshotId=None),
+                           lambda: pytest.fail("expired poll must not drive a worker"), timeout_seconds=0)

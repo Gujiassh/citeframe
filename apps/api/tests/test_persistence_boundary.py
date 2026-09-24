@@ -131,9 +131,23 @@ def test_persistence_models_share_one_metadata_object_and_match_snapshot() -> No
     assert model_metadata == {metadata}
 
     actual = _compiled_postgresql_metadata_snapshot(metadata)
-    assert len(actual["tables"]) == 81
+    assert len(actual["tables"]) == 83
     assert sum(len(table["indexes"]) for table in actual["tables"].values()) == 97
-    assert actual == json.loads(snapshot_bytes)
+    delta_bytes = (API_ROOT / "tests/fixtures/research-autonomy-metadata-delta-20260923.json").read_bytes()
+    delta_bytes = delta_bytes.replace(b"\r\n", b"\n")
+    assert hashlib.sha256(delta_bytes).hexdigest() == "e5c852da7ccb29733b08fa45a2983f23b65818e716de7498925b3b639090f3bc"
+    delta = json.loads(delta_bytes)["tables"]
+    assert set(delta) == {"human_decisions", "research_report_edits"}
+    expected = json.loads(snapshot_bytes)
+    expected["tables"].update(delta)
+    adaptive_bytes = (API_ROOT / "tests/fixtures/research-adaptive-metadata-delta-20260923.json").read_bytes()
+    # This frozen delta was hashed with CRLF; Git checkouts may use LF.
+    adaptive_bytes = adaptive_bytes.replace(b"\r\n", b"\n").replace(b"\n", b"\r\n")
+    assert hashlib.sha256(adaptive_bytes).hexdigest() == "764a6d6a756127c0d910d419f060844e43135d8b50bd3d5d5c09d5fde4340779"
+    adaptive = json.loads(adaptive_bytes)["tables"]
+    assert set(adaptive) == {"research_adaptive_turns"}
+    expected["tables"].update(adaptive)
+    assert actual == expected
 
 
 def test_neutral_persistence_imports_without_api_or_worker_paths() -> None:
@@ -163,7 +177,7 @@ import citeframe_persistence.models.asset
 
 package_file = Path(citeframe_persistence.__file__).resolve()
 assert package_file.is_relative_to(persistence_src), package_file
-assert len(citeframe_persistence.Base.metadata.tables) == 81
+assert len(citeframe_persistence.Base.metadata.tables) == 83
 assert not any(name == "ai_pdf_api" or name.startswith("ai_pdf_api.") for name in sys.modules)
 assert not any(name == "ai_pdf_worker" or name.startswith("ai_pdf_worker.") for name in sys.modules)
 """

@@ -19,6 +19,7 @@ import pytest
 OUTPUT = os.environ.get("A2A_DIFFERENTIAL_PROBE_OUTPUT")
 pytestmark = pytest.mark.skipif(not OUTPUT, reason="executed only by the A2a differential runner")
 NOW = datetime(2026, 8, 24, 4, 0, tzinfo=UTC)
+COUNTERS = {"uuid": 0, "token": 0}
 
 
 class _FixedDateTime(datetime):
@@ -112,20 +113,17 @@ def _install_determinism() -> None:
     if not event.contains(Engine, "connect", _sqlite_clock):
         event.listen(Engine, "connect", _sqlite_clock)
     lock = threading.Lock()
-    uuid_counter = 0
-    token_counter = 0
+    COUNTERS.update(uuid=0, token=0)
 
     def deterministic_uuid4() -> UUID:
-        nonlocal uuid_counter
         with lock:
-            uuid_counter += 1
-            return uuid5(NAMESPACE_URL, f"citeframe/a2a-differential/generated/{uuid_counter}")
+            COUNTERS["uuid"] += 1
+            return uuid5(NAMESPACE_URL, f"citeframe/a2a-differential/generated/{COUNTERS['uuid']}")
 
     def deterministic_token(_size: int = 32) -> str:
-        nonlocal token_counter
         with lock:
-            token_counter += 1
-            return f"a2a-lease-token-{token_counter:03d}"
+            COUNTERS["token"] += 1
+            return f"a2a-lease-token-{COUNTERS['token']:03d}"
 
     import secrets
 
@@ -743,14 +741,35 @@ def _process_one_flow(path: Path, normalizer: _Normalizer) -> dict[str, object]:
     event.listen(sessions, "after_commit", observe_publication_commit)
     from ai_pdf_api.services.research import research_views
     research_views.download_bytes = lambda key: objects[key]
-    seed_state(
-        sessions,
-        uploader=lambda key, payload, _media: objects.__setitem__(key, payload),
-        cleanup=lambda key: objects.pop(key, None),
-    )
-    with sessions() as db:
-        publish_research_versions_for_release(db, NOW)
-        db.commit()
+    history_path = os.environ.get("A2A_HISTORICAL_STATE")
+    created_state = None
+    restored_sha = None
+    autonomous = os.environ.get("A2A_CURRENT_SCENARIO") == "1"
+    stored_approvals = os.environ.get("A2A_STORED_APPROVALS") == "1"
+    approval_checkpoint = None
+    decision_requests = []
+    historical_report = None
+    assert not (autonomous and history_path)
+    if history_path:
+        from a2a_historical_state import restore_created_state
+        historical_report = json.loads(Path(history_path).read_text(encoding="utf-8"))
+        created_state = historical_report["historicalApprovalCheckpoint" if stored_approvals else "historicalCreatedState"]
+        restored_sha = restore_created_state(engine, created_state, objects, COUNTERS)
+        # Installing the current release alongside history must not rewrite its rows.
+        with sessions() as db:
+            publish_research_versions_for_release(db, NOW)
+            db.commit()
+        from a2a_historical_state import assert_historical_rows_preserved
+        assert_historical_rows_preserved(engine, created_state)
+    else:
+        seed_state(
+            sessions,
+            uploader=lambda key, payload, _media: objects.__setitem__(key, payload),
+            cleanup=lambda key: objects.pop(key, None),
+        )
+        with sessions() as db:
+            publish_research_versions_for_release(db, NOW)
+            db.commit()
 
     from ai_pdf_api.models import Asset, ContentUnit, EvidenceLocator
     from ai_pdf_api.services.retrieval import RetrievedContent
@@ -816,6 +835,8 @@ def _process_one_flow(path: Path, normalizer: _Normalizer) -> dict[str, object]:
                         }
                     ]
                 }
+                if "nextQuery" in variables.get("resultSchema", {}).get("properties", {}):
+                    value["nextQuery"] = None
             elif "reasonTaxonomy" in variables:
                 node = "verifier"
                 value = {"claims": [{"id": item["id"], "status": "supported"} for item in variables["claims"]]}
@@ -926,83 +947,106 @@ def _process_one_flow(path: Path, normalizer: _Normalizer) -> dict[str, object]:
         "Idempotency-Key": "a2a-process-create-0001",
     }
     with TestClient(app) as client:
-        response = client.post(
-            f"/v1/workspaces/{IDS['workspace']}/research-runs",
-            headers=headers,
-            json={
-                "question": "What does the fixed fixture establish?",
-                "assetScope": {"mode": "selected", "assetIds": [IDS["asset"]]},
-            },
-        )
-        assert response.status_code == 201, response.text
-        api_payload_bytes.append(base64.b64encode(response.content).decode())
-        run_id = response.json()["run"]["id"]
-        print("a2a_probe stage=process_planner", flush=True)
-        outputs = [processor.process_one()]
-        print("a2a_probe stage=process_planner_done", flush=True)
-        with sessions() as db:
-            run = db.get(ResearchRun, run_id)
-            decision = db.scalar(
-                select(HumanDecision).where(
-                    HumanDecision.run_id == run_id,
-                    HumanDecision.decision_type == "plan_approval",
-                    HumanDecision.status == "pending",
-                )
+        if created_state is not None:
+            run_id = created_state["runId"]
+            api_payload_bytes.append(created_state["createResponseBase64"])
+        else:
+            response = client.post(
+                f"/v1/workspaces/{IDS['workspace']}/research-runs",
+                headers=headers,
+                json={
+                    "question": "What does the fixed fixture establish?",
+                    "assetScope": {"mode": "selected", "assetIds": [IDS["asset"]]},
+                },
             )
-            assert run is not None and decision is not None
-            plan_request = {
-                "expectedStateVersion": run.state_version,
-                "expectedDecisionStateVersion": decision.state_version,
-                "inputArtifactSha256": decision.input_artifact_sha256,
-                "inputSnapshotSha256": decision.input_snapshot_sha256,
-                "action": "approve",
-                "comment": None,
-                "revision": None,
-            }
-            decision_id = decision.id
-        response = client.post(
-            f"/v1/workspaces/{IDS['workspace']}/research-runs/{run_id}/plan-decisions/{decision_id}",
-            headers={**headers, "Idempotency-Key": "a2a-process-plan-0001"},
-            json=plan_request,
-        )
-        assert response.status_code == 200, response.text
-        api_payload_bytes.append(base64.b64encode(response.content).decode())
-        print("a2a_probe stage=process_graph", flush=True)
-        decision = None
-        run = None
-        for _attempt in range(10):
+            assert response.status_code == 201, response.text
+            api_payload_bytes.append(base64.b64encode(response.content).decode())
+            run_id = response.json()["run"]["id"]
+            from a2a_historical_state import export_created_state
+            created_state = export_created_state(engine, run_id=run_id, response=response.content,
+                objects=objects, counters=COUNTERS)
+        outputs = []
+        if stored_approvals:
+            api_payload_bytes[:] = historical_report["semantics"]["exactPayloadBytes"]["processOne"]["apiResponses"]
+            from a2a_historical_state import verify_stored_replays
+            verify_stored_replays(client, engine, historical_report["historicalDecisionRequests"], headers)
+        else:
+            print("a2a_probe stage=process_planner", flush=True)
             outputs.append(processor.process_one())
+            print("a2a_probe stage=process_planner_done", flush=True)
+        if not autonomous and not stored_approvals:
             with sessions() as db:
                 run = db.get(ResearchRun, run_id)
                 decision = db.scalar(
                     select(HumanDecision).where(
                         HumanDecision.run_id == run_id,
-                        HumanDecision.decision_type == "conflict_resolution",
+                        HumanDecision.decision_type == "plan_approval",
                         HumanDecision.status == "pending",
                     )
                 )
-            if decision is not None:
-                break
-            assert outputs[-1] is True
-        print("a2a_probe stage=process_graph_done", flush=True)
-        assert run is not None and decision is not None
-        with sessions() as db:
-            conflict_request = {
-                "expectedStateVersion": run.state_version,
-                "expectedDecisionStateVersion": decision.state_version,
-                "inputArtifactSha256": decision.input_artifact_sha256,
-                "inputSnapshotSha256": decision.input_snapshot_sha256,
-                "action": "keep_as_unresolved",
-                "comment": "Preserve the conflict as unresolved.",
-            }
-            decision_id = decision.id
-        response = client.post(
-            f"/v1/workspaces/{IDS['workspace']}/research-runs/{run_id}/conflict-decisions/{decision_id}",
-            headers={**headers, "Idempotency-Key": "a2a-process-conflict-0001"},
-            json=conflict_request,
-        )
-        assert response.status_code == 200, response.text
-        api_payload_bytes.append(base64.b64encode(response.content).decode())
+                assert run is not None and decision is not None
+                plan_request = {
+                    "expectedStateVersion": run.state_version,
+                    "expectedDecisionStateVersion": decision.state_version,
+                    "inputArtifactSha256": decision.input_artifact_sha256,
+                    "inputSnapshotSha256": decision.input_snapshot_sha256,
+                    "action": "approve",
+                    "comment": None,
+                    "revision": None,
+                }
+                decision_id = decision.id
+            response = client.post(
+                f"/v1/workspaces/{IDS['workspace']}/research-runs/{run_id}/plan-decisions/{decision_id}",
+                headers={**headers, "Idempotency-Key": "a2a-process-plan-0001"},
+                json=plan_request,
+            )
+            assert response.status_code == 200, response.text
+            api_payload_bytes.append(base64.b64encode(response.content).decode())
+            decision_requests.append({"path": f"/v1/workspaces/{IDS['workspace']}/research-runs/{run_id}/plan-decisions/{decision_id}",
+                "key": "a2a-process-plan-0001", "body": plan_request, "response": base64.b64encode(response.content).decode()})
+            print("a2a_probe stage=process_graph", flush=True)
+            decision = None
+            run = None
+            for _attempt in range(10):
+                outputs.append(processor.process_one())
+                with sessions() as db:
+                    run = db.get(ResearchRun, run_id)
+                    decision = db.scalar(
+                        select(HumanDecision).where(
+                            HumanDecision.run_id == run_id,
+                            HumanDecision.decision_type == "conflict_resolution",
+                            HumanDecision.status == "pending",
+                        )
+                    )
+                if decision is not None:
+                    break
+                assert outputs[-1] is True
+            print("a2a_probe stage=process_graph_done", flush=True)
+            assert run is not None and decision is not None
+            with sessions() as db:
+                conflict_request = {
+                    "expectedStateVersion": run.state_version,
+                    "expectedDecisionStateVersion": decision.state_version,
+                    "inputArtifactSha256": decision.input_artifact_sha256,
+                    "inputSnapshotSha256": decision.input_snapshot_sha256,
+                    "action": "keep_as_unresolved",
+                    "comment": "Preserve the conflict as unresolved.",
+                }
+                decision_id = decision.id
+            response = client.post(
+                f"/v1/workspaces/{IDS['workspace']}/research-runs/{run_id}/conflict-decisions/{decision_id}",
+                headers={**headers, "Idempotency-Key": "a2a-process-conflict-0001"},
+                json=conflict_request,
+            )
+            assert response.status_code == 200, response.text
+            api_payload_bytes.append(base64.b64encode(response.content).decode())
+            decision_requests.append({"path": f"/v1/workspaces/{IDS['workspace']}/research-runs/{run_id}/conflict-decisions/{decision_id}",
+                "key": "a2a-process-conflict-0001", "body": conflict_request, "response": base64.b64encode(response.content).decode()})
+            from a2a_historical_state import export_created_state, verify_stored_replays
+            verify_stored_replays(client, engine, decision_requests, headers,
+                expected_origin="human" if composition is not None else None)
+            approval_checkpoint = export_created_state(engine, run_id=run_id,
+                response=base64.b64decode(api_payload_bytes[0]), objects=objects, counters=COUNTERS)
         print("a2a_probe stage=process_resume", flush=True)
         for _attempt in range(10):
             with sessions() as db:
@@ -1028,6 +1072,16 @@ def _process_one_flow(path: Path, normalizer: _Normalizer) -> dict[str, object]:
         with sessions() as db:
             after_maintenance = _database_rows(db, normalizer)
         assert provider.calls == provider_before_maintenance
+        # Diagnostic errors allocate request IDs. Exercise them only after all
+        # business events exist, so they cannot shift the frozen UUID workload.
+        replay_requests = historical_report["historicalDecisionRequests"] if stored_approvals else decision_requests
+        for request in replay_requests:
+            rejected = client.post(request["path"],
+                headers={**headers, "Idempotency-Key": request["key"]},
+                json={**request["body"], "comment": "changed original request"})
+            assert rejected.status_code == 409 and rejected.json()["error"]["code"] == "idempotency_key_reused"
+        with sessions() as db:
+            assert _database_rows(db, normalizer) == after_maintenance
         print("a2a_probe stage=process_resume_done", flush=True)
 
     with sessions() as db:
@@ -1049,11 +1103,18 @@ def _process_one_flow(path: Path, normalizer: _Normalizer) -> dict[str, object]:
             ).all()
         )
         process_event_bytes = [_raw_bytes_b64(_event_row(event)) for event in process_events]
+        from ai_pdf_api.services.research.research_artifacts import serialize_sse_event
+        sse_wire = "".join(serialize_sse_event(event) for event in process_events)
         object_payload_bytes = {
             key: base64.b64encode(payload).decode()
             for key, payload in sorted(objects.items())
             if key.startswith("research/")
         }
+        from a2a_historical_state import workflow_evidence
+        workflow = workflow_evidence(db, run)
+        if autonomous:
+            from a2a_current_acceptance import assert_current_completion
+            assert_current_completion(rows, objects, api_payload_bytes, workflow)
         final = {
             "idleAfterTerminal": outputs[-1],
             "providerNodes": provider.calls,
@@ -1071,6 +1132,12 @@ def _process_one_flow(path: Path, normalizer: _Normalizer) -> dict[str, object]:
     engine.dispose()
     return {
         "normalizedDbRows": rows,
+        "_approvalCheckpoint": approval_checkpoint,
+        "_decisionRequests": decision_requests,
+        "_sseWire": sse_wire,
+        "_workflowEvidence": workflow,
+        "_createdState": created_state,
+        "_restoredSha": restored_sha,
         "_rawDbRows": raw_rows,
         "_schemaColumns": schema_columns,
         "terminalProcessSemantics": normalizer.value(final),
@@ -1113,6 +1180,12 @@ def test_generate_executable_differential_report(tmp_path: Path) -> None:
     process_rows = process.pop("normalizedDbRows")
     raw_rows = {"transitions": semantics.pop("_rawTransitionDbRows"), "processOne": process.pop("_rawDbRows")}
     schema_columns = process.pop("_schemaColumns")
+    approval_checkpoint = process.pop("_approvalCheckpoint")
+    decision_requests = process.pop("_decisionRequests")
+    sse_wire = process.pop("_sseWire")
+    workflow = process.pop("_workflowEvidence")
+    created_state = process.pop("_createdState")
+    restored_sha = process.pop("_restoredSha")
     composition = process.pop("_composition")
     scheduler = process.pop("_schedulerEvidence")
     maintenance = process.pop("_publicationMaintenance")
@@ -1152,6 +1225,13 @@ def test_generate_executable_differential_report(tmp_path: Path) -> None:
         "publicationLifecycle": lifecycle,
         "rawDatabaseRows": raw_rows,
         "researchTableColumns": schema_columns,
+        "historicalApprovalCheckpoint": approval_checkpoint,
+        "historicalDecisionRequests": decision_requests,
+        "productionSseWire": sse_wire,
+        "workflowEvidence": workflow,
+        "scenario": "B-current-default" if os.environ.get("A2A_CURRENT_SCENARIO") else "A-historical-v2",
+        "historicalCreatedState": created_state,
+        "restoredHistoricalStateSha256": restored_sha,
         "semantics": semantics,
     }
     Path(OUTPUT).write_bytes(_canonical(report) + b"\n")

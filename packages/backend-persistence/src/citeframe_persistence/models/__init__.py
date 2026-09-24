@@ -78,6 +78,7 @@ from citeframe_persistence.models.research_execution import (
     ResearchToolCall,
     ResearchToolCallInputHandle,
 )
+from citeframe_persistence.models.research_report_edit import ResearchReportEdit
 from citeframe_persistence.models.research_run import (
     ResearchExecutionAsset,
     ResearchExecutionPromptVersion,
@@ -93,7 +94,10 @@ from citeframe_persistence.models.user import User
 from citeframe_persistence.models.workspace import Workspace
 from citeframe_persistence.models.workspace_membership import WorkspaceMembership
 
+from .research_adaptive_turn import ResearchAdaptiveTurn
+
 __all__ = [
+    "ResearchAdaptiveTurn",
     "Asset",
     "AssetRepresentation",
     "AssetTag",
@@ -160,6 +164,7 @@ __all__ = [
     "ResearchProviderCall",
     "ResearchPublicationIntent",
     "ResearchRun",
+    "ResearchReportEdit",
     "ResearchStep",
     "ResearchStepAttempt",
     "ResearchStepDependency",

@@ -8,11 +8,11 @@ legacy registry entry.
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from typing import Any, Mapping
 
 # Production current versions. New Runs bind these exact values.
-AGENT_RESULT_SCHEMA_VERSION = "research-agent-results-v1"
+AGENT_RESULT_SCHEMA_VERSION = "research-agent-results-v2"
 CONTEXT_POLICY_VERSION = "research-context-policy-v1"
 COMPACT_POLICY_VERSION = "research-compact-policy-v1"
 
@@ -61,7 +61,7 @@ class AgentIoRegistryEntry:
 ROLE_CONTRACTS: dict[str, RoleContract] = {
     "planner": RoleContract(
         node_key="planner",
-        schema_version=AGENT_RESULT_SCHEMA_VERSION,
+        schema_version="research-agent-results-v1",
         result_schema_id="research.planner.v1",
         validator_key="research-agent-validator.v1",
         runtime_adapter_key="research-runtime-adapter.v1",
@@ -73,7 +73,7 @@ ROLE_CONTRACTS: dict[str, RoleContract] = {
     ),
     "researcher": RoleContract(
         node_key="researcher",
-        schema_version=AGENT_RESULT_SCHEMA_VERSION,
+        schema_version="research-agent-results-v1",
         result_schema_id="research.researcher.v1",
         validator_key="research-agent-validator.v1",
         runtime_adapter_key="research-runtime-adapter.v1",
@@ -85,7 +85,7 @@ ROLE_CONTRACTS: dict[str, RoleContract] = {
     ),
     "verifier": RoleContract(
         node_key="verifier",
-        schema_version=AGENT_RESULT_SCHEMA_VERSION,
+        schema_version="research-agent-results-v1",
         result_schema_id="research.verifier.v1",
         validator_key="research-agent-validator.v1",
         runtime_adapter_key="research-runtime-adapter.v1",
@@ -97,7 +97,7 @@ ROLE_CONTRACTS: dict[str, RoleContract] = {
     ),
     "critic": RoleContract(
         node_key="critic",
-        schema_version=AGENT_RESULT_SCHEMA_VERSION,
+        schema_version="research-agent-results-v1",
         result_schema_id="research.critic.v1",
         validator_key="research-agent-validator.v1",
         runtime_adapter_key="research-runtime-adapter.v1",
@@ -109,7 +109,7 @@ ROLE_CONTRACTS: dict[str, RoleContract] = {
     ),
     "synthesizer": RoleContract(
         node_key="synthesizer",
-        schema_version=AGENT_RESULT_SCHEMA_VERSION,
+        schema_version="research-agent-results-v1",
         result_schema_id="research.synthesizer.v1",
         validator_key="research-agent-validator.v1",
         runtime_adapter_key="research-runtime-adapter.v1",
@@ -140,8 +140,8 @@ LEGACY_ROLE_CONTRACTS: dict[str, RoleContract] = {
 }
 
 
-PRODUCTION_REGISTRY = AgentIoRegistryEntry(
-    agent_result_schema_version=AGENT_RESULT_SCHEMA_VERSION,
+V1_REGISTRY = AgentIoRegistryEntry(
+    agent_result_schema_version="research-agent-results-v1",
     context_policy_version=CONTEXT_POLICY_VERSION,
     compact_policy_version=COMPACT_POLICY_VERSION,
     soft_compact_ratio=SOFT_COMPACT_RATIO,
@@ -162,7 +162,19 @@ LEGACY_REGISTRY = AgentIoRegistryEntry(
 )
 
 
+ADAPTIVE_ROLE_CONTRACTS = {
+    key: replace(role, schema_version=AGENT_RESULT_SCHEMA_VERSION,
+                 result_schema_id=role.result_schema_id.replace(".v1", ".v2"),
+                 validator_key="research-agent-validator.v2",
+                 output_required=("claims", "nextQuery") if key == "researcher" else role.output_required)
+    for key, role in ROLE_CONTRACTS.items()
+}
+PRODUCTION_REGISTRY = replace(V1_REGISTRY,
+    agent_result_schema_version=AGENT_RESULT_SCHEMA_VERSION, roles=ADAPTIVE_ROLE_CONTRACTS)
+
 _REGISTRY_BY_VERSION: dict[tuple[str, str, str], AgentIoRegistryEntry] = {
+    (V1_REGISTRY.agent_result_schema_version, V1_REGISTRY.context_policy_version,
+     V1_REGISTRY.compact_policy_version): V1_REGISTRY,
     (
         PRODUCTION_REGISTRY.agent_result_schema_version,
         PRODUCTION_REGISTRY.context_policy_version,
@@ -287,6 +299,9 @@ def resolve_role_contract(entry: AgentIoRegistryEntry, node_key: str) -> RoleCon
     expected_schema_id = expected_prompt_key + (
         ".legacy-v0" if entry.agent_result_schema_version == AGENT_RESULT_SCHEMA_VERSION_LEGACY else ".v1"
     )
+    if entry.agent_result_schema_version == AGENT_RESULT_SCHEMA_VERSION:
+        expected_schema_id = expected_schema_id.replace(".v1", ".v2")
+        validator_key = validator_key.replace(".v1", ".v2")
     expected_validator_key = validator_key.replace(".v1", ".legacy-v0") if entry.agent_result_schema_version == AGENT_RESULT_SCHEMA_VERSION_LEGACY else validator_key
     expected_adapter_key = adapter_key.replace(".v1", ".legacy-v0") if entry.agent_result_schema_version == AGENT_RESULT_SCHEMA_VERSION_LEGACY else adapter_key
     if (

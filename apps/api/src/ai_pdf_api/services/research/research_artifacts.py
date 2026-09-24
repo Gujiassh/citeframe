@@ -83,7 +83,7 @@ def list_events_after(db: Session, run: ResearchRun, cursor: int) -> list[Resear
 
 def serialize_sse_event(event: ResearchEvent) -> str:
     envelope = {
-        "schemaVersion": 1,
+        "schemaVersion": int(event.event_schema_version),
         "eventId": event.id,
         "runId": event.run_id,
         "seq": event.seq,

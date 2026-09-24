@@ -15,6 +15,7 @@ import tempfile
 from pathlib import Path
 
 from a2a_r2_delta import compare
+from a2a_feature_history_oracle import compare_historical_feature
 
 BASELINE_REF = "d1b5945e977445e4db6bf56ef54cf61607ead2e2"
 BASELINE_ARCHIVE_PATHS = (
@@ -44,6 +45,9 @@ def _run_probe(
     uv: Path,
     label: str,
     mutation: str | None = None,
+    historical_state: Path | None = None,
+    current_scenario: bool = False,
+    stored_approvals: bool = False,
 ) -> None:
     paths = [
         root / "apps/api/src",
@@ -81,6 +85,14 @@ def _run_probe(
         "VIRTUAL_ENV",
     ):
         env.pop(inherited, None)
+    for key in ("A2A_HISTORICAL_STATE", "A2A_CURRENT_SCENARIO", "A2A_STORED_APPROVALS"):
+        env.pop(key, None)
+    if stored_approvals:
+        env["A2A_STORED_APPROVALS"] = "1"
+    if historical_state is not None:
+        env["A2A_HISTORICAL_STATE"] = str(historical_state)
+    if current_scenario:
+        env["A2A_CURRENT_SCENARIO"] = "1"
     if mutation is not None:
         env["A2A_DIFFERENTIAL_MUTATION"] = mutation
     worker_project = root / "apps/worker"
@@ -321,6 +333,8 @@ def run(
         baseline_probe.write_text(
             _historical_probe_source(probe.read_text(encoding="utf-8")), encoding="utf-8"
         )
+        helper = "a2a_historical_state.py"
+        (baseline_probe.parent / helper).write_bytes((probe.parent / helper).read_bytes())
 
         baseline_report = temp / "baseline.json"
         candidate_report = temp / "candidate.json"
@@ -338,9 +352,28 @@ def run(
             uv=uv,
             label="candidate",
             mutation=candidate_mutation,
+            historical_state=baseline_report,
         )
+        current_report = temp / "current.json"
+        stored_report = temp / "stored.json"
+        _run_probe(root=root, probe=probe, output=current_report, uv=uv, label="candidate", current_scenario=True)
+        _run_probe(root=root, probe=probe, output=stored_report, uv=uv, label="candidate",
+                   historical_state=baseline_report, stored_approvals=True)
+        current = json.loads(current_report.read_text(encoding="utf-8"))
+        stored = json.loads(stored_report.read_text(encoding="utf-8"))
         baseline = json.loads(baseline_report.read_text(encoding="utf-8"))
         candidate = json.loads(candidate_report.read_text(encoding="utf-8"))
+        parser_evidence = []
+        for name, report, schema, origin in (("legacy", baseline, "1", "human"),
+                ("restored-new-human", candidate, "2", "human"), ("stored-replay", stored, "1", "human"),
+                ("current-default", current, "2", "policy")):
+            wire = temp / f"{name}.sse"
+            wire.write_text(report["productionSseWire"], encoding="utf-8")
+            parsed = subprocess.run([shutil.which("node"), "--import", "tsx", "scripts/check-research-history-sse.mjs",
+                str(wire), schema, origin], cwd=root / "apps/web", capture_output=True, text=True)
+            if parsed.returncode:
+                raise RuntimeError(f"{name} production Web parser failed: {parsed.stdout} {parsed.stderr}")
+            parser_evidence.append({"scenario": name, **json.loads(parsed.stdout)})
 
     semantic_after, _ = _semantic_fingerprint(root)
     repair_after, _ = _repair_snapshot_fingerprint(root)
@@ -379,15 +412,32 @@ def run(
     missing = REQUIRED_AREAS - set(baseline_semantics)
     if missing:
         raise RuntimeError(f"probe coverage missing: {sorted(missing)}")
-    comparison = compare(baseline, candidate)
-    equal = comparison["rawEqual"]
+    comparison = compare_historical_feature(baseline, candidate)
+    stored_comparison = compare_historical_feature(baseline, stored, stored_responses=True)
+    equal = _canonical(baseline_semantics) == _canonical(candidate_semantics)
+    require_current = current["workflowEvidence"]["result"] == "completed" and current["scenario"] == "B-current-default"
+    comparison["accepted"] = comparison["accepted"] and stored_comparison["accepted"] and require_current
+    candidate_head = subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=root, text=True).strip()
     result: dict[str, object] = {
         "schemaVersion": "citeframe-a2a-r2-explicit-differential-v2",
         **comparison,
         "baselineRef": resolved,
         "rawBaselineReport": baseline,
         "rawCandidateReport": candidate,
-        "candidateHead": subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=root, text=True).strip(),
+        "f1ProjectedCandidateSha256": comparison.get("rawCandidateSha256"),
+        "rawBaselineSha256": hashlib.sha256(_canonical(baseline)).hexdigest(),
+        "rawCandidateSha256": hashlib.sha256(_canonical(candidate)).hexdigest(),
+        "rawStoredReplaySha256": hashlib.sha256(_canonical(stored)).hexdigest(),
+        "rawCurrentDefaultSha256": hashlib.sha256(_canonical(current)).hexdigest(),
+        "rawStoredReplayReport": stored,
+        "rawCurrentDefaultReport": current,
+        "historicalStoredReplay": stored_comparison,
+        "productionConsumerEvidence": parser_evidence,
+        "workflowScenarios": {name: {**report["workflowEvidence"], "candidateHead": candidate_head}
+                              for name, report in (("A", candidate), ("AStored", stored), ("B", current))},
+        "historicalRecoveryExecution": {"newProviderCalls": stored["semantics"]["terminalProcessSemantics"]["providerNodes"],
+            "scheduler": stored["schedulerEvidence"], "replayedResponsesUnchanged": True},
+        "candidateHead": candidate_head,
         "candidateSemanticWorktreeSha256": semantic_before,
         "candidateSemanticDirty": semantic_dirty,
         "repairSnapshotSha256": repair_before,

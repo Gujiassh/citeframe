@@ -171,6 +171,10 @@ def _observed_tool(
 
 
 class ResearchWorkerService(Protocol):
+    def adaptive_turn(self, db: Any, *, attempt_id: str, lease_token: str,
+                      turn_number: int, request: dict, result: dict | None = None,
+                      now: datetime | None = None) -> dict | None: ...
+
     def reconcile_one_publication_intent(
         self,
         db: Any,

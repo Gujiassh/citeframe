@@ -19,6 +19,8 @@ from citeframe_contracts import (
     VerifiedClaim,
 )
 
+from citeframe_research_persistence.autonomy import AUTONOMOUS_WORKFLOW_ID
+
 from ai_pdf_worker.research.tools import EvidenceToolRegistry, _validate_claims
 from ai_pdf_worker.research.agents import GenerationResearchAgents
 from ai_pdf_worker.research.core import (
@@ -331,7 +333,7 @@ class SingleAttemptStepDispatcher:
             raise ResearchPortError("research_conflict_state_missing")
         if conflicts:
             self._ledger.wait_for_conflict_decision(lease, conflicts)
-            return "waiting", 0
+            return ("success" if _execution.workflow_version_id == AUTONOMOUS_WORKFLOW_ID else "waiting"), 0
         self._ledger.complete_control_step(lease)
         return "success", 0
 
@@ -365,6 +367,8 @@ class SingleAttemptStepDispatcher:
                 lease,
             )
             self._validate_selection(selection, publishable, unresolved)
+            if execution.workflow_version_id == AUTONOMOUS_WORKFLOW_ID:
+                selection = SynthesisSelection(selection.fact_claim_ids, tuple(claim.id for claim in unresolved))
         except Exception as error:
             _persist_step_failure(self._ledger, lease, error)
             raise

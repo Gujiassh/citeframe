@@ -882,6 +882,14 @@ Document/Page/Chunk 已通过受控迁移切换为 Asset/Representation/ContentU
 - **Research Worker** uses neutral persistence commands and Worker-owned UoW/session composition. Accepted R1 runtime runs one claimed Attempt per handler in independent loops and excludes LangGraph from runtime imports. Schema/migration ownership remains API.
 - **Chat** attaches generation images only via `modalities.visual_enrichment` (no direct kind-specific crop imports).
 
+## 2026-09-23 bounded research and report-edition candidate
+
+The current working-tree candidate adds immutable research workflow v3/Agent I/O v2: validated automatic plan materialization, nonblocking unresolved-conflict reporting, up to two branch-local supplemental queries, and independent unverified Markdown editions. Existing v2 plans retain their frozen approval path. New migrations are `o9c0d1e2f3a4` and `p0d1e2f3a4b5`, following inherited R2 `n8b9c0d1e2f3`; they have not been applied to shared services. Generated artifacts, evidence, and historical evaluation records remain unchanged. Automated/fixture-browser evidence is bounded; real migrated-service UI acceptance and architecture integration are pending. See `specs/v5/post-v5-optimization/research-autonomy-20260923.md` and `report-edit-20260923.md` for contracts, ownership, exact tests, and remaining gates. The prior media runtime dependency task remains unclosed.
+
+
+## Research recovery and editing contracts — 2026-09-23 repair
+
+Adaptive model turns are persisted under a bounded step/turn key, with frozen execution binding and request/result hashes. Recovery replays committed decisions and the existing successful tool ledger; it does not require nondeterministic model responses to repeat. The added migration `q1e2f3a4b5c6` must follow the previously recorded R2/editor/autonomy chain. Decision SSE version 2 carries explicit human/policy provenance; historical human version-1 events remain readable. Editor saves include the displayed original ID/hash and reject an obsolete base before the first write. No shared migration or real-service acceptance has been performed. The repaired candidate and isolated prerequisite/feature assembly evidence are tracked in `specs/v5/post-v5-optimization/issue23-review-repair-20260923.md`; architecture PR #26 remains separate.
 
 ## Publication adoption authorization (2026-09-23)
 
@@ -891,9 +899,17 @@ Final adoption and reconciliation lock and recheck the creator membership inside
 
 The A2 runner now retains raw reports and validates historical invariants plus explicitly approved R2 intent, generation-key, three semantic-identity event UUID and terminal-maintenance deltas. `rawEqual=false` is reported separately from invariant/delta acceptance; unknown differences fail closed. Current candidates execute the production saga with shared frozen Python/SQL time and injected storage capabilities. The field manifest, lifecycle evidence, negative controls and runtime limitations are in `specs/v5/post-v5-optimization/issue27-r2-differential-contract-20260923.md`. Historical artifacts are unchanged. Nullable Step input uses the existing lease-derived hash for both originating/current attempts. Initial Research retry can reload list/detail without an already selected run; this remains a minimal W1 repair.
 
+### Issue 23 historical/current workflow acceptance
+
+The current candidate executes isolated historical v2 restore, historical approved-task/idempotency replay, and real default-v3 POST-create-to-publication scenarios. F1 additions for newly generated human decision events/responses are verified by a separate feature oracle; existing schema1 events and old-key HTTP responses remain unchanged. Decision POST replay serializes only explicitly persisted fields while retaining the response model's datetime encoding. See `specs/v5/post-v5-optimization/issue23-versioned-workflow-acceptance-20260923.md`. The checks use SQLite and scripted capabilities; real PostgreSQL saga/process/object-store/UI acceptance remains open.
+
 ### Research service-backed recovery acceptance
 
 The isolated PG17/S3/Worker process gate is specified in [issue27 real-service acceptance](../../specs/v5/post-v5-optimization/issue27-real-service-acceptance-20260923.md). It is separate from the historical differential oracle and does not substitute for browser acceptance.
+
+### Research report edition service gate
+
+The stacked feature gate exercises real PostgreSQL first-save/CAS races on two connections, default policy publication and revoked-editor no-write behavior. Scope and API-versus-UI boundaries are recorded in [issue23 real-service acceptance](../../specs/v5/post-v5-optimization/issue23-real-service-acceptance-20260924.md).
 
 ### Publication storage deadline admission
 

@@ -12,6 +12,8 @@ def verify_negative_controls(payload):
     compare = importlib.import_module("a2a_r2_delta").compare
     base = payload["rawBaselineReport"]
     source = payload["rawCandidateReport"]
+    if "research_adaptive_turns" in source["researchTableColumns"]:
+        source = importlib.import_module("a2a_feature_history_oracle").project_historical_f1(source)
     require_original = deepcopy(source)
     assert compare(base, source)["accepted"]
     assert source == require_original, "oracle must not rewrite raw snapshots"
@@ -105,5 +107,5 @@ def verify_negative_controls(payload):
         assert not result["accepted"], (name, result)
         assert result["unknownDifferences"] or result["r2ValidationErrors"], name
     from a2a_retry_negative_controls import verify_retry_negative_controls
-    verify_retry_negative_controls(payload)
+    verify_retry_negative_controls({**payload, "rawCandidateReport": source})
     return list(controls)

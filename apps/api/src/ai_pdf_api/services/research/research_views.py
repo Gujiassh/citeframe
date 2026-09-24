@@ -290,6 +290,7 @@ def _decision_dto(decision: HumanDecision) -> dict[str, object]:
         "requestedAt": iso(decision.requested_at),
         "expiresAt": iso(decision.expires_at),
         "decidedByUserId": decision.decided_by_user_id,
+        "decisionOrigin": decision.decision_origin,
         "action": decision.action,
         "comment": decision.comment_text,
         "decidedAt": iso(decision.decided_at),

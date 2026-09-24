@@ -7,7 +7,7 @@ export const RESEARCH_EVENT_NAMES = [
 
 export type ResearchEventName = (typeof RESEARCH_EVENT_NAMES)[number];
 export type ResearchEvent = {
-  schemaVersion: 1;
+  schemaVersion: 1 | 2;
   eventId: string;
   runId: string;
   seq: number;
@@ -60,10 +60,19 @@ function hasExactFields(value: Record<string, unknown>, expected: readonly strin
   return actual.length === canonical.length && actual.every((field, index) => field === canonical[index]);
 }
 
-function isEventDataValid(type: ResearchEventName, data: Record<string, unknown>): boolean {
-  const fields = EVENT_DATA_FIELDS[type];
+function isEventDataValid(type: ResearchEventName, data: Record<string, unknown>, version: 1 | 2): boolean {
+  const decisionV2 = type === "decision_submitted" && version === 2;
+  const fields = decisionV2 ? [...EVENT_DATA_FIELDS[type], "decisionOrigin", "policyId"] : EVENT_DATA_FIELDS[type];
+  if (decisionV2) {
+    const human = data.decisionOrigin === "human" && typeof data.actorUserId === "string" && !!data.actorUserId && data.policyId === null;
+    const policy = data.decisionOrigin === "policy" && data.actorUserId === null && data.policyId === "research-autonomy-v1"
+      && ((data.decisionType === "plan_approval" && data.action === "approve")
+        || (data.decisionType === "conflict_resolution" && data.action === "keep_as_unresolved"));
+    if (!human && !policy) return false;
+  }
   if (!hasExactFields(data, fields)) return false;
   for (const [field, value] of Object.entries(data)) {
+    if (decisionV2 && ["actorUserId", "policyId", "decisionOrigin"].includes(field)) continue;
     if (NON_NEGATIVE_INTEGER_FIELDS.has(field) && (!Number.isInteger(value) || (value as number) < 0)) return false;
     if (field === "retryable" && typeof value !== "boolean") return false;
     if (field === "artifactIds" && (
@@ -133,7 +142,7 @@ function parseBlock(block: string): ResearchEvent | null {
   const event = payload as Record<string, unknown>;
   if (
     !hasExactFields(event, ENVELOPE_FIELDS)
-    || event.schemaVersion !== 1
+    || !(event.schemaVersion === 1 || (event.schemaVersion === 2 && event.type === "decision_submitted"))
     || typeof event.eventId !== "string"
     || !event.eventId
     || typeof event.runId !== "string"
@@ -150,7 +159,7 @@ function parseBlock(block: string): ResearchEvent | null {
   ) {
     throw new ResearchStreamContractError("Research event envelope is invalid.");
   }
-  if (!isEventDataValid(name as ResearchEventName, event.data as Record<string, unknown>)) {
+  if (!isEventDataValid(name as ResearchEventName, event.data as Record<string, unknown>, event.schemaVersion as 1 | 2)) {
     throw new ResearchStreamContractError("Research event data is invalid.");
   }
   if (id !== String(event.seq)) throw new ResearchStreamContractError("Research event id does not match seq.");
