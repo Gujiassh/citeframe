@@ -8,6 +8,8 @@ x-python-environment: &python-environment
   AI_PDF_MINIO_BUCKET: ${MINIO_BUCKET:-ai-pdf-workspace}
   AI_PDF_MINIO_SECURE: "false"
   AI_PDF_API_INTERNAL_TOKEN: ${AI_PDF_API_INTERNAL_TOKEN}
+  AI_PDF_MODEL_CONFIG_ENCRYPTION_KEY: ${AI_PDF_MODEL_CONFIG_ENCRYPTION_KEY:-}
+  AI_PDF_MODEL_PRIVATE_ORIGINS: ${AI_PDF_MODEL_PRIVATE_ORIGINS:-{}}
   AI_PDF_EMBEDDING_PROVIDER: ${AI_PDF_EMBEDDING_PROVIDER:-ollama}
   AI_PDF_EMBEDDING_MODEL: ${AI_PDF_EMBEDDING_MODEL:-qwen3-embedding:0.6b}
   AI_PDF_EMBEDDING_VERSION: ${AI_PDF_EMBEDDING_VERSION:-embedding-v1}
@@ -118,7 +120,7 @@ services:
           "CMD",
           "python",
           "-c",
-          "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health/ready', timeout=5)",
+          "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health/application-ready', timeout=5)",
         ]
       interval: 10s
       timeout: 5s

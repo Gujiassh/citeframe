@@ -30,6 +30,7 @@ from ai_pdf_api.routers.jobs import router as jobs_router
 from ai_pdf_api.routers.notes import router as notes_router
 from ai_pdf_api.routers.research import router as research_router
 from ai_pdf_api.routers.workspaces import router as workspaces_router
+from ai_pdf_api.routers.model_settings import router as model_settings_router
 from ai_pdf_api.services.storage import build_storage_client
 
 configure_application_logging()
@@ -92,6 +93,7 @@ class HttpMetricsMiddleware:
 app = FastAPI(title="Citeframe API")
 app.include_router(auth_router)
 app.include_router(workspaces_router)
+app.include_router(model_settings_router)
 app.include_router(assets_router)
 app.include_router(chat_router)
 app.include_router(jobs_router)
@@ -99,6 +101,13 @@ app.include_router(notes_router)
 app.include_router(research_router)
 app.include_router(evaluation_router)
 
+
+from fastapi.responses import JSONResponse
+from ai_pdf_api.services.model_config_types import ModelConfigurationError
+
+@app.exception_handler(ModelConfigurationError)
+async def model_configuration_error(_request, error):
+    return JSONResponse(status_code=error.status, content={"detail": {"code": error.code, "message": error.message}})
 
 app.add_middleware(HttpMetricsMiddleware)
 
@@ -218,6 +227,27 @@ def health() -> dict[str, str]:
 @app.get("/health/live")
 def liveness() -> dict[str, str]:
     return {"status": "ok", "service": "api"}
+
+
+def _check_model_configuration_schema() -> str:
+    try:
+        from sqlalchemy import select
+        from ai_pdf_api.models import WorkspaceModelConfig
+        with SessionLocal() as db:
+            db.execute(select(WorkspaceModelConfig.workspace_id).limit(1))
+        return "ok"
+    except Exception:
+        return "failed"
+
+
+@app.get("/health/application-ready")
+def application_readiness(response: Response) -> dict[str, object]:
+    checks = {"database": _check_database(), "modalityCatalog": _check_modality_catalog(),
+              "objectStorage": _check_storage(), "modelConfigurationSchema": _check_model_configuration_schema()}
+    ready = all(value == "ok" for value in checks.values())
+    if not ready:
+        response.status_code = status.HTTP_503_SERVICE_UNAVAILABLE
+    return {"status": "ok" if ready else "not_ready", "service": "api", "checks": checks}
 
 
 @app.get("/health/ready")

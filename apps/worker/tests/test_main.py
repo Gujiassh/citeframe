@@ -38,18 +38,26 @@ def test_process_one_job_claims_and_handles_one_job(
 
     monkeypatch.setattr(worker, "SessionLocal", lambda: SessionContext(db))
     monkeypatch.setattr(worker, "claim_next_ingestion_job", lambda received_db: "job-1")
-    monkeypatch.setattr(worker, "get_embedding_provider", lambda: provider)
+    connection = object()
+    def resolve(received_db, workspace_id, capability):
+        assert received_db is db and workspace_id == "workspace-1" and capability == "embedding"
+        return connection
+    def factory(received_connection):
+        assert received_connection is connection
+        return provider
+    monkeypatch.setattr(worker, "resolve_connection", resolve)
+    monkeypatch.setattr(worker, "get_embedding_provider", factory)
 
     def fake_process(
         received_db: object,
         job_id: str,
         *,
         ingestion_adapters: object,
-        embedding_provider: object,
+        embedding_provider_factory,
     ) -> None:
         assert worker.WORKER_ACTIVE_JOBS._value.get() == 1
         assert ingestion_adapters is worker.INGESTION_ADAPTERS
-        calls.append((received_db, job_id, embedding_provider))
+        calls.append((received_db, job_id, embedding_provider_factory(received_db, "workspace-1")))
 
     monkeypatch.setattr(worker, "process_ingestion_job", fake_process)
 
@@ -325,7 +333,7 @@ def test_process_one_job_propagates_handler_exception(monkeypatch: pytest.Monkey
 
     monkeypatch.setattr(worker, "SessionLocal", lambda: SessionContext(db))
     monkeypatch.setattr(worker, "claim_next_ingestion_job", lambda _db: "job-1")
-    monkeypatch.setattr(worker, "get_embedding_provider", lambda: object())
+    monkeypatch.setattr(worker, "get_embedding_provider", lambda connection: object())
 
     def fail_process(*_args: object, **_kwargs: object) -> None:
         raise RuntimeError("handler failure")

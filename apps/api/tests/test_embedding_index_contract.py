@@ -891,3 +891,35 @@ def test_message_requires_explicit_reindex() -> None:
         raise_embedding_index_mismatch()
     assert error.value.code == EMBEDDING_INDEX_MISMATCH_CODE
     assert "explicit reindex" in error.value.message.lower()
+
+
+@pytest.mark.parametrize("with_legacy_job", [True, False])
+def test_workspace_override_requires_provenance_even_with_same_vector_fields(with_legacy_job):
+    db = _session()
+    try:
+        asset, _ = _asset_graph(db)
+        if with_legacy_job:
+            _attach_succeeded_index_job(db, asset, config_snapshot={"source": "reindex"}, job_type="ingest")
+        db.commit()
+        provider = _Provider()
+        provider.allow_legacy_index = False
+        with pytest.raises(ModelProviderError) as error:
+            retrieve_content(db, asset.workspace_id, [1, 0, 0], embedding_provider=provider)
+        assert error.value.code == EMBEDDING_INDEX_MISMATCH_CODE
+    finally:
+        db.close()
+
+
+def test_failure_recovery_preserves_complete_saved_index_after_settings_drift(monkeypatch):
+    from ai_pdf_api.services.ingestion import _available_asset_status
+    with _session() as db:
+        asset, unit = _asset_graph(db)
+        before = db.scalars(select(ContentUnitEmbedding)).all()
+        monkeypatch.setattr(settings, "embedding_provider", "openai")
+        monkeypatch.setattr(settings, "embedding_model", "changed-model")
+        assert _available_asset_status(db, asset.id) == "ready"
+        assert db.scalars(select(ContentUnitEmbedding)).all() == before
+        for embedding in before:
+            embedding.is_current = False
+        db.flush()
+        assert _available_asset_status(db, asset.id) == "chunked"

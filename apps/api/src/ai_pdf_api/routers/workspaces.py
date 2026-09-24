@@ -5,6 +5,7 @@ from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from ai_pdf_api.core.settings import settings
+from ai_pdf_api.services.workspace_models import configuration_row, server_connection
 from ai_pdf_api.db.session import get_db
 from ai_pdf_api.models import ChatThread, Asset, Note, User, Workspace, WorkspaceMembership
 from ai_pdf_api.routers.deps import base_workspace_query_for_user, get_accessible_workspace, require_user_id
@@ -70,7 +71,19 @@ def to_workspace_summary(
     asset_count: int = 0,
     thread_count: int = 0,
     note_count: int = 0,
+    db: Session | None = None,
 ) -> WorkspaceSummary:
+    generation = server_connection("generation")
+    embedding = server_connection("embedding")
+    if db is not None:
+        from dataclasses import replace
+        for capability in ("generation", "embedding"):
+            row = configuration_row(db, workspace.id, capability)
+            if row and row.mode == "override":
+                if capability == "generation":
+                    generation = replace(generation, provider="openai", model=row.model)
+                else:
+                    embedding = replace(embedding, provider="openai", model=row.model)
     return WorkspaceSummary(
         id=workspace.id,
         name=workspace.name,
@@ -78,12 +91,12 @@ def to_workspace_summary(
         systemPrompt=workspace.system_prompt,
         retrievalTopK=workspace.retrieval_top_k,
         chunkSize=workspace.chunk_size,
-        embeddingProvider=settings.embedding_provider,
-        embeddingModel=settings.embedding_model,
+        embeddingProvider=embedding.provider,
+        embeddingModel=embedding.model,
         embeddingDimensions=settings.embedding_dimensions,
         embeddingVersion=settings.embedding_version,
-        generationProvider=settings.generation_provider,
-        generationModel=settings.generation_model,
+        generationProvider=generation.provider,
+        generationModel=generation.model,
         role=role,
         assetCount=asset_count,
         noteCount=note_count,
@@ -113,6 +126,7 @@ def list_workspaces(
             counts.get(workspace.id, 0),
             thread_counts.get(workspace.id, 0),
             note_counts.get(workspace.id, 0),
+            db=db,
         )
         for workspace, role in rows
     ]
@@ -145,7 +159,7 @@ def create_workspace(
     db.add(membership)
     db.commit()
     db.refresh(workspace)
-    return CreateWorkspaceResponse(workspace=to_workspace_summary(workspace, membership.role, 0, 0, 0))
+    return CreateWorkspaceResponse(workspace=to_workspace_summary(workspace, membership.role, 0, 0, 0, db=db))
 
 
 @router.get("/{workspace_id}", response_model=WorkspaceDetailResponse)
@@ -160,7 +174,7 @@ def get_workspace(
     note_count = count_notes_for_workspaces(db, [workspace.id]).get(workspace.id, 0)
     thread_count = count_threads_for_workspaces(db, [workspace.id]).get(workspace.id, 0)
     return WorkspaceDetailResponse(
-        workspace=to_workspace_summary(workspace, role, asset_count, thread_count, note_count)
+        workspace=to_workspace_summary(workspace, role, asset_count, thread_count, note_count, db=db)
     )
 
 
@@ -194,6 +208,7 @@ def update_workspace_settings(
             count_assets_for_workspaces(db, [workspace.id]).get(workspace.id, 0),
             count_threads_for_workspaces(db, [workspace.id]).get(workspace.id, 0),
             count_notes_for_workspaces(db, [workspace.id]).get(workspace.id, 0),
+            db=db,
         )
     )
 

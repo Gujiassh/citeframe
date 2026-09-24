@@ -34,6 +34,7 @@ class EmbeddingIndexContract:
     dimensions: int
     version: str
     config_fingerprint: str
+    allow_legacy: bool = True
 
     def matches_vector(
         self,
@@ -92,6 +93,7 @@ def resolve_embedding_index_contract(
             dimensions=embedding_provider.dimensions,
             version=embedding_provider.version,
             config_fingerprint=fingerprint,
+            allow_legacy=getattr(embedding_provider, "allow_legacy_index", True),
         )
 
     fingerprint = _fingerprint_from_capability_registry()
@@ -208,14 +210,16 @@ def _assert_matching_assets_job_fingerprints(
             asset_id=asset_id,
         )
         if job is None:
-            # No successful index job remains legacy absence of a frozen snapshot.
+            if not contract.allow_legacy:
+                raise_embedding_index_mismatch()
             continue
         # Queried jobs must still belong to the ready asset scope before any snapshot is trusted.
         if job.asset_id != asset_id or job.workspace_id != workspace_id:
             raise_embedding_index_mismatch()
         snapshot = job.config_snapshot or {}
         if "embeddingProfileFingerprint" not in snapshot:
-            # Legacy successful jobs remain provider/model/dimensions/version-only.
+            if not contract.allow_legacy:
+                raise_embedding_index_mismatch()
             continue
         expected = snapshot.get("embeddingProfileFingerprint")
         if expected != contract.config_fingerprint:
@@ -282,3 +286,10 @@ def assert_current_embeddings_match_contract(
     )
     if mismatched_exists is not None:
         raise_embedding_index_mismatch()
+
+
+def connection_index_contract(connection) -> EmbeddingIndexContract:
+    from ai_pdf_api.services.capabilities import connection_profile
+    return EmbeddingIndexContract(connection.provider, connection.model, connection.dimensions,
+                                  connection.version, connection_profile(connection).config_fingerprint,
+                                  allow_legacy=connection.source == "server")

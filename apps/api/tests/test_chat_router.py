@@ -317,11 +317,11 @@ def test_chat_stream_continues_from_failed_assistant_parent_over_http(
     generation = RouterGenerationProvider()
     monkeypatch.setattr(
         "ai_pdf_api.services.chat.get_embedding_provider",
-        lambda: RouterEmbeddingProvider(),
+        lambda connection: RouterEmbeddingProvider(),
     )
     monkeypatch.setattr(
         "ai_pdf_api.services.chat.get_generation_provider",
-        lambda: generation,
+        lambda connection: generation,
     )
 
     try:

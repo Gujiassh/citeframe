@@ -126,8 +126,10 @@ def prepare_chat(
             created_at=now,
             **({"image_bytes_loader": image_bytes_loader} if image_bytes_loader else {}),
         )
-        embedding = embedding_provider or get_embedding_provider()
-        generation = generation_provider or get_generation_provider()
+        from ai_pdf_api.services.workspace_models import resolve_workspace_models
+        models = resolve_workspace_models(db, workspace_id)
+        embedding = embedding_provider or get_embedding_provider(models.embedding)
+        generation = generation_provider or get_generation_provider(models.generation)
         query_embedding = embedding.embed_query(question_text)
         retrieved = retrieve_query_content(
             db,

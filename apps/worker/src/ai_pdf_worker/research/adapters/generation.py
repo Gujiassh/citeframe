@@ -53,16 +53,26 @@ class LedgeredGeneration(_ApiPort):
     ) -> None:
         super().__init__(sessions, service)
         self._execution = execution
-        self._provider = provider or get_generation_provider()
+        self._resolved_models = None
+        self._provider = provider
+        self._provider_sessions = sessions
         self._ledger = ledger
+
+    def _ensure_provider(self):
+        if self._provider is None:
+            from ai_pdf_api.services.workspace_models import resolve_workspace_models
+            with self._provider_sessions() as db:
+                self._resolved_models = resolve_workspace_models(db, self._execution.workspace_id)
+            self._provider = get_generation_provider(self._resolved_models.generation)
+        return self._provider
 
     @property
     def provider(self) -> str:
-        return self._provider.provider
+        return self._ensure_provider().provider
 
     @property
     def model(self) -> str:
-        return self._provider.model
+        return self._ensure_provider().model
 
     @property
     def execution(self) -> ApprovedResearchExecution:
@@ -164,6 +174,7 @@ class LedgeredGeneration(_ApiPort):
     def _generate(
         self, lease: StepLease, *, node_key: str, messages: list[GenerationMessage]
     ) -> str:
+        self._ensure_provider()
         # Enforce frozen production/legacy registry for this execution snapshot.
         try:
             registry = resolve_registry(
@@ -229,6 +240,13 @@ class LedgeredGeneration(_ApiPort):
         )
         reserved_input = packed.request_tokens
         reserved_output = max(1, packed.max_output_tokens)
+        if self._resolved_models is not None:
+            from ai_pdf_api.services.capabilities import connection_profile, matches_frozen_execution_fingerprint
+            if self._provider.config_fingerprint != connection_profile(self._resolved_models.generation).config_fingerprint:
+                raise ResearchPortError("research_provider_config_drift")
+            if not matches_frozen_execution_fingerprint(self._execution.provider_config_fingerprint,
+                    retrieval_top_k=self._execution.retrieval_top_k, models=self._resolved_models):
+                raise ResearchPortError("research_provider_config_drift")
         reservation = self._call(
             "reserve_provider_call",
             write=True,

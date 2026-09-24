@@ -1,0 +1,8 @@
+{
+  "tables": {
+    "workspace_model_configs": {
+      "create_table": "\nCREATE TABLE workspace_model_configs (\n\tworkspace_id VARCHAR(36) NOT NULL, \n\tcapability VARCHAR(16) NOT NULL, \n\tmode VARCHAR(16) NOT NULL, \n\trevision INTEGER NOT NULL, \n\tprotocol VARCHAR(40), \n\tbase_url VARCHAR(2048), \n\tmodel VARCHAR(128), \n\tencrypted_api_key TEXT, \n\tupdated_by_user_id VARCHAR(36) NOT NULL, \n\tupdated_at TIMESTAMP WITH TIME ZONE NOT NULL, \n\tPRIMARY KEY (workspace_id, capability), \n\tCONSTRAINT ck_model_config_capability CHECK (capability IN ('generation', 'embedding')), \n\tCONSTRAINT ck_model_config_mode CHECK (mode IN ('inherit', 'override')), \n\tCONSTRAINT ck_model_config_revision CHECK (revision >= 1), \n\tFOREIGN KEY(workspace_id) REFERENCES workspaces (id), \n\tFOREIGN KEY(updated_by_user_id) REFERENCES users (id)\n)\n\n",
+      "indexes": []
+    }
+  }
+}

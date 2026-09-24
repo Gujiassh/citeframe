@@ -1,3 +1,4 @@
+from citeframe_persistence.models.workspace_model_config import WorkspaceModelConfig
 from citeframe_persistence.models.asset import Asset
 from citeframe_persistence.models.asset_representation import AssetRepresentation
 from citeframe_persistence.models.asset_tag import AssetTag
@@ -97,6 +98,7 @@ from citeframe_persistence.models.workspace_membership import WorkspaceMembershi
 from .research_adaptive_turn import ResearchAdaptiveTurn
 
 __all__ = [
+    "WorkspaceModelConfig",
     "ResearchConflictTurn",
     "ResearchAdaptiveTurn",
     "Asset",

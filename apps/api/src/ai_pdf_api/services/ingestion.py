@@ -144,10 +144,20 @@ def process_ingestion_job(
     *,
     ingestion_adapters: IngestionAdapterRegistry | None = None,
     embedding_provider: EmbeddingProvider | None = None,
+    embedding_provider_factory=None,
 ) -> None:
     job = db.get(IngestionJob, job_id)
     if job is None or job.status != "running":
         return
+    if embedding_provider_factory is not None and job.job_type != "delete_cleanup":
+        try:
+            embedding_provider = embedding_provider_factory(db, job.workspace_id)
+        except Exception as error:
+            from ai_pdf_api.services.model_config_types import ModelConfigurationError
+            if not isinstance(error, (ModelConfigurationError, ModelProviderError)):
+                raise
+            _mark_job_failed(db, job, db.get(Asset, job.asset_id), error.code, error.message)
+            return
     if job.job_type == "embed_chunks":
         process_embedding_job(db, job_id, embedding_provider)
         return
@@ -518,6 +528,8 @@ def _validate_job_embedding_config(job: IngestionJob, embedding_provider: Embedd
     from ai_pdf_api.services.capabilities import require_matching_snapshot_fingerprint
 
     snapshot = job.config_snapshot or {}
+    if not getattr(embedding_provider, "allow_legacy_index", True) and "embeddingProfileFingerprint" not in snapshot:
+        raise ModelProviderError("embedding_configuration_mismatch", "Workspace embedding overrides require a profile-bound job. Retry under current settings.")
     expected = {
         "embeddingProvider": embedding_provider.provider,
         "embeddingModel": embedding_provider.model,
@@ -567,25 +579,23 @@ def _available_asset_status(db: Session, asset_id: str) -> str:
     ).all()
     if not unit_ids:
         return "chunked"
-    embedded_unit_ids = set(
-        db.scalars(
-            select(ContentUnitEmbedding.content_unit_id).where(
-                ContentUnitEmbedding.content_unit_id.in_(unit_ids),
-                ContentUnitEmbedding.asset_id == asset.id,
-                ContentUnitEmbedding.workspace_id == asset.workspace_id,
-                ContentUnitEmbedding.processing_generation
-                == asset.current_processing_generation,
-                ContentUnitEmbedding.index_version == asset.current_index_version,
-                ContentUnitEmbedding.is_current.is_(True),
-                ContentUnitEmbedding.embedding_space == "text",
-                ContentUnitEmbedding.provider == settings.embedding_provider,
-                ContentUnitEmbedding.model == settings.embedding_model,
-                ContentUnitEmbedding.version == settings.embedding_version,
-                ContentUnitEmbedding.dimensions == settings.embedding_dimensions,
-            )
-        ).all()
-    )
-    return "ready" if embedded_unit_ids == set(unit_ids) else "chunked"
+    # Saved index completeness survives a settings edit. Retrieval checks the selected
+    # profile separately; failure recovery must not demote a preserved complete index.
+    rows = db.execute(select(ContentUnitEmbedding.content_unit_id, ContentUnitEmbedding.provider,
+            ContentUnitEmbedding.model, ContentUnitEmbedding.version, ContentUnitEmbedding.dimensions).where(
+            ContentUnitEmbedding.content_unit_id.in_(unit_ids),
+            ContentUnitEmbedding.asset_id == asset.id,
+            ContentUnitEmbedding.workspace_id == asset.workspace_id,
+            ContentUnitEmbedding.processing_generation == asset.current_processing_generation,
+            ContentUnitEmbedding.index_version == asset.current_index_version,
+            ContentUnitEmbedding.is_current.is_(True),
+            ContentUnitEmbedding.embedding_space == "text",
+    )).all()
+    groups: dict[tuple, set[str]] = {}
+    for unit_id, provider, model, version, dimensions in rows:
+        groups.setdefault((provider, model, version, dimensions), set()).add(unit_id)
+    return "ready" if any(ids == set(unit_ids) for ids in groups.values()) else "chunked"
+
 
 
 def _upload_generated_objects(

@@ -116,18 +116,20 @@ def _approve_plan(
         ).all()
     )
     workspace = db.get(Workspace, run.workspace_id)
+    from ai_pdf_api.services.workspace_models import resolve_workspace_models
+    models = resolve_workspace_models(db, run.workspace_id)
     expected_policy = (
         workflow.id,
         planner_prompt.id,
-        settings.generation_provider,
-        settings.generation_model,
+        models.generation.provider,
+        models.generation.model,
         # Fingerprint compared via dual-read below; keep placeholder slot shape stable.
         revision.proposed_provider_config_fingerprint,
         PRICING_VERSION,
         DATA_BOUNDARY_POLICY,
-        settings.embedding_provider,
-        settings.embedding_model,
-        settings.embedding_version,
+        models.embedding.provider,
+        models.embedding.model,
+        models.embedding.version,
         settings.retrieval_strategy,
         workspace.retrieval_top_k if workspace else None,
         2,
@@ -198,6 +200,7 @@ def _approve_plan(
         or not _matches_frozen_profile_fingerprint(
             revision.proposed_provider_config_fingerprint,
             retrieval_top_k=revision.proposed_retrieval_top_k,
+            models=models,
         )
         or any(prompt.availability != "active" for _binding, prompt in bindings)
         or canonical_sha256(

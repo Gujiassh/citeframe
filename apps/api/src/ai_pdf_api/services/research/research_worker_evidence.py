@@ -191,6 +191,12 @@ def search_frozen_evidence(
     now: datetime | None = None,
 ) -> list[FrozenEvidence]:
     called_at = now or datetime.now(UTC)
+    if embedding_provider is None:
+        from ai_pdf_api.services.workspace_models import lock_workspace_models
+        from ai_pdf_api.models import ResearchRun
+        workspace_id = db.scalar(select(ResearchRun.workspace_id).where(ResearchRun.id == run_id))
+        if workspace_id is not None:
+            lock_workspace_models(db, workspace_id)
     run, snapshot, step, _attempt, frozen_assets = _frozen_execution_context(
         db,
         run_id=run_id,
@@ -240,18 +246,21 @@ def search_frozen_evidence(
         )
         return [_frozen_evidence_value(db, handle, branch_key=branch_key) for handle in handles]
     if embedding_provider is None:
+        from ai_pdf_api.services.workspace_models import resolve_workspace_models
+        models = resolve_workspace_models(db, snapshot.workspace_id)
         from ai_pdf_api.services.capabilities import matches_frozen_execution_fingerprint
 
         if not matches_frozen_execution_fingerprint(
             snapshot.provider_config_fingerprint,
             retrieval_top_k=snapshot.retrieval_top_k,
+            models=models,
         ):
             raise ResearchError(
                 "research_provider_config_drift",
                 "Actual provider capability profile does not match the frozen Research fingerprint.",
                 409,
             )
-        provider = get_embedding_provider()
+        provider = get_embedding_provider(models.embedding)
     else:
         # Explicit test-only/injected provider path: skip live capability fingerprint dual-read.
         provider = embedding_provider

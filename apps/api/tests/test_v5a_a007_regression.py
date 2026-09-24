@@ -324,11 +324,11 @@ def test_chat_stream_http_keeps_embedding_index_mismatch_detail_contract(
 
     monkeypatch.setattr(
         "ai_pdf_api.services.chat.get_embedding_provider",
-        lambda: _ChatEmbeddingProvider(),
+        lambda connection: _ChatEmbeddingProvider(),
     )
     monkeypatch.setattr(
         "ai_pdf_api.services.chat.get_generation_provider",
-        lambda: _ChatGenerationProvider(),
+        lambda connection: _ChatGenerationProvider(),
     )
 
     try:

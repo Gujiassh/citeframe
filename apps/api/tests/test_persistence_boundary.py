@@ -131,7 +131,7 @@ def test_persistence_models_share_one_metadata_object_and_match_snapshot() -> No
     assert model_metadata == {metadata}
 
     actual = _compiled_postgresql_metadata_snapshot(metadata)
-    assert len(actual["tables"]) == 84
+    assert len(actual["tables"]) == 85
     assert sum(len(table["indexes"]) for table in actual["tables"].values()) == 97
     delta_bytes = (API_ROOT / "tests/fixtures/research-autonomy-metadata-delta-20260923.json").read_bytes()
     delta_bytes = delta_bytes.replace(b"\r\n", b"\n")
@@ -150,6 +150,9 @@ def test_persistence_models_share_one_metadata_object_and_match_snapshot() -> No
     conflict = json.loads((API_ROOT / "tests/fixtures/research-conflict-metadata-delta-20260923.json").read_text())["tables"]
     assert set(conflict) == {"research_conflict_turns"}
     expected["tables"].update(conflict)
+    model_settings = json.loads((API_ROOT / "tests/fixtures/workspace-model-config-metadata-delta-20260924.json").read_text())["tables"]
+    assert set(model_settings) == {"workspace_model_configs"}
+    expected["tables"].update(model_settings)
     assert actual == expected
 
 
@@ -180,7 +183,7 @@ import citeframe_persistence.models.asset
 
 package_file = Path(citeframe_persistence.__file__).resolve()
 assert package_file.is_relative_to(persistence_src), package_file
-assert len(citeframe_persistence.Base.metadata.tables) == 84
+assert len(citeframe_persistence.Base.metadata.tables) == 85
 assert not any(name == "ai_pdf_api" or name.startswith("ai_pdf_api.") for name in sys.modules)
 assert not any(name == "ai_pdf_worker" or name.startswith("ai_pdf_worker.") for name in sys.modules)
 """

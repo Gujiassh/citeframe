@@ -520,7 +520,7 @@ Compose 可部署 `Redis` 作为**预留基础设施**。V1/当前生产**未**�
 
 ### 10.1 生成模型
 
-当前生产可选：`OpenAI Responses API` 与 `DeepSeek Anthropic Messages` adapter，均通过统一 `GenerationProvider` 暴露；默认仍常配置为 OpenAI Responses。capability registry / provider profile / fingerprint 合同已完成；这不等于已提供用户侧多 profile 选择器或无限 provider 扩展。
+工作区所有者可在网页设置独立保存生成与 embedding 的 URL、模型名和 write-only API Key。生成 override 支持 OpenAI Responses 与 Chat Completions；服务器继承配置继续支持 OpenAI Responses / DeepSeek Anthropic Messages。每个能力仅有一个有效配置，完整 override 不与服务器 Key 混用。详见 [工作区模型配置](workspace-model-configuration.md)。
 
 职责：
 
