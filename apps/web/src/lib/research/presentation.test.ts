@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import type { ResearchRunDetail } from "./types";
 
-import { canManageResearchRun, canSubmitWorkspaceQuestion, getFrozenResearchProfile, latestResearchRun, sortResearchRunsLatest } from "./presentation";
+import { canManageResearchRun, canSubmitWorkspaceQuestion, getFrozenResearchProfile, getResearchFailureMessage, latestResearchRun, sortResearchRunsLatest } from "./presentation";
 
 test("Quick questions still require a chat thread", () => {
   assert.equal(canSubmitWorkspaceQuestion({
@@ -133,4 +133,22 @@ test("Approved or legacy runs without execution snapshots stay unavailable", () 
     researchExecution: null,
     plan: { status: "approved", inputSnapshot: { proposedResearchExecution: { provider: providerSnapshot("revision-model") } } },
   } as unknown as ResearchRunDetail), null);
+});
+
+test("Research configuration drift explains new-run recovery while retaining diagnostic code", () => {
+  const failure = { code: "research_provider_config_drift", message: "Research step failed: research_provider_config_drift.", retryable: false, failedAt: "2026-09-24T00:00:00Z" };
+  const before = { ...failure };
+  assert.equal(getResearchFailureMessage(failure, "zh"), "模型配置已变更，请重新发起研究。");
+  assert.equal(getResearchFailureMessage(failure, "en"), "Model settings changed. Start a new Research run.");
+  assert.deepEqual(failure, before);
+});
+
+test("Research known configuration failures share recovery hints and unknown failures keep server message", () => {
+  const failure = { code: "model_secret_unavailable", message: "Research step failed: model_secret_unavailable.", retryable: false, failedAt: "now" };
+  assert.match(getResearchFailureMessage(failure, "en"), /Re-enter the API key/);
+  assert.match(getResearchFailureMessage({ ...failure, code: "model_encryption_unavailable" }, "zh"), /管理员/);
+  assert.match(getResearchFailureMessage({ ...failure, code: "model_endpoint_denied" }, "en"), /public HTTPS/);
+  assert.match(getResearchFailureMessage({ ...failure, code: "model_endpoint_invalid" }, "zh"), /API 地址/);
+  const unrelated = { ...failure, code: "different_error", message: "Unrelated server failure." };
+  assert.equal(getResearchFailureMessage(unrelated, "zh"), unrelated.message);
 });

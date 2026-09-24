@@ -1,4 +1,6 @@
+import { modelSettingsRecovery } from "../model-settings/recovery";
 import type {
+  ResearchFailure,
   ResearchProviderSnapshot,
   ResearchRunDetail,
   ResearchRunStatus,
@@ -109,3 +111,10 @@ export const STEP_KIND_KEYS: Record<string, string> = {
   synthesizer: "research.stageSynthesis",
   artifact_publisher: "research.stagePublish",
 };
+
+export function getResearchFailureMessage(failure: ResearchFailure, locale: "zh" | "en"): string {
+  if (failure.code === "research_provider_config_drift") {
+    return locale === "en" ? "Model settings changed. Start a new Research run." : "模型配置已变更，请重新发起研究。";
+  }
+  return modelSettingsRecovery(failure.code, locale) ?? failure.message;
+}

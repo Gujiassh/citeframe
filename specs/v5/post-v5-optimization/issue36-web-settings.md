@@ -59,3 +59,9 @@ The Web recovery keeps prestream rejection separately from persisted thread mess
 Focused regression covers the real `startChatStream` HTTP rejection parser, retained draft/error, accepted retry clearing, scope separation and rejected-edit semantics. This scoped fix still requires the controller's repeat of the embedding-change → rejected question → settings/reindex → retry browser flow.
 
 Rework checks: `pnpm --filter @citeframe/web test` 179 passed; focused `src/lib/chat/submission.test.ts` 4 passed; TypeScript, ESLint, production build and scoped diff checks passed.
+
+## Research configuration failure presentation
+
+Controller observed `Research step failed: research_provider_config_drift.` after a queued run's configuration changed. The presentation now maps that typed code to “模型配置已变更，请重新发起研究。” / “Model settings changed. Start a new Research run.” Known secret/encryption/endpoint failures reuse safe configuration recovery hints. Unknown failure messages are unchanged. Failure code, retryability, persisted DTO and Research state remain untouched; the raw code remains available on the displayed failure's diagnostic attributes.
+
+Verification: `src/lib/research/presentation.test.ts` 12 passed (including drift localization, shared hints, unknown fallback and unchanged failure data); TypeScript and ESLint passed. This change affects presentation only.

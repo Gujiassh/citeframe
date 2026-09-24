@@ -16,7 +16,7 @@ import { useState } from "react";
 import { getLocatorSummary } from "@/lib/evidence/types";
 import { useTranslation, type TranslationKey } from "@/lib/i18n-context";
 import { getResearchArtifactContentUrl } from "@/lib/research/client";
-import { getFrozenResearchProfile, RUN_STATUS_KEYS, STEP_KIND_KEYS, STEP_STATUS_KEYS } from "@/lib/research/presentation";
+import { getFrozenResearchProfile, getResearchFailureMessage, RUN_STATUS_KEYS, STEP_KIND_KEYS, STEP_STATUS_KEYS } from "@/lib/research/presentation";
 import type { ResearchStreamState } from "@/lib/use-research";
 import { ResearchConflictInvestigation } from "./research-conflict-investigation";
 import { ResearchReportEditor } from "./research-report-editor";
@@ -108,7 +108,7 @@ export function ResearchRunPanel({
   onOpenEvidence,
   onCancel,
 }: Props) {
-  const { t } = useTranslation();
+  const { t, locale } = useTranslation();
   const [editingPlan, setEditingPlan] = useState(false);
   const [revisionQuestion, setRevisionQuestion] = useState("");
   const [revisionComment, setRevisionComment] = useState("");
@@ -360,7 +360,7 @@ export function ResearchRunPanel({
               <span className="text-zinc-500"><StepIcon status={step.status} /></span>
               <span className="min-w-0 flex-1">
                 <span className="block truncate font-medium">{t((STEP_KIND_KEYS[step.kind] ?? "research.stageUnknown") as TranslationKey)}</span>
-                {step.failure ? <span className="mt-0.5 block text-[10px] text-red-600 dark:text-red-400">{step.failure.message}</span> : null}
+                {step.failure ? <span title={step.failure.code} data-error-code={step.failure.code} className="mt-0.5 block text-[10px] text-red-600 dark:text-red-400">{getResearchFailureMessage(step.failure, locale)}</span> : null}
               </span>
               <span className="text-[10px] text-zinc-500">{t(STEP_STATUS_KEYS[step.status] as TranslationKey)}</span>
               {step.evidenceCount ? <span className="hidden text-[10px] text-emerald-600 sm:inline">{t("research.evidenceCount").replace("{count}", String(step.evidenceCount))}</span> : null}
