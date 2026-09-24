@@ -26,8 +26,8 @@ Status: implementation checks complete; independent review and controller browse
 
 ## Verification ledger
 
-- `pnpm --filter @citeframe/web exec tsx --test src/lib/assets/upload-queue.test.ts src/lib/assets/upload-task.test.ts`: 13 passing focused tests.
-- `pnpm --filter @citeframe/web test`: 153 passing tests.
+- `pnpm --filter @citeframe/web exec tsx --test src/lib/assets/upload-queue.test.ts src/lib/assets/upload-task.test.ts`: 14 passing focused tests.
+- `pnpm --filter @citeframe/web test`: 161 passing tests.
 - `pnpm --filter @citeframe/web exec tsc --noEmit`: passed.
 - `pnpm lint:web`: passed.
 - `pnpm build:web`: passed (Next.js 16.2.10 production compilation, TypeScript, static generation).
@@ -43,3 +43,19 @@ Status: implementation checks complete; independent review and controller browse
 4. During queued work in workspace A switch to B and enqueue B files. Verify A files never appear in B and requests preserve the enqueue workspace. Switch back to check A queue/assets.
 5. Log out with a pending queue and confirm no later file starts; sign back in and confirm old local queue is gone. Reload and confirm server Assets survive while local queue does not resume.
 6. Independent reviewer checks the exact PR head and runtime evidence before controller merge. No admin bypass.
+
+
+## Navigation prerequisite and response-order repair
+
+Related issue: https://github.com/Gujiassh/citeframe/issues/38
+Baseline source: `39ea097f78db72a3c5211fa210975e1e565bd685` (PR #37 initial implementation).
+
+- Controller browser evidence on this baseline: choosing workspace B in A's sidebar briefly selected B while the URL remained A; route synchronization restored A. Creating B similarly left the route at A. Both upload pickers accepted multiple files; FIFO, failure continuation, failed-row retry and same-file reselection were observed. This is partial acceptance evidence only.
+- Sidebar selection and create-and-enter now use Next client navigation. The route remains the active-workspace authority. `createWorkspace` returns the created ID to the UI; existing server payloads and persisted workspace data are unchanged. The shared root-layout WorkspaceProvider retains queue ownership across client navigation.
+- `workspaces/navigation.test.ts` covers route selection, awaiting the exact created ID, and preserving the route on creation failure. Controller browser retest is still required.
+- Deterministic baseline race: begin an empty Asset hydrate response, insert a newly uploaded Asset, then release the old response through `replaceAssetsForWorkspace`. Actual baseline result was `afterLateHydrate=[]`, `hasProcessingAsset=false`.
+- `assets/list-order.ts` guards hydrate/poll responses using workspace mutation revision and applied-request sequence. Upload, deletion/retry responses and workspace removal invalidate older list requests. This guard discards stale responses without merging list contents. Fresh server snapshots remain authoritative and remove deleted assets.
+- `assets/list-order.test.ts` exercises the delayed response with a Promise barrier, preserved processing/poll trigger, authoritative deletion, out-of-order responses, and independent workspace revisions.
+- Added an uncertain-finalize regression: lost response, a pending list snapshot, delayed 409 conflict, then explicit retry observes uploaded status. Exact bound: one session creation, one binary transfer, two finalize calls; no automatic retry loop.
+
+Rework verification: full frontend suite 161 passed; focused queue/transport suite 14 passed; TypeScript, lint, production build and diff checks pass. Browser acceptance for switching with pending uploads, logout and a successful recoverable retry remains controller-owned and pending.

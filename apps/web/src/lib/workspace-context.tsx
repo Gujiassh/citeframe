@@ -111,7 +111,7 @@ type WorkspaceContextType = {
   selectedAssetIds: string[];
   selectedTagIds: string[];
   switchWorkspace: (id: string) => void;
-  createWorkspace: (name: string, description: string | null) => Promise<void>;
+  createWorkspace: (name: string, description: string | null) => Promise<string>;
   deleteWorkspace: (id: string) => Promise<void>;
   updateWorkspaceSettings: (id: string, settings: WorkspaceSettingsInput) => Promise<void>;
   uploadQueue: UploadQueueItem[];

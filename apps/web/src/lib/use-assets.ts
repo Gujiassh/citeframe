@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import type { Dispatch, MutableRefObject, SetStateAction } from "react";
 
 import type { AuthUser } from "@/lib/auth/types";
@@ -12,6 +12,7 @@ import type {
 import { applyAssetTags } from "@/lib/notes/normalize";
 import type { TagDto } from "@/lib/notes/types";
 import type { WorkspaceLocale } from "@/lib/workspaces/normalize";
+import { AssetListOrder } from "@/lib/assets/list-order";
 import { useUploadQueue } from "@/lib/assets/use-upload-queue";
 import type { Asset } from "./workspace-context";
 import { getWorkspaceErrorMessage, readResponseJsonSafely } from "./use-workspaces";
@@ -165,6 +166,7 @@ export function useAssets({
   updateWorkspace,
 }: UseAssetsOptions) {
   const [assets, setAssetsState] = useState<Asset[]>([]);
+  const listOrder = useRef(new AssetListOrder());
 
   const setAssets: Dispatch<SetStateAction<Asset[]>> = useCallback(
     (update) => {
@@ -198,6 +200,7 @@ export function useAssets({
       }
 
       const workspaceId = currentWorkspaceId;
+      const ticket = listOrder.current.begin(workspaceId);
       try {
         const response = await fetch(`/api/workspaces/${workspaceId}/assets`, { cache: "no-store" });
         const payload = await readResponseJsonSafely<AssetListResponseDto & AssetErrorPayload>(response);
@@ -214,7 +217,7 @@ export function useAssets({
           (payload?.items ?? []).map(toUiAsset),
           tagRelationsRef.current,
         );
-        if (!cancelled) {
+        if (!cancelled && listOrder.current.accept(ticket)) {
           const nextAssets = replaceAssetsForWorkspace(workspaceId, workspaceAssets, assetsRef.current);
           setAssets(nextAssets);
           updateWorkspace(workspaceId, (workspace) => workspace.assetCount === workspaceAssets.length
@@ -250,10 +253,11 @@ export function useAssets({
 
     let cancelled = false;
     const refreshAssets = async () => {
+      const ticket = listOrder.current.begin(currentWorkspaceId);
       try {
         const response = await fetch(`/api/workspaces/${currentWorkspaceId}/assets`, { cache: "no-store" });
         const payload = await readResponseJsonSafely<AssetListResponseDto & AssetErrorPayload>(response);
-        if (cancelled || !response.ok || !payload) {
+        if (cancelled || !response.ok || !payload || !listOrder.current.accept(ticket)) {
           return;
         }
         const workspaceAssets = applyAssetTags(
@@ -281,6 +285,7 @@ export function useAssets({
   }, [currentWorkspaceId, assets, assetsRef, isAuthHydrating, setAssets, tagRelationsRef, updateWorkspace, user]);
 
   const receiveUploadAsset = useCallback((dto: AssetSummaryDto, created: boolean) => {
+    listOrder.current.invalidate(dto.workspaceId);
     const incoming = toUiAsset(dto);
     setAssets((previous) => [
       { ...incoming, tags: previous.find((asset) => asset.id === incoming.id)?.tags ?? [] },
@@ -315,6 +320,7 @@ export function useAssets({
         );
       }
 
+      listOrder.current.invalidate(workspaceId);
       const previousAsset = assetsRef.current.find((asset) => asset.id === id);
       const deletingAsset = toUiAsset(payload.asset);
       setAssets((previous) => previous.map((asset) =>
@@ -347,6 +353,7 @@ export function useAssets({
         );
       }
 
+      listOrder.current.invalidate(workspaceId);
       const previousAsset = assetsRef.current.find((asset) => asset.id === id);
       const retriedAsset = toUiAsset(payload.asset);
       setAssets((previous) => previous.map((asset) =>
@@ -378,6 +385,7 @@ export function useAssets({
         );
       }
 
+      listOrder.current.invalidate(workspaceId);
       const previousAsset = assetsRef.current.find((asset) => asset.id === id);
       const deletingAsset = toUiAsset(payload.asset);
       setAssets((previous) => previous.map((asset) =>
@@ -391,6 +399,7 @@ export function useAssets({
 
   const removeWorkspace = useCallback(
     (workspaceId: string) => {
+      listOrder.current.invalidate(workspaceId);
       removeUploadsWorkspace(workspaceId);
       setAssets(assetsRef.current.filter((asset) => asset.workspaceId !== workspaceId));
     },

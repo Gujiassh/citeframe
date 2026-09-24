@@ -82,3 +82,21 @@ test("finalize reconciliation cannot use another asset or recreate a removed ass
   assert.equal(calls.at(-1)?.url, "/api/workspaces/workspace-a/assets");
   assert.equal(calls.filter((c) => c.url.endsWith("upload-session")).length, 1);
 });
+
+test("delayed finalize conflict recovers on explicit retry without duplicate transfer or retry loop", async (t) => {
+  const { task, responses, calls } = setup(t);
+  responses.push(() => json(session), () => new Response(null, { status: 204 }), () => { throw new Error("Connection lost"); });
+  await assert.rejects(task(new AbortController().signal), /Connection lost/);
+  responses.push(
+    async () => { await Promise.resolve(); return json({ items: [asset] }); },
+    () => json({ detail: "Asset is not awaiting finalize upload." }, 409),
+  );
+  await assert.rejects(task(new AbortController().signal), /not awaiting finalize/);
+  assert.equal(calls.length, 5);
+  responses.push(() => json({ items: [{ ...asset, status: "uploaded" }] }));
+  await task(new AbortController().signal);
+  assert.equal(calls.length, 6);
+  assert.equal(calls.filter((c) => c.url.endsWith("upload-session")).length, 1);
+  assert.equal(calls.filter((c) => c.url === "/transfer").length, 1);
+  assert.equal(calls.filter((c) => c.url.endsWith("finalize-upload")).length, 2);
+});

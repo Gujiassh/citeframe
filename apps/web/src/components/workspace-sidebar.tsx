@@ -3,6 +3,8 @@
 import React, { useRef, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { workspaceNavigation } from "@/lib/workspaces/navigation";
 import { useAuth } from "@/lib/auth/auth-context";
 import { useWorkspace, Asset } from "@/lib/workspace-context";
 import { useTheme } from "@/lib/theme-context";
@@ -28,7 +30,6 @@ export function WorkspaceSidebar() {
     leftSidebarOpen,
     selectedAssetIds,
     selectedTagIds,
-    switchWorkspace,
     createWorkspace,
     uploadQueue,
     enqueueUploads,
@@ -49,6 +50,8 @@ export function WorkspaceSidebar() {
     setSelectedTagIds,
   } = useWorkspace();
 
+  const router = useRouter();
+  const navigation = workspaceNavigation((href) => router.push(href), createWorkspace);
   const { user, logout } = useAuth();
   const { theme, toggleTheme } = useTheme();
   const { locale, setLocale, t } = useTranslation();
@@ -246,7 +249,7 @@ export function WorkspaceSidebar() {
                   <button
                     key={ws.id}
                     onClick={() => {
-                      switchWorkspace(ws.id);
+                      navigation.open(ws.id);
                       setShowWsMenu(false);
                     }}
                     className={`flex w-full items-center justify-between rounded-xl px-2.5 py-2 text-left text-xs transition hover:bg-zinc-100 dark:hover:bg-zinc-800 ${
@@ -604,7 +607,7 @@ export function WorkspaceSidebar() {
         show={showCreateWs}
         onClose={() => setShowCreateWs(false)}
         onCreate={async (name, desc) => {
-          await createWorkspace(name, desc);
+          await navigation.createAndOpen(name, desc);
           setShowWsMenu(false);
         }}
         t={t}
