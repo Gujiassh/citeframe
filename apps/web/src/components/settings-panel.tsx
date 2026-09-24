@@ -3,6 +3,8 @@
 import { useState } from "react";
 import { AlertCircle, BarChart3, Check, Cpu, Save, Settings2, Sliders } from "lucide-react";
 
+import { ModelSettingsPanel } from "./model-settings/model-settings-panel";
+import { ReindexAssets } from "./model-settings/reindex-assets";
 import { EvaluationDashboard } from "@/components/evaluation-dashboard";
 import { translations, useTranslation } from "@/lib/i18n-context";
 import { Workspace, WorkspaceSettingsInput, useWorkspace } from "@/lib/workspace-context";
@@ -89,6 +91,7 @@ function SettingsForm({ currentWorkspace, onSaveSettings, t }: SettingsFormProps
 
         <div className="h-px bg-zinc-100 dark:bg-zinc-800" />
 
+        {isOwner ? <ModelSettingsPanel key={currentWorkspace.id} workspaceId={currentWorkspace.id} /> : <>
         <div className="space-y-4">
           <h4 className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
             <Cpu className="h-3.5 w-3.5 text-zinc-400" />
@@ -113,6 +116,9 @@ function SettingsForm({ currentWorkspace, onSaveSettings, t }: SettingsFormProps
             </div>
           </dl>
         </div>
+
+        <ReindexAssets workspaceId={currentWorkspace.id} />
+        </>}
 
         <div className="h-px bg-zinc-100 dark:bg-zinc-800" />
 

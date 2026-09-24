@@ -246,3 +246,21 @@ def test_http_metrics_cover_full_stream_and_bound_custom_methods(monkeypatch) ->
 
     assert counter._value.get() == before_counter + 1
     assert duration._sum.get() - before_sum >= 0.02
+
+
+@pytest.mark.parametrize("schema_status,expected", [("ok", 200), ("failed", 503)])
+def test_application_readiness_allows_model_setup_without_global_credentials(monkeypatch, schema_status, expected):
+    for name in ("_check_database", "_check_modality_catalog", "_check_storage"):
+        monkeypatch.setattr(main_module, name, lambda: "ok")
+    monkeypatch.setattr(main_module, "_check_model_configuration_schema", lambda: schema_status)
+    monkeypatch.setattr(main_module.settings, "openai_api_key", None)
+    def forbidden():
+        raise AssertionError("Application startup must not require a model provider.")
+    monkeypatch.setattr(main_module, "_check_embedding_provider", forbidden)
+    monkeypatch.setattr(main_module, "_check_generation_provider", forbidden)
+    response = TestClient(main_module.app).get("/health/application-ready")
+    assert response.status_code == expected
+    assert response.json()["checks"] == {
+        "database": "ok", "modalityCatalog": "ok", "objectStorage": "ok",
+        "modelConfigurationSchema": schema_status,
+    }

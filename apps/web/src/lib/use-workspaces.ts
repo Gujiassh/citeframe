@@ -246,6 +246,15 @@ export function useWorkspaces({
     [locale],
   );
 
+  const refreshWorkspace = useCallback(async (id: string, signal?: AbortSignal) => {
+    const response = await fetch(`/api/workspaces/${encodeURIComponent(id)}`, { cache: "no-store", signal });
+    const payload = await readResponseJsonSafely<CreateWorkspaceResponseDto & WorkspaceErrorPayload>(response);
+    signal?.throwIfAborted();
+    if (!response.ok || !payload?.workspace) throw new Error("Failed to refresh workspace metadata.");
+    const updated = normalizeWorkspaceSummary(payload.workspace, locale);
+    updateWorkspace(id, () => updated);
+  }, [locale, updateWorkspace]);
+
   const currentWorkspace = workspaces.find((workspace) => workspace.id === currentWorkspaceId) ?? null;
 
   return {
@@ -253,6 +262,7 @@ export function useWorkspaces({
     workspaces,
     currentWorkspace,
     updateWorkspace,
+    refreshWorkspace,
     switchWorkspace,
     createWorkspace,
     deleteWorkspace,

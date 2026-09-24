@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 import logging
+import math
 import json
 from collections.abc import Iterator
 from typing import Literal, Protocol, TypeAlias, TypeVar
@@ -77,12 +78,13 @@ class OpenAIEmbeddingProvider:
         api_base: str,
         timeout_seconds: float,
         client: httpx.Client | None = None,
+        exact_base: bool = False,
     ) -> None:
         self.model = model
         self.dimensions = dimensions
         self.version = version
         self._api_key = _normalize_api_key(api_key)
-        self._api_base = _normalize_openai_base(api_base)
+        self._api_base = api_base if exact_base else _normalize_openai_base(api_base)
         self._timeout_seconds = timeout_seconds
         self._client = client
         self.config_fingerprint = ""
@@ -138,7 +140,7 @@ class OpenAIEmbeddingProvider:
         except httpx.RequestError as error:
             logger.error("model_provider_request_failed provider=openai kind=embedding error_type=%s", type(error).__name__)
             raise ModelProviderError("embedding_provider_unreachable", "Embedding provider is unreachable.") from error
-        if response.is_error:
+        if not response.is_success:
             raise ModelProviderError(
                 "embedding_provider_error",
                 f"Embedding provider returned HTTP {response.status_code}.",
@@ -205,7 +207,7 @@ class OllamaEmbeddingProvider:
         except httpx.RequestError as error:
             logger.error("model_provider_request_failed provider=ollama kind=embedding error_type=%s", type(error).__name__)
             raise ModelProviderError("embedding_provider_unreachable", "Ollama embedding provider is unreachable.") from error
-        if response.is_error:
+        if not response.is_success:
             raise ModelProviderError("embedding_provider_error", f"Ollama returned HTTP {response.status_code}.")
         try:
             data = response.json()
@@ -228,10 +230,11 @@ class OpenAIGenerationProvider:
         timeout_seconds: float,
         max_output_tokens: int,
         client: httpx.Client | None = None,
+        exact_base: bool = False,
     ) -> None:
         self.model = model
         self._api_key = _normalize_api_key(api_key)
-        self._api_base = _normalize_openai_base(api_base)
+        self._api_base = api_base if exact_base else _normalize_openai_base(api_base)
         self._timeout_seconds = timeout_seconds
         self._max_output_tokens = max_output_tokens
         self._client = client
@@ -322,7 +325,7 @@ class OpenAIGenerationProvider:
                         timeout=self._timeout_seconds,
                     )
                 with response_context as response:
-                    if response.is_error:
+                    if not response.is_success:
                         raise ModelProviderError(
                             "generation_provider_error",
                             f"Generation provider returned HTTP {response.status_code}.",
@@ -347,7 +350,7 @@ class OpenAIGenerationProvider:
         except httpx.RequestError as error:
             logger.error("model_provider_request_failed provider=openai kind=generation error_type=%s", type(error).__name__)
             raise ModelProviderError("generation_provider_unreachable", "Generation provider is unreachable.") from error
-        if response.is_error:
+        if not response.is_success:
             raise ModelProviderError("generation_provider_error", f"Generation provider returned HTTP {response.status_code}.")
         try:
             data = response.json()
@@ -358,7 +361,10 @@ class OpenAIGenerationProvider:
         return data
 
 
-def get_embedding_provider() -> EmbeddingProvider:
+def get_embedding_provider(connection=None) -> EmbeddingProvider:
+    if connection is not None:
+        from ai_pdf_api.services.workspace_providers import embedding_provider_for
+        return embedding_provider_for(connection)
     profile = _profile_for("embedding")
     if profile.provider == "openai":
         return _attach_profile(
@@ -469,7 +475,7 @@ class DeepSeekGenerationProvider:
                         timeout=self._timeout_seconds,
                     )
                 with response_context as response:
-                    if response.is_error:
+                    if not response.is_success:
                         raise ModelProviderError(
                             "generation_provider_error",
                             f"Generation provider returned HTTP {response.status_code}.",
@@ -509,7 +515,7 @@ class DeepSeekGenerationProvider:
         except httpx.RequestError as error:
             logger.error("model_provider_request_failed provider=deepseek kind=generation error_type=%s", type(error).__name__)
             raise ModelProviderError("generation_provider_unreachable", "Generation provider is unreachable.") from error
-        if response.is_error:
+        if not response.is_success:
             raise ModelProviderError("generation_provider_error", f"Generation provider returned HTTP {response.status_code}.")
         try:
             data = response.json()
@@ -520,7 +526,10 @@ class DeepSeekGenerationProvider:
         return data
 
 
-def get_generation_provider() -> GenerationProvider:
+def get_generation_provider(connection=None) -> GenerationProvider:
+    if connection is not None:
+        from ai_pdf_api.services.workspace_providers import generation_provider_for
+        return generation_provider_for(connection)
     profile = _profile_for("generation")
     if profile.provider == "deepseek":
         return _attach_profile(
@@ -567,6 +576,9 @@ def _validate_dimensions(vectors: list[list[float]], dimensions: int) -> None:
             "embedding_dimension_mismatch",
             f"Embedding provider returned a vector with dimensions other than {dimensions}.",
         )
+
+    if any(isinstance(value, bool) or not isinstance(value, (int, float)) or not math.isfinite(value) for vector in vectors for value in vector):
+        raise ModelProviderError("embedding_invalid_response", "Embedding provider returned non-finite or non-numeric values.")
 
 
 def _normalize_api_key(api_key: str | None) -> str | None:

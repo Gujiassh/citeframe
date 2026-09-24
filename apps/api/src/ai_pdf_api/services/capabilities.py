@@ -8,6 +8,7 @@ from typing import Literal, Mapping
 from urllib.parse import urlsplit, urlunsplit
 
 from ai_pdf_api.core.settings import settings
+from ai_pdf_api.services.model_config_types import ModelConnection, WorkspaceModels
 
 
 CapabilityName = Literal["generation", "embedding", "vision", "asr"]
@@ -89,7 +90,7 @@ class CapabilityRegistry:
         return _canonical_sha256(payload)
 
 
-def build_capability_registry() -> CapabilityRegistry:
+def build_capability_registry(models: WorkspaceModels | None = None) -> CapabilityRegistry:
     """Build the registry from server configuration without probing providers."""
 
     from ai_pdf_api.services.research.research_constants import DATA_BOUNDARY_POLICY, PRICING_VERSION
@@ -179,6 +180,10 @@ def build_capability_registry() -> CapabilityRegistry:
         secret_required=asr_provider == "openai",
     )
 
+    if models is not None:
+        generation = connection_profile(models.generation)
+        embedding = connection_profile(models.embedding)
+
     return CapabilityRegistry(
         {
             "generation": generation,
@@ -208,10 +213,10 @@ def legacy_execution_profile_fingerprint() -> str:
     )
 
 
-def current_execution_profile_fingerprint(*, retrieval_top_k: int | None = None) -> str:
+def current_execution_profile_fingerprint(*, retrieval_top_k: int | None = None, models: WorkspaceModels | None = None) -> str:
     from ai_pdf_api.services.research.research_constants import DATA_BOUNDARY_POLICY
 
-    registry = build_capability_registry()
+    registry = build_capability_registry(models)
     return registry.execution_fingerprint(
         retrieval_strategy=settings.retrieval_strategy,
         retrieval_top_k=retrieval_top_k,
@@ -223,6 +228,7 @@ def matches_frozen_execution_fingerprint(
     frozen_fingerprint: str,
     *,
     retrieval_top_k: int | None = None,
+    models: WorkspaceModels | None = None,
 ) -> bool:
     """Bounded dual-read for Research fingerprint cutover.
 
@@ -235,9 +241,11 @@ def matches_frozen_execution_fingerprint(
 
     if not frozen_fingerprint:
         return False
-    current_v2 = current_execution_profile_fingerprint(retrieval_top_k=retrieval_top_k)
+    current_v2 = current_execution_profile_fingerprint(retrieval_top_k=retrieval_top_k, models=models)
     if frozen_fingerprint == current_v2:
         return True
+    if models is not None and any(c.source == "workspace" for c in (models.generation, models.embedding)):
+        return False
     return frozen_fingerprint == legacy_execution_profile_fingerprint()
 
 
@@ -456,3 +464,17 @@ def _asr_secret(provider: str) -> str | None:
 
 # Backward-compatible private alias used by earlier tests/partial imports.
 _normalize_endpoint = normalize_provider_endpoint
+
+
+def connection_profile(connection: ModelConnection) -> CapabilityProfile:
+    from ai_pdf_api.services.research.research_constants import DATA_BOUNDARY_POLICY, PRICING_VERSION
+    generation = connection.capability == "generation"
+    endpoint = connection.base_url if connection.source == "workspace" else normalize_provider_endpoint(connection.base_url, provider=connection.provider)
+    adapter = ("generation-openai-chat-completions-v1" if connection.protocol == "openai_chat_completions" else _generation_adapter_version(connection.provider)) if generation else f"embedding-{connection.provider}-v1"
+    limits = {"timeoutSeconds": connection.timeout_seconds, "maxOutputTokens": connection.max_output_tokens} if generation else {
+        "dimensions": connection.dimensions, "batchSize": settings.embedding_batch_size,
+        "timeoutSeconds": connection.timeout_seconds, "queryInstructionSha256": _canonical_sha256(connection.query_instruction)}
+    return _make_profile(capability=connection.capability, provider=connection.provider, model=connection.model,
+        adapter_version=adapter, model_version=None if generation else connection.version,
+        endpoint_identifier=endpoint, limits=limits, pricing_version=PRICING_VERSION if generation else None,
+        data_boundary_policy_version=DATA_BOUNDARY_POLICY, secret=connection.api_key, secret_required=connection.protocol != "ollama")

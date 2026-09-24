@@ -229,7 +229,7 @@ def _queue_document(
             asset.status = "uploaded"
         asset.updated_at = now
     job = build_ingest_job(
-        workspace_id=asset.workspace_id,
+        db=db,        workspace_id=asset.workspace_id,
         asset_id=asset.id,
         asset_kind="document",
         user_id=user.id,

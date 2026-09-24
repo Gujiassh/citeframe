@@ -24,12 +24,12 @@ from ai_pdf_api.services.research.research_prompt_provenance import (
 from sqlalchemy.orm import Session
 
 
-def _profile_fingerprint(*, retrieval_top_k: int | None = None) -> str:
+def _profile_fingerprint(*, retrieval_top_k: int | None = None, models=None) -> str:
     from ai_pdf_api.services.capabilities import current_execution_profile_fingerprint
 
     # New revisions always write the v2 capability execution fingerprint.
     # Historical frozen fingerprints are dual-read at approval/reservation time.
-    return current_execution_profile_fingerprint(retrieval_top_k=retrieval_top_k)
+    return current_execution_profile_fingerprint(retrieval_top_k=retrieval_top_k, models=models)
 
 
 def _legacy_profile_fingerprint() -> str:
@@ -42,12 +42,14 @@ def _matches_frozen_profile_fingerprint(
     frozen_fingerprint: str,
     *,
     retrieval_top_k: int | None = None,
+    models=None,
 ) -> bool:
     from ai_pdf_api.services.capabilities import matches_frozen_execution_fingerprint
 
     return matches_frozen_execution_fingerprint(
         frozen_fingerprint,
         retrieval_top_k=retrieval_top_k,
+        models=models,
     )
 
 

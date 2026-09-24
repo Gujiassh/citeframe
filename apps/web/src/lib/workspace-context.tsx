@@ -2,7 +2,10 @@
 
 import React, { createContext, useContext, useRef } from "react";
 
+import { useReindexTracker } from "@/lib/assets/use-reindex-tracker";
+import { completedReindexVersion, type ReindexState } from "@/lib/assets/reindex-tracker";
 import { useAuth } from "@/lib/auth/auth-context";
+import type { ChatSubmissionFailure } from "@/lib/chat/submission";
 import type { ChatThread } from "@/lib/chat/types";
 import type {
   EvidenceLocator,
@@ -97,6 +100,7 @@ type WorkspaceContextType = {
   notes: Note[];
   threads: ChatThread[];
   activeThread: ChatThread | null;
+  chatSubmissionFailure: ChatSubmissionFailure | null;
   tags: Tag[];
   openAssetIds: string[];
   activeAssetId: string | null;
@@ -117,6 +121,10 @@ type WorkspaceContextType = {
   uploadQueue: UploadQueueItem[];
   enqueueUploads: (files: readonly File[]) => void;
   retryUpload: (id: string) => void;
+  reindexJobs: ReindexState[];
+  reindexAsset: (workspaceId: string, assetId: string) => Promise<void>;
+  refreshReindexJob: (workspaceId: string, assetId: string) => void;
+  refreshWorkspace: (workspaceId: string, signal?: AbortSignal) => Promise<void>;
   deleteAsset: (id: string) => Promise<void>;
   retryAsset: (id: string) => Promise<void>;
   retryDeleteAsset: (id: string) => Promise<void>;
@@ -176,6 +184,7 @@ export function WorkspaceProvider({ children }: { children: React.ReactNode }) {
   const { locale } = useTranslation();
   const { user, isHydrating: isAuthHydrating } = useAuth();
   const viewState = useWorkspaceViewState();
+  const reindexState = useReindexTracker(isAuthHydrating ? undefined : user?.userId);
   const assetsRef = useRef<Asset[]>([]);
   const tagRelationsRef = useRef<TagDto[]>([]);
   const syncWorkspaceViewState = viewState.syncWorkspaceViewState;
@@ -203,6 +212,7 @@ export function WorkspaceProvider({ children }: { children: React.ReactNode }) {
   });
 
   const assetState = useAssets({
+    refreshToken: completedReindexVersion(reindexState.reindexJobs, viewState.currentWorkspaceId),
     locale,
     user,
     isAuthHydrating,
@@ -290,6 +300,7 @@ export function WorkspaceProvider({ children }: { children: React.ReactNode }) {
         notes: notesTagsState.notes,
         threads: chatState.threads,
         activeThread: chatState.activeThread,
+        chatSubmissionFailure: chatState.chatSubmissionFailure,
         tags: notesTagsState.tags,
         openAssetIds: viewState.openAssetIds,
         activeAssetId: viewState.activeAssetId,
@@ -310,6 +321,8 @@ export function WorkspaceProvider({ children }: { children: React.ReactNode }) {
         uploadQueue: assetState.uploadQueue,
         enqueueUploads: assetState.enqueueUploads,
         retryUpload: assetState.retryUpload,
+        ...reindexState,
+        refreshWorkspace: workspaceState.refreshWorkspace,
         deleteAsset: assetState.deleteAsset,
         retryAsset: assetState.retryAsset,
         retryDeleteAsset: assetState.retryDeleteAsset,

@@ -126,6 +126,8 @@ def _add_revision(
             .order_by(WorkflowPromptBinding.node_key)
         ).all()
     )
+    from ai_pdf_api.services.workspace_models import resolve_workspace_models
+    models = resolve_workspace_models(db, run.workspace_id)
     revision = ResearchPlanRevision(
         workspace_id=run.workspace_id,
         run_id=run.id,
@@ -136,16 +138,16 @@ def _add_revision(
         scope_mode=scope.mode,
         proposed_workflow_version_id=workflow.id,
         planner_prompt_version_id=planner_prompt.id,
-        proposed_generation_provider=settings.generation_provider,
-        proposed_generation_model=settings.generation_model,
+        proposed_generation_provider=models.generation.provider,
+        proposed_generation_model=models.generation.model,
         proposed_provider_config_fingerprint=_profile_fingerprint(
-            retrieval_top_k=workspace.retrieval_top_k
+            retrieval_top_k=workspace.retrieval_top_k, models=models
         ),
         proposed_pricing_version=PRICING_VERSION,
         proposed_data_boundary_policy_version=DATA_BOUNDARY_POLICY,
-        proposed_embedding_provider=settings.embedding_provider,
-        proposed_embedding_model=settings.embedding_model,
-        proposed_embedding_version=settings.embedding_version,
+        proposed_embedding_provider=models.embedding.provider,
+        proposed_embedding_model=models.embedding.model,
+        proposed_embedding_version=models.embedding.version,
         proposed_retrieval_strategy=settings.retrieval_strategy,
         proposed_retrieval_top_k=workspace.retrieval_top_k,
         planning_max_provider_calls=2,

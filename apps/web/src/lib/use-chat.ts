@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import type { Dispatch, MutableRefObject, SetStateAction } from "react";
 
 import type { AuthUser } from "@/lib/auth/types";
+import { chatSubmissionScope, rejectedChatSubmission, type ChatSubmissionFailure } from "@/lib/chat/submission";
 import { consumeChatStream } from "@/lib/chat/sse";
 import {
   createThread as createChatThread,
@@ -137,6 +138,12 @@ export function useChat({
 }: UseChatOptions) {
   const [threads, setThreadsState] = useState<ChatThread[]>([]);
   const threadsRef = useRef(threads);
+  const [submissionFailures, setSubmissionFailures] = useState<Record<string, ChatSubmissionFailure>>({});
+  const submissionLifetime = useRef(0);
+  useEffect(() => {
+    submissionLifetime.current += 1;
+    return () => { submissionLifetime.current += 1; };
+  }, [user?.userId, isAuthHydrating]);
 
   const setThreads: Dispatch<SetStateAction<ChatThread[]>> = useCallback(
     (update) => {
@@ -180,6 +187,7 @@ export function useChat({
         return;
       }
       if (!user) {
+        setSubmissionFailures({});
         setThreads([]);
         setActiveThreadId(null);
         return;
@@ -324,9 +332,11 @@ export function useChat({
       const question = content.trim();
       const workspaceId = currentWorkspaceId;
       const threadId = activeThreadId ?? threadsRef.current.find((thread) => thread.workspaceId === workspaceId)?.id ?? null;
-      if (!workspaceId || !threadId || !question) {
+      if (!user || !workspaceId || !threadId || !question) {
         return false;
       }
+      const lifetime = submissionLifetime.current;
+      const submissionScope = chatSubmissionScope(user.userId, workspaceId, threadId);
       const evidenceTargets = options.evidenceTargets ?? [];
 
       const currentThread = threadsRef.current.find((thread) => thread.id === threadId);
@@ -402,6 +412,11 @@ export function useChat({
           ...(evidenceTargets.length > 0 ? { evidenceTargets } : {}),
         });
         requestAccepted = true;
+        if (lifetime === submissionLifetime.current) {
+          setSubmissionFailures((previous) => {
+            const next = { ...previous }; delete next[submissionScope]; return next;
+          });
+        }
         if (evidenceTargets.length > 0) {
           updateThreadMessages((message) => message.id === temporaryUserMessageId
             ? { ...message, pendingInputEvidenceCount: evidenceTargets.length }
@@ -450,7 +465,12 @@ export function useChat({
         const hydratedThread = await fetchThreadWithMessages(workspaceId, threadId);
         replaceThread(hydratedThread);
       } catch (error) {
-        console.error(error);
+        if (!requestAccepted && lifetime === submissionLifetime.current) {
+          const failure = rejectedChatSubmission(error, question, Boolean(options.editMessageId));
+          setSubmissionFailures((previous) => ({ ...previous, [submissionScope]: failure }));
+        } else {
+          console.error(error);
+        }
         try {
           const hydratedThread = await fetchThreadWithMessages(workspaceId, threadId);
           replaceThread(hydratedThread);
@@ -476,7 +496,7 @@ export function useChat({
         }
       }
       return requestAccepted;
-    }, [activeThreadId, currentWorkspaceId, fetchThreadWithMessages, replaceThread, selectedAssetIds, selectionText, setThreads]);
+    }, [activeThreadId, currentWorkspaceId, fetchThreadWithMessages, replaceThread, selectedAssetIds, selectionText, setThreads, user]);
 
   const removeWorkspace = useCallback(
     (workspaceId: string) => {
@@ -498,6 +518,9 @@ export function useChat({
     threads,
     threadsRef,
     activeThread,
+    chatSubmissionFailure: user && activeThread
+      ? submissionFailures[chatSubmissionScope(user.userId, currentWorkspaceId, activeThread.id)] ?? null
+      : null,
     createThread,
     switchThread,
     deleteThread,

@@ -10,6 +10,8 @@ Citeframe 是一个自托管、可扩展的多模态 AI 知识库与证据工作
 
 当前完成基线是：九种生产模态（`pdf`/`image`/`document`/`html`/`docx`/`xlsx`/`pptx`/`audio`/`video`）的 Asset/Evidence 闭环、Hybrid/RRF 检索、Evidence Viewer、Citation/NoteSource、固定 Research workflow、HITL、恢复和 Evaluation Dashboard；以及 capability-based generation/embedding/vision/ASR 配置。**深度阶梯**：PDF/Image 为 Deep；其余为 Evidence-complete（可检索可引用，Viewer 深度不等）。R803 模型质量与 M404 用户价值仍为 `not_evaluable`，产品阶段 `internal_preview`。架构硬化见 `specs/v5/architecture-hardening/`。
 
+工作区所有者可通过网页配置第三方生成模型（Responses / Chat Completions）及独立 embedding 模型；密钥加密保存在服务端且不回显。切换 embedding 后，已有资产显示显式重建索引入口，保留原索引直到新索引成功。配置和运行边界见 [工作区模型配置](workspace-model-configuration.md)。
+
 ## 2. 目标用户
 
 ### 2.1 第一目标用户

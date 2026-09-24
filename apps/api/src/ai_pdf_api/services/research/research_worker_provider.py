@@ -7,6 +7,8 @@ from collections.abc import Callable
 from datetime import UTC, datetime
 
 from sqlalchemy.orm import Session
+from ai_pdf_api.services.workspace_models import resolve_workspace_models, lock_workspace_models
+from ai_pdf_api.models import ResearchStepAttempt
 
 from ai_pdf_api.models import ResearchPlanRevision, ResearchExecutionSnapshot, ResearchStep
 from ai_pdf_api.services.research import ResearchError
@@ -57,6 +59,7 @@ def resolve_actual_research_provider_config_fingerprint(db: Session, step: Resea
 
     return current_execution_profile_fingerprint(
         retrieval_top_k=_frozen_retrieval_top_k(db, step),
+        models=resolve_workspace_models(db, step.workspace_id),
     )
 
 
@@ -70,6 +73,7 @@ def frozen_provider_config_matches_actual(
     return matches_frozen_execution_fingerprint(
         frozen_fingerprint,
         retrieval_top_k=_frozen_retrieval_top_k(db, step),
+        models=resolve_workspace_models(db, step.workspace_id),
     )
 
 
@@ -88,6 +92,9 @@ def reserve_provider_call(
 ) -> ProviderReservation:
     # Keep the legacy matcher patch point while the neutral command owns all DB transitions.
     try:
+        attempt = db.get(ResearchStepAttempt, attempt_id)
+        if attempt is not None:
+            lock_workspace_models(db, attempt.workspace_id)
         result = _reserve_provider_call(
             db,
             attempt_id=attempt_id,

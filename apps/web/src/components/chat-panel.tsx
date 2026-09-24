@@ -5,6 +5,7 @@ import { ArrowUp, Library, MessageCircleQuestion, Search, X } from "lucide-react
 
 import { useAuth } from "@/lib/auth/auth-context";
 import { isNearChatBottom } from "@/lib/chat-scroll";
+import { chatSubmissionScope, questionAfterSubmission } from "@/lib/chat/submission";
 import type { InputEvidence } from "@/lib/chat/types";
 import { getLocatorSummary } from "@/lib/evidence/types";
 import { useTranslation } from "@/lib/i18n-context";
@@ -19,6 +20,7 @@ export function ChatPanel() {
   const {
     currentWorkspace,
     activeThread,
+    chatSubmissionFailure,
     assets,
     selectedAssetIds,
     selectionText,
@@ -30,10 +32,12 @@ export function ChatPanel() {
     setActiveTab,
   } = useWorkspace();
 
-  const { t } = useTranslation();
+  const { t, locale } = useTranslation();
   const { user } = useAuth();
   const [mode, setMode] = useState<WorkspaceQuestionMode>("quick");
-  const [input, setInput] = useState("");
+  const composerScope = chatSubmissionScope(user?.userId ?? "", currentWorkspace?.id ?? "", activeThread?.id ?? "");
+  const [composerDraft, setComposerDraft] = useState({ scope: composerScope, text: chatSubmissionFailure?.draft ?? "" });
+  const input = composerDraft.scope === composerScope ? composerDraft.text : chatSubmissionFailure?.draft ?? "";
   const [quickLoading, setQuickLoading] = useState(false);
   const [showNoteEditorId, setShowNoteEditorId] = useState<string | null>(null);
   const [quickNoteTitle, setQuickNoteTitle] = useState("");
@@ -96,8 +100,8 @@ export function ChatPanel() {
       return;
     }
 
-    setInput("");
     if (mode === "research") {
+      setComposerDraft({ scope: composerScope, text: "" });
       await research.start(text);
       composerRef.current?.focus();
       return;
@@ -105,7 +109,11 @@ export function ChatPanel() {
 
     setQuickLoading(true);
     try {
-      await sendMessage(text);
+      await sendMessage(text, {
+        onRequestAccepted: () => setComposerDraft((draft) => draft.scope === composerScope
+          ? { ...draft, text: questionAfterSubmission(draft.text, true) }
+          : draft),
+      });
     } finally {
       setQuickLoading(false);
       composerRef.current?.focus();
@@ -318,12 +326,21 @@ export function ChatPanel() {
             </div>
           ) : null}
 
+          {mode === "quick" && chatSubmissionFailure && (
+            <div role="alert" className="mb-2 space-y-1 rounded-lg border border-rose-200 p-3 text-xs dark:border-rose-900">
+              <p className="break-words text-rose-600 dark:text-rose-400">{chatSubmissionFailure.message}</p>
+              <button type="button" className="underline" onClick={() => setActiveTab("settings")}>
+                {locale === "en" ? "Open model settings / reindex" : "打开模型设置 / 重建索引"}
+              </button>
+            </div>
+          )}
+
           <form onSubmit={handleSubmit} className="relative flex items-end gap-2 rounded-xl border border-border bg-background p-2 shadow-sm transition focus-within:border-zinc-400 focus-within:shadow-md dark:focus-within:border-zinc-600">
             <textarea
               ref={composerRef}
               rows={1}
               value={input}
-              onChange={(event) => setInput(event.target.value)}
+              onChange={(event) => setComposerDraft({ scope: composerScope, text: event.target.value })}
               onKeyDown={(event) => {
                 if (event.key === "Enter" && !event.shiftKey) {
                   event.preventDefault();

@@ -15,6 +15,7 @@ from ai_pdf_api.services.ingestion import (
     process_ingestion_job,
 )
 from ai_pdf_api.services.providers import get_embedding_provider
+from ai_pdf_api.services.workspace_models import resolve_connection
 from ai_pdf_api.core.research_observability import (
     configure_research_observability,
     observe_research_recovery,
@@ -80,7 +81,7 @@ def _process_ingestion_job(db: object) -> bool:
             db,
             job_id,
             ingestion_adapters=INGESTION_ADAPTERS,
-            embedding_provider=get_embedding_provider(),
+            embedding_provider_factory=lambda session, workspace_id: get_embedding_provider(resolve_connection(session, workspace_id, "embedding")),
         )
     except Exception:
         WORKER_JOBS.labels(outcome="error").inc()

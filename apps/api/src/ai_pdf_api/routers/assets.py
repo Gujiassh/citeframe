@@ -12,7 +12,9 @@ from sqlalchemy import case, func, select
 from sqlalchemy.orm import Session
 
 from ai_pdf_api.core.settings import settings
-from ai_pdf_api.services.capabilities import embedding_profile_snapshot_fields
+from ai_pdf_api.services.workspace_models import resolve_connection
+from ai_pdf_api.services.embedding_index import connection_index_contract
+from ai_pdf_api.services.capabilities import connection_profile, embedding_profile_snapshot_fields
 from ai_pdf_api.services.embedding_index import embedding_index_job_snapshot_fields
 from ai_pdf_api.db.session import get_db
 from ai_pdf_api.modalities.document import (
@@ -157,6 +159,7 @@ def build_object_key(workspace_id: str, asset_id: str, source_filename: str) -> 
 
 def build_ingest_job(
     *,
+    db: Session,
     workspace_id: str,
     asset_id: str,
     asset_kind: str,
@@ -169,7 +172,7 @@ def build_ingest_job(
     config_snapshot: dict[str, object] = {
         "source": source,
         "chunkSize": chunk_size,
-        **embedding_profile_snapshot_fields(),
+        **embedding_profile_snapshot_fields(connection_profile(resolve_connection(db, workspace_id, "embedding"))),
     }
     config_snapshot.update(modality_registry.ingestion_config_snapshot(asset_kind))
     return IngestionJob(
@@ -1272,7 +1275,7 @@ def finalize_upload(
 
     now = datetime.now(UTC)
     job = build_ingest_job(
-        workspace_id=workspace_id,
+        db=db,        workspace_id=workspace_id,
         asset_id=asset.id,
         asset_kind=asset.asset_kind,
         user_id=user.id,
@@ -1334,7 +1337,7 @@ def retry_asset(
     ) or 0
     now = datetime.now(UTC)
     job = build_ingest_job(
-        workspace_id=workspace_id,
+        db=db,        workspace_id=workspace_id,
         asset_id=asset.id,
         asset_kind=asset.asset_kind,
         user_id=user.id,
@@ -1401,7 +1404,7 @@ def reindex_asset(
         config_snapshot={
             "source": "reindex",
             "chunkSize": workspace.chunk_size,
-            **embedding_index_job_snapshot_fields(),
+            **embedding_index_job_snapshot_fields(connection_index_contract(resolve_connection(db, workspace_id, "embedding"))),
         },
         requested_by_user_id=user.id,
         queued_at=now,

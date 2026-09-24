@@ -215,7 +215,7 @@ def test_prompt_v2_migration_refuses_downgrade_for_every_business_reference(
 
 def test_alembic_has_one_evolvable_head_after_autonomy() -> None:
     config = Config(str(Path(__file__).parents[1] / "alembic.ini"))
-    assert ScriptDirectory.from_config(config).get_heads() == ["r2f3a4b5c6d7"]
+    assert ScriptDirectory.from_config(config).get_heads() == ["s3a4b5c6d7e8"]
 
 
 def test_v5c_migrations_backfill_legacy_registry_and_allow_unknown_cost(monkeypatch: pytest.MonkeyPatch) -> None:

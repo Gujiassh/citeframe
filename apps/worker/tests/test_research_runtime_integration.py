@@ -334,3 +334,82 @@ def test_real_expired_lease_is_abandoned_and_reclaimed(runtime_db) -> None:
     with sessions() as db:
         expired = db.get(ResearchStepAttempt, lease.attempt_id)
         assert expired is not None and expired.status == "abandoned"
+
+@pytest.mark.parametrize("protocol", ["openai_responses", "openai_chat_completions"])
+@pytest.mark.parametrize("drift", [False, True])
+def test_workspace_configured_planner_uses_frozen_top_k_and_real_provider_adapter(runtime_db, monkeypatch, protocol, drift):
+    import base64
+    import json
+    import httpx
+    from ai_pdf_api.schemas.model_settings import UpdateModelSettingsRequest
+    from ai_pdf_api.schemas.research import CreateResearchRunRequest
+    from ai_pdf_api.services.workspace_models import update_model_settings
+    from ai_pdf_api.services.research.research_runs import create_research_run
+    from ai_pdf_api.services import workspace_providers
+    from ai_pdf_worker.research.processor import ClaimedResearchWork
+    from ai_pdf_worker.research.core import _lease
+    sessions, workspace_id, _, _, _, asset_id = runtime_db
+    from ai_pdf_api.services.research import research_views
+    objects = {}
+    publish = research_worker.publish_research_plan
+    monkeypatch.setattr(research_worker, "publish_research_plan", lambda db, **kw: publish(db, store_bytes=lambda key, data, mime: objects.__setitem__(key, data), cleanup_bytes=lambda key: objects.pop(key, None), **kw))
+    monkeypatch.setattr(research_views, "download_bytes", lambda key: objects[key])
+    monkeypatch.setattr(settings, "model_config_encryption_key", base64.b64encode(b"w" * 32).decode())
+    with sessions() as db:
+        workspace = db.get(Workspace, workspace_id)
+        workspace.retrieval_top_k = 9
+        from ai_pdf_api.services.research.research_versions_service import publish_research_versions_for_release
+        publish_research_versions_for_release(db, datetime.now(UTC))
+        update_model_settings(db, workspace_id, workspace.created_by_user_id,
+            UpdateModelSettingsRequest.model_validate({"generation": {
+                "action": "save", "expectedRevision": 0, "protocol": protocol,
+                "baseUrl": "https://workspace.test/custom", "model": "workspace-generation", "apiKey": "workspace-test-key"}}))
+        db.commit()
+        _, result, _ = create_research_run(db, workspace_id=workspace_id, actor_user_id=workspace.created_by_user_id,
+            payload=CreateResearchRunRequest.model_validate({"question": "What does the source establish?",
+                "assetScope": {"mode": "selected", "assetIds": [asset_id]}}), idempotency_key=str(uuid4()))
+        run_id = result["run"]["id"]
+        step = db.scalar(select(ResearchStep).where(ResearchStep.run_id == run_id, ResearchStep.step_kind == "planner"))
+        step_key = step.step_key
+        lease = research_worker.claim_specific_research_step(db, run_id=run_id, step_key=step_key,
+            branch_key=None, worker_instance_id="workspace-planner-test", lease_seconds=60)
+    if drift:
+        with sessions() as db:
+            workspace = db.get(Workspace, workspace_id)
+            update_model_settings(db, workspace_id, workspace.created_by_user_id,
+                UpdateModelSettingsRequest.model_validate({"generation": {
+                    "action": "save", "expectedRevision": 1, "protocol": protocol,
+                    "baseUrl": "https://workspace.test/custom", "model": "changed-model"}}))
+            db.commit()
+    requests = []
+    def handle(request):
+        body = json.loads(request.content)
+        requests.append((str(request.url), request.headers["Authorization"], body["model"]))
+        answer = json.dumps({"summary": "One source question.", "subproblems": [{"question": "What does the source establish?",
+            "assetIds": [asset_id], "expectedEvidence": []}], "knownGaps": [], "estimatedProviderCalls": 5})
+        payload = ({"status": "completed", "output_text": answer} if protocol == "openai_responses" else
+                   {"choices": [{"finish_reason": "stop", "message": {"content": answer}}]})
+        return httpx.Response(200, json=payload)
+    monkeypatch.setattr(workspace_providers, "model_client", lambda base, timeout: httpx.Client(transport=httpx.MockTransport(handle)))
+    processor = ResearchWorkProcessor(sessions, research_worker, worker_instance_id="workspace-planner-test")
+    ledger = SqlResearchLedgerAdapter(sessions, research_worker, worker_instance_id="workspace-planner-test")
+    claimed = ClaimedResearchWork(workspace_id, step_key, "planner", None, _lease(lease), run_id)
+    if drift:
+        from ai_pdf_api.services.providers import ModelProviderError
+        with pytest.raises(ModelProviderError) as error:
+            processor._process_planner_inner(ledger, claimed)
+        assert error.value.code == "research_provider_config_drift"
+        assert requests == []
+        with sessions() as db:
+            run = db.get(ResearchRun, run_id)
+            assert run.status == "failed"
+            assert run.failure_code == "research_provider_config_drift"
+            assert db.scalar(select(ResearchProviderCall.id).where(ResearchProviderCall.run_id == run_id)) is None
+        return
+    processor._process_planner_inner(ledger, claimed)
+    suffix = "responses" if protocol == "openai_responses" else "chat/completions"
+    assert requests == [(f"https://workspace.test/custom/{suffix}", "Bearer workspace-test-key", "workspace-generation")]
+    with sessions() as db:
+        assert db.get(ResearchRun, run_id).status == "queued"
+        call = db.scalar(select(ResearchProviderCall).where(ResearchProviderCall.run_id == run_id))
+        assert call.status == "succeeded"

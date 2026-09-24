@@ -8,10 +8,10 @@ RetrievalStrategy = Literal["dense", "hybrid"]
 
 
 class Settings(BaseSettings):
-    database_url: str = "postgresql+psycopg://ai_pdf:ai_pdf_dev@127.0.0.1:5432/ai_pdf_workspace"
+    database_url: str = Field(default="postgresql+psycopg://ai_pdf:ai_pdf_dev@127.0.0.1:5432/ai_pdf_workspace", repr=False)
     minio_endpoint: str = "127.0.0.1:9000"
-    minio_access_key: str = "minioadmin"
-    minio_secret_key: str = "minioadmin"
+    minio_access_key: str = Field(default="minioadmin", repr=False)
+    minio_secret_key: str = Field(default="minioadmin", repr=False)
     minio_bucket: str = "ai-pdf-workspace"
     minio_secure: bool = False
     max_upload_bytes: int = Field(default=1024 * 1024 * 100)
@@ -21,15 +21,20 @@ class Settings(BaseSettings):
     research_otel_endpoint: str | None = None
     research_otel_export_timeout_seconds: float = Field(default=5.0, gt=0, le=30)
     api_internal_token: str = Field(
+        repr=False,
         default="local-development-internal-token",
         validation_alias=AliasChoices("AI_PDF_API_INTERNAL_TOKEN"),
         min_length=16,
     )
     capability_fingerprint_pepper: str = Field(
+        repr=False,
         default="local-development-capability-fingerprint-pepper",
         validation_alias=AliasChoices("AI_PDF_CAPABILITY_FINGERPRINT_PEPPER"),
         min_length=16,
     )
+
+    model_config_encryption_key: str | None = Field(default=None, repr=False)
+    model_private_origins: dict[str, list[str]] = Field(default_factory=dict)
 
     embedding_provider: str = Field(default="openai", pattern="^(openai|ollama)$")
     embedding_model: str = "text-embedding-3-small"
@@ -68,22 +73,27 @@ class Settings(BaseSettings):
     asr_max_file_bytes: int = Field(default=25 * 1024 * 1024, ge=1)
 
     openai_api_key: str | None = Field(
+        repr=False,
         default=None,
         validation_alias=AliasChoices("AI_PDF_OPENAI_API_KEY", "OPENAI_API_KEY"),
     )
     openai_api_base: str = Field(
+        repr=False,
         default="https://api.openai.com/v1",
         validation_alias=AliasChoices("AI_PDF_OPENAI_API_BASE", "OPENAI_API_BASE"),
     )
     ollama_base_url: str = Field(
+        repr=False,
         default="http://127.0.0.1:11434",
         validation_alias=AliasChoices("AI_PDF_OLLAMA_BASE_URL", "OLLAMA_BASE_URL"),
     )
     deepseek_api_key: str | None = Field(
+        repr=False,
         default=None,
         validation_alias=AliasChoices("AI_PDF_DEEPSEEK_API_KEY", "DEEPSEEK_API_KEY"),
     )
     deepseek_api_base: str = Field(
+        repr=False,
         default="https://api.deepseek.com",
         validation_alias=AliasChoices("AI_PDF_DEEPSEEK_API_BASE", "DEEPSEEK_API_BASE"),
     )
