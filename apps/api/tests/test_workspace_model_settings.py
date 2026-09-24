@@ -185,3 +185,12 @@ def test_settings_repr_does_not_disclose_server_credentials():
         openai_api_base="https://secret-marker.invalid", deepseek_api_base="https://secret-marker.invalid",
         ollama_base_url="https://secret-marker.invalid", api_internal_token="secret-marker-long", capability_fingerprint_pepper="secret-marker-long")
     assert "secret-marker" not in repr(value)
+
+
+@pytest.mark.parametrize("code", ["research_provider_config_drift", "model_encryption_unavailable",
+    "model_secret_unavailable", "model_endpoint_invalid", "model_endpoint_denied"])
+def test_model_configuration_failures_remain_actionable_and_nonretryable(code):
+    from citeframe_research_persistence.policy import normalize_failure_code, is_transient_failure
+    assert normalize_failure_code(code) == code
+    assert is_transient_failure(code) is False
+    assert normalize_failure_code("untrusted-provider-secret-text") == "research_execution_failed"

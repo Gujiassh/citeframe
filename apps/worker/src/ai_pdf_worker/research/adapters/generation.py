@@ -10,6 +10,7 @@ from ai_pdf_api.core.research_observability import (
 from ai_pdf_api.services.providers import (
     GenerationMessage,
     GenerationProvider,
+    ModelProviderError,
     get_generation_provider,
 )
 from ai_pdf_api.services.research.research_context_policy import (
@@ -243,10 +244,10 @@ class LedgeredGeneration(_ApiPort):
         if self._resolved_models is not None:
             from ai_pdf_api.services.capabilities import connection_profile, matches_frozen_execution_fingerprint
             if self._provider.config_fingerprint != connection_profile(self._resolved_models.generation).config_fingerprint:
-                raise ResearchPortError("research_provider_config_drift")
+                raise ModelProviderError("research_provider_config_drift", "Model settings changed. Start a new Research run.")
             if not matches_frozen_execution_fingerprint(self._execution.provider_config_fingerprint,
                     retrieval_top_k=self._execution.retrieval_top_k, models=self._resolved_models):
-                raise ResearchPortError("research_provider_config_drift")
+                raise ModelProviderError("research_provider_config_drift", "Model settings changed. Start a new Research run.")
         reservation = self._call(
             "reserve_provider_call",
             write=True,
