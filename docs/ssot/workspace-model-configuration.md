@@ -14,7 +14,7 @@ Saving both capabilities is atomic. A stale revision returns `model_settings_con
 
 The `workspace_model_configs` table stores AES-GCM ciphertext with a random nonce and workspace/capability authenticated context. Operators must provision the same persistent `AI_PDF_MODEL_CONFIG_ENCRYPTION_KEY` to API and Worker: standard base64 encoding of 32 cryptographically random bytes. There is no development fallback or generated-on-start key. Missing/invalid key disables saving overrides; unreadable stored keys fail closed. Back up this secret separately with the database, restrict access, and retain it across restarts. Changing it without re-encrypting stored rows makes their keys unreadable. Automated key rotation is not provided.
 
-Migration `s3a4b5c6d7e8` is additive over `r2f3a4b5c6d7`. Its downgrade refuses silent destruction of saved configuration. Deployment exports include cryptography, httpcore/httpx, and certifi.
+Migration `s3a4b5c6d7e8` is additive over `r2f3a4b5c6d7`. Its downgrade refuses silent destruction of saved configuration. Deployment exports include cryptography, httpcore/httpx, and certifi. When API dependencies change, update and check all three consumers: `apps/api/uv.lock`, `apps/worker/uv.lock`, and `tools/evaluation/uv.lock`. Run `uv lock --project <project> --check` for each before submitting.
 
 ## Network boundary
 
