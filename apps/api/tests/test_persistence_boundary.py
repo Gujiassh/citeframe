@@ -6,12 +6,11 @@ import importlib
 import json
 import subprocess
 import sys
-import tomllib
 from pathlib import Path
 
+import tomllib
 from sqlalchemy.dialects import postgresql
 from sqlalchemy.schema import CreateIndex, CreateTable
-
 
 API_ROOT = Path(__file__).resolve().parents[1]
 REPOSITORY_ROOT = API_ROOT.parents[1]
@@ -21,7 +20,7 @@ PERSISTENCE_ROOT = REPOSITORY_ROOT / "packages/backend-persistence"
 PERSISTENCE_SRC = PERSISTENCE_ROOT / "src"
 PERSISTENCE_PACKAGE = PERSISTENCE_SRC / "citeframe_persistence"
 SNAPSHOT_PATH = API_ROOT / "tests/fixtures/citeframe-a1b-before-metadata.json"
-SNAPSHOT_SHA256 = "678ad54b9977cc6258639b92fa65e5976d032ac323428c98ed89215cf02167af"
+SNAPSHOT_SHA256 = "100c42f7bdcdb3e816ff780e25260ebea66e889917293e2154cd9ff12585b55e"
 STDLIB_IMPORT_ROOTS = set(sys.stdlib_module_names) | {"__future__"}
 PERSISTENCE_RUNTIME_IMPORT_ROOTS = STDLIB_IMPORT_ROOTS | {
     "citeframe_persistence",
@@ -132,8 +131,8 @@ def test_persistence_models_share_one_metadata_object_and_match_snapshot() -> No
     assert model_metadata == {metadata}
 
     actual = _compiled_postgresql_metadata_snapshot(metadata)
-    assert len(actual["tables"]) == 80
-    assert sum(len(table["indexes"]) for table in actual["tables"].values()) == 93
+    assert len(actual["tables"]) == 81
+    assert sum(len(table["indexes"]) for table in actual["tables"].values()) == 97
     assert actual == json.loads(snapshot_bytes)
 
 
@@ -164,7 +163,7 @@ import citeframe_persistence.models.asset
 
 package_file = Path(citeframe_persistence.__file__).resolve()
 assert package_file.is_relative_to(persistence_src), package_file
-assert len(citeframe_persistence.Base.metadata.tables) == 80
+assert len(citeframe_persistence.Base.metadata.tables) == 81
 assert not any(name == "ai_pdf_api" or name.startswith("ai_pdf_api.") for name in sys.modules)
 assert not any(name == "ai_pdf_worker" or name.startswith("ai_pdf_worker.") for name in sys.modules)
 """

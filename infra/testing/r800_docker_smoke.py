@@ -13,6 +13,8 @@ import subprocess
 import sys
 import time
 
+from r800_product_delta import verify_product_delta
+
 PRODUCT_PATHS = ["apps", "packages", "tools/evaluation", "infra/docker",
                  "infra/scripts/compose-common.sh", "infra/scripts/backup-deployment.sh",
                  "infra/scripts/restore-deployment.sh", "infra/scripts/run-r800-acceptance.sh",
@@ -147,27 +149,15 @@ def main() -> None:
         baseline = "c2639a071dbdc9deb18c46098637c19cfaca88a7"
         product_diff = run("product-diff", ["git", "diff", "--name-only", baseline, target_head,
                                            "--", *PRODUCT_PATHS])
+        integrated_delta = None
         if not args.historical_scenarios_only:
-            assert set(product_diff.splitlines()) <= {
-                "infra/docker/compose.r800.yml",
-                "tools/evaluation/src/citeframe_evaluation/acceptance/cli.py",
-                "tools/evaluation/src/citeframe_evaluation/acceptance/scenarios.py",
-                "tools/evaluation/src/citeframe_evaluation/acceptance/drivers.py",
-                "tools/evaluation/src/citeframe_evaluation/acceptance/evidence.py",
-                "tools/evaluation/src/citeframe_evaluation/acceptance/oracles.py",
-                "tools/evaluation/src/citeframe_evaluation/acceptance/controls.py",
-                "tools/evaluation/src/citeframe_evaluation/acceptance/request_proofs.py",
-                "tools/evaluation/src/citeframe_evaluation/acceptance/snapshot_proofs.py",
-                "tools/evaluation/tests/fixtures/snapshot-proof.json",
-                "tools/evaluation/tests/test_acceptance_evidence_links.py",
-                "tools/evaluation/tests/test_r800_research_acceptance.py",
-                "tools/evaluation/tests/test_acceptance_scenario_drivers.py",
-                "tools/evaluation/tests/fixtures/scenario-policy-facts.json",
-            }, product_diff
+            integrated_delta = verify_product_delta(source, target_head)
+            (output / "integrated-product-delta.json").write_text(json.dumps(integrated_delta, indent=2))
         (output / "provenance.json").write_text(json.dumps({"productHead": target_head,
             "harnessHead": harness_head, "baselineHead": baseline, "project": project,
+            "integratedDelta": integrated_delta,
             "harnessFiles": {p.name: sha256(p.read_bytes()).hexdigest()
-                             for p in (Path(__file__), harness / "r800_docker_probe.py", harness / "r800_provider_proofs.py")}}, indent=2))
+                             for p in (Path(__file__), harness / "r800_docker_probe.py", harness / "r800_provider_proofs.py", harness / "r800_product_delta.py")}}, indent=2))
         if not args.historical_scenarios_only:
             original_common = run("baseline-common-script", ["git", "show",
                 baseline + ":infra/scripts/compose-common.sh"])

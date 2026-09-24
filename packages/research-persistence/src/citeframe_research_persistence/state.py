@@ -5,23 +5,24 @@ import hashlib
 from collections.abc import Iterator
 from datetime import UTC, datetime
 
-from sqlalchemy import func, select, tuple_
-from sqlalchemy.orm import Session
-
 from citeframe_persistence.models import (
     ResearchBudgetLedger,
     ResearchProviderCall,
+    ResearchPublicationIntent,
     ResearchRun,
     ResearchStep,
     ResearchStepAttempt,
     ResearchToolCall,
 )
+from sqlalchemy import func, select, tuple_
+from sqlalchemy.orm import Session
 
 from .errors import ResearchError
 from .events import append_research_event
 from .lease import complete_research_step
 from .locks import locate_attempt, lock_attempt, lock_run, lock_step
 from .policy import add_optional_cost, subtract_optional_cost
+
 
 def complete_control_step(
     db: Session,
@@ -53,6 +54,12 @@ def _expired_attempt_candidate_ids(
         ).where(
             ResearchStepAttempt.status == "running",
             ResearchStepAttempt.lease_expires_at <= reclaimed_at,
+            ~select(ResearchPublicationIntent.id)
+            .where(
+                ResearchPublicationIntent.attempt_id == ResearchStepAttempt.id,
+                ResearchPublicationIntent.status != "absent",
+            )
+            .exists(),
         )
         if cursor is not None:
             query = query.where(
@@ -92,10 +99,16 @@ def reclaim_expired_research_steps(
         reclaimed_at=reclaimed_at,
         batch_size=max(100, limit),
     )
+    # The candidate query excludes publication-owned Attempts before locking.
+    # Keep a second bounded budget for races, locked Runs, and malformed chains
+    # so one generic reclaim transaction can never scan the whole backlog.
+    examined_budget = min(1000, limit * 4)
+    examined = 0
     reclaimed: list[tuple[ResearchRun, ResearchStep, ResearchStepAttempt]] = []
     for attempt_id in candidate_ids:
-        if len(reclaimed) >= limit:
+        if len(reclaimed) >= limit or examined >= examined_budget:
             break
+        examined += 1
         locator = locate_attempt(db, attempt_id)
         if locator is None:
             raise ResearchError("research_state_conflict", "Expired Research Attempt chain is invalid.", 409)
@@ -136,6 +149,21 @@ def reclaim_expired_research_steps(
             or step.workspace_id != run.workspace_id
         ):
             raise ResearchError("research_state_conflict", "Expired Research Attempt chain is invalid.", 409)
+
+        if step.step_kind == "artifact_publisher":
+            publication_intent = db.scalar(
+                select(ResearchPublicationIntent)
+                .where(
+                    ResearchPublicationIntent.attempt_id == attempt.id,
+                    ResearchPublicationIntent.status != "absent",
+                )
+                .with_for_update(of=ResearchPublicationIntent)
+                .execution_options(populate_existing=True)
+            )
+            if publication_intent is not None:
+                # Durable publication recovery is the sole owner of this Attempt.
+                # Keep the canonical Run -> Step -> Attempt -> intent lock order.
+                continue
 
         provider_locators = {
             row.id: row

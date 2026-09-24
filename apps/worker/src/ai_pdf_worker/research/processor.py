@@ -110,9 +110,15 @@ class ResearchWorkProcessor(_ApiPort):
         return ClaimedResearchWork(workspace_id, step_key, step_kind, _field(result, "branch_key"), lease, run_id)
 
     def process_one(self) -> bool:
+        publication_handled = bool(
+            self._call_saga(
+                "reconcile_one_publication_intent",
+                worker_instance_id=self._worker_instance_id,
+            )
+        )
         claimed = self.claim()
         if claimed is None:
-            return False
+            return publication_handled
         ledger = SqlResearchLedgerAdapter(self._sessions, self._service, worker_instance_id=self._worker_instance_id)
         run_attributes = {
             "research.run_id": claimed.run_id,

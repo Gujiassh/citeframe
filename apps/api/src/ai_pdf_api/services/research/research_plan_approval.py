@@ -22,6 +22,7 @@ from ai_pdf_api.models import (
     WorkflowPromptBinding,
     Workspace,
 )
+from ai_pdf_api.services.research.research_agent_io_registry import resolve_registry
 from ai_pdf_api.services.research.research_constants import (
     BUDGET_POLICY_VERSION,
     DATA_BOUNDARY_POLICY,
@@ -30,15 +31,17 @@ from ai_pdf_api.services.research.research_constants import (
     RETRY_POLICY_VERSION,
     WORKFLOW_VERSION_ID,
 )
-from ai_pdf_api.services.research.research_idempotency import ResearchError, canonical_sha256
-from ai_pdf_api.services.research.research_agent_io_registry import resolve_registry
-from ai_pdf_api.services.research.research_runs import (
-    build_execution_snapshot_hash_payload,
-    build_plan_snapshot_hash_payload,
+from ai_pdf_api.services.research.research_idempotency import (
+    ResearchError,
+    canonical_sha256,
 )
 from ai_pdf_api.services.research.research_versions_service import (
     _matches_frozen_profile_fingerprint,
     ensure_research_versions,
+)
+from citeframe_research_persistence.snapshot_integrity import (
+    build_execution_snapshot_hash_payload,
+    build_plan_snapshot_hash_payload,
 )
 from sqlalchemy import select
 from sqlalchemy.orm import Session
@@ -60,7 +63,11 @@ def _approve_plan(
         or plan_artifact.workspace_id != run.workspace_id
         or plan_artifact.content_sha256 != decision.input_artifact_sha256
     ):
-        raise ResearchError("stale_plan_artifact", "The approved Research plan Artifact is invalid.", 409)
+        raise ResearchError(
+            "stale_plan_artifact",
+            "The approved Research plan Artifact is invalid.",
+            409,
+        )
     try:
         plan_payload = load_research_plan_artifact(plan_artifact)
     except Exception as error:
@@ -78,7 +85,9 @@ def _approve_plan(
     )
     current_assets = {
         item.id: item
-        for item in db.scalars(select(Asset).where(Asset.id.in_([row.asset_id for row in frozen_assets]))).all()
+        for item in db.scalars(
+            select(Asset).where(Asset.id.in_([row.asset_id for row in frozen_assets]))
+        ).all()
     }
     for row in frozen_assets:
         asset = current_assets.get(row.asset_id)
@@ -90,13 +99,21 @@ def _approve_plan(
             or asset.current_processing_generation != row.processing_generation_snapshot
             or asset.current_index_version != row.index_version_snapshot
         ):
-            raise ResearchError("stale_plan_snapshot", "A frozen Asset changed after planning.", 409)
+            raise ResearchError(
+                "stale_plan_snapshot", "A frozen Asset changed after planning.", 409
+            )
     workflow, planner_prompt = ensure_research_versions(db)
     bindings = list(
         db.execute(
             select(WorkflowPromptBinding, PromptVersion)
-            .join(PromptVersion, PromptVersion.id == WorkflowPromptBinding.prompt_version_id)
-            .where(WorkflowPromptBinding.workflow_version_id == revision.proposed_workflow_version_id)
+            .join(
+                PromptVersion,
+                PromptVersion.id == WorkflowPromptBinding.prompt_version_id,
+            )
+            .where(
+                WorkflowPromptBinding.workflow_version_id
+                == revision.proposed_workflow_version_id
+            )
             .order_by(WorkflowPromptBinding.node_key)
         ).all()
     )
@@ -185,7 +202,9 @@ def _approve_plan(
             retrieval_top_k=revision.proposed_retrieval_top_k,
         )
         or any(prompt.availability != "active" for _binding, prompt in bindings)
-        or canonical_sha256(build_plan_snapshot_hash_payload(revision, frozen_assets, bindings))
+        or canonical_sha256(
+            build_plan_snapshot_hash_payload(revision, frozen_assets, bindings)
+        )
         != revision.planning_snapshot_sha256
     ):
         raise ResearchError(
@@ -206,7 +225,9 @@ def _approve_plan(
             "The approved Research agent I/O registry version is unavailable for new execution.",
             422,
         ) from error
-    snapshot_payload = build_execution_snapshot_hash_payload(revision, decision, frozen_assets, bindings)
+    snapshot_payload = build_execution_snapshot_hash_payload(
+        revision, decision, frozen_assets, bindings
+    )
     snapshot = ResearchExecutionSnapshot(
         workspace_id=run.workspace_id,
         run_id=run.id,
@@ -275,7 +296,11 @@ def _approve_plan(
     frozen_asset_ids = {item.asset_id for item in frozen_assets}
     for subproblem in plan_payload.subproblems:
         if not set(subproblem.asset_ids).issubset(frozen_asset_ids):
-            raise ResearchError("stale_plan_artifact", "The Research plan exceeds its frozen Asset scope.", 409)
+            raise ResearchError(
+                "stale_plan_artifact",
+                "The Research plan exceeds its frozen Asset scope.",
+                409,
+            )
         step = ResearchStep(
             workspace_id=run.workspace_id,
             run_id=run.id,
@@ -315,8 +340,14 @@ def _approve_plan(
         db.add(step)
         execution_steps[key] = step
     db.flush()
-    for researcher in (step for key, step in execution_steps.items() if key.startswith("researcher:")):
-        db.add(ResearchStepDependency(step_id=execution_steps["join"].id, depends_on_step_id=researcher.id))
+    for researcher in (
+        step for key, step in execution_steps.items() if key.startswith("researcher:")
+    ):
+        db.add(
+            ResearchStepDependency(
+                step_id=execution_steps["join"].id, depends_on_step_id=researcher.id
+            )
+        )
     for step_key, dependency_key in (
         ("verifier", "join"),
         ("critic", "verifier"),

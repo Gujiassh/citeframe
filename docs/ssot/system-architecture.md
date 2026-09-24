@@ -881,3 +881,20 @@ Document/Page/Chunk 已通过受控迁移切换为 Asset/Representation/ContentU
 - **Ingestion Worker** may import shared models and write Representations/ContentUnits under the modality adapter contract on the **shared Session** passed by the API orchestrator (current fact; not a completed process-isolated boundary).
 - **Research Worker** uses neutral persistence commands and Worker-owned UoW/session composition. Accepted R1 runtime runs one claimed Attempt per handler in independent loops and excludes LangGraph from runtime imports. Schema/migration ownership remains API.
 - **Chat** attaches generation images only via `modalities.visual_enrichment` (no direct kind-specific crop imports).
+
+
+## Publication adoption authorization (2026-09-23)
+
+Final adoption and reconciliation lock and recheck the creator membership inside the commit transaction, after the Run/Step/Attempt/intent chain. Revocation triggers cancellation and compensating cleanup without publishing a final artifact. Successful evidence from a terminated prior attempt remains reusable only within the same Step, frozen input and execution snapshot. See `specs/v5/post-v5-optimization/issue27-adoption-repair-20260923.md` for the test scope and pending PostgreSQL/runtime gates.
+
+### Issue 27 current-candidate R2 differential scope
+
+The A2 runner now retains raw reports and validates historical invariants plus explicitly approved R2 intent, generation-key, three semantic-identity event UUID and terminal-maintenance deltas. `rawEqual=false` is reported separately from invariant/delta acceptance; unknown differences fail closed. Current candidates execute the production saga with shared frozen Python/SQL time and injected storage capabilities. The field manifest, lifecycle evidence, negative controls and runtime limitations are in `specs/v5/post-v5-optimization/issue27-r2-differential-contract-20260923.md`. Historical artifacts are unchanged. Nullable Step input uses the existing lease-derived hash for both originating/current attempts. Initial Research retry can reload list/detail without an already selected run; this remains a minimal W1 repair.
+
+### Research service-backed recovery acceptance
+
+The isolated PG17/S3/Worker process gate is specified in [issue27 real-service acceptance](../../specs/v5/post-v5-optimization/issue27-real-service-acceptance-20260923.md). It is separate from the historical differential oracle and does not substitute for browser acceptance.
+
+### Publication storage deadline admission
+
+Publication child startup and operation share the supervisor's absolute monotonic deadline. Child entry rejects an expired budget before watchdog allocation and rechecks after watchdog startup before invoking the operation. The independent watchdog, exit124,20+2+2-second lifetime budget and30-second orphan observation remain unchanged. This fences observed expiry at admission; it does not retract in-flight remote requests or promise hard real-time scheduling. See [Issue33 contract and narrow differential evidence](../../specs/v5/post-v5-optimization/issue33-storage-deadline-admission-20260924.md).

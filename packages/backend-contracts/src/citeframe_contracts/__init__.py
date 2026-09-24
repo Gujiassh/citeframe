@@ -64,6 +64,44 @@ class FailureDisposition:
 
 
 @dataclass(frozen=True)
+class PublicationResult:
+    """Internal result of the durable final-report publication saga."""
+
+    kind: Literal["committed", "reconcile_pending"]
+    artifact_id: str | None = None
+    intent_id: str | None = None
+
+    def __post_init__(self) -> None:
+        if self.kind not in {"committed", "reconcile_pending"}:
+            raise ValueError("publication result kind is invalid")
+        committed_shape = (
+            self.kind == "committed"
+            and isinstance(self.artifact_id, str)
+            and bool(self.artifact_id)
+            and self.intent_id is None
+        )
+        pending_shape = (
+            self.kind == "reconcile_pending"
+            and self.artifact_id is None
+            and isinstance(self.intent_id, str)
+            and bool(self.intent_id)
+        )
+        if not (committed_shape or pending_shape):
+            raise ValueError(
+                "committed publication results require only artifact_id; "
+                "reconcile_pending results require only intent_id"
+            )
+
+    @classmethod
+    def committed(cls, artifact_id: str) -> PublicationResult:
+        return cls(kind="committed", artifact_id=artifact_id)
+
+    @classmethod
+    def reconcile_pending(cls, intent_id: str) -> PublicationResult:
+        return cls(kind="reconcile_pending", intent_id=intent_id)
+
+
+@dataclass(frozen=True)
 class ApprovedResearchExecution:
     workspace_id: str
     run_id: str
@@ -230,7 +268,9 @@ class Verifier(Protocol):
 
 
 class Critic(Protocol):
-    def __call__(self, claims: Sequence[VerifiedClaim], lease: StepLease | None = None) -> Sequence[str]: ...
+    def __call__(
+        self, claims: Sequence[VerifiedClaim], lease: StepLease | None = None
+    ) -> Sequence[str]: ...
 
 
 class Synthesizer(Protocol):
@@ -244,7 +284,9 @@ class Synthesizer(Protocol):
 
 
 class EvidenceToolPort(Protocol):
-    def restore_handles(self, context: ToolExecutionContext) -> Sequence[EvidenceHandle]: ...
+    def restore_handles(
+        self, context: ToolExecutionContext
+    ) -> Sequence[EvidenceHandle]: ...
 
     def search(
         self,
@@ -344,7 +386,7 @@ class ResearchLedger(Protocol):
         *,
         selection: SynthesisSelection,
         claims: Sequence[VerifiedClaim],
-    ) -> str: ...
+    ) -> PublicationResult: ...
 
 
 __all__ = [
@@ -362,6 +404,7 @@ __all__ = [
     "LoadedEvidence",
     "PlanSubproblemDraft",
     "Planner",
+    "PublicationResult",
     "ResearchExecutionError",
     "ResearchLedger",
     "ResearchState",

@@ -255,6 +255,7 @@ export function ChatPanel() {
               streamState={research.streamState}
               error={research.error}
               onSelectRun={(runId) => { void research.selectRun(runId); }}
+              onRefresh={() => { void research.refresh(); }}
               onApprove={() => { void research.approve(); }}
               onRevisePlan={(question, comment) => { void research.revisePlan(question, comment); }}
               onCancelPlan={() => { void research.cancelPlan(); }}

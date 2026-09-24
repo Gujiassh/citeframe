@@ -26,12 +26,13 @@ raise SystemExit(cli.main(["snapshot"]))
     assert "dependency-import-diagnostic" not in result.stdout
 
 
-def test_docker_timeline_query_uses_real_persistence_columns():
+def test_docker_timeline_query_uses_real_persistence_columns(monkeypatch):
     import re
     import runpy
     from ai_pdf_api.models import ResearchStep, ResearchStepAttempt
 
     root = Path(__file__).resolve().parents[3]
+    monkeypatch.syspath_prepend(str(root / "infra/testing"))
     query = runpy.run_path(str(root / "infra/testing/r800_docker_smoke.py"))["ATTEMPT_TIMELINE_QUERY"]
     columns = {"s": set(ResearchStep.__table__.columns.keys()),
                "a": set(ResearchStepAttempt.__table__.columns.keys())}

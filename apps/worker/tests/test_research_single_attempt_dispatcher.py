@@ -21,6 +21,7 @@ from ai_pdf_worker.research.processor import ResearchWorkProcessor
 from citeframe_contracts import (
     ApprovedResearchExecution,
     BranchResult,
+    PublicationResult,
     ResearchState,
     ResearchSubproblem,
     StepLease,
@@ -92,6 +93,9 @@ class ClaimService:
     def reclaim_expired_research_steps(self, _db: object, **_kwargs: object) -> int:
         return 0
 
+    def reconcile_one_publication_intent(self, _db: object, **_kwargs: object) -> bool:
+        return False
+
     def claim_next_research_step(self, _db: object, **_kwargs: object) -> dict[str, object]:
         return claimed_payload(step_kind=self.step_kind)
 
@@ -144,6 +148,59 @@ def test_process_one_keeps_planner_in_waiting_without_dispatching_another_step(
     assert planner_calls == ["planner"]
 
 
+def test_process_one_reconciles_at_most_once_then_still_scans_a_regular_step(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    calls: list[str] = []
+
+    class ServiceWithPendingPublication(ClaimService):
+        def reconcile_one_publication_intent(self, _db: object, **_kwargs: object) -> bool:
+            calls.append("reconcile")
+            return True
+
+        def reclaim_expired_research_steps(self, _db: object, **_kwargs: object) -> int:
+            calls.append("reclaim")
+            return 0
+
+        def claim_next_research_step(
+            self, _db: object, **_kwargs: object
+        ) -> dict[str, object]:
+            calls.append("claim")
+            return super().claim_next_research_step(_db, **_kwargs)
+
+    class Dispatcher:
+        def __init__(self, *_args: object, **_kwargs: object) -> None:
+            return None
+
+        def execute(self, **_kwargs: object) -> str:
+            calls.append("dispatch")
+            return "success"
+
+    monkeypatch.setattr(processor_module, "SingleAttemptStepDispatcher", Dispatcher)
+    processor = ResearchWorkProcessor(
+        Sessions(),
+        ServiceWithPendingPublication("researcher"),
+        worker_instance_id="worker-1",
+    )
+
+    assert processor.process_one() is True
+    assert calls == ["reconcile", "reclaim", "claim", "dispatch"]
+
+
+def test_process_one_fails_closed_when_service_lacks_publication_reconcile_port() -> None:
+    class LegacyService:
+        def reclaim_expired_research_steps(self, _db: object, **_kwargs: object) -> int:
+            raise AssertionError("ordinary work must not start with an old service")
+
+    with pytest.raises(
+        ResearchPortError,
+        match="research_port_unavailable:reconcile_one_publication_intent",
+    ):
+        ResearchWorkProcessor(
+            Sessions(), LegacyService(), worker_instance_id="worker-1"
+        ).process_one()
+
+
 class Ledger:
     def __init__(self, state: ResearchState) -> None:
         self.state = state
@@ -171,9 +228,11 @@ class Ledger:
     def complete_synthesis(self, _lease: StepLease, _selection: SynthesisSelection) -> None:
         self.calls.append("synthesizer")
 
-    def publish_final(self, _lease: StepLease, _execution: object, **_kwargs: object) -> str:
+    def publish_final(
+        self, _lease: StepLease, _execution: object, **_kwargs: object
+    ) -> PublicationResult:
         self.calls.append("artifact_publisher")
-        return "00000000-0000-0000-0000-000000000001"
+        return PublicationResult.committed("00000000-0000-0000-0000-000000000001")
 
     def step_failed(self, _lease: StepLease, _error_code: str) -> object:
         raise AssertionError("happy-path handler must not fail the Attempt")
@@ -200,6 +259,53 @@ class Agents:
         _lease: StepLease,
     ) -> SynthesisSelection:
         return SynthesisSelection((), ())
+
+
+def test_publication_pending_waits_without_persisting_generic_step_failure(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setattr(handlers_module, "GenerationResearchAgents", Agents)
+    state = ResearchState(
+        execution=approved_execution(),
+        completed_nodes=[
+            "researchers",
+            "join",
+            "verifier",
+            "critic",
+            "conflict_decision_gate",
+            "synthesizer",
+        ],
+        verified_claims=[],
+        synthesis=SynthesisSelection((), ()),
+        status="running",
+    )
+
+    class PendingLedger(Ledger):
+        def publish_final(
+            self, _lease: StepLease, _execution: object, **_kwargs: object
+        ) -> PublicationResult:
+            self.calls.append("artifact_publisher")
+            return PublicationResult.reconcile_pending(
+                "00000000-0000-0000-0000-000000000002"
+            )
+
+        def step_failed(self, _lease: StepLease, _error_code: str) -> object:
+            raise AssertionError("pending publication must not use the generic failure path")
+
+    ledger = PendingLedger(state)
+    outcome = SingleAttemptStepDispatcher(
+        Sessions(), Service(), ledger, provider=object()  # type: ignore[arg-type]
+    ).execute(
+        run_id="run-1",
+        workspace_id="workspace-1",
+        step_key="artifact_publisher",
+        step_kind="artifact_publisher",
+        branch_key=None,
+        lease=LEASE,
+    )
+
+    assert outcome == "waiting"
+    assert ledger.calls == ["load", "artifact_publisher"]
 
 
 @pytest.mark.parametrize(
@@ -425,6 +531,11 @@ def test_production_shaped_two_loop_pool_overlaps_independent_processors(
             return Session(session_counter)
 
     class ClaimService:
+        def reconcile_one_publication_intent(
+            self, _db: Session, **_kwargs: object
+        ) -> bool:
+            return False
+
         def reclaim_expired_research_steps(self, _db: Session, **_kwargs: object) -> int:
             return 0
 

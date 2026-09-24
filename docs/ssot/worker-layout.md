@@ -89,3 +89,7 @@ the unchanged backup/restore bodies and ordinary Compose Worker task path.
 `defaultRegistryPassed` is recorded true only after that actual chain succeeds.
 The workflow includes `compose-common.sh` in its trigger paths. Historical
 scenario failures remain independent and keep the overall gate red when present.
+
+### Reviewed feature-stack integration
+
+The R2/minimal-W1 prerequisite stack is integrated by normal merge onto accepted architecture main5ed. Deleted flat modules stay deleted; the publication adapter retains its reviewed saga behavior in `research/adapters/ledger.py`. The deployment fixture admits only the checked-in exact product-delta manifest and still enforces its historical, negative-control and real-service gates. Mapping, provenance and acceptance limits are recorded in [stack integration](../../specs/v5/worker-layout/stack-integration-20260924.md).

@@ -592,3 +592,57 @@ test("Malformed selected frozen profile stays unavailable", async ({ page }) => 
   await expect(page.getByText("scripted / fixture-revision-generation", { exact: true })).toHaveCount(0);
   await expect(page.getByText("scripted / fixture-planning-generation", { exact: true })).toHaveCount(0);
 });
+
+
+for (const failureAt of ["list", "detail"] as const) {
+  test(`Research initial ${failureAt} failure retries through the visible panel`, async ({ page }) => {
+    await mockWorkspace(page, { initialCreated: true, sessionUserId: "reader-user" });
+    const base = `/api/workspaces/${workspaceId}/research-runs`;
+    let failRequests = true;
+    let requests = 0;
+    await page.route(`**${base}**`, async (route) => {
+      const pathname = new URL(route.request().url()).pathname;
+      const target = failureAt === "list" ? base : `${base}/${runId}`;
+      if (pathname === target) {
+        requests += 1;
+        if (failRequests) {
+          return route.fulfill({ status: 503, contentType: "application/json",
+            body: JSON.stringify({ error: { code: "temporarily_unavailable", message: "Research temporarily unavailable" } }) });
+        }
+      }
+      return route.fallback();
+    });
+    await page.goto(`/workspaces/${workspaceId}`);
+    await page.getByRole("tab", { name: /深度研究|research/i }).click();
+    const retry = page.getByRole("button", { name: /重试加载|retry loading/i });
+    await expect(retry).toBeVisible();
+    failRequests = false;
+    await retry.click();
+    await expect(page.getByText(/研究计划 v1|Research plan v1/i)).toBeVisible();
+    await expect(retry).toHaveCount(0);
+    expect(requests).toBeGreaterThanOrEqual(2);
+    await expect(page.getByRole("button", { name: /批准计划|approve plan/i })).toHaveCount(0);
+  });
+}
+
+test("Research initial failure can retry to an empty list", async ({ page }) => {
+  await mockWorkspace(page);
+  let count = 0;
+  let failRequests = true;
+  await page.route(`**/api/workspaces/${workspaceId}/research-runs`, async (route) => {
+    count += 1;
+    if (failRequests) return route.fulfill({ status: 503, contentType: "application/json",
+      body: JSON.stringify({ error: { code: "temporarily_unavailable", message: "Try again" } }) });
+    return route.fallback();
+  });
+  await page.goto(`/workspaces/${workspaceId}`);
+  await page.getByRole("tab", { name: /深度研究|research/i }).click();
+  const retry = page.getByRole("button", { name: /重试加载|retry loading/i });
+  await expect(retry).toBeVisible();
+  failRequests = false;
+  const failedRequests = count;
+  await retry.click();
+  await expect(retry).toHaveCount(0);
+  await expect(page.getByPlaceholder(/多步骤查证|multi-step evidence/i)).toBeEnabled();
+  expect(count).toBe(failedRequests + 1);
+});

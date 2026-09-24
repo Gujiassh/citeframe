@@ -6,7 +6,8 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[3]
 
 
-def test_baseline_probe_rebinding_is_limited_to_import_paths():
+def test_baseline_probe_rebinding_is_limited_to_import_paths(monkeypatch):
+    monkeypatch.syspath_prepend(str(ROOT / "infra/scripts"))
     spec = importlib.util.spec_from_file_location("layout_differential_runner", ROOT / "infra/scripts/run-a2a-differential.py")
     runner = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(runner)

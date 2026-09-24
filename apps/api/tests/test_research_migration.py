@@ -5,15 +5,8 @@ from datetime import UTC, datetime
 from pathlib import Path
 from unittest.mock import Mock
 
-import pytest
-from alembic.config import Config
-from alembic.migration import MigrationContext
-from alembic.operations import Operations
-from alembic.script import ScriptDirectory
-from sqlalchemy import create_engine, inspect
-from sqlalchemy.orm import Session
-
 import ai_pdf_api.models  # noqa: F401
+import pytest
 from ai_pdf_api.db.base import Base
 from ai_pdf_api.models import PromptVersion, WorkflowPromptBinding, WorkflowVersion
 from ai_pdf_api.services.research.research_prompt_provenance import (
@@ -23,6 +16,12 @@ from ai_pdf_api.services.research.research_prompt_provenance import (
     prompt_contract_sha256,
     v2_workflow_manifest,
 )
+from alembic.config import Config
+from alembic.migration import MigrationContext
+from alembic.operations import Operations
+from alembic.script import ScriptDirectory
+from sqlalchemy import create_engine, inspect
+from sqlalchemy.orm import Session
 
 
 def load_migration():
@@ -214,9 +213,9 @@ def test_prompt_v2_migration_refuses_downgrade_for_every_business_reference(
     assert not any(str(call.args[0]).lstrip().startswith("DELETE") for call in bind.execute.call_args_list)
 
 
-def test_alembic_has_one_evolvable_head_after_prompt_v2() -> None:
+def test_alembic_has_one_evolvable_head_after_publication_intents() -> None:
     config = Config(str(Path(__file__).parents[1] / "alembic.ini"))
-    assert ScriptDirectory.from_config(config).get_heads() == ["m7a8b9c0d1e2"]
+    assert ScriptDirectory.from_config(config).get_heads() == ["n8b9c0d1e2f3"]
 
 
 def test_v5c_migrations_backfill_legacy_registry_and_allow_unknown_cost(monkeypatch: pytest.MonkeyPatch) -> None:

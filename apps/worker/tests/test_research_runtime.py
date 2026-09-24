@@ -7,15 +7,15 @@ from threading import Barrier, Event, Lock
 
 import ai_pdf_worker.main as worker_main
 import pytest
-from ai_pdf_api.services.research.research_prompt_provenance import (
-    PROMPT_NODE_ORDER,
-    V2_PROMPT_SPECS,
-    V2_PROMPT_VERSION_IDS,
-)
 from ai_pdf_api.services.research.research_agent_io_registry import (
     AGENT_RESULT_SCHEMA_VERSION,
     COMPACT_POLICY_VERSION,
     CONTEXT_POLICY_VERSION,
+)
+from ai_pdf_api.services.research.research_prompt_provenance import (
+    PROMPT_NODE_ORDER,
+    V2_PROMPT_SPECS,
+    V2_PROMPT_VERSION_IDS,
 )
 from ai_pdf_worker.research.executor import (
     EvidenceHandle,
@@ -44,6 +44,7 @@ from ai_pdf_worker.research.core import (
     _persist_step_failure,
     _planning_runtime_payload,
 )
+from citeframe_contracts import PublicationResult, SynthesisSelection
 
 
 def prompt_dto(node_key: str) -> dict[str, object]:
@@ -145,6 +146,68 @@ def test_api_port_write_call_uses_research_uow_commit_and_close() -> None:
 
     assert port._call("mutate", write=True, value="persisted") == "persisted"
     assert (session.committed, session.rolled_back, session.closed) == (1, 0, 1)
+
+
+def test_publication_saga_result_has_no_outer_implicit_commit() -> None:
+    factory = SessionFactory()
+    artifact_id = "00000000-0000-0000-0000-000000000001"
+
+    class Service:
+        def publish_final_report(
+            self, db: Session, **_kwargs: object
+        ) -> PublicationResult:
+            assert db.committed is False
+            return PublicationResult.committed(artifact_id)
+
+    adapter = SqlResearchLedgerAdapter(factory, Service(), worker_instance_id="worker-1")
+    result = adapter.publish_final(
+        StepLease("step-1", "attempt-1", 1, "lease-token"),
+        object(),  # type: ignore[arg-type]
+        selection=SynthesisSelection((), ()),
+        claims=(),
+    )
+
+    assert result == PublicationResult.committed(artifact_id)
+    assert len(factory.created) == 1
+    assert factory.created[0].committed is False
+    assert factory.created[0].closed is True
+
+
+def test_publication_saga_keeps_pending_result_when_session_close_fails(
+    caplog: pytest.LogCaptureFixture,
+) -> None:
+    intent_id = "00000000-0000-0000-0000-000000000002"
+
+    class CloseFailureSession(Session):
+        def close(self) -> None:
+            self.closed = True
+            raise RuntimeError("connection close acknowledgement lost")
+
+    session = CloseFailureSession(1)
+
+    class Service:
+        def publish_final_report(
+            self, _db: Session, **_kwargs: object
+        ) -> PublicationResult:
+            return PublicationResult.reconcile_pending(intent_id)
+
+    adapter = SqlResearchLedgerAdapter(
+        lambda: session,
+        Service(),
+        worker_instance_id="worker-1",
+    )
+    with caplog.at_level("WARNING"):
+        result = adapter.publish_final(
+            StepLease("step-1", "attempt-1", 1, "lease-token"),
+            object(),  # type: ignore[arg-type]
+            selection=SynthesisSelection((), ()),
+            claims=(),
+        )
+
+    assert result == PublicationResult.reconcile_pending(intent_id)
+    assert session.committed is False
+    assert session.closed is True
+    assert "research_saga_session_close_failed" in caplog.text
 
 
 def test_api_port_write_call_rolls_back_and_closes_on_failure() -> None:
@@ -783,6 +846,11 @@ def test_claimed_workspace_must_match_planning_payload() -> None:
     factory = SessionFactory()
 
     class Service:
+        def reconcile_one_publication_intent(
+            self, _db: Session, **_kwargs: object
+        ) -> bool:
+            return False
+
         def reclaim_expired_research_steps(self, _db: Session, **_kwargs: object) -> None:
             return None
 
@@ -907,6 +975,7 @@ def test_api_research_worker_exposes_the_production_runtime_contract() -> None:
         "publish_final_report",
         "publish_research_plan",
         "reclaim_expired_research_steps",
+        "reconcile_one_publication_intent",
         "reconcile_provider_call",
         "reserve_provider_call",
         "restore_frozen_evidence",
@@ -926,9 +995,13 @@ def test_final_publish_rejects_noncanonical_uppercase_uuid() -> None:
     class Service:
         published: dict[str, object] | None = None
 
-        def publish_final_report(self, _db: Session, **_kwargs: object) -> str:
+        def publish_final_report(
+            self, _db: Session, **_kwargs: object
+        ) -> PublicationResult:
             self.published = dict(_kwargs)
-            return "A3E8E1A4-0A7A-4A17-8CA8-6F8A4D130AA1"
+            return PublicationResult.committed(
+                "A3E8E1A4-0A7A-4A17-8CA8-6F8A4D130AA1"
+            )
 
     service = Service()
     adapter = SqlResearchLedgerAdapter(SessionFactory(), service, worker_instance_id="worker-1")
