@@ -147,6 +147,7 @@ type UseAssetsOptions = {
   user: AuthUser | null;
   isAuthHydrating: boolean;
   currentWorkspaceId: string;
+  refreshToken: string;
   tagRelationsRef: MutableRefObject<TagDto[]>;
   assetsRef: MutableRefObject<Asset[]>;
   syncAssetViewState: (workspaceId: string, assets: Asset[]) => void;
@@ -159,6 +160,7 @@ export function useAssets({
   user,
   isAuthHydrating,
   currentWorkspaceId,
+  refreshToken,
   tagRelationsRef,
   assetsRef,
   syncAssetViewState,
@@ -237,7 +239,7 @@ export function useAssets({
     return () => {
       cancelled = true;
     };
-  }, [currentWorkspaceId, isAuthHydrating, locale, setAssets, syncAssetViewState, tagRelationsRef, updateWorkspace, user, assetsRef]);
+  }, [currentWorkspaceId, refreshToken, isAuthHydrating, locale, setAssets, syncAssetViewState, tagRelationsRef, updateWorkspace, user, assetsRef]);
 
   useEffect(() => {
     if (isAuthHydrating || !user || !currentWorkspaceId) {

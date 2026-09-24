@@ -2,6 +2,8 @@
 
 import React, { createContext, useContext, useRef } from "react";
 
+import { useReindexTracker } from "@/lib/assets/use-reindex-tracker";
+import { completedReindexVersion, type ReindexState } from "@/lib/assets/reindex-tracker";
 import { useAuth } from "@/lib/auth/auth-context";
 import type { ChatThread } from "@/lib/chat/types";
 import type {
@@ -117,6 +119,10 @@ type WorkspaceContextType = {
   uploadQueue: UploadQueueItem[];
   enqueueUploads: (files: readonly File[]) => void;
   retryUpload: (id: string) => void;
+  reindexJobs: ReindexState[];
+  reindexAsset: (workspaceId: string, assetId: string) => Promise<void>;
+  refreshReindexJob: (workspaceId: string, assetId: string) => void;
+  refreshWorkspace: (workspaceId: string, signal?: AbortSignal) => Promise<void>;
   deleteAsset: (id: string) => Promise<void>;
   retryAsset: (id: string) => Promise<void>;
   retryDeleteAsset: (id: string) => Promise<void>;
@@ -176,6 +182,7 @@ export function WorkspaceProvider({ children }: { children: React.ReactNode }) {
   const { locale } = useTranslation();
   const { user, isHydrating: isAuthHydrating } = useAuth();
   const viewState = useWorkspaceViewState();
+  const reindexState = useReindexTracker(isAuthHydrating ? undefined : user?.userId);
   const assetsRef = useRef<Asset[]>([]);
   const tagRelationsRef = useRef<TagDto[]>([]);
   const syncWorkspaceViewState = viewState.syncWorkspaceViewState;
@@ -203,6 +210,7 @@ export function WorkspaceProvider({ children }: { children: React.ReactNode }) {
   });
 
   const assetState = useAssets({
+    refreshToken: completedReindexVersion(reindexState.reindexJobs, viewState.currentWorkspaceId),
     locale,
     user,
     isAuthHydrating,
@@ -310,6 +318,8 @@ export function WorkspaceProvider({ children }: { children: React.ReactNode }) {
         uploadQueue: assetState.uploadQueue,
         enqueueUploads: assetState.enqueueUploads,
         retryUpload: assetState.retryUpload,
+        ...reindexState,
+        refreshWorkspace: workspaceState.refreshWorkspace,
         deleteAsset: assetState.deleteAsset,
         retryAsset: assetState.retryAsset,
         retryDeleteAsset: assetState.retryDeleteAsset,
