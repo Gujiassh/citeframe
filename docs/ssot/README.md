@@ -4,6 +4,7 @@
 
 - `product-design.md`：产品定位、目标用户、模块边界与版本范围
 - `system-architecture.md`：系统架构、服务边界、模型/provider 与关键链路
+- `upload-queue.md`：多文件上传队列、工作空间归属与本地生命周期
 - `worker-layout.md`：Worker 职责目录、离线评测边界与路径迁移入口
 - `project-collaboration.md`：协作约定、开发边界与验证要求
 

@@ -7,6 +7,8 @@ import { useAuth } from "@/lib/auth/auth-context";
 import { useWorkspace, Asset } from "@/lib/workspace-context";
 import { useTheme } from "@/lib/theme-context";
 import { useTranslation } from "@/lib/i18n-context";
+import { UploadQueueList } from "./upload-queue-list";
+import { takeSelectedFiles } from "@/lib/assets/upload-queue";
 import { PRODUCTION_UPLOAD_ACCEPT } from "@/lib/assets/production-upload";
 import { 
   Plus, Trash2, MessageSquare, 
@@ -28,7 +30,9 @@ export function WorkspaceSidebar() {
     selectedTagIds,
     switchWorkspace,
     createWorkspace,
-    uploadAsset,
+    uploadQueue,
+    enqueueUploads,
+    retryUpload,
     deleteAsset,
     retryAsset,
     retryDeleteAsset,
@@ -63,17 +67,10 @@ export function WorkspaceSidebar() {
     (asset) => !["ready", "chunked", "failed", "deleted"].includes(asset.status),
   );
 
-  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      const file = e.target.files[0];
-      try {
-        await uploadAsset(file);
-      } catch (error) {
-        alert(error instanceof Error ? error.message : "Upload failed.");
-      } finally {
-        e.target.value = "";
-      }
-    }
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = takeSelectedFiles(e.currentTarget);
+    enqueueUploads(files);
+    if (files.length) setLeftSidebarOpen(true);
   };
 
   const triggerUpload = () => {
@@ -161,6 +158,7 @@ export function WorkspaceSidebar() {
           </button>
           <input
             type="file"
+            multiple
             ref={fileInputRef}
             onChange={handleFileChange}
             accept={PRODUCTION_UPLOAD_ACCEPT}
@@ -298,12 +296,15 @@ export function WorkspaceSidebar() {
             </button>
             <input
               type="file"
+            multiple
               ref={fileInputRef}
               onChange={handleFileChange}
               accept={PRODUCTION_UPLOAD_ACCEPT}
               className="hidden"
             />
           </div>
+
+          <UploadQueueList items={uploadQueue.filter((item) => item.workspaceId === currentWorkspace?.id)} onRetry={retryUpload} />
 
           <div className="mt-2.5 space-y-1">
             {wsAssets.length === 0 ? (
