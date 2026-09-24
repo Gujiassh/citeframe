@@ -49,3 +49,13 @@ Status: implementation and deterministic Web checks; controller browser acceptan
 4. Workspace switch or logout during reads/saves; no cross-workspace metadata or secret field carryover.
 5. Explicit reindex of an already-ready Asset: queued/running/terminal job progress, status polling after settings closes, poll failure recovery without duplicate job, backend mismatch recovery after success, and stored-data preservation on failure.
 6. Combined backend verification covers encryption at rest, API/Worker restart, actual Quick Answer/Research protocol paths, embedding query/ingestion and provider-security boundaries. Web unit/render evidence does not establish these runtime outcomes or real-provider quality.
+
+## Prestream Quick Answer failure recovery
+
+Controller browser acceptance at `5c2954a` reproduced: after an embedding profile change, Quick Answer was rejected before streaming with an index-mismatch error; successful thread hydration then removed optimistic rows, while the composer had already cleared the question.
+
+The Web recovery keeps prestream rejection separately from persisted thread messages, scoped by authenticated user, workspace and thread. The composer clears only after request acceptance. A rejected normal question remains an in-memory retry draft across opening settings and returning to chat. The visible error includes a Model settings / Reindex action. Accepted-stream failure handling and the existing boolean send contract remain unchanged; rejected edits do not become new-question drafts. Logout clears stored failures, and identity/hydration lifetime changes reject delayed failure updates.
+
+Focused regression covers the real `startChatStream` HTTP rejection parser, retained draft/error, accepted retry clearing, scope separation and rejected-edit semantics. This scoped fix still requires the controller's repeat of the embedding-change → rejected question → settings/reindex → retry browser flow.
+
+Rework checks: `pnpm --filter @citeframe/web test` 179 passed; focused `src/lib/chat/submission.test.ts` 4 passed; TypeScript, ESLint, production build and scoped diff checks passed.

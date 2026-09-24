@@ -5,6 +5,7 @@ import React, { createContext, useContext, useRef } from "react";
 import { useReindexTracker } from "@/lib/assets/use-reindex-tracker";
 import { completedReindexVersion, type ReindexState } from "@/lib/assets/reindex-tracker";
 import { useAuth } from "@/lib/auth/auth-context";
+import type { ChatSubmissionFailure } from "@/lib/chat/submission";
 import type { ChatThread } from "@/lib/chat/types";
 import type {
   EvidenceLocator,
@@ -99,6 +100,7 @@ type WorkspaceContextType = {
   notes: Note[];
   threads: ChatThread[];
   activeThread: ChatThread | null;
+  chatSubmissionFailure: ChatSubmissionFailure | null;
   tags: Tag[];
   openAssetIds: string[];
   activeAssetId: string | null;
@@ -298,6 +300,7 @@ export function WorkspaceProvider({ children }: { children: React.ReactNode }) {
         notes: notesTagsState.notes,
         threads: chatState.threads,
         activeThread: chatState.activeThread,
+        chatSubmissionFailure: chatState.chatSubmissionFailure,
         tags: notesTagsState.tags,
         openAssetIds: viewState.openAssetIds,
         activeAssetId: viewState.activeAssetId,
