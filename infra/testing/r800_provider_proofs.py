@@ -39,6 +39,21 @@ class ProofState(stub.ProviderState):
 class ProofHandler(stub.R800ProviderHandler):
     @staticmethod
     def _generation_output(body):
+        payload = stub._last_user_payload(body)
+        if "investigation" in payload:
+            from citeframe_research_persistence.conflict_contract import INVESTIGATOR_SCHEMA
+            assert payload["resultSchema"] == INVESTIGATOR_SCHEMA, "unknown_investigator_contract"
+            result = {
+                "inspections": [{"evidenceHandleId": e["id"], "quote": e["excerpt"],
+                    "version": None, "environment": None, "time": None, "conditions": None}
+                    for e in payload["investigation"]["evidence"]],
+                "revisions": [], "nextQuery": None,
+                "gaps": ["The fixture evidence does not establish a source-backed correction."],
+                "reason": "Inspected the original source; conflict remains unresolved.",
+            }
+            output_text = json.dumps(result, ensure_ascii=True, sort_keys=True, separators=(",", ":"))
+            return {"status": "completed", "output_text": output_text,
+                    "usage": {"input_tokens": 64, "output_tokens": max(1, (len(output_text) + 3) // 4)}}
         output = stub.R800ProviderHandler._generation_output(body)
         if stub._detect_node(body) == "researcher":
             payload = stub._last_user_payload(body)
@@ -53,6 +68,8 @@ class ProofHandler(stub.R800ProviderHandler):
         return output
 
     def _provider_request(self, node, body_bytes, body, output_builder):
+        if "investigation" in stub._last_user_payload(body):
+            node = "investigator"
         self.provider_state.context.raw_body = body_bytes.decode("utf-8")
         self.provider_state.context.path = urlsplit(self.path).path
         try:

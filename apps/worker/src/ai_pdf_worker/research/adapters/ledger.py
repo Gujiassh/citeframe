@@ -312,6 +312,9 @@ class SqlResearchLedgerAdapter(_ApiPort, ResearchLedger):
             now=_now(),
         )
 
+    def investigation_outcome(self, run_id):
+        return self._call("investigation_outcome", run_id=run_id)
+
     def complete_synthesis(
         self, lease: StepLease, selection: SynthesisSelection
     ) -> None:

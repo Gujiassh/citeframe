@@ -12,7 +12,7 @@ from dataclasses import dataclass, replace
 from typing import Any, Mapping
 
 # Production current versions. New Runs bind these exact values.
-AGENT_RESULT_SCHEMA_VERSION = "research-agent-results-v2"
+AGENT_RESULT_SCHEMA_VERSION = "research-agent-results-v3"
 CONTEXT_POLICY_VERSION = "research-context-policy-v1"
 COMPACT_POLICY_VERSION = "research-compact-policy-v1"
 
@@ -163,16 +163,28 @@ LEGACY_REGISTRY = AgentIoRegistryEntry(
 
 
 ADAPTIVE_ROLE_CONTRACTS = {
-    key: replace(role, schema_version=AGENT_RESULT_SCHEMA_VERSION,
+    key: replace(role, schema_version="research-agent-results-v2",
                  result_schema_id=role.result_schema_id.replace(".v1", ".v2"),
                  validator_key="research-agent-validator.v2",
                  output_required=("claims", "nextQuery") if key == "researcher" else role.output_required)
     for key, role in ROLE_CONTRACTS.items()
 }
-PRODUCTION_REGISTRY = replace(V1_REGISTRY,
-    agent_result_schema_version=AGENT_RESULT_SCHEMA_VERSION, roles=ADAPTIVE_ROLE_CONTRACTS)
+V2_REGISTRY = replace(V1_REGISTRY,
+    agent_result_schema_version="research-agent-results-v2", roles=ADAPTIVE_ROLE_CONTRACTS)
+INVESTIGATION_ROLES = {key: replace(role, schema_version=AGENT_RESULT_SCHEMA_VERSION,
+    result_schema_id=role.result_schema_id.replace(".v2", ".v3"),
+    validator_key="research-agent-validator.v3") for key, role in ADAPTIVE_ROLE_CONTRACTS.items()}
+INVESTIGATION_ROLES["investigator"] = RoleContract(
+    node_key="investigator", schema_version=AGENT_RESULT_SCHEMA_VERSION,
+    result_schema_id="research.investigator.v3", validator_key="research-agent-validator.v3",
+    runtime_adapter_key="research-runtime-adapter.v1", api_projection_key="research-investigation-dto.v1",
+    prompt_key="research.investigator", input_required=("investigation", "resultSchema"),
+    output_required=("inspections", "revisions", "gaps", "reason", "nextQuery"), prompt_node_key="investigator")
+PRODUCTION_REGISTRY = replace(V2_REGISTRY,
+    agent_result_schema_version=AGENT_RESULT_SCHEMA_VERSION, roles=INVESTIGATION_ROLES)
 
 _REGISTRY_BY_VERSION: dict[tuple[str, str, str], AgentIoRegistryEntry] = {
+    (V2_REGISTRY.agent_result_schema_version, V2_REGISTRY.context_policy_version, V2_REGISTRY.compact_policy_version): V2_REGISTRY,
     (V1_REGISTRY.agent_result_schema_version, V1_REGISTRY.context_policy_version,
      V1_REGISTRY.compact_policy_version): V1_REGISTRY,
     (
@@ -188,6 +200,7 @@ _REGISTRY_BY_VERSION: dict[tuple[str, str, str], AgentIoRegistryEntry] = {
 }
 
 _ROLE_BINDING_KEYS: dict[str, tuple[str, str, str, str, str]] = {
+    "investigator": ("research.investigator", "research-investigation-dto.v1", "investigator", "research-agent-validator.v1", "research-runtime-adapter.v1"),
     "planner": (
         "research.planner",
         "research-plan-dto.v1",
@@ -299,9 +312,10 @@ def resolve_role_contract(entry: AgentIoRegistryEntry, node_key: str) -> RoleCon
     expected_schema_id = expected_prompt_key + (
         ".legacy-v0" if entry.agent_result_schema_version == AGENT_RESULT_SCHEMA_VERSION_LEGACY else ".v1"
     )
-    if entry.agent_result_schema_version == AGENT_RESULT_SCHEMA_VERSION:
-        expected_schema_id = expected_schema_id.replace(".v1", ".v2")
-        validator_key = validator_key.replace(".v1", ".v2")
+    if entry.agent_result_schema_version in {"research-agent-results-v2", "research-agent-results-v3"}:
+        suffix = ".v3" if entry.agent_result_schema_version == "research-agent-results-v3" else ".v2"
+        expected_schema_id = expected_schema_id.replace(".v1", suffix)
+        validator_key = validator_key.replace(".v1", suffix)
     expected_validator_key = validator_key.replace(".v1", ".legacy-v0") if entry.agent_result_schema_version == AGENT_RESULT_SCHEMA_VERSION_LEGACY else validator_key
     expected_adapter_key = adapter_key.replace(".v1", ".legacy-v0") if entry.agent_result_schema_version == AGENT_RESULT_SCHEMA_VERSION_LEGACY else adapter_key
     if (
@@ -342,6 +356,7 @@ def require_current_production_registry() -> AgentIoRegistryEntry:
         "verifier",
         "critic",
         "synthesizer",
+        "investigator",
     }:
         raise ValueError("research_agent_io_version_unavailable")
     for node_key in entry.roles:

@@ -352,12 +352,12 @@ def test_f1_executable_registry_runtime_bindings() -> None:
     production = require_current_production_registry()
     production_schemas = schemas_for_registry(production)
     production_validators = validators_for_registry(production)
-    assert set(production_schemas) == set(payloads)
-    assert set(production_validators) == set(payloads)
+    assert set(production_schemas) == {*payloads, "investigator"}
+    assert set(production_validators) == {*payloads, "investigator"}
     for node_key, payload in payloads.items():
         role = resolve_role_contract(production, node_key)
-        assert role.result_schema_id == f"research.{node_key}.v2"
-        assert role.validator_key == "research-agent-validator.v2"
+        assert role.result_schema_id == f"research.{node_key}.v3"
+        assert role.validator_key == "research-agent-validator.v3"
         assert role.runtime_adapter_key == "research-runtime-adapter.v1"
         assert production_schemas[node_key]["type"] == "object"
         production_validators[node_key](node_key, {**payload, "nextQuery": None} if node_key == "researcher" else payload)
@@ -438,6 +438,7 @@ def test_f1_executable_registry_runtime_bindings() -> None:
         "verifier": "research-claim-dto.v1",
         "critic": "research-conflict-dto.v1",
         "synthesizer": "research-artifact-dto.v1",
+        "investigator": "research-investigation-dto.v1",
     }
     assert production.agent_result_schema_version == AGENT_RESULT_SCHEMA_VERSION
     assert production.context_policy_version == CONTEXT_POLICY_VERSION

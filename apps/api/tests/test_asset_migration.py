@@ -586,7 +586,7 @@ def test_postgres_asset_migration_preserves_legacy_evidence_contract() -> None:
         source_snapshot = _payload_snapshot(source_url)
         _dump_and_restore(source_url, restored_url)
         assert _payload_snapshot(restored_url) == source_snapshot
-        with pytest.raises(RuntimeError, match="Adaptive checkpoints cannot be dropped"):
+        with pytest.raises(RuntimeError, match="Investigation provenance requires a forward migration"):
             command.downgrade(config, LEGACY_HEAD)
     finally:
         settings.database_url = original_url

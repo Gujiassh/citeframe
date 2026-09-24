@@ -16,7 +16,8 @@ from citeframe_contracts import (
 
 
 class EvidenceToolRegistry:
-    def __init__(self, port: EvidenceToolPort, context: ToolExecutionContext) -> None:
+    def __init__(self, port: EvidenceToolPort, context: ToolExecutionContext, *, call_key_namespace: str = "") -> None:
+        self._call_key_namespace = call_key_namespace
         self._port = port
         self._context = context
         self._issued: dict[str, EvidenceHandle] = {}
@@ -107,7 +108,7 @@ class EvidenceToolRegistry:
     def _next_call_key(self, tool_name: str) -> str:
         with self._lock:
             self._call_order += 1
-            return f"{tool_name}:{self._call_order}"
+            return f"{self._call_key_namespace}{tool_name}:{self._call_order}"
 
     def _accept_scoped_handles(self, handles: Sequence[EvidenceHandle]) -> None:
         frozen = {asset.asset_id: asset for asset in self._context.frozen_assets}

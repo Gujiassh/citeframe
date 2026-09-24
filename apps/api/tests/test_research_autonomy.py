@@ -166,6 +166,9 @@ def test_workflow_release_rejects_cross_version_prompt_binding(research_app):
         V2_PROMPT_VERSION_IDS, V3_WORKFLOW_VERSION_ID)
     _, db, _ = research_app
     install_historical_v2(db)
+    from ai_pdf_api.services.research.research_versions_service import publish_research_versions_for_release
+    publish_research_versions_for_release(db, datetime.now(UTC), workflow_id=V3_WORKFLOW_VERSION_ID)
+    db.flush()
     binding=db.get(WorkflowPromptBinding, (V3_WORKFLOW_VERSION_ID,"researchers"))
     binding.prompt_version_id=V2_PROMPT_VERSION_IDS["researchers"]
     db.commit()
@@ -210,7 +213,7 @@ def test_deployment_oracle_reads_real_auto_plan_and_rejects_tampering(research_a
     run, _ = publish(client, db, ctx)
     observe = lambda: workflow_facts(lambda: nullcontext(db), run.id)
     proof = observe()
-    assert proof["release"] == "citeframe-research-v3" and proof["snapshotId"] == run.approved_execution_snapshot_id
+    assert proof["release"] == "citeframe-research-v4" and proof["snapshotId"] == run.approved_execution_snapshot_id
     snapshot = db.get(ResearchExecutionSnapshot, run.approved_execution_snapshot_id)
     decision = db.get(HumanDecision, snapshot.approval_decision_id)
     decision.decided_by_user_id = run.created_by_user_id

@@ -5,7 +5,7 @@ from ai_pdf_api.models import (
     ResearchRun, ResearchStep, ResearchStepAttempt, ResearchExecutionSnapshot,
     ResearchBudgetLedger, ResearchProviderCall, ResearchToolCall,
     ResearchArtifact, WorkspaceMembership, ResearchPlanRevision, HumanDecision,
-    ResearchExecutionAsset, ResearchExecutionPromptVersion,
+    ResearchExecutionAsset, ResearchExecutionPromptVersion, ResearchConflictTurn,
 )
 
 
@@ -31,6 +31,11 @@ def execution_facts(session_factory, run_id):
             ResearchArtifact.run_id == run_id, ResearchArtifact.artifact_kind == "final_report"))]
         result["memberships"] = [row(r) for r in db.scalars(select(WorkspaceMembership).where(
             WorkspaceMembership.workspace_id == run.workspace_id))]
+        result["conflictTurns"] = [row(r) for r in db.scalars(select(ResearchConflictTurn).join(
+            ResearchStep, ResearchStep.id == ResearchConflictTurn.step_id).where(ResearchStep.run_id == run_id))]
+        from .conflicts import assert_journal_scope
+        for turn in result["conflictTurns"]:
+            assert_journal_scope(result, turn)
         return result
 
 

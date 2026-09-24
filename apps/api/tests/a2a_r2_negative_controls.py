@@ -12,6 +12,8 @@ def verify_negative_controls(payload):
     compare = importlib.import_module("a2a_r2_delta").compare
     base = payload["rawBaselineReport"]
     source = payload["rawCandidateReport"]
+    if "research_conflict_turns" in source["researchTableColumns"]:
+        source = importlib.import_module("a2a_conflict_feature_oracle").project_historical_f2(source)
     if "research_adaptive_turns" in source["researchTableColumns"]:
         source = importlib.import_module("a2a_feature_history_oracle").project_historical_f1(source)
     require_original = deepcopy(source)

@@ -188,6 +188,7 @@ export type ResearchRunSummary = {
 };
 
 export type ResearchRunDetail = ResearchRunSummary & {
+  conflictInvestigation?: ConflictInvestigation | null;
   frozenAssetScope: FrozenAssetScope | null;
   plan: ResearchPlan | null;
   researchExecution?: ResearchExecutionSnapshot | null;
@@ -207,3 +208,17 @@ export type ResearchRunListResponse = { items: ResearchRunSummary[]; nextCursor:
 export type ResearchRunResponse = { run: ResearchRunDetail };
 export type ResearchArtifactListResponse = { items: ResearchArtifactSummary[] };
 export type ResearchArtifactDetailResponse = { artifact: ResearchArtifactDetail };
+
+export type ConflictInvestigation = {
+  status: "running" | "resolved" | "unresolved" | "cancelled" | "failed";
+  phase: "inspect" | "search" | "verify" | "critic" | "finish";
+  reason: string | null;
+  explanation: string | null;
+  operations: { number: number; phase: ConflictInvestigation["phase"]; status: "started" | "succeeded" }[];
+  queries: string[];
+  inspections: { evidenceHandleId: string; quote: string; version: string | null; environment: string | null; time: string | null; conditions: string | null }[];
+  gaps: string[];
+  originalClaims: { id: string; text: string; evidenceHandleIds: string[] }[];
+  revisions: { id: string; text: string; evidenceHandleIds: string[]; originalClaimIds: string[] }[];
+  sources: { id: string; assetId: string; locatorId: string; excerpt: string; fingerprint: string }[];
+};

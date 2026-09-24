@@ -567,8 +567,9 @@ def seed_frozen_evidence(
 
 def make_final_publication_chain(
     fixture: ResearchWorkerFixture,
+    *, workflow_id: str = "30000000-0000-4000-8000-000000000001",
 ) -> tuple[ResearchClaim, ResearchClaim]:
-    workflow, _planner = publish_research_versions_for_release(fixture.db, fixture.now)
+    workflow, _planner = publish_research_versions_for_release(fixture.db, fixture.now, workflow_id=workflow_id)
     fixture.db.flush()
     bindings = list(
         fixture.db.scalars(

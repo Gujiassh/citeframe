@@ -1,4 +1,5 @@
 from __future__ import annotations
+from citeframe_research_persistence.conflict_policy import INVESTIGATION_WORKFLOW_ID
 
 import hashlib
 from collections.abc import Callable, Sequence
@@ -88,6 +89,11 @@ def wait_for_conflict_decision(
         raise ResearchError(
             "research_state_conflict", "Research conflict report chain is invalid.", 409
         )
+    if snapshot.workflow_version_id == INVESTIGATION_WORKFLOW_ID:
+        from .conflict_investigation import investigation_outcome
+        outcome = investigation_outcome(db, run.id)
+        if outcome is None or {c["id"] for c in outcome["originalClaims"]} != set(claim_ids):
+            raise ResearchError("research_state_conflict", "Conflict investigation is incomplete.", 409)
     artifact_id = str(uuid4())
     payload = canonical_json({"schemaVersion": 1, "conflictClaimIds": claim_ids})
     payload_sha256 = hashlib.sha256(payload).hexdigest()
@@ -162,7 +168,7 @@ def wait_for_conflict_decision(
         )
         db.add(decision)
         db.flush()
-        if snapshot.workflow_version_id == AUTONOMOUS_WORKFLOW_ID:
+        if snapshot.workflow_version_id in {AUTONOMOUS_WORKFLOW_ID, INVESTIGATION_WORKFLOW_ID}:
             def retain_unresolved(session, current_run, current_step, current_attempt):
                 for claim in claims:
                     claim.conflict_status = "resolved_unresolved"

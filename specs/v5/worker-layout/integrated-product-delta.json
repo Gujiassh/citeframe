@@ -3,17 +3,39 @@
   "architectureBase": "5ed02c8b7b5f357f58d1c3fd270ead0718e7afbf",
   "reviewedSourceHeads": [
     "b691406fdc7d38e3f93578b36aaddafe7dbf992f",
-    "ed478a865068492107218dd9dcdff566a8efc6b8"
+    "ed478a865068492107218dd9dcdff566a8efc6b8",
+    "a927682b32456db6fe7639e0855181f9ee0858c8",
+    "0e5e3209d28a6b29b9d05e1f4cc947e17d636048",
+    "06b30a986e0916b54b7c8eefe815347c4e5bcf06"
   ],
-  "scope": "PR29 reviewed autonomous research/adaptive retrieval/report edits and PR28 prerequisite, mapped onto accepted architecture; exact blobs frozen outside CI",
+  "scope": "PR30 issue25 v4 conflict investigation plus normal architecture/prerequisite merges; exact owner-prepared blobs/provenance, new integration and v4 oracle pending independent Hubble review",
   "functionalOracle": [
     "existing R800 scenarios + three Hubble controls + actual fresh serial negative",
     "real PG/S3 publication restore/cancel/revoke service gate",
     "deadline admission + adoption + recovered-step-error tests",
-    "historical v2 and real-create default v3 separately required; no manual policy approval",
-    "adaptive retry/cancel/budget and report first-save/CAS/revocation tests"
+    "historical v2/v3 retain persisted bindings; real-create default v4 separately required; no manual policy approval",
+    "adaptive retry/cancel/budget and report first-save/CAS/revocation tests",
+    "v4 investigator wire-to-attempt-to-journal proof and source-backed bounded unresolved fixture; separate from unchanged R2 equality whitelist",
+    "approved-v3 in-flight snapshot upgrades to default-v4 and resumes through report/edit; fresh-vs-staged PostgreSQL migration",
+    "twelve real worker process-exit boundaries, cancellation/revocation/tool budget; original journal and provider/tool rows preserved"
   ],
   "files": [
+    {
+      "path": "apps/api/alembic/release_data/research_v3.json",
+      "integratedBlob": "a91e7730235cc7a3546c722f9d2bd522e7e7ed22",
+      "reviewedSourceHead": "a927682b32456db6fe7639e0855181f9ee0858c8",
+      "reviewedSourcePath": "apps/api/alembic/release_data/research_v3.json",
+      "reviewedSourceBlob": "a91e7730235cc7a3546c722f9d2bd522e7e7ed22",
+      "transformation": "identical-reviewed-issue25-bytes"
+    },
+    {
+      "path": "apps/api/alembic/release_data/research_v4.json",
+      "integratedBlob": "7d09077ea96c8ef169caf5d8dd3478d33d3d967d",
+      "reviewedSourceHead": "a927682b32456db6fe7639e0855181f9ee0858c8",
+      "reviewedSourcePath": "apps/api/alembic/release_data/research_v4.json",
+      "reviewedSourceBlob": "7d09077ea96c8ef169caf5d8dd3478d33d3d967d",
+      "transformation": "identical-reviewed-issue25-bytes"
+    },
     {
       "path": "apps/api/alembic/versions/n8b9c0d1e2f3_add_research_publication_intents.py",
       "integratedBlob": "50fdc1bb5ec065318a148b3f16ab2774bc54eb63",
@@ -32,11 +54,19 @@
     },
     {
       "path": "apps/api/alembic/versions/p0d1e2f3a4b5_research_autonomy.py",
-      "integratedBlob": "7a7b9a076975b10e3fb06efd9b1bad19cb0be52d",
-      "reviewedSourceHead": "b691406fdc7d38e3f93578b36aaddafe7dbf992f",
+      "integratedBlob": "86f84b3e62af85d25b3b6783aa7a9ce7ef3d83c4",
+      "reviewedSourceHead": "a927682b32456db6fe7639e0855181f9ee0858c8",
       "reviewedSourcePath": "apps/api/alembic/versions/p0d1e2f3a4b5_research_autonomy.py",
-      "reviewedSourceBlob": "7a7b9a076975b10e3fb06efd9b1bad19cb0be52d",
-      "transformation": "identical-reviewed-bytes"
+      "reviewedSourceBlob": "86f84b3e62af85d25b3b6783aa7a9ce7ef3d83c4",
+      "transformation": "identical-reviewed-issue25-bytes",
+      "inheritedProvenance": {
+        "path": "apps/api/alembic/versions/p0d1e2f3a4b5_research_autonomy.py",
+        "integratedBlob": "7a7b9a076975b10e3fb06efd9b1bad19cb0be52d",
+        "reviewedSourceHead": "b691406fdc7d38e3f93578b36aaddafe7dbf992f",
+        "reviewedSourcePath": "apps/api/alembic/versions/p0d1e2f3a4b5_research_autonomy.py",
+        "reviewedSourceBlob": "7a7b9a076975b10e3fb06efd9b1bad19cb0be52d",
+        "transformation": "identical-reviewed-bytes"
+      }
     },
     {
       "path": "apps/api/alembic/versions/q1e2f3a4b5c6_research_adaptive_turns.py",
@@ -47,12 +77,28 @@
       "transformation": "identical-reviewed-bytes"
     },
     {
+      "path": "apps/api/alembic/versions/r2f3a4b5c6d7_conflict_investigation.py",
+      "integratedBlob": "71fed03e740aad2674cad40fbccc66fa8bdc97ac",
+      "reviewedSourceHead": "a927682b32456db6fe7639e0855181f9ee0858c8",
+      "reviewedSourcePath": "apps/api/alembic/versions/r2f3a4b5c6d7_conflict_investigation.py",
+      "reviewedSourceBlob": "71fed03e740aad2674cad40fbccc66fa8bdc97ac",
+      "transformation": "identical-reviewed-issue25-bytes"
+    },
+    {
       "path": "apps/api/src/ai_pdf_api/models/__init__.py",
-      "integratedBlob": "0ee88cd636f942b0410973606dc09a4b9884f3ed",
-      "reviewedSourceHead": "b691406fdc7d38e3f93578b36aaddafe7dbf992f",
+      "integratedBlob": "bee21ba5ecb11c5a6fc0c900569d45565ae76b82",
+      "reviewedSourceHead": "a927682b32456db6fe7639e0855181f9ee0858c8",
       "reviewedSourcePath": "apps/api/src/ai_pdf_api/models/__init__.py",
-      "reviewedSourceBlob": "0ee88cd636f942b0410973606dc09a4b9884f3ed",
-      "transformation": "identical-reviewed-bytes"
+      "reviewedSourceBlob": "bee21ba5ecb11c5a6fc0c900569d45565ae76b82",
+      "transformation": "identical-reviewed-issue25-bytes",
+      "inheritedProvenance": {
+        "path": "apps/api/src/ai_pdf_api/models/__init__.py",
+        "integratedBlob": "0ee88cd636f942b0410973606dc09a4b9884f3ed",
+        "reviewedSourceHead": "b691406fdc7d38e3f93578b36aaddafe7dbf992f",
+        "reviewedSourcePath": "apps/api/src/ai_pdf_api/models/__init__.py",
+        "reviewedSourceBlob": "0ee88cd636f942b0410973606dc09a4b9884f3ed",
+        "transformation": "identical-reviewed-bytes"
+      }
     },
     {
       "path": "apps/api/src/ai_pdf_api/routers/research.py",
@@ -64,11 +110,19 @@
     },
     {
       "path": "apps/api/src/ai_pdf_api/schemas/research.py",
-      "integratedBlob": "f8f6c18b334ae1534ee1f64ada675df1466b26f8",
-      "reviewedSourceHead": "b691406fdc7d38e3f93578b36aaddafe7dbf992f",
+      "integratedBlob": "8e876e7af064c5b690f607a5ada586b5de77b0ef",
+      "reviewedSourceHead": "a927682b32456db6fe7639e0855181f9ee0858c8",
       "reviewedSourcePath": "apps/api/src/ai_pdf_api/schemas/research.py",
-      "reviewedSourceBlob": "f8f6c18b334ae1534ee1f64ada675df1466b26f8",
-      "transformation": "identical-reviewed-bytes"
+      "reviewedSourceBlob": "8e876e7af064c5b690f607a5ada586b5de77b0ef",
+      "transformation": "identical-reviewed-issue25-bytes",
+      "inheritedProvenance": {
+        "path": "apps/api/src/ai_pdf_api/schemas/research.py",
+        "integratedBlob": "f8f6c18b334ae1534ee1f64ada675df1466b26f8",
+        "reviewedSourceHead": "b691406fdc7d38e3f93578b36aaddafe7dbf992f",
+        "reviewedSourcePath": "apps/api/src/ai_pdf_api/schemas/research.py",
+        "reviewedSourceBlob": "f8f6c18b334ae1534ee1f64ada675df1466b26f8",
+        "transformation": "identical-reviewed-bytes"
+      }
     },
     {
       "path": "apps/api/src/ai_pdf_api/schemas/research_report_edit.py",
@@ -88,11 +142,19 @@
     },
     {
       "path": "apps/api/src/ai_pdf_api/services/research/research_agent_io_registry.py",
-      "integratedBlob": "bb10e8116e9c3d312465c85e640a0f476d85cd6c",
-      "reviewedSourceHead": "b691406fdc7d38e3f93578b36aaddafe7dbf992f",
+      "integratedBlob": "01669b9e9447e23fc974fcea58b54460ffa356e9",
+      "reviewedSourceHead": "a927682b32456db6fe7639e0855181f9ee0858c8",
       "reviewedSourcePath": "apps/api/src/ai_pdf_api/services/research/research_agent_io_registry.py",
-      "reviewedSourceBlob": "bb10e8116e9c3d312465c85e640a0f476d85cd6c",
-      "transformation": "identical-reviewed-bytes"
+      "reviewedSourceBlob": "01669b9e9447e23fc974fcea58b54460ffa356e9",
+      "transformation": "identical-reviewed-issue25-bytes",
+      "inheritedProvenance": {
+        "path": "apps/api/src/ai_pdf_api/services/research/research_agent_io_registry.py",
+        "integratedBlob": "bb10e8116e9c3d312465c85e640a0f476d85cd6c",
+        "reviewedSourceHead": "b691406fdc7d38e3f93578b36aaddafe7dbf992f",
+        "reviewedSourcePath": "apps/api/src/ai_pdf_api/services/research/research_agent_io_registry.py",
+        "reviewedSourceBlob": "bb10e8116e9c3d312465c85e640a0f476d85cd6c",
+        "transformation": "identical-reviewed-bytes"
+      }
     },
     {
       "path": "apps/api/src/ai_pdf_api/services/research/research_artifacts.py",
@@ -104,19 +166,35 @@
     },
     {
       "path": "apps/api/src/ai_pdf_api/services/research/research_auto_progress.py",
-      "integratedBlob": "62a99dc453ef33d102af9aadb36c76c1dfdc5c18",
-      "reviewedSourceHead": "b691406fdc7d38e3f93578b36aaddafe7dbf992f",
+      "integratedBlob": "e7e558229f6295bb99054f50835febdbc176420b",
+      "reviewedSourceHead": "a927682b32456db6fe7639e0855181f9ee0858c8",
       "reviewedSourcePath": "apps/api/src/ai_pdf_api/services/research/research_auto_progress.py",
-      "reviewedSourceBlob": "62a99dc453ef33d102af9aadb36c76c1dfdc5c18",
-      "transformation": "identical-reviewed-bytes"
+      "reviewedSourceBlob": "e7e558229f6295bb99054f50835febdbc176420b",
+      "transformation": "identical-reviewed-issue25-bytes",
+      "inheritedProvenance": {
+        "path": "apps/api/src/ai_pdf_api/services/research/research_auto_progress.py",
+        "integratedBlob": "62a99dc453ef33d102af9aadb36c76c1dfdc5c18",
+        "reviewedSourceHead": "b691406fdc7d38e3f93578b36aaddafe7dbf992f",
+        "reviewedSourcePath": "apps/api/src/ai_pdf_api/services/research/research_auto_progress.py",
+        "reviewedSourceBlob": "62a99dc453ef33d102af9aadb36c76c1dfdc5c18",
+        "transformation": "identical-reviewed-bytes"
+      }
     },
     {
       "path": "apps/api/src/ai_pdf_api/services/research/research_constants.py",
-      "integratedBlob": "12b60b38c2cb01f0bc72720bb2c7b570fd7e3efd",
-      "reviewedSourceHead": "b691406fdc7d38e3f93578b36aaddafe7dbf992f",
+      "integratedBlob": "bbd0345026ead05669ea08ba88b2bfaa29a24139",
+      "reviewedSourceHead": "a927682b32456db6fe7639e0855181f9ee0858c8",
       "reviewedSourcePath": "apps/api/src/ai_pdf_api/services/research/research_constants.py",
-      "reviewedSourceBlob": "12b60b38c2cb01f0bc72720bb2c7b570fd7e3efd",
-      "transformation": "identical-reviewed-bytes"
+      "reviewedSourceBlob": "bbd0345026ead05669ea08ba88b2bfaa29a24139",
+      "transformation": "identical-reviewed-issue25-bytes",
+      "inheritedProvenance": {
+        "path": "apps/api/src/ai_pdf_api/services/research/research_constants.py",
+        "integratedBlob": "12b60b38c2cb01f0bc72720bb2c7b570fd7e3efd",
+        "reviewedSourceHead": "b691406fdc7d38e3f93578b36aaddafe7dbf992f",
+        "reviewedSourcePath": "apps/api/src/ai_pdf_api/services/research/research_constants.py",
+        "reviewedSourceBlob": "12b60b38c2cb01f0bc72720bb2c7b570fd7e3efd",
+        "transformation": "identical-reviewed-bytes"
+      }
     },
     {
       "path": "apps/api/src/ai_pdf_api/services/research/research_plan_approval.py",
@@ -128,11 +206,19 @@
     },
     {
       "path": "apps/api/src/ai_pdf_api/services/research/research_prompt_provenance.py",
-      "integratedBlob": "5c2e49dddb9b0127f380e14b867ec317844ca72f",
-      "reviewedSourceHead": "b691406fdc7d38e3f93578b36aaddafe7dbf992f",
+      "integratedBlob": "343dccb05f37f88fdbe5f4f723f65de5139414c1",
+      "reviewedSourceHead": "a927682b32456db6fe7639e0855181f9ee0858c8",
       "reviewedSourcePath": "apps/api/src/ai_pdf_api/services/research/research_prompt_provenance.py",
-      "reviewedSourceBlob": "5c2e49dddb9b0127f380e14b867ec317844ca72f",
-      "transformation": "identical-reviewed-bytes"
+      "reviewedSourceBlob": "343dccb05f37f88fdbe5f4f723f65de5139414c1",
+      "transformation": "identical-reviewed-issue25-bytes",
+      "inheritedProvenance": {
+        "path": "apps/api/src/ai_pdf_api/services/research/research_prompt_provenance.py",
+        "integratedBlob": "5c2e49dddb9b0127f380e14b867ec317844ca72f",
+        "reviewedSourceHead": "b691406fdc7d38e3f93578b36aaddafe7dbf992f",
+        "reviewedSourcePath": "apps/api/src/ai_pdf_api/services/research/research_prompt_provenance.py",
+        "reviewedSourceBlob": "5c2e49dddb9b0127f380e14b867ec317844ca72f",
+        "transformation": "identical-reviewed-bytes"
+      }
     },
     {
       "path": "apps/api/src/ai_pdf_api/services/research/research_report_edit.py",
@@ -152,19 +238,35 @@
     },
     {
       "path": "apps/api/src/ai_pdf_api/services/research/research_versions_service.py",
-      "integratedBlob": "323517687c0386338c1b8b34e331fba9902cda5b",
-      "reviewedSourceHead": "b691406fdc7d38e3f93578b36aaddafe7dbf992f",
+      "integratedBlob": "e9ab1365ab335e9bd1682480de5ffad796fea268",
+      "reviewedSourceHead": "a927682b32456db6fe7639e0855181f9ee0858c8",
       "reviewedSourcePath": "apps/api/src/ai_pdf_api/services/research/research_versions_service.py",
-      "reviewedSourceBlob": "323517687c0386338c1b8b34e331fba9902cda5b",
-      "transformation": "identical-reviewed-bytes"
+      "reviewedSourceBlob": "e9ab1365ab335e9bd1682480de5ffad796fea268",
+      "transformation": "identical-reviewed-issue25-bytes",
+      "inheritedProvenance": {
+        "path": "apps/api/src/ai_pdf_api/services/research/research_versions_service.py",
+        "integratedBlob": "323517687c0386338c1b8b34e331fba9902cda5b",
+        "reviewedSourceHead": "b691406fdc7d38e3f93578b36aaddafe7dbf992f",
+        "reviewedSourcePath": "apps/api/src/ai_pdf_api/services/research/research_versions_service.py",
+        "reviewedSourceBlob": "323517687c0386338c1b8b34e331fba9902cda5b",
+        "transformation": "identical-reviewed-bytes"
+      }
     },
     {
       "path": "apps/api/src/ai_pdf_api/services/research/research_views.py",
-      "integratedBlob": "64fc1ae2d33201a25b8b35990479ce7e8db976f0",
-      "reviewedSourceHead": "b691406fdc7d38e3f93578b36aaddafe7dbf992f",
+      "integratedBlob": "dfc44955981260d29ec7e00aa72220c7b09bd8dc",
+      "reviewedSourceHead": "a927682b32456db6fe7639e0855181f9ee0858c8",
       "reviewedSourcePath": "apps/api/src/ai_pdf_api/services/research/research_views.py",
-      "reviewedSourceBlob": "64fc1ae2d33201a25b8b35990479ce7e8db976f0",
-      "transformation": "identical-reviewed-bytes"
+      "reviewedSourceBlob": "dfc44955981260d29ec7e00aa72220c7b09bd8dc",
+      "transformation": "identical-reviewed-issue25-bytes",
+      "inheritedProvenance": {
+        "path": "apps/api/src/ai_pdf_api/services/research/research_views.py",
+        "integratedBlob": "64fc1ae2d33201a25b8b35990479ce7e8db976f0",
+        "reviewedSourceHead": "b691406fdc7d38e3f93578b36aaddafe7dbf992f",
+        "reviewedSourcePath": "apps/api/src/ai_pdf_api/services/research/research_views.py",
+        "reviewedSourceBlob": "64fc1ae2d33201a25b8b35990479ce7e8db976f0",
+        "transformation": "identical-reviewed-bytes"
+      }
     },
     {
       "path": "apps/api/src/ai_pdf_api/services/research/research_worker.py",
@@ -173,6 +275,14 @@
       "reviewedSourcePath": "apps/api/src/ai_pdf_api/services/research/research_worker.py",
       "reviewedSourceBlob": "03783fe6376540eae4b3a06d6f34ad2aeed17d4f",
       "transformation": "identical-reviewed-bytes"
+    },
+    {
+      "path": "apps/api/src/ai_pdf_api/services/research/research_worker_evidence.py",
+      "integratedBlob": "19858c1401978c83c1c34cd454740132fe781cf2",
+      "reviewedSourceHead": "a927682b32456db6fe7639e0855181f9ee0858c8",
+      "reviewedSourcePath": "apps/api/src/ai_pdf_api/services/research/research_worker_evidence.py",
+      "reviewedSourceBlob": "19858c1401978c83c1c34cd454740132fe781cf2",
+      "transformation": "identical-reviewed-issue25-bytes"
     },
     {
       "path": "apps/api/src/ai_pdf_api/services/research/research_worker_plan.py",
@@ -199,6 +309,22 @@
       "transformation": "identical-reviewed-bytes"
     },
     {
+      "path": "apps/api/tests/a2a_conflict_current_acceptance.py",
+      "integratedBlob": "d86ce6d8a9a01fdc4d8401d10515c7ba5f0fd45b",
+      "reviewedSourceHead": "a927682b32456db6fe7639e0855181f9ee0858c8",
+      "reviewedSourcePath": "apps/api/tests/a2a_conflict_current_acceptance.py",
+      "reviewedSourceBlob": "d86ce6d8a9a01fdc4d8401d10515c7ba5f0fd45b",
+      "transformation": "identical-reviewed-issue25-bytes"
+    },
+    {
+      "path": "apps/api/tests/a2a_conflict_negative_controls.py",
+      "integratedBlob": "f6d27d47aa26cf26218ec0ecafee83460e96d9e0",
+      "reviewedSourceHead": "a927682b32456db6fe7639e0855181f9ee0858c8",
+      "reviewedSourcePath": "apps/api/tests/a2a_conflict_negative_controls.py",
+      "reviewedSourceBlob": "f6d27d47aa26cf26218ec0ecafee83460e96d9e0",
+      "transformation": "identical-reviewed-issue25-bytes"
+    },
+    {
       "path": "apps/api/tests/a2a_current_acceptance.py",
       "integratedBlob": "f03d90b88862b4019501a836945edbfbc661ecdf",
       "reviewedSourceHead": "b691406fdc7d38e3f93578b36aaddafe7dbf992f",
@@ -208,11 +334,19 @@
     },
     {
       "path": "apps/api/tests/a2a_feature_negative_controls.py",
-      "integratedBlob": "62848e910ed0051c9622707bdebfd5bec01cd9e5",
-      "reviewedSourceHead": "b691406fdc7d38e3f93578b36aaddafe7dbf992f",
+      "integratedBlob": "f7b54b943e6ff6b8834b187cef751ec7a5a01310",
+      "reviewedSourceHead": "a927682b32456db6fe7639e0855181f9ee0858c8",
       "reviewedSourcePath": "apps/api/tests/a2a_feature_negative_controls.py",
-      "reviewedSourceBlob": "62848e910ed0051c9622707bdebfd5bec01cd9e5",
-      "transformation": "identical-reviewed-bytes"
+      "reviewedSourceBlob": "f7b54b943e6ff6b8834b187cef751ec7a5a01310",
+      "transformation": "identical-reviewed-issue25-bytes",
+      "inheritedProvenance": {
+        "path": "apps/api/tests/a2a_feature_negative_controls.py",
+        "integratedBlob": "62848e910ed0051c9622707bdebfd5bec01cd9e5",
+        "reviewedSourceHead": "b691406fdc7d38e3f93578b36aaddafe7dbf992f",
+        "reviewedSourcePath": "apps/api/tests/a2a_feature_negative_controls.py",
+        "reviewedSourceBlob": "62848e910ed0051c9622707bdebfd5bec01cd9e5",
+        "transformation": "identical-reviewed-bytes"
+      }
     },
     {
       "path": "apps/api/tests/a2a_historical_state.py",
@@ -224,11 +358,19 @@
     },
     {
       "path": "apps/api/tests/a2a_r2_negative_controls.py",
-      "integratedBlob": "5aaa5d08c4b0a76b22cabbe8c90b14fae6adab10",
-      "reviewedSourceHead": "b691406fdc7d38e3f93578b36aaddafe7dbf992f",
+      "integratedBlob": "635d8ee33181c915af7ff1eb986cc8ce603be423",
+      "reviewedSourceHead": "a927682b32456db6fe7639e0855181f9ee0858c8",
       "reviewedSourcePath": "apps/api/tests/a2a_r2_negative_controls.py",
-      "reviewedSourceBlob": "5aaa5d08c4b0a76b22cabbe8c90b14fae6adab10",
-      "transformation": "identical-reviewed-bytes"
+      "reviewedSourceBlob": "635d8ee33181c915af7ff1eb986cc8ce603be423",
+      "transformation": "identical-reviewed-issue25-bytes",
+      "inheritedProvenance": {
+        "path": "apps/api/tests/a2a_r2_negative_controls.py",
+        "integratedBlob": "5aaa5d08c4b0a76b22cabbe8c90b14fae6adab10",
+        "reviewedSourceHead": "b691406fdc7d38e3f93578b36aaddafe7dbf992f",
+        "reviewedSourcePath": "apps/api/tests/a2a_r2_negative_controls.py",
+        "reviewedSourceBlob": "5aaa5d08c4b0a76b22cabbe8c90b14fae6adab10",
+        "transformation": "identical-reviewed-bytes"
+      }
     },
     {
       "path": "apps/api/tests/a2a_retry_negative_controls.py",
@@ -263,36 +405,92 @@
       "transformation": "identical-reviewed-bytes"
     },
     {
+      "path": "apps/api/tests/fixtures/research-conflict-metadata-delta-20260923.json",
+      "integratedBlob": "02e5a5b026723908ee7c0b73d2e07587e0f41201",
+      "reviewedSourceHead": "a927682b32456db6fe7639e0855181f9ee0858c8",
+      "reviewedSourcePath": "apps/api/tests/fixtures/research-conflict-metadata-delta-20260923.json",
+      "reviewedSourceBlob": "02e5a5b026723908ee7c0b73d2e07587e0f41201",
+      "transformation": "identical-reviewed-issue25-bytes"
+    },
+    {
+      "path": "apps/api/tests/fixtures/research-v3-created-b1f7423.json",
+      "integratedBlob": "8f1778374428d0c5bd84f63f39a0d3b91c1f7f85",
+      "reviewedSourceHead": "a927682b32456db6fe7639e0855181f9ee0858c8",
+      "reviewedSourcePath": "apps/api/tests/fixtures/research-v3-created-b1f7423.json",
+      "reviewedSourceBlob": "8f1778374428d0c5bd84f63f39a0d3b91c1f7f85",
+      "transformation": "identical-reviewed-issue25-bytes"
+    },
+    {
       "path": "apps/api/tests/research_worker_test_support.py",
-      "integratedBlob": "75322a1bc154bb39b807fa7cfbfd1749ecad14aa",
-      "reviewedSourceHead": "b691406fdc7d38e3f93578b36aaddafe7dbf992f",
+      "integratedBlob": "c7fcacbe7ab14d821ab19c84560a0c344b57bf29",
+      "reviewedSourceHead": "a927682b32456db6fe7639e0855181f9ee0858c8",
       "reviewedSourcePath": "apps/api/tests/research_worker_test_support.py",
-      "reviewedSourceBlob": "75322a1bc154bb39b807fa7cfbfd1749ecad14aa",
-      "transformation": "identical-reviewed-bytes"
+      "reviewedSourceBlob": "c7fcacbe7ab14d821ab19c84560a0c344b57bf29",
+      "transformation": "identical-reviewed-issue25-bytes",
+      "inheritedProvenance": {
+        "path": "apps/api/tests/research_worker_test_support.py",
+        "integratedBlob": "75322a1bc154bb39b807fa7cfbfd1749ecad14aa",
+        "reviewedSourceHead": "b691406fdc7d38e3f93578b36aaddafe7dbf992f",
+        "reviewedSourcePath": "apps/api/tests/research_worker_test_support.py",
+        "reviewedSourceBlob": "75322a1bc154bb39b807fa7cfbfd1749ecad14aa",
+        "transformation": "identical-reviewed-bytes"
+      }
     },
     {
       "path": "apps/api/tests/test_a2a_differential.py",
-      "integratedBlob": "10d4c292734ee83defb9b60a8ebf0b3dced5617a",
-      "reviewedSourceHead": "b691406fdc7d38e3f93578b36aaddafe7dbf992f",
+      "integratedBlob": "165de4b7263486dca952c9925abe13dc0063189c",
+      "reviewedSourceHead": "a927682b32456db6fe7639e0855181f9ee0858c8",
       "reviewedSourcePath": "apps/api/tests/test_a2a_differential.py",
-      "reviewedSourceBlob": "10d4c292734ee83defb9b60a8ebf0b3dced5617a",
-      "transformation": "identical-reviewed-bytes"
+      "reviewedSourceBlob": "165de4b7263486dca952c9925abe13dc0063189c",
+      "transformation": "identical-reviewed-issue25-bytes",
+      "inheritedProvenance": {
+        "path": "apps/api/tests/test_a2a_differential.py",
+        "integratedBlob": "10d4c292734ee83defb9b60a8ebf0b3dced5617a",
+        "reviewedSourceHead": "b691406fdc7d38e3f93578b36aaddafe7dbf992f",
+        "reviewedSourcePath": "apps/api/tests/test_a2a_differential.py",
+        "reviewedSourceBlob": "10d4c292734ee83defb9b60a8ebf0b3dced5617a",
+        "transformation": "identical-reviewed-bytes"
+      }
     },
     {
       "path": "apps/api/tests/test_a2a_differential_probe.py",
-      "integratedBlob": "97f8507d2a0774a8f06da20aa08f0df6b24d41ae",
-      "reviewedSourceHead": "b691406fdc7d38e3f93578b36aaddafe7dbf992f",
+      "integratedBlob": "0a1510a61ed1125191dd05195063e64ba6d80551",
+      "reviewedSourceHead": "a927682b32456db6fe7639e0855181f9ee0858c8",
       "reviewedSourcePath": "apps/api/tests/test_a2a_differential_probe.py",
-      "reviewedSourceBlob": "ec31a9ebe3bb358ed99518f0bfc72016014b42bc",
-      "transformation": "explicit-layout-integration; inspect mapping report and merge delta"
+      "reviewedSourceBlob": "0e8564028be9c53add56fcd9803a97c79c3aa3b8",
+      "transformation": "map-reviewed-issue25-delta-to-accepted-architecture; preserve-inherited-prerequisite",
+      "inheritedProvenance": {
+        "path": "apps/api/tests/test_a2a_differential_probe.py",
+        "integratedBlob": "97f8507d2a0774a8f06da20aa08f0df6b24d41ae",
+        "reviewedSourceHead": "b691406fdc7d38e3f93578b36aaddafe7dbf992f",
+        "reviewedSourcePath": "apps/api/tests/test_a2a_differential_probe.py",
+        "reviewedSourceBlob": "ec31a9ebe3bb358ed99518f0bfc72016014b42bc",
+        "transformation": "explicit-layout-integration; inspect mapping report and merge delta"
+      }
     },
     {
       "path": "apps/api/tests/test_asset_migration.py",
-      "integratedBlob": "3168536b4d864ceb6889d48fb3546d9b4ae9bf8b",
-      "reviewedSourceHead": "b691406fdc7d38e3f93578b36aaddafe7dbf992f",
+      "integratedBlob": "a891c0ca2120855287f903cb48c162852f7241d2",
+      "reviewedSourceHead": "a927682b32456db6fe7639e0855181f9ee0858c8",
       "reviewedSourcePath": "apps/api/tests/test_asset_migration.py",
-      "reviewedSourceBlob": "3168536b4d864ceb6889d48fb3546d9b4ae9bf8b",
-      "transformation": "identical-reviewed-bytes"
+      "reviewedSourceBlob": "a891c0ca2120855287f903cb48c162852f7241d2",
+      "transformation": "identical-reviewed-issue25-bytes",
+      "inheritedProvenance": {
+        "path": "apps/api/tests/test_asset_migration.py",
+        "integratedBlob": "3168536b4d864ceb6889d48fb3546d9b4ae9bf8b",
+        "reviewedSourceHead": "b691406fdc7d38e3f93578b36aaddafe7dbf992f",
+        "reviewedSourcePath": "apps/api/tests/test_asset_migration.py",
+        "reviewedSourceBlob": "3168536b4d864ceb6889d48fb3546d9b4ae9bf8b",
+        "transformation": "identical-reviewed-bytes"
+      }
+    },
+    {
+      "path": "apps/api/tests/test_conflict_deployment_projection.py",
+      "integratedBlob": "55db06c39b7bb97b6a81bbc947cfe9c3d1250786",
+      "reviewedSourceHead": "06b30a986e0916b54b7c8eefe815347c4e5bcf06",
+      "reviewedSourcePath": "apps/api/tests/test_research_conflict_publication.py",
+      "reviewedSourceBlob": "782dc521cd24a362693c19d2097117caa8a6d37c",
+      "transformation": "new-real-model-oracle-tests-derived-from-existing-production-publication-fixture; no-journal-and-v4-positive-plus-eight-foreign-relations"
     },
     {
       "path": "apps/api/tests/test_layout_probe_paths.py",
@@ -304,11 +502,19 @@
     },
     {
       "path": "apps/api/tests/test_persistence_boundary.py",
-      "integratedBlob": "bfcccb4a42ce582e69bbd0f6a0cb5eacf2562c7d",
-      "reviewedSourceHead": "b691406fdc7d38e3f93578b36aaddafe7dbf992f",
+      "integratedBlob": "dc8b022296a2f85e97dd5a9822fecf1acaa04c09",
+      "reviewedSourceHead": "a927682b32456db6fe7639e0855181f9ee0858c8",
       "reviewedSourcePath": "apps/api/tests/test_persistence_boundary.py",
-      "reviewedSourceBlob": "bfcccb4a42ce582e69bbd0f6a0cb5eacf2562c7d",
-      "transformation": "identical-reviewed-bytes"
+      "reviewedSourceBlob": "dc8b022296a2f85e97dd5a9822fecf1acaa04c09",
+      "transformation": "identical-reviewed-issue25-bytes",
+      "inheritedProvenance": {
+        "path": "apps/api/tests/test_persistence_boundary.py",
+        "integratedBlob": "bfcccb4a42ce582e69bbd0f6a0cb5eacf2562c7d",
+        "reviewedSourceHead": "b691406fdc7d38e3f93578b36aaddafe7dbf992f",
+        "reviewedSourcePath": "apps/api/tests/test_persistence_boundary.py",
+        "reviewedSourceBlob": "bfcccb4a42ce582e69bbd0f6a0cb5eacf2562c7d",
+        "transformation": "identical-reviewed-bytes"
+      }
     },
     {
       "path": "apps/api/tests/test_research_adaptive_recovery.py",
@@ -328,19 +534,67 @@
     },
     {
       "path": "apps/api/tests/test_research_autonomy.py",
-      "integratedBlob": "a2904564ae06a1898a23af5877dffebfa703d5a6",
-      "reviewedSourceHead": "b691406fdc7d38e3f93578b36aaddafe7dbf992f",
+      "integratedBlob": "d446070c0f737c48985988e275b1221f4d481b25",
+      "reviewedSourceHead": "0e5e3209d28a6b29b9d05e1f4cc947e17d636048",
       "reviewedSourcePath": "apps/api/tests/test_research_autonomy.py",
-      "reviewedSourceBlob": "4b603192382b1b41d9824aa82e271bdef0117d16",
-      "transformation": "explicit feature deployment oracle and request-context/approval binding controls; see stack-integration spec"
+      "reviewedSourceBlob": "93130413b74ad8c773871d4e7a287419e7c3fc0b",
+      "transformation": "retain-ecc-five-outer-binding-negatives; current-real-create-expectation-v3-to-v4",
+      "inheritedProvenance": {
+        "path": "apps/api/tests/test_research_autonomy.py",
+        "integratedBlob": "a2904564ae06a1898a23af5877dffebfa703d5a6",
+        "reviewedSourceHead": "b691406fdc7d38e3f93578b36aaddafe7dbf992f",
+        "reviewedSourcePath": "apps/api/tests/test_research_autonomy.py",
+        "reviewedSourceBlob": "4b603192382b1b41d9824aa82e271bdef0117d16",
+        "transformation": "explicit feature deployment oracle and request-context/approval binding controls; see stack-integration spec"
+      }
+    },
+    {
+      "path": "apps/api/tests/test_research_conflict_integrity.py",
+      "integratedBlob": "b4aa63012d81d85936fac03fd5281767a315b9e9",
+      "reviewedSourceHead": "a927682b32456db6fe7639e0855181f9ee0858c8",
+      "reviewedSourcePath": "apps/api/tests/test_research_conflict_integrity.py",
+      "reviewedSourceBlob": "b4aa63012d81d85936fac03fd5281767a315b9e9",
+      "transformation": "identical-reviewed-issue25-bytes"
+    },
+    {
+      "path": "apps/api/tests/test_research_conflict_investigation.py",
+      "integratedBlob": "5883fa0b63d7c2774f6de24cdc813f78a0b2cf07",
+      "reviewedSourceHead": "a927682b32456db6fe7639e0855181f9ee0858c8",
+      "reviewedSourcePath": "apps/api/tests/test_research_conflict_investigation.py",
+      "reviewedSourceBlob": "7c1e33848326090f5399ad1a288235252c6f142b",
+      "transformation": "map-reviewed-issue25-delta-to-accepted-architecture; preserve-inherited-prerequisite"
+    },
+    {
+      "path": "apps/api/tests/test_research_conflict_migration.py",
+      "integratedBlob": "7e515c95071c916b13d0a92a7ea00df67f6e0ff3",
+      "reviewedSourceHead": "a927682b32456db6fe7639e0855181f9ee0858c8",
+      "reviewedSourcePath": "apps/api/tests/test_research_conflict_migration.py",
+      "reviewedSourceBlob": "7e515c95071c916b13d0a92a7ea00df67f6e0ff3",
+      "transformation": "identical-reviewed-issue25-bytes"
+    },
+    {
+      "path": "apps/api/tests/test_research_conflict_publication.py",
+      "integratedBlob": "782dc521cd24a362693c19d2097117caa8a6d37c",
+      "reviewedSourceHead": "a927682b32456db6fe7639e0855181f9ee0858c8",
+      "reviewedSourcePath": "apps/api/tests/test_research_conflict_publication.py",
+      "reviewedSourceBlob": "245680f87569d7085ccc86afce5de44b8b747022",
+      "transformation": "map-reviewed-issue25-delta-to-accepted-architecture; preserve-inherited-prerequisite"
     },
     {
       "path": "apps/api/tests/test_research_migration.py",
-      "integratedBlob": "ed64859b9e1ddfbaf96eca811d3051d28a367a78",
-      "reviewedSourceHead": "b691406fdc7d38e3f93578b36aaddafe7dbf992f",
+      "integratedBlob": "5b34fb762f1fc7bb9d89eb75aa9e3598e5a15392",
+      "reviewedSourceHead": "a927682b32456db6fe7639e0855181f9ee0858c8",
       "reviewedSourcePath": "apps/api/tests/test_research_migration.py",
-      "reviewedSourceBlob": "ed64859b9e1ddfbaf96eca811d3051d28a367a78",
-      "transformation": "identical-reviewed-bytes"
+      "reviewedSourceBlob": "5b34fb762f1fc7bb9d89eb75aa9e3598e5a15392",
+      "transformation": "identical-reviewed-issue25-bytes",
+      "inheritedProvenance": {
+        "path": "apps/api/tests/test_research_migration.py",
+        "integratedBlob": "ed64859b9e1ddfbaf96eca811d3051d28a367a78",
+        "reviewedSourceHead": "b691406fdc7d38e3f93578b36aaddafe7dbf992f",
+        "reviewedSourcePath": "apps/api/tests/test_research_migration.py",
+        "reviewedSourceBlob": "ed64859b9e1ddfbaf96eca811d3051d28a367a78",
+        "transformation": "identical-reviewed-bytes"
+      }
     },
     {
       "path": "apps/api/tests/test_research_policy_publication.py",
@@ -392,19 +646,35 @@
     },
     {
       "path": "apps/api/tests/test_research_router_plan.py",
-      "integratedBlob": "c3186069d56a37252e229732d223a07095fc4d6a",
-      "reviewedSourceHead": "b691406fdc7d38e3f93578b36aaddafe7dbf992f",
+      "integratedBlob": "af8103b2eb1f864b4209de4c5b136b63c46abef5",
+      "reviewedSourceHead": "a927682b32456db6fe7639e0855181f9ee0858c8",
       "reviewedSourcePath": "apps/api/tests/test_research_router_plan.py",
-      "reviewedSourceBlob": "c3186069d56a37252e229732d223a07095fc4d6a",
-      "transformation": "identical-reviewed-bytes"
+      "reviewedSourceBlob": "af8103b2eb1f864b4209de4c5b136b63c46abef5",
+      "transformation": "identical-reviewed-issue25-bytes",
+      "inheritedProvenance": {
+        "path": "apps/api/tests/test_research_router_plan.py",
+        "integratedBlob": "c3186069d56a37252e229732d223a07095fc4d6a",
+        "reviewedSourceHead": "b691406fdc7d38e3f93578b36aaddafe7dbf992f",
+        "reviewedSourcePath": "apps/api/tests/test_research_router_plan.py",
+        "reviewedSourceBlob": "c3186069d56a37252e229732d223a07095fc4d6a",
+        "transformation": "identical-reviewed-bytes"
+      }
     },
     {
       "path": "apps/api/tests/test_research_v5c_contract.py",
-      "integratedBlob": "0fd6c356ad4cbd2ac65a7ed58c1d9980efd781fd",
-      "reviewedSourceHead": "b691406fdc7d38e3f93578b36aaddafe7dbf992f",
+      "integratedBlob": "2aae11cb766c075285f6c95e6bfbaf0cd66c0882",
+      "reviewedSourceHead": "a927682b32456db6fe7639e0855181f9ee0858c8",
       "reviewedSourcePath": "apps/api/tests/test_research_v5c_contract.py",
-      "reviewedSourceBlob": "0fd6c356ad4cbd2ac65a7ed58c1d9980efd781fd",
-      "transformation": "identical-reviewed-bytes"
+      "reviewedSourceBlob": "2aae11cb766c075285f6c95e6bfbaf0cd66c0882",
+      "transformation": "identical-reviewed-issue25-bytes",
+      "inheritedProvenance": {
+        "path": "apps/api/tests/test_research_v5c_contract.py",
+        "integratedBlob": "0fd6c356ad4cbd2ac65a7ed58c1d9980efd781fd",
+        "reviewedSourceHead": "b691406fdc7d38e3f93578b36aaddafe7dbf992f",
+        "reviewedSourcePath": "apps/api/tests/test_research_v5c_contract.py",
+        "reviewedSourceBlob": "0fd6c356ad4cbd2ac65a7ed58c1d9980efd781fd",
+        "transformation": "identical-reviewed-bytes"
+      }
     },
     {
       "path": "apps/api/tests/test_research_worker_evidence_publication.py",
@@ -440,11 +710,19 @@
     },
     {
       "path": "apps/web/e2e/research-run.spec.ts",
-      "integratedBlob": "af7d9e3387e009b5a0c309dde5795a3f292b0541",
-      "reviewedSourceHead": "b691406fdc7d38e3f93578b36aaddafe7dbf992f",
+      "integratedBlob": "6fc45d916812b15184d32ba010e284bc277a7932",
+      "reviewedSourceHead": "a927682b32456db6fe7639e0855181f9ee0858c8",
       "reviewedSourcePath": "apps/web/e2e/research-run.spec.ts",
-      "reviewedSourceBlob": "af7d9e3387e009b5a0c309dde5795a3f292b0541",
-      "transformation": "identical-reviewed-bytes"
+      "reviewedSourceBlob": "6fc45d916812b15184d32ba010e284bc277a7932",
+      "transformation": "identical-reviewed-issue25-bytes",
+      "inheritedProvenance": {
+        "path": "apps/web/e2e/research-run.spec.ts",
+        "integratedBlob": "af7d9e3387e009b5a0c309dde5795a3f292b0541",
+        "reviewedSourceHead": "b691406fdc7d38e3f93578b36aaddafe7dbf992f",
+        "reviewedSourcePath": "apps/web/e2e/research-run.spec.ts",
+        "reviewedSourceBlob": "af7d9e3387e009b5a0c309dde5795a3f292b0541",
+        "transformation": "identical-reviewed-bytes"
+      }
     },
     {
       "path": "apps/web/scripts/check-research-history-sse.mjs",
@@ -479,6 +757,14 @@
       "transformation": "identical-reviewed-bytes"
     },
     {
+      "path": "apps/web/src/components/research-conflict-investigation.tsx",
+      "integratedBlob": "97251d7f0ea934af1e62e7d4ef24416653e85d9b",
+      "reviewedSourceHead": "a927682b32456db6fe7639e0855181f9ee0858c8",
+      "reviewedSourcePath": "apps/web/src/components/research-conflict-investigation.tsx",
+      "reviewedSourceBlob": "97251d7f0ea934af1e62e7d4ef24416653e85d9b",
+      "transformation": "identical-reviewed-issue25-bytes"
+    },
+    {
       "path": "apps/web/src/components/research-report-editor.test.ts",
       "integratedBlob": "5c24d94e9fea20c03abf8a0c1753c3714367f46a",
       "reviewedSourceHead": "b691406fdc7d38e3f93578b36aaddafe7dbf992f",
@@ -504,11 +790,19 @@
     },
     {
       "path": "apps/web/src/components/research-run-panel.tsx",
-      "integratedBlob": "e9cd55861fca2d82f0c95f65ffc27e7128760c23",
-      "reviewedSourceHead": "b691406fdc7d38e3f93578b36aaddafe7dbf992f",
+      "integratedBlob": "29fee7d0fb223e8de7ed901cec273b9006a2263a",
+      "reviewedSourceHead": "a927682b32456db6fe7639e0855181f9ee0858c8",
       "reviewedSourcePath": "apps/web/src/components/research-run-panel.tsx",
-      "reviewedSourceBlob": "e9cd55861fca2d82f0c95f65ffc27e7128760c23",
-      "transformation": "identical-reviewed-bytes"
+      "reviewedSourceBlob": "29fee7d0fb223e8de7ed901cec273b9006a2263a",
+      "transformation": "identical-reviewed-issue25-bytes",
+      "inheritedProvenance": {
+        "path": "apps/web/src/components/research-run-panel.tsx",
+        "integratedBlob": "e9cd55861fca2d82f0c95f65ffc27e7128760c23",
+        "reviewedSourceHead": "b691406fdc7d38e3f93578b36aaddafe7dbf992f",
+        "reviewedSourcePath": "apps/web/src/components/research-run-panel.tsx",
+        "reviewedSourceBlob": "e9cd55861fca2d82f0c95f65ffc27e7128760c23",
+        "transformation": "identical-reviewed-bytes"
+      }
     },
     {
       "path": "apps/web/src/lib/i18n-context.tsx",
@@ -543,6 +837,14 @@
       "transformation": "identical-reviewed-bytes"
     },
     {
+      "path": "apps/web/src/lib/research/types.ts",
+      "integratedBlob": "3282eed91cfd3972ac5eda9207f39e1ced24dc79",
+      "reviewedSourceHead": "a927682b32456db6fe7639e0855181f9ee0858c8",
+      "reviewedSourcePath": "apps/web/src/lib/research/types.ts",
+      "reviewedSourceBlob": "3282eed91cfd3972ac5eda9207f39e1ced24dc79",
+      "transformation": "identical-reviewed-issue25-bytes"
+    },
+    {
       "path": "apps/web/src/lib/use-research.ts",
       "integratedBlob": "5c0ba8103c71560cb0b9b8eb8946b8824a217539",
       "reviewedSourceHead": "b691406fdc7d38e3f93578b36aaddafe7dbf992f",
@@ -552,19 +854,35 @@
     },
     {
       "path": "apps/worker/src/ai_pdf_worker/research/adapters/generation.py",
-      "integratedBlob": "a269308e6b808d29513ac4115a2388ccc41d289b",
-      "reviewedSourceHead": "b691406fdc7d38e3f93578b36aaddafe7dbf992f",
+      "integratedBlob": "b8592b7389202281e70a65a3ebf4e7705e10cd94",
+      "reviewedSourceHead": "a927682b32456db6fe7639e0855181f9ee0858c8",
       "reviewedSourcePath": "apps/worker/src/ai_pdf_worker/research_runtime_ports.py",
-      "reviewedSourceBlob": "3c367fcacedcb4ffedbf3bb398cebe537b432ad3",
-      "transformation": "explicit-layout-integration; inspect mapping report and merge delta"
+      "reviewedSourceBlob": "52898aa92e818d5cb06322fd96fa59ec706ec15e",
+      "transformation": "map-reviewed-issue25-delta-to-accepted-architecture; preserve-inherited-prerequisite",
+      "inheritedProvenance": {
+        "path": "apps/worker/src/ai_pdf_worker/research/adapters/generation.py",
+        "integratedBlob": "a269308e6b808d29513ac4115a2388ccc41d289b",
+        "reviewedSourceHead": "b691406fdc7d38e3f93578b36aaddafe7dbf992f",
+        "reviewedSourcePath": "apps/worker/src/ai_pdf_worker/research_runtime_ports.py",
+        "reviewedSourceBlob": "3c367fcacedcb4ffedbf3bb398cebe537b432ad3",
+        "transformation": "explicit-layout-integration; inspect mapping report and merge delta"
+      }
     },
     {
       "path": "apps/worker/src/ai_pdf_worker/research/adapters/ledger.py",
-      "integratedBlob": "d0135b77f84d81ae6ec8a832783390965a779c53",
-      "reviewedSourceHead": "b691406fdc7d38e3f93578b36aaddafe7dbf992f",
+      "integratedBlob": "c3351c93ec7bc284e375270e2631b97fd01985ea",
+      "reviewedSourceHead": "a927682b32456db6fe7639e0855181f9ee0858c8",
       "reviewedSourcePath": "apps/worker/src/ai_pdf_worker/research_runtime_ports.py",
-      "reviewedSourceBlob": "3c367fcacedcb4ffedbf3bb398cebe537b432ad3",
-      "transformation": "explicit-layout-integration; inspect mapping report and merge delta"
+      "reviewedSourceBlob": "52898aa92e818d5cb06322fd96fa59ec706ec15e",
+      "transformation": "map-reviewed-issue25-delta-to-accepted-architecture; preserve-inherited-prerequisite",
+      "inheritedProvenance": {
+        "path": "apps/worker/src/ai_pdf_worker/research/adapters/ledger.py",
+        "integratedBlob": "d0135b77f84d81ae6ec8a832783390965a779c53",
+        "reviewedSourceHead": "b691406fdc7d38e3f93578b36aaddafe7dbf992f",
+        "reviewedSourcePath": "apps/worker/src/ai_pdf_worker/research_runtime_ports.py",
+        "reviewedSourceBlob": "3c367fcacedcb4ffedbf3bb398cebe537b432ad3",
+        "transformation": "explicit-layout-integration; inspect mapping report and merge delta"
+      }
     },
     {
       "path": "apps/worker/src/ai_pdf_worker/research/adaptive_retrieval.py",
@@ -576,19 +894,43 @@
     },
     {
       "path": "apps/worker/src/ai_pdf_worker/research/agents.py",
-      "integratedBlob": "c9f69babc765a1a54a8fe1dad1fe9e837668bbfa",
-      "reviewedSourceHead": "b691406fdc7d38e3f93578b36aaddafe7dbf992f",
+      "integratedBlob": "4c598b3f6147b4d640a5faaa7424628e1f193db8",
+      "reviewedSourceHead": "a927682b32456db6fe7639e0855181f9ee0858c8",
       "reviewedSourcePath": "apps/worker/src/ai_pdf_worker/research_runtime_agents.py",
-      "reviewedSourceBlob": "b0407f7e8a87800f18632024677660be56265386",
-      "transformation": "explicit-layout-integration; inspect mapping report and merge delta"
+      "reviewedSourceBlob": "bc0382ca6ea63e94a29d941f041429214768787f",
+      "transformation": "map-reviewed-issue25-delta-to-accepted-architecture; preserve-inherited-prerequisite",
+      "inheritedProvenance": {
+        "path": "apps/worker/src/ai_pdf_worker/research/agents.py",
+        "integratedBlob": "c9f69babc765a1a54a8fe1dad1fe9e837668bbfa",
+        "reviewedSourceHead": "b691406fdc7d38e3f93578b36aaddafe7dbf992f",
+        "reviewedSourcePath": "apps/worker/src/ai_pdf_worker/research_runtime_agents.py",
+        "reviewedSourceBlob": "b0407f7e8a87800f18632024677660be56265386",
+        "transformation": "explicit-layout-integration; inspect mapping report and merge delta"
+      }
+    },
+    {
+      "path": "apps/worker/src/ai_pdf_worker/research/conflict_investigation.py",
+      "integratedBlob": "63e2bfd6461179c0cec5b3ea0775673ec0ed25b1",
+      "reviewedSourceHead": "a927682b32456db6fe7639e0855181f9ee0858c8",
+      "reviewedSourcePath": "apps/worker/src/ai_pdf_worker/research_conflict_investigation.py",
+      "reviewedSourceBlob": "63e2bfd6461179c0cec5b3ea0775673ec0ed25b1",
+      "transformation": "identical-reviewed-issue25-bytes"
     },
     {
       "path": "apps/worker/src/ai_pdf_worker/research/core.py",
-      "integratedBlob": "790f1339ae8e7bd66853e6b0edacc21b2a83305f",
-      "reviewedSourceHead": "b691406fdc7d38e3f93578b36aaddafe7dbf992f",
+      "integratedBlob": "9c93e903e7c2840f0321395941b2cdc76965e49b",
+      "reviewedSourceHead": "a927682b32456db6fe7639e0855181f9ee0858c8",
       "reviewedSourcePath": "apps/worker/src/ai_pdf_worker/research_runtime_core.py",
-      "reviewedSourceBlob": "e0b60563b4c897a4c03d469b3d413570b491e44e",
-      "transformation": "explicit-layout-integration; inspect mapping report and merge delta"
+      "reviewedSourceBlob": "bdc6231d23cdf491e14efea61e329052eb613509",
+      "transformation": "map-reviewed-issue25-delta-to-accepted-architecture; preserve-inherited-prerequisite",
+      "inheritedProvenance": {
+        "path": "apps/worker/src/ai_pdf_worker/research/core.py",
+        "integratedBlob": "790f1339ae8e7bd66853e6b0edacc21b2a83305f",
+        "reviewedSourceHead": "b691406fdc7d38e3f93578b36aaddafe7dbf992f",
+        "reviewedSourcePath": "apps/worker/src/ai_pdf_worker/research_runtime_core.py",
+        "reviewedSourceBlob": "e0b60563b4c897a4c03d469b3d413570b491e44e",
+        "transformation": "explicit-layout-integration; inspect mapping report and merge delta"
+      }
     },
     {
       "path": "apps/worker/src/ai_pdf_worker/research/executor.py",
@@ -600,19 +942,35 @@
     },
     {
       "path": "apps/worker/src/ai_pdf_worker/research/handlers.py",
-      "integratedBlob": "19eef9e744b572ee30ad0e95d3c02a433d892d5d",
-      "reviewedSourceHead": "b691406fdc7d38e3f93578b36aaddafe7dbf992f",
+      "integratedBlob": "68bc01cf4f2e5bb37d3cca970352d2906036d81d",
+      "reviewedSourceHead": "a927682b32456db6fe7639e0855181f9ee0858c8",
       "reviewedSourcePath": "apps/worker/src/ai_pdf_worker/research_runtime_handlers.py",
-      "reviewedSourceBlob": "40b0d92d93ca0679162895fa835734ba64f2f994",
-      "transformation": "explicit-layout-integration; inspect mapping report and merge delta"
+      "reviewedSourceBlob": "5aaa03016dcf9733d4d6ac0add4d627cadd45216",
+      "transformation": "map-reviewed-issue25-delta-to-accepted-architecture; preserve-inherited-prerequisite",
+      "inheritedProvenance": {
+        "path": "apps/worker/src/ai_pdf_worker/research/handlers.py",
+        "integratedBlob": "19eef9e744b572ee30ad0e95d3c02a433d892d5d",
+        "reviewedSourceHead": "b691406fdc7d38e3f93578b36aaddafe7dbf992f",
+        "reviewedSourcePath": "apps/worker/src/ai_pdf_worker/research_runtime_handlers.py",
+        "reviewedSourceBlob": "40b0d92d93ca0679162895fa835734ba64f2f994",
+        "transformation": "explicit-layout-integration; inspect mapping report and merge delta"
+      }
     },
     {
       "path": "apps/worker/src/ai_pdf_worker/research/persistence.py",
-      "integratedBlob": "7702df45cd25b06917bae2f724559984ddc7569c",
-      "reviewedSourceHead": "b691406fdc7d38e3f93578b36aaddafe7dbf992f",
+      "integratedBlob": "999ace5d7440435a978ce791a38da831059daf1e",
+      "reviewedSourceHead": "a927682b32456db6fe7639e0855181f9ee0858c8",
       "reviewedSourcePath": "apps/worker/src/ai_pdf_worker/research_persistence_service.py",
-      "reviewedSourceBlob": "7702df45cd25b06917bae2f724559984ddc7569c",
-      "transformation": "identical-reviewed-bytes"
+      "reviewedSourceBlob": "999ace5d7440435a978ce791a38da831059daf1e",
+      "transformation": "identical-reviewed-issue25-bytes",
+      "inheritedProvenance": {
+        "path": "apps/worker/src/ai_pdf_worker/research/persistence.py",
+        "integratedBlob": "7702df45cd25b06917bae2f724559984ddc7569c",
+        "reviewedSourceHead": "b691406fdc7d38e3f93578b36aaddafe7dbf992f",
+        "reviewedSourcePath": "apps/worker/src/ai_pdf_worker/research_persistence_service.py",
+        "reviewedSourceBlob": "7702df45cd25b06917bae2f724559984ddc7569c",
+        "transformation": "identical-reviewed-bytes"
+      }
     },
     {
       "path": "apps/worker/src/ai_pdf_worker/research/processor.py",
@@ -624,11 +982,27 @@
     },
     {
       "path": "apps/worker/src/ai_pdf_worker/research/schemas.py",
-      "integratedBlob": "254f57378ffc80a15e5cc1010584310202c6d36b",
-      "reviewedSourceHead": "b691406fdc7d38e3f93578b36aaddafe7dbf992f",
+      "integratedBlob": "d000a207ed8ae539b1567374107201fae1737da5",
+      "reviewedSourceHead": "a927682b32456db6fe7639e0855181f9ee0858c8",
       "reviewedSourcePath": "apps/worker/src/ai_pdf_worker/research_agent_schemas.py",
-      "reviewedSourceBlob": "254f57378ffc80a15e5cc1010584310202c6d36b",
-      "transformation": "identical-reviewed-bytes"
+      "reviewedSourceBlob": "d000a207ed8ae539b1567374107201fae1737da5",
+      "transformation": "identical-reviewed-issue25-bytes",
+      "inheritedProvenance": {
+        "path": "apps/worker/src/ai_pdf_worker/research/schemas.py",
+        "integratedBlob": "254f57378ffc80a15e5cc1010584310202c6d36b",
+        "reviewedSourceHead": "b691406fdc7d38e3f93578b36aaddafe7dbf992f",
+        "reviewedSourcePath": "apps/worker/src/ai_pdf_worker/research_agent_schemas.py",
+        "reviewedSourceBlob": "254f57378ffc80a15e5cc1010584310202c6d36b",
+        "transformation": "identical-reviewed-bytes"
+      }
+    },
+    {
+      "path": "apps/worker/src/ai_pdf_worker/research/tools.py",
+      "integratedBlob": "1fe57c095f82a407af5509debd8d4bb06e0a70c2",
+      "reviewedSourceHead": "a927682b32456db6fe7639e0855181f9ee0858c8",
+      "reviewedSourcePath": "apps/worker/src/ai_pdf_worker/research_executor_tools.py",
+      "reviewedSourceBlob": "1fe57c095f82a407af5509debd8d4bb06e0a70c2",
+      "transformation": "identical-reviewed-issue25-bytes"
     },
     {
       "path": "apps/worker/tests/test_research_adaptive_retrieval.py",
@@ -637,6 +1011,14 @@
       "reviewedSourcePath": "apps/worker/tests/test_research_adaptive_retrieval.py",
       "reviewedSourceBlob": "238dfe5917faebf829771ba41c537071395847c7",
       "transformation": "explicit-layout-integration; inspect mapping report and merge delta"
+    },
+    {
+      "path": "apps/worker/tests/test_research_conflict_investigation.py",
+      "integratedBlob": "787e78dfc2376e93351360d589f6a69aa0f5f810",
+      "reviewedSourceHead": "a927682b32456db6fe7639e0855181f9ee0858c8",
+      "reviewedSourcePath": "apps/worker/tests/test_research_conflict_investigation.py",
+      "reviewedSourceBlob": "7ffa62f7d1a1952eec43fa1f28f8407126e09efa",
+      "transformation": "map-reviewed-issue25-delta-to-accepted-architecture; preserve-inherited-prerequisite"
     },
     {
       "path": "apps/worker/tests/test_research_runtime.py",
@@ -656,11 +1038,19 @@
     },
     {
       "path": "apps/worker/tests/test_research_v5c_agent_io.py",
-      "integratedBlob": "7998bdd47e62b3dad2ff56c10f89285f4522c6d5",
-      "reviewedSourceHead": "b691406fdc7d38e3f93578b36aaddafe7dbf992f",
+      "integratedBlob": "e97562c0e835e0c22707aef5b531317b5104cc3d",
+      "reviewedSourceHead": "a927682b32456db6fe7639e0855181f9ee0858c8",
       "reviewedSourcePath": "apps/worker/tests/test_research_v5c_agent_io.py",
-      "reviewedSourceBlob": "b69c8fe07e5212e4f03c53234cef151b65772de2",
-      "transformation": "explicit-layout-integration; inspect mapping report and merge delta"
+      "reviewedSourceBlob": "426ffaa0e104de396b5a938b8bdce3c90bba4fb4",
+      "transformation": "map-reviewed-issue25-delta-to-accepted-architecture; preserve-inherited-prerequisite",
+      "inheritedProvenance": {
+        "path": "apps/worker/tests/test_research_v5c_agent_io.py",
+        "integratedBlob": "7998bdd47e62b3dad2ff56c10f89285f4522c6d5",
+        "reviewedSourceHead": "b691406fdc7d38e3f93578b36aaddafe7dbf992f",
+        "reviewedSourcePath": "apps/worker/tests/test_research_v5c_agent_io.py",
+        "reviewedSourceBlob": "b69c8fe07e5212e4f03c53234cef151b65772de2",
+        "transformation": "explicit-layout-integration; inspect mapping report and merge delta"
+      }
     },
     {
       "path": "packages/backend-contracts/src/citeframe_contracts/__init__.py",
@@ -672,11 +1062,19 @@
     },
     {
       "path": "packages/backend-persistence/src/citeframe_persistence/models/__init__.py",
-      "integratedBlob": "e20b5b5bf45e9ab1aa0eb2548f5f27063a46c5d1",
-      "reviewedSourceHead": "b691406fdc7d38e3f93578b36aaddafe7dbf992f",
+      "integratedBlob": "be22c9ac4b32be9658f45af5c64ddf51b417d738",
+      "reviewedSourceHead": "a927682b32456db6fe7639e0855181f9ee0858c8",
       "reviewedSourcePath": "packages/backend-persistence/src/citeframe_persistence/models/__init__.py",
-      "reviewedSourceBlob": "e20b5b5bf45e9ab1aa0eb2548f5f27063a46c5d1",
-      "transformation": "identical-reviewed-bytes"
+      "reviewedSourceBlob": "be22c9ac4b32be9658f45af5c64ddf51b417d738",
+      "transformation": "identical-reviewed-issue25-bytes",
+      "inheritedProvenance": {
+        "path": "packages/backend-persistence/src/citeframe_persistence/models/__init__.py",
+        "integratedBlob": "e20b5b5bf45e9ab1aa0eb2548f5f27063a46c5d1",
+        "reviewedSourceHead": "b691406fdc7d38e3f93578b36aaddafe7dbf992f",
+        "reviewedSourcePath": "packages/backend-persistence/src/citeframe_persistence/models/__init__.py",
+        "reviewedSourceBlob": "e20b5b5bf45e9ab1aa0eb2548f5f27063a46c5d1",
+        "transformation": "identical-reviewed-bytes"
+      }
     },
     {
       "path": "packages/backend-persistence/src/citeframe_persistence/models/research_adaptive_turn.py",
@@ -693,6 +1091,14 @@
       "reviewedSourcePath": "packages/backend-persistence/src/citeframe_persistence/models/research_artifact.py",
       "reviewedSourceBlob": "9714efaa103818c15faca3917b0278054d2f4c11",
       "transformation": "identical-reviewed-bytes"
+    },
+    {
+      "path": "packages/backend-persistence/src/citeframe_persistence/models/research_conflict_turn.py",
+      "integratedBlob": "311adcd038dba668b72fe211d0f7e9d4a305a9e9",
+      "reviewedSourceHead": "a927682b32456db6fe7639e0855181f9ee0858c8",
+      "reviewedSourcePath": "packages/backend-persistence/src/citeframe_persistence/models/research_conflict_turn.py",
+      "reviewedSourceBlob": "311adcd038dba668b72fe211d0f7e9d4a305a9e9",
+      "transformation": "identical-reviewed-issue25-bytes"
     },
     {
       "path": "packages/backend-persistence/src/citeframe_persistence/models/research_publication_intent.py",
@@ -712,19 +1118,35 @@
     },
     {
       "path": "packages/research-persistence/src/citeframe_research_persistence/adaptive_turns.py",
-      "integratedBlob": "7dbca65402c77fb8c6563cdc937c5e3bd9c41e8f",
-      "reviewedSourceHead": "b691406fdc7d38e3f93578b36aaddafe7dbf992f",
+      "integratedBlob": "04880e744332365c9e6111459730cb10d4ae9dee",
+      "reviewedSourceHead": "a927682b32456db6fe7639e0855181f9ee0858c8",
       "reviewedSourcePath": "packages/research-persistence/src/citeframe_research_persistence/adaptive_turns.py",
-      "reviewedSourceBlob": "7dbca65402c77fb8c6563cdc937c5e3bd9c41e8f",
-      "transformation": "identical-reviewed-bytes"
+      "reviewedSourceBlob": "04880e744332365c9e6111459730cb10d4ae9dee",
+      "transformation": "identical-reviewed-issue25-bytes",
+      "inheritedProvenance": {
+        "path": "packages/research-persistence/src/citeframe_research_persistence/adaptive_turns.py",
+        "integratedBlob": "7dbca65402c77fb8c6563cdc937c5e3bd9c41e8f",
+        "reviewedSourceHead": "b691406fdc7d38e3f93578b36aaddafe7dbf992f",
+        "reviewedSourcePath": "packages/research-persistence/src/citeframe_research_persistence/adaptive_turns.py",
+        "reviewedSourceBlob": "7dbca65402c77fb8c6563cdc937c5e3bd9c41e8f",
+        "transformation": "identical-reviewed-bytes"
+      }
     },
     {
       "path": "packages/research-persistence/src/citeframe_research_persistence/automatic_decisions.py",
-      "integratedBlob": "27f694e376583b87f26d57c23afaaea82c39599a",
-      "reviewedSourceHead": "b691406fdc7d38e3f93578b36aaddafe7dbf992f",
+      "integratedBlob": "663efe0d5481eb82d0c63bb19437d1cfa96709ae",
+      "reviewedSourceHead": "a927682b32456db6fe7639e0855181f9ee0858c8",
       "reviewedSourcePath": "packages/research-persistence/src/citeframe_research_persistence/automatic_decisions.py",
-      "reviewedSourceBlob": "27f694e376583b87f26d57c23afaaea82c39599a",
-      "transformation": "identical-reviewed-bytes"
+      "reviewedSourceBlob": "663efe0d5481eb82d0c63bb19437d1cfa96709ae",
+      "transformation": "identical-reviewed-issue25-bytes",
+      "inheritedProvenance": {
+        "path": "packages/research-persistence/src/citeframe_research_persistence/automatic_decisions.py",
+        "integratedBlob": "27f694e376583b87f26d57c23afaaea82c39599a",
+        "reviewedSourceHead": "b691406fdc7d38e3f93578b36aaddafe7dbf992f",
+        "reviewedSourcePath": "packages/research-persistence/src/citeframe_research_persistence/automatic_decisions.py",
+        "reviewedSourceBlob": "27f694e376583b87f26d57c23afaaea82c39599a",
+        "transformation": "identical-reviewed-bytes"
+      }
     },
     {
       "path": "packages/research-persistence/src/citeframe_research_persistence/autonomy.py",
@@ -741,6 +1163,62 @@
       "reviewedSourcePath": "packages/research-persistence/src/citeframe_research_persistence/commands.py",
       "reviewedSourceBlob": "5d19563c3e1eba4225615da7ede08d54bde50ba3",
       "transformation": "identical-reviewed-bytes"
+    },
+    {
+      "path": "packages/research-persistence/src/citeframe_research_persistence/conflict_contract.py",
+      "integratedBlob": "7737aa663b74d204c7f1e93d6a7aa5c2b0c6df5a",
+      "reviewedSourceHead": "a927682b32456db6fe7639e0855181f9ee0858c8",
+      "reviewedSourcePath": "packages/research-persistence/src/citeframe_research_persistence/conflict_contract.py",
+      "reviewedSourceBlob": "7737aa663b74d204c7f1e93d6a7aa5c2b0c6df5a",
+      "transformation": "identical-reviewed-issue25-bytes"
+    },
+    {
+      "path": "packages/research-persistence/src/citeframe_research_persistence/conflict_investigation.py",
+      "integratedBlob": "66e832597267eb25261dee2ce9e4a6338650cb4b",
+      "reviewedSourceHead": "a927682b32456db6fe7639e0855181f9ee0858c8",
+      "reviewedSourcePath": "packages/research-persistence/src/citeframe_research_persistence/conflict_investigation.py",
+      "reviewedSourceBlob": "66e832597267eb25261dee2ce9e4a6338650cb4b",
+      "transformation": "identical-reviewed-issue25-bytes"
+    },
+    {
+      "path": "packages/research-persistence/src/citeframe_research_persistence/conflict_journal_integrity.py",
+      "integratedBlob": "dd4e63f21b9c4ebe4a79cd9566f579697d5d92fe",
+      "reviewedSourceHead": "a927682b32456db6fe7639e0855181f9ee0858c8",
+      "reviewedSourcePath": "packages/research-persistence/src/citeframe_research_persistence/conflict_journal_integrity.py",
+      "reviewedSourceBlob": "dd4e63f21b9c4ebe4a79cd9566f579697d5d92fe",
+      "transformation": "identical-reviewed-issue25-bytes"
+    },
+    {
+      "path": "packages/research-persistence/src/citeframe_research_persistence/conflict_policy.py",
+      "integratedBlob": "89fdfa1cab0e4dcf9eeae39b54be0a796dab6aeb",
+      "reviewedSourceHead": "a927682b32456db6fe7639e0855181f9ee0858c8",
+      "reviewedSourcePath": "packages/research-persistence/src/citeframe_research_persistence/conflict_policy.py",
+      "reviewedSourceBlob": "89fdfa1cab0e4dcf9eeae39b54be0a796dab6aeb",
+      "transformation": "identical-reviewed-issue25-bytes"
+    },
+    {
+      "path": "packages/research-persistence/src/citeframe_research_persistence/conflict_provenance.py",
+      "integratedBlob": "6a7b082ff5391a4d42d1f2ad79fc95184cc3433e",
+      "reviewedSourceHead": "a927682b32456db6fe7639e0855181f9ee0858c8",
+      "reviewedSourcePath": "packages/research-persistence/src/citeframe_research_persistence/conflict_provenance.py",
+      "reviewedSourceBlob": "6a7b082ff5391a4d42d1f2ad79fc95184cc3433e",
+      "transformation": "identical-reviewed-issue25-bytes"
+    },
+    {
+      "path": "packages/research-persistence/src/citeframe_research_persistence/conflict_report.py",
+      "integratedBlob": "77464b0f585a02c56f2255b07c622f303d30fc0e",
+      "reviewedSourceHead": "a927682b32456db6fe7639e0855181f9ee0858c8",
+      "reviewedSourcePath": "packages/research-persistence/src/citeframe_research_persistence/conflict_report.py",
+      "reviewedSourceBlob": "77464b0f585a02c56f2255b07c622f303d30fc0e",
+      "transformation": "identical-reviewed-issue25-bytes"
+    },
+    {
+      "path": "packages/research-persistence/src/citeframe_research_persistence/conflict_review_integrity.py",
+      "integratedBlob": "447117adb135e22d34327d32fc8e3dd35ae5f043",
+      "reviewedSourceHead": "a927682b32456db6fe7639e0855181f9ee0858c8",
+      "reviewedSourcePath": "packages/research-persistence/src/citeframe_research_persistence/conflict_review_integrity.py",
+      "reviewedSourceBlob": "447117adb135e22d34327d32fc8e3dd35ae5f043",
+      "transformation": "identical-reviewed-issue25-bytes"
     },
     {
       "path": "packages/research-persistence/src/citeframe_research_persistence/events.py",
@@ -760,11 +1238,19 @@
     },
     {
       "path": "packages/research-persistence/src/citeframe_research_persistence/plan.py",
-      "integratedBlob": "74e3ddb81f28e381aa5dbf856d16d9081e52b677",
-      "reviewedSourceHead": "b691406fdc7d38e3f93578b36aaddafe7dbf992f",
+      "integratedBlob": "c06e2c0e526ddaf4cc26b212cce1fd4efe29cd2d",
+      "reviewedSourceHead": "a927682b32456db6fe7639e0855181f9ee0858c8",
       "reviewedSourcePath": "packages/research-persistence/src/citeframe_research_persistence/plan.py",
-      "reviewedSourceBlob": "74e3ddb81f28e381aa5dbf856d16d9081e52b677",
-      "transformation": "identical-reviewed-bytes"
+      "reviewedSourceBlob": "c06e2c0e526ddaf4cc26b212cce1fd4efe29cd2d",
+      "transformation": "identical-reviewed-issue25-bytes",
+      "inheritedProvenance": {
+        "path": "packages/research-persistence/src/citeframe_research_persistence/plan.py",
+        "integratedBlob": "74e3ddb81f28e381aa5dbf856d16d9081e52b677",
+        "reviewedSourceHead": "b691406fdc7d38e3f93578b36aaddafe7dbf992f",
+        "reviewedSourcePath": "packages/research-persistence/src/citeframe_research_persistence/plan.py",
+        "reviewedSourceBlob": "74e3ddb81f28e381aa5dbf856d16d9081e52b677",
+        "transformation": "identical-reviewed-bytes"
+      }
     },
     {
       "path": "packages/research-persistence/src/citeframe_research_persistence/policy.py",
@@ -776,11 +1262,19 @@
     },
     {
       "path": "packages/research-persistence/src/citeframe_research_persistence/publication.py",
-      "integratedBlob": "b4532965255ce707b3fc70b7cf9b1c2d02c772af",
-      "reviewedSourceHead": "b691406fdc7d38e3f93578b36aaddafe7dbf992f",
+      "integratedBlob": "221cda2733e9d2eb90148383d9327e016870207d",
+      "reviewedSourceHead": "a927682b32456db6fe7639e0855181f9ee0858c8",
       "reviewedSourcePath": "packages/research-persistence/src/citeframe_research_persistence/publication.py",
-      "reviewedSourceBlob": "b4532965255ce707b3fc70b7cf9b1c2d02c772af",
-      "transformation": "identical-reviewed-bytes"
+      "reviewedSourceBlob": "221cda2733e9d2eb90148383d9327e016870207d",
+      "transformation": "identical-reviewed-issue25-bytes",
+      "inheritedProvenance": {
+        "path": "packages/research-persistence/src/citeframe_research_persistence/publication.py",
+        "integratedBlob": "b4532965255ce707b3fc70b7cf9b1c2d02c772af",
+        "reviewedSourceHead": "b691406fdc7d38e3f93578b36aaddafe7dbf992f",
+        "reviewedSourcePath": "packages/research-persistence/src/citeframe_research_persistence/publication.py",
+        "reviewedSourceBlob": "b4532965255ce707b3fc70b7cf9b1c2d02c772af",
+        "transformation": "identical-reviewed-bytes"
+      }
     },
     {
       "path": "packages/research-persistence/src/citeframe_research_persistence/publication_adoption.py",
@@ -792,19 +1286,35 @@
     },
     {
       "path": "packages/research-persistence/src/citeframe_research_persistence/publication_finalize.py",
-      "integratedBlob": "089f7b9107d55f6f1081cb6325b2b88d955d75cd",
-      "reviewedSourceHead": "b691406fdc7d38e3f93578b36aaddafe7dbf992f",
+      "integratedBlob": "3be435ee2c68d24e67a43b15713d9e678044c5df",
+      "reviewedSourceHead": "a927682b32456db6fe7639e0855181f9ee0858c8",
       "reviewedSourcePath": "packages/research-persistence/src/citeframe_research_persistence/publication_finalize.py",
-      "reviewedSourceBlob": "089f7b9107d55f6f1081cb6325b2b88d955d75cd",
-      "transformation": "identical-reviewed-bytes"
+      "reviewedSourceBlob": "3be435ee2c68d24e67a43b15713d9e678044c5df",
+      "transformation": "identical-reviewed-issue25-bytes",
+      "inheritedProvenance": {
+        "path": "packages/research-persistence/src/citeframe_research_persistence/publication_finalize.py",
+        "integratedBlob": "089f7b9107d55f6f1081cb6325b2b88d955d75cd",
+        "reviewedSourceHead": "b691406fdc7d38e3f93578b36aaddafe7dbf992f",
+        "reviewedSourcePath": "packages/research-persistence/src/citeframe_research_persistence/publication_finalize.py",
+        "reviewedSourceBlob": "089f7b9107d55f6f1081cb6325b2b88d955d75cd",
+        "transformation": "identical-reviewed-bytes"
+      }
     },
     {
       "path": "packages/research-persistence/src/citeframe_research_persistence/publication_prepare.py",
-      "integratedBlob": "21b88d1296df38c350c5954a522114218c5780fc",
-      "reviewedSourceHead": "b691406fdc7d38e3f93578b36aaddafe7dbf992f",
+      "integratedBlob": "0144ca2808eefee96a8e7e9afc9eb1d597560480",
+      "reviewedSourceHead": "a927682b32456db6fe7639e0855181f9ee0858c8",
       "reviewedSourcePath": "packages/research-persistence/src/citeframe_research_persistence/publication_prepare.py",
-      "reviewedSourceBlob": "21b88d1296df38c350c5954a522114218c5780fc",
-      "transformation": "identical-reviewed-bytes"
+      "reviewedSourceBlob": "0144ca2808eefee96a8e7e9afc9eb1d597560480",
+      "transformation": "identical-reviewed-issue25-bytes",
+      "inheritedProvenance": {
+        "path": "packages/research-persistence/src/citeframe_research_persistence/publication_prepare.py",
+        "integratedBlob": "21b88d1296df38c350c5954a522114218c5780fc",
+        "reviewedSourceHead": "b691406fdc7d38e3f93578b36aaddafe7dbf992f",
+        "reviewedSourcePath": "packages/research-persistence/src/citeframe_research_persistence/publication_prepare.py",
+        "reviewedSourceBlob": "21b88d1296df38c350c5954a522114218c5780fc",
+        "transformation": "identical-reviewed-bytes"
+      }
     },
     {
       "path": "packages/research-persistence/src/citeframe_research_persistence/publication_reconcile.py",
@@ -855,12 +1365,68 @@
       "transformation": "identical-reviewed-bytes"
     },
     {
+      "path": "packages/research-persistence/src/citeframe_research_persistence/tools.py",
+      "integratedBlob": "c940c38b1b043c5d286ca1a39c4b46878a224e8f",
+      "reviewedSourceHead": "a927682b32456db6fe7639e0855181f9ee0858c8",
+      "reviewedSourcePath": "packages/research-persistence/src/citeframe_research_persistence/tools.py",
+      "reviewedSourceBlob": "c940c38b1b043c5d286ca1a39c4b46878a224e8f",
+      "transformation": "identical-reviewed-issue25-bytes"
+    },
+    {
+      "path": "tools/evaluation/src/citeframe_evaluation/acceptance/conflicts.py",
+      "integratedBlob": "5070620be4c91e00c30edf43acd2d11d5d99027d",
+      "reviewedSourceHead": "06b30a986e0916b54b7c8eefe815347c4e5bcf06",
+      "reviewedSourcePath": "tools/evaluation/src/citeframe_evaluation/acceptance/conflicts.py",
+      "reviewedSourceBlob": "e73600cfa87f98ad6814d7f3503e6400043d5d33",
+      "transformation": "validate-real-Step-snapshot-attempt-scope-and-input; reuse-closed-source-contract; bind-finish-claim-set",
+      "inheritedProvenance": {
+        "path": "tools/evaluation/src/citeframe_evaluation/acceptance/conflicts.py",
+        "integratedBlob": "e73600cfa87f98ad6814d7f3503e6400043d5d33",
+        "reviewedSourceHead": "0e5e3209d28a6b29b9d05e1f4cc947e17d636048",
+        "reviewedSourcePath": "tools/evaluation/src/citeframe_evaluation/acceptance/conflicts.py",
+        "reviewedSourceBlob": "e73600cfa87f98ad6814d7f3503e6400043d5d33",
+        "transformation": "explicit-v4-feature-deployment-oracle; preserves-v2-v3-release-contracts-and-ecc-request-binding; independent-review-pending"
+      }
+    },
+    {
+      "path": "tools/evaluation/src/citeframe_evaluation/acceptance/evidence.py",
+      "integratedBlob": "fb2b815705288a87b562a062f7f3e7ae285c4e1a",
+      "reviewedSourceHead": "06b30a986e0916b54b7c8eefe815347c4e5bcf06",
+      "reviewedSourcePath": "tools/evaluation/src/citeframe_evaluation/acceptance/evidence.py",
+      "reviewedSourceBlob": "3055b37bbb423e2002c4d56f4d38aec652b7998b",
+      "transformation": "query-real-Step-foreign-key; retain-raw-journal-columns; validate-linked-persisted-scope",
+      "inheritedProvenance": {
+        "path": "tools/evaluation/src/citeframe_evaluation/acceptance/evidence.py",
+        "integratedBlob": "3055b37bbb423e2002c4d56f4d38aec652b7998b",
+        "reviewedSourceHead": "0e5e3209d28a6b29b9d05e1f4cc947e17d636048",
+        "reviewedSourcePath": "tools/evaluation/src/citeframe_evaluation/acceptance/evidence.py",
+        "reviewedSourceBlob": "3055b37bbb423e2002c4d56f4d38aec652b7998b",
+        "transformation": "explicit-v4-feature-deployment-oracle; preserves-v2-v3-release-contracts-and-ecc-request-binding; independent-review-pending"
+      }
+    },
+    {
+      "path": "tools/evaluation/src/citeframe_evaluation/acceptance/request_proofs.py",
+      "integratedBlob": "dd59cc772c2a775fe35b2e2e00880ce7db743360",
+      "reviewedSourceHead": "0e5e3209d28a6b29b9d05e1f4cc947e17d636048",
+      "reviewedSourcePath": "tools/evaluation/src/citeframe_evaluation/acceptance/request_proofs.py",
+      "reviewedSourceBlob": "dd59cc772c2a775fe35b2e2e00880ce7db743360",
+      "transformation": "explicit-v4-feature-deployment-oracle; preserves-v2-v3-release-contracts-and-ecc-request-binding; independent-review-pending"
+    },
+    {
       "path": "tools/evaluation/src/citeframe_evaluation/acceptance/scenarios.py",
-      "reviewedSourceHead": "5ed02c8b7b5f357f58d1c3fd270ead0718e7afbf",
+      "integratedBlob": "11d7af9686054d65350eb3107a222f8f107be8cf",
+      "reviewedSourceHead": "0e5e3209d28a6b29b9d05e1f4cc947e17d636048",
       "reviewedSourcePath": "tools/evaluation/src/citeframe_evaluation/acceptance/scenarios.py",
-      "reviewedSourceBlob": "53314182d169accb1521be62af882b5c99be1bd6",
-      "transformation": "explicit feature deployment oracle extracted from scenario lifecycle; see stack-integration spec",
-      "integratedBlob": "8f47a078fbc0ae9776c0409a804a9b03d2f52404"
+      "reviewedSourceBlob": "11d7af9686054d65350eb3107a222f8f107be8cf",
+      "transformation": "explicit-v4-feature-deployment-oracle; preserves-v2-v3-release-contracts-and-ecc-request-binding; independent-review-pending",
+      "inheritedProvenance": {
+        "path": "tools/evaluation/src/citeframe_evaluation/acceptance/scenarios.py",
+        "reviewedSourceHead": "5ed02c8b7b5f357f58d1c3fd270ead0718e7afbf",
+        "reviewedSourcePath": "tools/evaluation/src/citeframe_evaluation/acceptance/scenarios.py",
+        "reviewedSourceBlob": "53314182d169accb1521be62af882b5c99be1bd6",
+        "transformation": "explicit feature deployment oracle extracted from scenario lifecycle; see stack-integration spec",
+        "integratedBlob": "8f47a078fbc0ae9776c0409a804a9b03d2f52404"
+      }
     },
     {
       "path": "tools/evaluation/src/citeframe_evaluation/acceptance/snapshot_proofs.py",
@@ -872,11 +1438,19 @@
     },
     {
       "path": "tools/evaluation/src/citeframe_evaluation/acceptance/workflow.py",
-      "reviewedSourceHead": "5ed02c8b7b5f357f58d1c3fd270ead0718e7afbf",
-      "reviewedSourcePath": "tools/evaluation/src/citeframe_evaluation/acceptance/scenarios.py",
-      "reviewedSourceBlob": "53314182d169accb1521be62af882b5c99be1bd6",
-      "transformation": "explicit feature deployment oracle and request-context/approval binding controls; see stack-integration spec",
-      "integratedBlob": "28db04a8e05ae7067d0902c48fad1edc64f91b19"
+      "integratedBlob": "2e7a7a0127b38f943d36758a4221d6d77ea26227",
+      "reviewedSourceHead": "0e5e3209d28a6b29b9d05e1f4cc947e17d636048",
+      "reviewedSourcePath": "tools/evaluation/src/citeframe_evaluation/acceptance/workflow.py",
+      "reviewedSourceBlob": "2e7a7a0127b38f943d36758a4221d6d77ea26227",
+      "transformation": "explicit-v4-feature-deployment-oracle; preserves-v2-v3-release-contracts-and-ecc-request-binding; independent-review-pending",
+      "inheritedProvenance": {
+        "path": "tools/evaluation/src/citeframe_evaluation/acceptance/workflow.py",
+        "reviewedSourceHead": "5ed02c8b7b5f357f58d1c3fd270ead0718e7afbf",
+        "reviewedSourcePath": "tools/evaluation/src/citeframe_evaluation/acceptance/scenarios.py",
+        "reviewedSourceBlob": "53314182d169accb1521be62af882b5c99be1bd6",
+        "transformation": "explicit feature deployment oracle and request-context/approval binding controls; see stack-integration spec",
+        "integratedBlob": "28db04a8e05ae7067d0902c48fad1edc64f91b19"
+      }
     },
     {
       "path": "tools/evaluation/src/citeframe_evaluation/provider.py",
@@ -909,6 +1483,22 @@
       "reviewedSourceBlob": "61ab25f33199928af08c8022c54df66fb568d789",
       "transformation": "explicit feature deployment oracle extracted from scenario lifecycle; see stack-integration spec",
       "integratedBlob": "18eca2857e81b396403a94fe492e42832ac91558"
+    },
+    {
+      "path": "tools/evaluation/tests/test_conflict_workflow_integration.py",
+      "integratedBlob": "0d7dc3975161d1d1978d98de413a361b1416751e",
+      "reviewedSourceHead": "06b30a986e0916b54b7c8eefe815347c4e5bcf06",
+      "reviewedSourcePath": "tools/evaluation/tests/test_conflict_workflow_integration.py",
+      "reviewedSourceBlob": "5409ec30381fa9fb0eaf36b2ae927b3f29f34732",
+      "transformation": "real-model-shaped-fixture; rehashed-semantic-rejection-controls; nullable-input-positive",
+      "inheritedProvenance": {
+        "path": "tools/evaluation/tests/test_conflict_workflow_integration.py",
+        "integratedBlob": "5409ec30381fa9fb0eaf36b2ae927b3f29f34732",
+        "reviewedSourceHead": "0e5e3209d28a6b29b9d05e1f4cc947e17d636048",
+        "reviewedSourcePath": "tools/evaluation/tests/test_conflict_workflow_integration.py",
+        "reviewedSourceBlob": "5409ec30381fa9fb0eaf36b2ae927b3f29f34732",
+        "transformation": "explicit-v4-feature-deployment-oracle; preserves-v2-v3-release-contracts-and-ecc-request-binding; independent-review-pending"
+      }
     }
   ]
 }

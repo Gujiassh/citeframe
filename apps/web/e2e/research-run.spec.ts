@@ -1,5 +1,6 @@
 import { expect, test, type Page } from "@playwright/test";
 import path from "node:path";
+import type { ConflictInvestigation } from "../src/lib/research/types";
 
 const workspaceId = "e2e-research-workspace";
 const assetId = "e2e-research-asset";
@@ -292,6 +293,7 @@ function detail(status: string, stateVersion: number, currentEventSeq: number) {
 }
 
 type MockResearchOptions = {
+  investigation?: ConflictInvestigation | null;
   sessionUserId?: string;
   initialCreated?: boolean;
   scenario?: "plan" | "conflict" | "malformed";
@@ -488,7 +490,7 @@ async function mockWorkspace(page: Page, options: MockResearchOptions = {}) {
         : scenario === "malformed"
           ? malformedDetail()
           : detail(approved ? "queued" : "awaiting_plan_approval", approved ? 4 : 3, approved ? 4 : 3);
-      await route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({ run }) });
+      await route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({ run: { ...run, conflictInvestigation: options.investigation ?? null } }) });
       return;
     }
     await route.fulfill({ status: 404, contentType: "application/json", body: JSON.stringify({ error: { code: "not_found", message: "Not found" } }) });
@@ -593,6 +595,47 @@ test("Malformed selected frozen profile stays unavailable", async ({ page }) => 
   await expect(page.getByText("scripted / fixture-planning-generation", { exact: true })).toHaveCount(0);
 });
 
+
+for (const status of ["resolved", "unresolved", "cancelled"] as const) {
+  test(`Investigation fixture shows sources, gaps and reload state: ${status}`, async ({ page }, testInfo) => {
+    const investigation: ConflictInvestigation = {
+      status, phase: "finish", reason: status === "resolved" ? "source_backed_revision" : "no_new_evidence",
+      explanation: "Compared both original excerpts.", operations: [{ number: 0, phase: "inspect", status: "succeeded" }],
+      queries: ["version 2 Linux procedure"],
+      originalClaims: [{ id: "original-1", text: "Use A for all versions.", evidenceHandleIds: ["source-1"] }],
+      revisions: status === "resolved" ? [{ id: "revision-1", text: "Use A in version 2 on Linux.", originalClaimIds: ["original-1"], evidenceHandleIds: ["source-1"] }] : [],
+      sources: [{ id: "source-1", assetId, locatorId: "locator-1", excerpt: "Version 2 on Linux: use A.", fingerprint: "a".repeat(64) }],
+      inspections: [{ evidenceHandleId: "source-1", quote: "Version 2 on Linux: use A.", version: "Version 2", environment: "Linux", time: null, conditions: null }],
+      gaps: status === "resolved" ? [] : ["The source does not establish the procedure for version 3."],
+    };
+    await mockWorkspace(page, { initialCreated: true, investigation });
+    await page.goto(`/workspaces/${workspaceId}`);
+    await page.getByRole("tab", { name: /深度研究|research/i }).click();
+    const region = page.getByRole("region", { name: /冲突调查|Conflict investigation/i });
+    await expect(region).toBeVisible();
+    await region.getByText(/来源与条件|Sources and conditions/).click();
+    await expect(region.getByText("Version 2 on Linux: use A.", { exact: true })).toBeVisible();
+    if (status === "resolved") {
+      await expect(region.getByText("Use A in version 2 on Linux.", { exact: true })).toBeVisible();
+      await region.getByRole("link", { name: "source-1" }).click();
+    } else {
+      await expect(region.getByText("The source does not establish the procedure for version 3.")).toBeVisible();
+      await expect(region.getByText(/不能将结果当作完整操作清单|prevent using this result as a complete operating checklist/)).toBeVisible();
+    }
+    await page.screenshot({ path: testInfo.outputPath(`investigation-${status}-mocked.png`), fullPage: true });
+    await page.reload();
+    await page.getByRole("tab", { name: /深度研究|research/i }).click();
+    await expect(region.getByText("Compared both original excerpts.")).toBeVisible();
+  });
+}
+
+test("Investigation is absent for a historical run without a journal", async ({ page }) => {
+  await mockWorkspace(page, { initialCreated: true });
+  await page.goto(`/workspaces/${workspaceId}`);
+  await page.getByRole("tab", { name: /深度研究|research/i }).click();
+  await expect(page.getByText(/研究计划 v1|Research plan v1/i)).toBeVisible();
+  await expect(page.getByRole("region", { name: /冲突调查|Conflict investigation/i })).toHaveCount(0);
+});
 
 for (const failureAt of ["list", "detail"] as const) {
   test(`Research initial ${failureAt} failure retries through the visible panel`, async ({ page }) => {

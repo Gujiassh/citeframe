@@ -97,6 +97,7 @@ from citeframe_persistence.models.workspace_membership import WorkspaceMembershi
 from citeframe_persistence.models.research_adaptive_turn import ResearchAdaptiveTurn
 
 __all__ = [
+    "ResearchConflictTurn",
     "ResearchAdaptiveTurn",
     "Asset",
     "AssetRepresentation",
@@ -181,3 +182,5 @@ __all__ = [
     "WorkflowVersion",
     "XlsxLocatorDetail",
 ]
+
+from citeframe_persistence.models.research_conflict_turn import ResearchConflictTurn as ResearchConflictTurn

@@ -63,7 +63,9 @@ def _link(facts, timeline, result):
         assert call["id"] not in used, "duplicate_send_mapping"
         used.add(call["id"])
         attempt, step = attempts[call["attempt_id"]], steps[call["step_id"]]
-        assert attempt["step_id"] == step["id"] and step["step_kind"] == entry["node"], "request_attempt_step_mismatch"
+        assert attempt["step_id"] == step["id"], "request_attempt_step_mismatch"
+        from .conflicts import assert_role_step
+        assert_role_step(facts, step, attempt, entry["node"], body)
         assert all(r["run_id"] == run["id"] and r["workspace_id"] == run["workspace_id"] for r in (call, step)), "foreign_request_scope"
         assert attempt["workspace_id"] == run["workspace_id"], "foreign_attempt_scope"
         assert _unix_ns(attempt["started_at"]) <= proof["receivedAtUnixNs"] <= _unix_ns(attempt["finished_at"]), "request_outside_attempt"

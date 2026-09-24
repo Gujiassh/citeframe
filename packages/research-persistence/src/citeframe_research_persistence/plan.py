@@ -1,4 +1,5 @@
 from __future__ import annotations
+from citeframe_research_persistence.conflict_policy import INVESTIGATION_WORKFLOW_ID
 
 import hashlib
 from collections.abc import Callable, Sequence
@@ -213,7 +214,7 @@ def publish_research_plan(
             },
             now=published_at,
         )
-        if revision.proposed_workflow_version_id == AUTONOMOUS_WORKFLOW_ID:
+        if revision.proposed_workflow_version_id in {AUTONOMOUS_WORKFLOW_ID, INVESTIGATION_WORKFLOW_ID}:
             if auto_start is None:
                 raise ResearchError("research_execution_policy_unavailable", "Automatic plan materializer is unavailable.", 503)
             auto_start(db, run, decision, revision, published_at)

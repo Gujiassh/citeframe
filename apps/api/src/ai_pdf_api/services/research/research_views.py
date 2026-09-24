@@ -447,6 +447,7 @@ def run_summary(db: Session, run: ResearchRun) -> dict[str, object]:
 
 
 def run_detail(db: Session, run: ResearchRun) -> dict[str, object]:
+    from citeframe_research_persistence.conflict_investigation import investigation_view
     summary = run_summary(db, run)
     revision = db.get(ResearchPlanRevision, run.current_plan_revision_id) if run.current_plan_revision_id else None
     assets = _plan_assets(db, revision.id) if revision else []
@@ -477,6 +478,7 @@ def run_detail(db: Session, run: ResearchRun) -> dict[str, object]:
         }
     return {
         **summary,
+        "conflictInvestigation": investigation_view(db, run.id, run.status),
         "frozenAssetScope": _frozen_scope(assets, revision.created_at) if revision else None,
         "plan": _plan_dto(db, run, revision) if revision else None,
         "researchExecution": execution_snapshot_dto(db, snapshot) if snapshot else None,

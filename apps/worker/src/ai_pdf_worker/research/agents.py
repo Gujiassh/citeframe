@@ -133,7 +133,7 @@ class GenerationResearchAgents:
         if retrieval_top_k < 1:
             raise ResearchExecutionError("research_retrieval_top_k_unavailable")
         from citeframe_research_persistence.autonomy import ADAPTIVE_SCHEMA_VERSION
-        if self._registry.agent_result_schema_version == ADAPTIVE_SCHEMA_VERSION:
+        if self._registry.agent_result_schema_version in {ADAPTIVE_SCHEMA_VERSION, "research-agent-results-v3"}:
             from ai_pdf_worker.research.adaptive_retrieval import research_adaptively
             return research_adaptively(subproblem, tools, lease, top_k=retrieval_top_k,
                 result_schema=self._result_schemas["researcher"], generate_json=self._json,
@@ -308,6 +308,10 @@ class GenerationResearchAgents:
         except ValueError as error:
             raise ResearchExecutionError("synthesizer_invalid_output") from error
         return SynthesisSelection(fact_claim_ids, unresolved_claim_ids)
+
+    def investigator(self, investigation, lease):
+        return self._json(lease, "investigator", {"investigation":investigation,
+            "resultSchema":self._result_schemas["investigator"]})
 
     def _json(self, lease: StepLease, node_key: str, variables: Mapping[str, object]) -> Any:
         role = resolve_role_contract(self._registry, node_key)

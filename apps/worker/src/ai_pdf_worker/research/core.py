@@ -54,6 +54,7 @@ MAX_EVIDENCE_EXCERPT = 2000
 MAX_EVIDENCE_CONTENT = 12000
 PROMPT_NODE_ORDER = ("planner", "researchers", "verifier", "critic", "synthesizer")
 PROMPT_STEP_KINDS = {
+    "investigator":"conflict_decision_gate",
     "planner": "planner",
     "researchers": "researcher",
     "verifier": "verifier",
@@ -61,6 +62,7 @@ PROMPT_STEP_KINDS = {
     "synthesizer": "synthesizer",
 }
 PROMPT_REQUIRED_VARIABLES = {
+    "investigator":{"investigation", "resultSchema"},
     "planner": {"question", "frozenAssetScope", "planningLimits", "planOutputSchema"},
     "researchers": {"subproblem", "frozenAssetScope", "toolContracts", "resultSchema"},
     "verifier": {"claims", "evidence", "reasonTaxonomy", "resultSchema"},
@@ -68,6 +70,7 @@ PROMPT_REQUIRED_VARIABLES = {
     "synthesizer": {"question", "claims", "resultSchema"},
 }
 GENERATION_PROMPT_NODES = {
+    "investigator":"investigator",
     "planner": "planner",
     "researcher": "researchers",
     "verifier": "verifier",
@@ -391,15 +394,16 @@ def _frozen_prompt(payload: Any, *, expected_node: str) -> FrozenPrompt:
     )
 
 
-def _frozen_prompts(payload: Any) -> tuple[FrozenPrompt, ...]:
+def _frozen_prompts(payload: Any, *, workflow_id: str | None = None) -> tuple[FrozenPrompt, ...]:
     if not isinstance(payload, Sequence) or isinstance(payload, (str, bytes)):
         raise ResearchPortError("research_prompt_contract_invalid")
     rows = tuple(payload)
-    if len(rows) != len(PROMPT_NODE_ORDER):
+    node_order = (*PROMPT_NODE_ORDER, "investigator") if workflow_id == "40000000-0000-4000-8000-000000000001" else PROMPT_NODE_ORDER
+    if len(rows) != len(node_order):
         raise ResearchPortError("research_prompt_contract_invalid")
     return tuple(
         _frozen_prompt(row, expected_node=node_key)
-        for node_key, row in zip(PROMPT_NODE_ORDER, rows, strict=True)
+        for node_key, row in zip(node_order, rows, strict=True)
     )
 
 
@@ -547,7 +551,7 @@ def as_approved_execution(payload: Any, *, expected_run_id: str | None = None) -
     execution_config = _field(snapshot, "execution") if isinstance(snapshot, Mapping) and "execution" in snapshot else payload
     provider = _field(execution_config, "provider")
     limits = _field(execution_config, "limits")
-    prompts = _frozen_prompts(_field(payload, "prompts"))
+    prompts = _frozen_prompts(_field(payload, "prompts"), workflow_id=str(_field(payload, "workflow_version_id")))
     prompt_version_ids = tuple(str(item) for item in _field(payload, "prompt_version_ids"))
     if prompt_version_ids != tuple(prompt.prompt_version_id for prompt in prompts):
         raise ResearchPortError("research_prompt_contract_invalid")

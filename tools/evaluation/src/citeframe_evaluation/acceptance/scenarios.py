@@ -33,7 +33,7 @@ from citeframe_evaluation.acceptance.common import (
 from citeframe_evaluation.acceptance.controls import mutation_controls
 from citeframe_evaluation.acceptance.drivers import consumers, wait_for_reclaim
 from citeframe_evaluation.acceptance.workflow import (workflow_facts, wait_plan_boundary,
-    assert_policy_completion, assert_conflict_partition, V2_WORKFLOW_VERSION_ID, V3_WORKFLOW_VERSION_ID)
+    assert_policy_completion, assert_conflict_partition, V2_WORKFLOW_VERSION_ID, V3_WORKFLOW_VERSION_ID, V4_WORKFLOW_VERSION_ID)
 from citeframe_evaluation.acceptance.evidence import execution_facts, reclaim_facts
 from citeframe_evaluation.acceptance.oracles import parallel_evidence, parallel_passed, reclaim_passed, assert_execution_policy
 from ai_pdf_worker.research.runtime import (
@@ -242,7 +242,7 @@ def _main_scenario(
         question="Compare unsupported conflict evidence across the frozen fixture.",
     )
     plan = wait_plan_boundary(lambda: workflow_facts(session_factory, str(created["id"])), processor.process_one)
-    assert plan["workflowId"] == V3_WORKFLOW_VERSION_ID, "default_release_regressed"
+    assert plan["workflowId"] == V4_WORKFLOW_VERSION_ID, "default_release_regressed"
     run = client.run(str(created["id"]))
     with nullcontext() if serial_main else consumers(session_factory):
         run, worker_errors = _process_until(
@@ -414,7 +414,7 @@ def _reclaim_scenario(
     if plan["workflowId"] == V2_WORKFLOW_VERSION_ID:
         run = _submit_plan(client, run)
     else:
-        assert plan["workflowId"] == V3_WORKFLOW_VERSION_ID and plan["snapshotId"] is not None
+        assert plan["workflowId"] in {V3_WORKFLOW_VERSION_ID, V4_WORKFLOW_VERSION_ID} and plan["snapshotId"] is not None
     claimed = processor.claim()
     if claimed is None or claimed.run_id != run["id"]:
         return run, _check(False, evidence={"claimed": False}, blocked="step_claim_raced")

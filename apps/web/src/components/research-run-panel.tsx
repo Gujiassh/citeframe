@@ -18,6 +18,7 @@ import { useTranslation, type TranslationKey } from "@/lib/i18n-context";
 import { getResearchArtifactContentUrl } from "@/lib/research/client";
 import { getFrozenResearchProfile, RUN_STATUS_KEYS, STEP_KIND_KEYS, STEP_STATUS_KEYS } from "@/lib/research/presentation";
 import type { ResearchStreamState } from "@/lib/use-research";
+import { ResearchConflictInvestigation } from "./research-conflict-investigation";
 import { ResearchReportEditor } from "./research-report-editor";
 
 import type {
@@ -350,6 +351,7 @@ export function ResearchRunPanel({
         </section>
       ) : null}
 
+      <ResearchConflictInvestigation investigation={run.conflictInvestigation} />
       <section className="py-5">
         <h4 className="text-xs font-semibold text-zinc-950 dark:text-white">{t("research.progress")}</h4>
         <div className="mt-3 divide-y divide-border border-y border-border">

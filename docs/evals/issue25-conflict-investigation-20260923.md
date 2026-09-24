@@ -1,0 +1,145 @@
+# Issue #25 candidate evidence
+
+Base: #29 `5bfee6a0f9a7d8466d72b11a961cc5446fa7bca1`. Feature branch: `work/issue25-conflict-investigation`. Tests run against source paths in `D:/Code/citeframe-conflict-investigation`, not the canonical checkout. The interpreter is reused read-only; explicit PYTHONPATH selects this lane.
+
+| Requirement | Implementation | Direct deterministic evidence | Remaining gate |
+| --- | --- | --- | --- |
+| Inspect original version/environment/conditions | conflict_contract.py, Worker conflict orchestration | Worker literal-quote/invented-condition rejection; actual journal/source integration | Real contradictory-source investigation |
+| Targeted authorized supplemental search | frozen evidence service gate scope, stable investigation tool keys | New gate service search/load replay test: actual ledger writes with local injected retrieval; no repeated logical call | Real retrieval quality and service authorization race |
+| Corrected claim history and rechecks | conflict_turn journal, conflict_provenance.py | Separate Sessions replay; original text unchanged; verifier and critic required; terminal fake-resolution rejected | Independent review of original-claim vs correction projection |
+| Stop/recovery/budget | bounded Worker loop and reservation journal | Three-inspection/two-query policy, duplicate/no-new/budget/unknown-outcome cases, checkpoint cancellation/revocation guards | Full service restart and concurrent PostgreSQL leases |
+| Frozen versions and migrations | p0 frozen v3 JSON, r2 v4 JSON/table | p0→q1→r2 same-process versus new-process staged upgrade; exact release rows/schema comparison; old-version suites | Empty/old production PostgreSQL databases through full Alembic chain |
+| Final publication provenance | shared renderer and final adoption validation | Resolved/unresolved v4 publication through service saga with SQLite/object-store fixture; post-upload journal tamper compensates | Real object store and independent review |
+| User-visible sources and gaps | Run detail DTO and investigation component | Four installed-Chrome mocked-API tests, screenshots inspected, reload and historical absence | Visible real API/Worker/Web walkthrough |
+| Old report editing | No report-edit model/save changes | Existing Web/unit/build suites | Real historical/user-edited report smoke |
+
+## Results
+
+- API `test_research*.py` plus persistence boundary: **275 passed, 1 skipped** (`.local-issue25/api-final2.log`).
+- Worker `test_research*.py`: **107 passed** (`.local-issue25/worker-delivery.log`).
+- Web tests: **140 passed** (`.local-issue25/web-tests.log`).
+- `tsc --noEmit`, ESLint and Next production build: exit 0 (`tsc-delivery.log`, `lint-delivery.log`, `build.log`).
+- Playwright investigation scenarios: **4 passed**, installed Chrome / isolated profile / lane-local port 3305 (`browser-delivery.log`). Browser route mocks exercise UI projection, not the production backend. Fixture avatar warnings are unrelated to investigation state.
+- No paid provider invoked and no credential files accessed. Migration tests use SQLite with a subprocess; no production database migration or backend restart acceptance is claimed.
+
+## Review and deployment hold
+
+Keep draft until remote CI, independent Critical review, full PostgreSQL migration/restart and real service-backed user walkthrough pass. Future prerequisite fixes must enter this branch by normal merge from an explicitly named #29 SHA, followed by affected regression. #28/#29/#25 merge ordering remains controlled by the main owner.
+
+Reproduction commands and exact migration limitations are in the linked feature spec. Local pre-change and final-delta manifests are retained under `.local-issue25/`; no prerequisite overlay or unrelated canonical dirty state is in the feature commits.
+
+
+## Hubble P1 follow-up: nullable live-gate input
+
+Independent review found that lease creation permits a null Step input and stores SHA256(step.id) on its Attempt, while the investigation live-gate source validator compared against raw null. The correction uses the exact lease hash rule and retains wrong-hash rejection. Source validation also checks tool workspace and evidence run/workspace/capture ownership explicitly.
+
+A 14-case null/explicit-input matrix covers valid current attempts and wrong attempt hash, changed Step hash, tool workspace/snapshot, handle run and evidence run. Before the fix, the nullable positive and two scope-negative cases failed; after the fix all pass. The frozen search/load service integration now covers both null and explicit Step input and invokes source validation on the newly retrieved handles. Targeted investigation/publication/adoption tests: 41 passed. Broad API Research plus boundary: 290 passed, 1 skipped. These results use local deterministic/SQLite fixtures.
+
+The dependency base remains #29 `5bfee6a`; nullable **finished-attempt replay** still depends on Franklin's pending #29 integration of #28's adoption fix. This local live-gate repair does not establish that pending combined path.
+
+CI at prior HEAD `d619d719` passed all Worker jobs and both Web jobs. API reported 837 passed, 2 skipped, 3 failures: two existing A2 pending-human-plan assumptions are handed back to Franklin; the third was the asset migration test expecting q1's downgrade error while r2 now rejects first. The latter test now expects r2's forward-only message. That PostgreSQL assertion needs a new CI run; no local PostgreSQL run is claimed. PR remains draft and the real-service acceptance gates stay open.
+
+
+## Explicit v4 feature oracle and upstream integration
+
+Normally merged #29 `b1f7423e5595d81d408d89de4ca565825e5c4e3b` in `ab704253d63c89ef95af287239a71eeffd79a850`. Both appended browser-test groups and SSoT sections were retained when resolving the two append conflicts. The R2 difference whitelist and F1 historical comparator remain unchanged.
+
+Issue #25 adds `a2a_conflict_feature_oracle.py` as an explicit F2 projection before F1/R2: historical investigation table schema must be exact and its rows empty in all snapshots; only a null investigation field on a recognized historical run DTO may be removed; the current default must be v4/Agent IO v3 before projecting the default-version observation for the v3-era comparator. Existing historical responses and events retain their original handling. R2 still rejects unapproved changes.
+
+The current-default B scenario now executes actual POST creation, production scheduling, investigator, real frozen evidence service with scripted retrieval, durable no-new-evidence termination and final publication. Its separate feature assertions check v4 prompt identities, journal hashes/phases/snapshot/attempt lineage, source linkage, original claims and unresolved report gaps. A and AStored continue to restore historical v2 state and idempotency records. C restores an original persisted v3 creation state exported by the fixed #29 b1f7423 runner, installs v4 beside it, and completes with the original v3 manifest/prompts/IO and no investigation journal. This C evidence starts before approval; it does not claim recovery of a pre-existing approved v3 snapshot.
+
+The exploratory dirty-worktree runner passed A/AStored/B/C and five real serialized-SSE→Web-parser checks. Its report is `.local-issue25/v4-feature-integration.json`; it is not same-HEAD acceptance. On that raw report, all 33 R2, 6 F1 and 10 F2 negative controls reject; nullable running/completed-attempt source plus publication/migration targeted suite: 64 passed. A clean committed-head rerun is required for delivery. PostgreSQL/object-store/process/UI production acceptance remains open.
+
+Frozen v3 creation fixture SHA256: `b5eb5b44a4f11db609a4a007dc2e7f55d0589fe84ba5c84798846880a97b84c7`. Source: `repair1/issue29-fixed-head.json`, candidateHead `b1f7423e5595d81d408d89de4ca565825e5c4e3b`; historical artifacts were read only.
+
+
+## Dependency cfc0e728 integration and bounded local regression
+
+Verified the public #29 HEAD `cfc0e728fb3dca82a097088a0dc5038cd833b926` with `gh pr view 29`; normal merge commit `f185aa521fd051f25edb3805198a8eedb89d013c` retains the #25 delta. The prerequisite is #28 `ae3fd6fbccb260c9e5851cbb4a57e2c549f6702f`. The cfc increment only strengthens replay request-body rejection and the unchanged Research/human-decision database projection. No R2 whitelist, R2 publication oracle or F1 historical comparator changes were introduced by #25. V4 changes remain in the explicit F2 oracle. Historical artifacts were not rewritten.
+
+At f185aa5, with lane-owned environments and no paid provider:
+
+- `PGCONNECT_TIMEOUT=2; apps/api/.venv/Scripts/python.exe -u -m pytest apps/api/tests -q -ra`: **844 passed, 27 failed, 7 skipped** (`.local-issue25/cfc-api-bounded.log`). The three A2 executable/facade/plugin-pollution tests pass, including the 33 R2 / 6 F1 / 10 F2 rejection controls. Six skips require PostgreSQL; the seventh is the runner-only probe. The earlier unbounded-connection run was stopped and is not counted as complete.
+- The 27 API failures comprise 22 historical M402 hash/provenance checks, two R100 taxonomy-hash checks and three storage subprocess timeout/lifecycle checks on Windows. `windows-hash-diagnostic.json` confirms CRLF worktree bytes for the sampled M402 harness/artifact and R100 taxonomy normalize exactly to unchanged cfc Git blobs; the artifact/taxonomy LF hashes match their recorded hashes. These files are outside the feature delta. Storage timeouts remain local failures; no portability fix or passing baseline is inferred. No frozen artifact, hash whitelist or unrelated production code was changed to suppress failures.
+- `PGCONNECT_TIMEOUT=2; apps/worker/.venv/Scripts/python.exe -m pytest --strict-markers apps/worker/tests -q -ra`: **569 passed, 1 skipped** (`cfc-worker-all.log`), including fast, acceptance and evaluation markers. The skip is the unavailable Windows directory-symlink capability.
+- Web unit **140 passed**; TypeScript, lint and production build passed. Installed Chrome on lane-local port 3305: **7 passed**, covering four investigation cases and three upstream initial-failure/retry cases (`cfc-browser.log`). These browser tests use API fixtures, not a service-backed acceptance environment.
+- Investigation/source/publication/adoption/migration targeted regression on the merged b1 source: **64 passed** (`b1-affected2.log`). It covers nullable and explicit Step input on running and completed originating attempts.
+
+The delivery also formats the three new F2 oracle/test modules; AST comparisons against f185aa5 are identical. This is a readability-only change. Final clean-commit evidence is generated after the delivery commit with:
+
+```powershell
+$env:PYTHONUTF8='1'
+& ./apps/api/.venv/Scripts/python.exe infra/scripts/run-a2a-differential.py --root D:/Code/citeframe-conflict-investigation --output .local-issue25/delivery-fixed-head-a2.json
+```
+
+The report must identify the public delivery commit, `repairSnapshotDirty=false`, `candidateSemanticDirty=false`, accepted A/AStored/B/C scenarios and five production Web SSE parser results. Its exact SHA/results are recorded in draft PR #30 and the linked dev-workbench delivery checkpoint; exploratory dirty reports do not substitute for it. C remains a restored pre-approval v3 task, not recovery of an already approved v3 snapshot.
+
+Local full-suite failures, the six unavailable PostgreSQL checks, actual object-store/service restart and visible real-service UI acceptance remain open. CI for #29 cfc passed all six jobs; that is prerequisite evidence only. #30 requires its own current-SHA CI and independent Hubble review. All stacked PRs remain draft and unmerged.
+
+
+## Real-service rework (2026-09-24, based on e27f5813)
+
+The service harness is `infra/testing/issue25_service_support.py` with a production Worker fixture in `issue25_runtime.py`. It creates isolated `pr25_` PostgreSQL databases and runs Alembic, Uvicorn and Workers as separate processes. Retrieval uses real pgvector SQL and S3; only generation and embedding capabilities are scripted and unpaid. Subprocesses run outside credential-file directories with explicit loopback configuration. No historical fixture bytes are rewritten.
+
+- Hubble's journal-origin finding is covered by matching frozen Step/current/origin Attempt inputs, workspace and snapshot, rejecting future/foreign producers while allowing earlier terminal attempts. The complete combined critic input is checked against all persisted supported unaffected claims and verified corrections. API projection also validates the final outcome.
+- New integrity suite: 14 pass; against archived e27 package code the same tests yield 8 failed/6 passed. Existing investigation/publication suite: 45 pass. Broad Research/persistence boundary suite: 325 pass/1 PostgreSQL skip. Logs: `.local-issue25/service-rework/{integrity-tests2,integrity-e27-red,journal-fix,research-regression}.log`.
+- Real local services: portable PostgreSQL 17.11/pgvector 0.8.6 and lane-owned SeaweedFS S3. `live-all2.log` records 6 passed/13 failed. Passing cases include an **already-approved v3 snapshot** generated by archived cfc code, upgraded to current v4 default, resumed to original v3 report, edited and API-restarted with exact snapshot/prompt/asset bindings unchanged; resolved and unresolved API/report/editor paths; cancellation; actual shared tool-budget exhaustion; full-chain fresh versus cfc-staged migration.
+- Twelve Worker exit86 boundaries test inspect/search reservation and result before/after, and verifier/critic result before/after. Diagnosis proves the conflict gate really reclaims and completes attempt 2, but publication compensates because the successful Step retains `lease_expired` from reclaim. The existing final-adoption oracle correctly rejects that Step. `diagnostic2/.../restart-state.json` records the succeeded gate with stale error and compensating publication intent. Franklin owns the prerequisite repair in R2 `lease.py`; #25 does not relax the publication oracle or edit his lane.
+- The thirteenth failure was the permission fixture expecting 403 where the API intentionally conceals a removed workspace with 404 `workspace_not_found`. Durable cancellation and no new journal/provider/tool calls already passed; the HTTP assertion now checks the exact existing concealment contract.
+
+Run the opt-in service matrix with a loopback `CITEFRAME_TEST_POSTGRES_URL`, explicit `AI_PDF_MINIO_*` fixture settings and `CITEFRAME_TEST_S3_BUCKET`, then `apps/worker/.venv/Scripts/python.exe -m pytest infra/testing/test_issue25_services.py infra/testing/test_issue25_service_limits.py -vv --tb=short --basetemp <evidence-directory>`. CI uses the same tests with PG17 and digest-pinned MinIO; its checkout is the PR head, not GitHub's merge ref. Service tests do not prove visible UI or paid-provider quality. Current candidate remains draft pending the upstream recovery repair, full matrix rerun, current-SHA CI, independent re-review and Descartes's visible UI walkthrough.
+
+
+### Windows byte and timing attribution
+
+Re-extracted cfc/e27 with `git -c core.autocrlf=false archive <SHA>`; ordinary `git archive` under this machine's autocrlf=true produced CRLF too. Selected extracted historical bytes were compared directly against official `git show SHA:path` output. No artifact or expected hash was normalized/rewritten. In the same 67-test selection (`test_multimodal_execution.py`, `test_r100_research_eval.py`, `test_storage_metrics.py`), both CRLF trees give 24 failures/43 passes; exact LF base gives 67 passes and candidate initially gives 66 passes/one storage timing failure. Eight alternating paired full-selection reruns give **67 passes each, 16/16 runs**, and four paired targeted reruns give **three storage tests passing each, 8/8 runs**.
+
+The storage source and its test have identical official Git SHA256 across cfc/e27. Reproduction command from each LF archive, with its own apps/api/src, apps/worker/src and package src roots in PYTHONPATH: `apps/api/.venv/Scripts/python.exe -m pytest apps/api/tests/test_storage_metrics.py -k "hard_deadline_and_reaps_child or watchdog_enforces_its_own or self_terminates_when_supervisor" -q`. The full-selection command above reproduced one candidate failure (`publication_storage_child_self_terminates_when_supervisor_is_killed`); it was not reproduced in later paired runs. Raw logs and source hashes: `.local-issue25/service-rework/windows-byte-and-repeat-evidence.json` and `*-lf-repeat-*.log`.
+
+Attribution: the 24 hash failures are checkout-byte configuration effects affecting both refs. The three original Windows storage lifecycle/timing failures belong to unchanged prerequisite storage/tests, but their intermittent environment cause is **not conclusively diagnosed**. No upstream defect is declared solely from identical source or Linux-green CI, and no storage timeout/oracle is weakened. This bounded investigation leaves Windows timing stability open for the controller; it does not block recording the separate genuine Step lifecycle bug reproduced by the service matrix.
+
+
+### Harness execution corrections
+
+The first public service job at b337cfe (`35886397520`) failed all 19 setups because pytest could not create a nested basetemp without its parent directory. The workflow now explicitly creates `.local-issue25` before execution. This was a setup failure, not a process-recovery pass. A subsequent Windows subset at 41c7acf gave six passes and one API-start failure: the probe socket was closed before Uvicorn bound the selected ephemeral port, and Windows rejected the later bind with WinError10013. The harness now asks Uvicorn to bind port 0 and reads its actual listening URL; no production network behavior or expected application output is changed. The permission boundary passes with the established 404 concealment contract. The approved-v3 binding comparison now explicitly includes the persisted submitted plan-approval decision, in addition to snapshot/prompt/asset rows.
+
+Clean 41c7acf A2 evidence is accepted with `repairSnapshotDirty=false` and `candidateSemanticDirty=false`; report SHA256 `a354abbbca9574262d8880a1242abeea732e5c62518853f9c1455753fad4b3ce`. It precedes the required upstream recovery correction and does not substitute for the next merged-HEAD run. Descartes has exact b337 frontend bytes plus a retained real API fixture (`ui-b337cfe/walkthrough.json`); visible UI remains blocked because the execution layer rejected Next startup before process creation. No alternate launch path is used to evade that restriction.
+
+
+The strengthened approved-v3 test now completes a real researcher step before upgrade and captures pre-upgrade Steps, Attempts, Claims and Artifacts alongside snapshot/prompt/asset/approval rows. It passed locally in 26.03 seconds (`v3-inflight.log`), continuing through report publication and persisted report editing after default-v4 upgrade. This closes the earlier pre-approval-only coverage gap for this bounded service fixture; final integrated-head rerun remains required.
+
+
+## Integrated recovery result and fixed-head handoff
+
+Normal merges incorporate #29 `86e710f2` then `e607aaebbd4bdc4b4fb4e08eaa6183e1724e3c26`, including #28 `e8f71d8`. The prerequisite owns the two-line current-Step error cleanup and the separately approved, relationship-checked retry error delta; #25 does not add an R2 whitelist exception. Both lanes' SSoT entries are retained. Clean a929a80 A2 passed after the production prerequisite integration; e607 changes only the retry negative-control input.
+
+The exploratory real-service matrix completed **19 passed in 565.48 seconds**, including all twelve actual Worker exit86 boundaries through final publication, report editing and API restart. `integrated-all/` stores crash/restart/journal/attempt/call/budget/artifact/API evidence for each case. That invocation began at 661b566 and spans subsequent docs/test-only changes and fixture-login development; it is explicitly **not the final same-HEAD proof**. The final delivery reruns both service modules against a clean committed head into `fixed-head-services/`; every case records `source.json` with its actual Git HEAD, tracked delta and archived v3 source ref. A2, current-SHA CI and the independent review are pinned separately in the PR/workbench ledger.
+
+The retained b337 API56046 fixture is superseded for login: the original synthetic `.test` email receives 422 from the existing EmailStr schema. The fixture now uses a valid reserved example-domain email and asserts actual login HTTP 200 plus the returned user ID and created run's actor ID. A fixed-head fixture host refuses tracked dirty source and writes a credential-free `walkthrough.json` for Descartes. API login returns user data; browser session signing occurs in Next's login route. Browser session and visible UI validation remain blocked until frontend startup is permitted. No password/token appears in the walkthrough or handoff messages, and no production authentication rule is changed.
+
+
+### Fixed-head e8b015b results and combined-service fixture repair
+
+At clean `e8b015b353ebaf5a221a1722421e6a6fd4703312`, the complete native PostgreSQL/S3/HTTP/Worker suite is **19 passed in 534.82 seconds**. All 20 source records (including the extra fresh database) identify e8b015b with empty tracked delta. `e8b015b-recovery-matrix.json` indexes all twelve crash boundaries with origin/recovery attempt states, gate provider/tool counts, final run/investigation state and report artifact counts; full journals, ledgers and HTTP/editor bytes remain in each case directory. Clean same-head A2 accepted A/AStored/B/C and serialized SSE, and the affected differential/integrity/publication/recovered-Step suite is **23 passed** (includes the 33 R2, 8 retry, 6 F1 and 10 F2 rejection controls). This result does not close browser-session/UI acceptance or Windows storage timing stability.
+
+Hubble then reproduced a distinct combined-CI fixture incompatibility: the inherited `research_service_worker.FixtureGeneration` handled five historical roles but indexed top-level `claims` for the new nested investigator payload. The unchanged four prerequisite service scenarios consequently stopped before publisher. The minimal #25 test-capability extension accepts the frozen investigator schema, inspects exact original quotes with unknown conditions left null, and produces bounded unresolved output without a speculative correction. It preserves the default-v4 create path and actual journal/gate/budget/publication processing. Existing v2/v3 fixture inputs retain their outputs; no retry, compensation, restore, cancellation, permission, CAS or publication assertion is removed.
+
+The new seven-case provider contract regression is **1 failed/6 passed on the old fixture** (exact KeyError `claims`) and **7 passed on the extension**. That scoped fixture change follows the e8b service proof, so the four prerequisite service tests and current-head CI must run again at the new delivery SHA. Historical artifact bytes, role registries and production code are unchanged by this last repair. The e8b fixed-head live API/login fixture is recorded in `fixed-head-ui/walkthrough.json`; no password/token is included, and browser-session validation is explicitly false until the frontend can run.
+
+## Architecture integration evidence ledger (2026-09-24)
+
+Delivery source: `D:/Code/citeframe-conflict-investigation/.local-issue25/delivery-integration`, branch `work/issue25-conflict-investigation`. Start/public prior head a927; normal merge fcaf creates3ce9b73, then normal merge ecc creates0e5e320. The sole ecc conflict retains both its six outer request/approval assertions and v4 policy handling. A subsequent integration test caught the inherited positive expecting v3 on a real default-v4 create; its expected release is explicitly updated to v4, preserving all five foreign-context negatives.
+
+Local exploratory logs live in `.local-issue25/architecture-fcaf/`: worker73PASS, API95PASS, offline feature39PASS. `service-exploratory.log` records three failures from a stale persistence-module import. After mapping the current import and its archived-driver reverse translation, `service-exploratory2.log` records5PASS/59.67s (two layout contracts plus approved-v3 execution/upgrade/report/edit and both current resolved/unresolved API pages). These are development-source results, not final-HEAD or visible-UI acceptance.
+
+The final candidate adds a fixed142-path product manifest, explicit v4 investigation deployment oracle and associated negative controls. The manifest links unchanged inherited bytes and mapped reviewed issue25 bytes; new offline oracle code has pinned source provenance and independent review pending. No original historical artifact or R2 whitelist changes are introduced by this architecture slice. Final-SHA commands/results are stored alongside this ledger and sent to Hubble; CI service/deployment evidence must identify that same SHA.
+
+The frozen7d6 API50606 fixture remains separate. Its source and manual frontend handoff are not updated to the architecture candidate. API login proof does not establish browser-session/BFF or visible UI acceptance; prior startup-policy denial is not bypassed.
+
+### Review repair: actual journal projection and source semantics
+
+At clean06b, Windows native28 service/layout/provider cases passed in537.36s, A2 passed after installing the frozen Web parser dependencies (the first local invocation lacked tsx), and the six standard CI jobs passed. The deployment CI35911419120 failed in both current and forced-serial scenarios with `ResearchConflictTurn` lacking `run_id`. This matches Hubble's independently reproduced offline-oracle defect; these results do not indicate a production journal vulnerability or complete deployment acceptance.
+
+Two scoped oracle repairs follow06b. Raw journal rows are selected via their real Step foreign key; separate persisted Step/snapshot/attempt facts establish run/workspace ownership, snapshot binding, origin input and attempt ordering. No owner fields are invented on journal rows and no production model or migration is changed. A real SQLite publication fixture now exercises no-journal and persisted-v4-journal positives plus eight foreign-relation/input negatives. All10 cases fail against06b on the missing ORM field; the repaired development suite with existing version/role controls passes69 cases.
+
+Investigator inspections now use the production closed result/source contract, including literal quote/conditions and original source coverage. Finish request claim IDs must exactly match the inspect claim set. Hubble's original three rehashed semantic counterexamples were replayed against06b and all were incorrectly accepted (logged explicitly as false acceptance); new controls require rejection while retaining valid positives. Additional negatives cover missing sources and unknown result fields. The fixed product manifest grows from142 to143 exact paths for the actual-model regression; existing R2 whitelist and historical fixtures remain unchanged. New-SHA deployment/service results and independent re-review remain required.

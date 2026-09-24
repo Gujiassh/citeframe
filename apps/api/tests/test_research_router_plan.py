@@ -20,10 +20,10 @@ from ai_pdf_api.services.research import (
 )
 from ai_pdf_api.services.research.research_idempotency import canonical_sha256
 from ai_pdf_api.services.research.research_prompt_provenance import (
-    PROMPT_NODE_ORDER,
+    V4_PROMPT_NODE_ORDER as PROMPT_NODE_ORDER,
     V2_PROMPT_SPECS,
-    V3_PROMPT_VERSION_IDS as V2_PROMPT_VERSION_IDS,
-    V3_WORKFLOW_VERSION_ID as V2_WORKFLOW_VERSION_ID,
+    V4_PROMPT_VERSION_IDS as V2_PROMPT_VERSION_IDS,
+    V4_WORKFLOW_VERSION_ID as V2_WORKFLOW_VERSION_ID,
     prompt_contract_sha256,
     v2_workflow_manifest,
 )
@@ -120,7 +120,7 @@ def test_plan_approval_copies_immutable_execution_snapshot(research_app) -> None
 
 
 def test_v2_prompt_release_specs_have_real_templates_and_closed_hashes() -> None:
-    assert tuple(V2_PROMPT_SPECS) == PROMPT_NODE_ORDER
+    assert tuple(V2_PROMPT_SPECS) == PROMPT_NODE_ORDER[:-1]
     for spec in V2_PROMPT_SPECS.values():
         assert len(spec.template_text) > 200
         assert spec.variables_schema["additionalProperties"] is False
@@ -173,7 +173,7 @@ def test_create_rejects_same_content_rogue_workflow_identity(research_app) -> No
             )
         ).all()
     )
-    assert canonical is not None and len(bindings) == 5
+    assert canonical is not None and len(bindings) == 6
     prompt_bindings = [(binding.node_key, binding.prompt_version_id) for binding in bindings]
     for binding in bindings:
         db.delete(binding)

@@ -6,6 +6,7 @@ from ai_pdf_api.models import (ResearchRun, ResearchPlanRevision, ResearchExecut
 from ai_pdf_api.services.research.research_prompt_provenance import (
     load_v2_release, V2_WORKFLOW_VERSION_ID, V2_RELEASE_ID, V2_PROMPT_VERSION_IDS,
     V3_WORKFLOW_VERSION_ID, V3_RELEASE_ID, V3_PROMPT_VERSION_IDS,
+    V4_WORKFLOW_VERSION_ID, V4_RELEASE_ID, V4_PROMPT_VERSION_IDS,
 )
 from .evidence import row, snapshot_proof
 from .snapshot_proofs import valid_snapshot
@@ -13,7 +14,8 @@ from .snapshot_proofs import valid_snapshot
 
 def release_contract(workflow_id):
     contracts = {V2_WORKFLOW_VERSION_ID: (V2_RELEASE_ID, V2_PROMPT_VERSION_IDS),
-                 V3_WORKFLOW_VERSION_ID: (V3_RELEASE_ID, V3_PROMPT_VERSION_IDS)}
+                 V3_WORKFLOW_VERSION_ID: (V3_RELEASE_ID, V3_PROMPT_VERSION_IDS),
+                 V4_WORKFLOW_VERSION_ID: (V4_RELEASE_ID, V4_PROMPT_VERSION_IDS)}
     assert workflow_id in contracts, "unknown_workflow_release"
     return contracts[workflow_id]
 
@@ -45,7 +47,7 @@ def workflow_facts(sessions, run_id):
                     decision["decision_type"], decision["input_snapshot_sha256"]) == (
                 snapshot.approval_decision_id, run.id, run.workspace_id,
                 "plan_approval", revision.planning_snapshot_sha256), "approval_request_binding_mismatch"
-            if workflow_id == V3_WORKFLOW_VERSION_ID:
+            if workflow_id in {V3_WORKFLOW_VERSION_ID, V4_WORKFLOW_VERSION_ID}:
                 assert decision["decision_origin"] == "policy" and decision["decided_by_user_id"] is None
                 assert decision["status"] == "submitted" and decision["action"] == "approve"
             result["snapshotId"] = snapshot.id
@@ -74,7 +76,7 @@ def wait_plan_boundary(observe, process_one, *, timeout_seconds=90):
 
 def assert_policy_completion(sessions, run_id, *, conflict_required=False):
     facts = workflow_facts(sessions, run_id)
-    assert facts["workflowId"] == V3_WORKFLOW_VERSION_ID, "default_release_regressed"
+    assert facts["workflowId"] == V4_WORKFLOW_VERSION_ID, "default_release_regressed"
     assert facts["status"] == "completed" and facts["snapshotId"] is not None
     with sessions() as db:
         decisions = list(db.scalars(select(HumanDecision).where(HumanDecision.run_id == run_id)))
@@ -103,6 +105,9 @@ def assert_policy_completion(sessions, run_id, *, conflict_required=False):
             assert isinstance(event.payload_json["runStateVersion"], int) and event.payload_json["runStateVersion"] > 0
         facts["decisions"] = [row(d) for d in decisions]
         facts["decisionEvents"] = [row(e) for e in events]
+    from .conflicts import assert_fixture_investigation
+    from .evidence import execution_facts
+    facts["conflictTurns"] = assert_fixture_investigation(execution_facts(sessions, run_id), required=conflict_required)
     return facts
 
 
