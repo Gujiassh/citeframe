@@ -581,13 +581,35 @@ def test_postgres_asset_migration_preserves_legacy_evidence_contract() -> None:
         config = _migration_config(source_url)
         command.upgrade(config, LEGACY_HEAD)
         _seed_legacy_contract(source_url)
+        command.upgrade(config, "r2f3a4b5c6d7")
+        investigation_snapshot = _payload_snapshot(source_url)
+        with pytest.raises(RuntimeError, match="Investigation provenance requires a forward migration"):
+            command.downgrade(config, LEGACY_HEAD)
+        with create_engine(source_url).connect() as connection:
+            assert connection.scalar(text("SELECT version_num FROM alembic_version")) == "r2f3a4b5c6d7"
+        assert _payload_snapshot(source_url) == investigation_snapshot
+
         command.upgrade(config, "head")
         _assert_migrated_contract(source_url)
+        with create_engine(source_url).begin() as connection:
+            connection.execute(text("""
+                INSERT INTO workspace_model_configs
+                    (workspace_id, capability, mode, revision, protocol, base_url, model,
+                     encrypted_api_key, updated_by_user_id, updated_at)
+                VALUES ('00000000-0000-0000-0000-000000000010', 'generation', 'override', 1,
+                        'openai_responses', 'https://fixture.invalid/custom', 'fixture-model',
+                        'opaque-test-ciphertext', '00000000-0000-0000-0000-000000000001', now())
+            """))
         source_snapshot = _payload_snapshot(source_url)
         _dump_and_restore(source_url, restored_url)
         assert _payload_snapshot(restored_url) == source_snapshot
-        with pytest.raises(RuntimeError, match="Investigation provenance requires a forward migration"):
+        with pytest.raises(RuntimeError, match="Export encrypted workspace configuration before an explicitly approved rollback"):
             command.downgrade(config, LEGACY_HEAD)
+        assert _payload_snapshot(source_url) == source_snapshot
+        for database_url in (source_url, restored_url):
+            with create_engine(database_url).connect() as connection:
+                assert connection.scalar(text("SELECT version_num FROM alembic_version")) == "s3a4b5c6d7e8"
+                assert connection.scalar(text("SELECT encrypted_api_key FROM workspace_model_configs")) == "opaque-test-ciphertext"
     finally:
         settings.database_url = original_url
         with admin_engine.connect() as connection:
