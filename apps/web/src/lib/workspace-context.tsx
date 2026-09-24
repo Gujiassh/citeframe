@@ -10,6 +10,7 @@ import type {
   EvidenceTargetRequest,
   SourceVersions,
 } from "@/lib/evidence/types";
+import type { UploadQueueItem } from "@/lib/assets/upload-queue";
 import type { TagDto } from "@/lib/notes/types";
 
 import { useTranslation } from "./i18n-context";
@@ -110,10 +111,12 @@ type WorkspaceContextType = {
   selectedAssetIds: string[];
   selectedTagIds: string[];
   switchWorkspace: (id: string) => void;
-  createWorkspace: (name: string, description: string | null) => Promise<void>;
+  createWorkspace: (name: string, description: string | null) => Promise<string>;
   deleteWorkspace: (id: string) => Promise<void>;
   updateWorkspaceSettings: (id: string, settings: WorkspaceSettingsInput) => Promise<void>;
-  uploadAsset: (file: File) => Promise<void>;
+  uploadQueue: UploadQueueItem[];
+  enqueueUploads: (files: readonly File[]) => void;
+  retryUpload: (id: string) => void;
   deleteAsset: (id: string) => Promise<void>;
   retryAsset: (id: string) => Promise<void>;
   retryDeleteAsset: (id: string) => Promise<void>;
@@ -304,7 +307,9 @@ export function WorkspaceProvider({ children }: { children: React.ReactNode }) {
         createWorkspace: workspaceState.createWorkspace,
         deleteWorkspace,
         updateWorkspaceSettings: workspaceState.updateWorkspaceSettings,
-        uploadAsset: assetState.uploadAsset,
+        uploadQueue: assetState.uploadQueue,
+        enqueueUploads: assetState.enqueueUploads,
+        retryUpload: assetState.retryUpload,
         deleteAsset: assetState.deleteAsset,
         retryAsset: assetState.retryAsset,
         retryDeleteAsset: assetState.retryDeleteAsset,

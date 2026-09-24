@@ -3,10 +3,14 @@
 import React, { useRef, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { workspaceNavigation } from "@/lib/workspaces/navigation";
 import { useAuth } from "@/lib/auth/auth-context";
 import { useWorkspace, Asset } from "@/lib/workspace-context";
 import { useTheme } from "@/lib/theme-context";
 import { useTranslation } from "@/lib/i18n-context";
+import { UploadQueueList } from "./upload-queue-list";
+import { takeSelectedFiles } from "@/lib/assets/upload-queue";
 import { PRODUCTION_UPLOAD_ACCEPT } from "@/lib/assets/production-upload";
 import { 
   Plus, Trash2, MessageSquare, 
@@ -26,9 +30,10 @@ export function WorkspaceSidebar() {
     leftSidebarOpen,
     selectedAssetIds,
     selectedTagIds,
-    switchWorkspace,
     createWorkspace,
-    uploadAsset,
+    uploadQueue,
+    enqueueUploads,
+    retryUpload,
     deleteAsset,
     retryAsset,
     retryDeleteAsset,
@@ -45,6 +50,8 @@ export function WorkspaceSidebar() {
     setSelectedTagIds,
   } = useWorkspace();
 
+  const router = useRouter();
+  const navigation = workspaceNavigation((href) => router.push(href), createWorkspace);
   const { user, logout } = useAuth();
   const { theme, toggleTheme } = useTheme();
   const { locale, setLocale, t } = useTranslation();
@@ -63,17 +70,10 @@ export function WorkspaceSidebar() {
     (asset) => !["ready", "chunked", "failed", "deleted"].includes(asset.status),
   );
 
-  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      const file = e.target.files[0];
-      try {
-        await uploadAsset(file);
-      } catch (error) {
-        alert(error instanceof Error ? error.message : "Upload failed.");
-      } finally {
-        e.target.value = "";
-      }
-    }
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = takeSelectedFiles(e.currentTarget);
+    enqueueUploads(files);
+    if (files.length) setLeftSidebarOpen(true);
   };
 
   const triggerUpload = () => {
@@ -161,6 +161,7 @@ export function WorkspaceSidebar() {
           </button>
           <input
             type="file"
+            multiple
             ref={fileInputRef}
             onChange={handleFileChange}
             accept={PRODUCTION_UPLOAD_ACCEPT}
@@ -248,7 +249,7 @@ export function WorkspaceSidebar() {
                   <button
                     key={ws.id}
                     onClick={() => {
-                      switchWorkspace(ws.id);
+                      navigation.open(ws.id);
                       setShowWsMenu(false);
                     }}
                     className={`flex w-full items-center justify-between rounded-xl px-2.5 py-2 text-left text-xs transition hover:bg-zinc-100 dark:hover:bg-zinc-800 ${
@@ -298,12 +299,15 @@ export function WorkspaceSidebar() {
             </button>
             <input
               type="file"
+            multiple
               ref={fileInputRef}
               onChange={handleFileChange}
               accept={PRODUCTION_UPLOAD_ACCEPT}
               className="hidden"
             />
           </div>
+
+          <UploadQueueList items={uploadQueue.filter((item) => item.workspaceId === currentWorkspace?.id)} onRetry={retryUpload} />
 
           <div className="mt-2.5 space-y-1">
             {wsAssets.length === 0 ? (
@@ -603,7 +607,7 @@ export function WorkspaceSidebar() {
         show={showCreateWs}
         onClose={() => setShowCreateWs(false)}
         onCreate={async (name, desc) => {
-          await createWorkspace(name, desc);
+          await navigation.createAndOpen(name, desc);
           setShowWsMenu(false);
         }}
         t={t}

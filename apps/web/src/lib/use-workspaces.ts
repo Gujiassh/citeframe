@@ -190,6 +190,7 @@ export function useWorkspaces({
       const newWorkspace = normalizeWorkspaceSummary(payload.workspace, locale);
       setWorkspaces((previous) => [...previous, newWorkspace]);
       selectWorkspace(newWorkspace.id);
+      return newWorkspace.id;
     },
     [locale, selectWorkspace],
   );

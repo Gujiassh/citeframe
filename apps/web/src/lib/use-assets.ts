@@ -1,11 +1,10 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import type { Dispatch, MutableRefObject, SetStateAction } from "react";
 
 import type { AuthUser } from "@/lib/auth/types";
 import type {
-  CreateUploadSessionResponseDto,
   AssetListResponseDto,
   AssetSummaryDto,
   FinalizeUploadResponseDto,
@@ -13,7 +12,8 @@ import type {
 import { applyAssetTags } from "@/lib/notes/normalize";
 import type { TagDto } from "@/lib/notes/types";
 import type { WorkspaceLocale } from "@/lib/workspaces/normalize";
-import { getProductionUploadDescriptor } from "@/lib/assets/production-upload";
+import { AssetListOrder } from "@/lib/assets/list-order";
+import { useUploadQueue } from "@/lib/assets/use-upload-queue";
 import type { Asset } from "./workspace-context";
 import { getWorkspaceErrorMessage, readResponseJsonSafely } from "./use-workspaces";
 
@@ -166,6 +166,7 @@ export function useAssets({
   updateWorkspace,
 }: UseAssetsOptions) {
   const [assets, setAssetsState] = useState<Asset[]>([]);
+  const listOrder = useRef(new AssetListOrder());
 
   const setAssets: Dispatch<SetStateAction<Asset[]>> = useCallback(
     (update) => {
@@ -199,6 +200,7 @@ export function useAssets({
       }
 
       const workspaceId = currentWorkspaceId;
+      const ticket = listOrder.current.begin(workspaceId);
       try {
         const response = await fetch(`/api/workspaces/${workspaceId}/assets`, { cache: "no-store" });
         const payload = await readResponseJsonSafely<AssetListResponseDto & AssetErrorPayload>(response);
@@ -215,7 +217,7 @@ export function useAssets({
           (payload?.items ?? []).map(toUiAsset),
           tagRelationsRef.current,
         );
-        if (!cancelled) {
+        if (!cancelled && listOrder.current.accept(ticket)) {
           const nextAssets = replaceAssetsForWorkspace(workspaceId, workspaceAssets, assetsRef.current);
           setAssets(nextAssets);
           updateWorkspace(workspaceId, (workspace) => workspace.assetCount === workspaceAssets.length
@@ -249,11 +251,13 @@ export function useAssets({
       return;
     }
 
+    let cancelled = false;
     const refreshAssets = async () => {
+      const ticket = listOrder.current.begin(currentWorkspaceId);
       try {
         const response = await fetch(`/api/workspaces/${currentWorkspaceId}/assets`, { cache: "no-store" });
         const payload = await readResponseJsonSafely<AssetListResponseDto & AssetErrorPayload>(response);
-        if (!response.ok || !payload) {
+        if (cancelled || !response.ok || !payload || !listOrder.current.accept(ticket)) {
           return;
         }
         const workspaceAssets = applyAssetTags(
@@ -275,93 +279,26 @@ export function useAssets({
     }, 1_500);
 
     return () => {
+      cancelled = true;
       window.clearInterval(timer);
     };
   }, [currentWorkspaceId, assets, assetsRef, isAuthHydrating, setAssets, tagRelationsRef, updateWorkspace, user]);
 
-  const uploadAsset = useCallback(
-    async (file: File) => {
-      const workspaceId = currentWorkspaceId;
-      if (!workspaceId) {
-        return;
-      }
-      const uploadDescriptor = getProductionUploadDescriptor(file);
-      if (!uploadDescriptor) {
-        throw new Error(
-          locale === "en"
-            ? "Choose a PDF, PNG, JPEG, WebP, or Markdown file."
-            : "请选择 PDF、PNG、JPEG、WebP 或 Markdown 文件。",
-        );
-      }
-
-      const uploadSessionResponse = await fetch(`/api/workspaces/${workspaceId}/assets/upload-session`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          sourceFilename: file.name,
-          mimeType: uploadDescriptor.mimeType,
-          byteSize: file.size,
-        }),
-      });
-
-      const uploadSessionPayload = await readResponseJsonSafely<CreateUploadSessionResponseDto & AssetErrorPayload>(uploadSessionResponse);
-      if (!uploadSessionResponse.ok || !uploadSessionPayload?.asset || !uploadSessionPayload?.upload.url) {
-        throw new Error(
-          getWorkspaceErrorMessage(
-            uploadSessionPayload,
-            locale === "en" ? "Failed to create upload session." : "创建上传会话失败。",
-          ),
-        );
-      }
-
-      const pendingAsset = toUiAsset(uploadSessionPayload.asset);
-      setAssets((previous) => [
-        pendingAsset,
-        ...previous.filter((asset) => asset.id !== pendingAsset.id),
-      ]);
-      updateWorkspace(workspaceId, (workspace) => ({
-        ...workspace,
-        assetCount: workspace.assetCount + 1,
-      }));
-
-      const uploadResponse = await fetch(uploadSessionPayload.upload.url, {
-        method: uploadSessionPayload.upload.method,
-        headers: uploadSessionPayload.upload.headers,
-        body: file,
-      });
-      if (!uploadResponse.ok) {
-        const uploadPayload = await readResponseJsonSafely<AssetErrorPayload>(uploadResponse);
-        throw new Error(
-          getWorkspaceErrorMessage(
-            uploadPayload,
-            locale === "en" ? "Failed to upload file." : "上传文件失败。",
-          ),
-        );
-      }
-
-      const finalizeResponse = await fetch(`/api/workspaces/${workspaceId}/assets/${pendingAsset.id}/finalize-upload`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ objectKey: uploadSessionPayload.upload.objectKey }),
-      });
-      const finalizePayload = await readResponseJsonSafely<FinalizeUploadResponseDto & AssetErrorPayload>(finalizeResponse);
-      if (!finalizeResponse.ok || !finalizePayload?.asset) {
-        throw new Error(
-          getWorkspaceErrorMessage(
-            finalizePayload,
-            locale === "en" ? "Failed to finalize upload." : "确认上传失败。",
-          ),
-        );
-      }
-
-      const uploadedAsset = toUiAsset(finalizePayload.asset);
-      setAssets((previous) => [
-        uploadedAsset,
-        ...previous.filter((asset) => asset.id !== uploadedAsset.id),
-      ]);
-    },
-    [currentWorkspaceId, locale, setAssets, updateWorkspace],
-  );
+  const receiveUploadAsset = useCallback((dto: AssetSummaryDto, created: boolean) => {
+    listOrder.current.invalidate(dto.workspaceId);
+    const incoming = toUiAsset(dto);
+    setAssets((previous) => [
+      { ...incoming, tags: previous.find((asset) => asset.id === incoming.id)?.tags ?? [] },
+      ...previous.filter((asset) => asset.id !== incoming.id),
+    ]);
+    if (created) updateWorkspace(dto.workspaceId, (workspace) => ({ ...workspace, assetCount: workspace.assetCount + 1 }));
+  }, [setAssets, updateWorkspace]);
+  const { uploadQueue, enqueueUploads, retryUpload, removeUploadsWorkspace } = useUploadQueue({
+    userId: isAuthHydrating ? undefined : user?.userId,
+    workspaceId: currentWorkspaceId,
+    locale,
+    onAsset: receiveUploadAsset,
+  });
 
   const deleteAsset = useCallback(
     async (id: string) => {
@@ -383,6 +320,7 @@ export function useAssets({
         );
       }
 
+      listOrder.current.invalidate(workspaceId);
       const previousAsset = assetsRef.current.find((asset) => asset.id === id);
       const deletingAsset = toUiAsset(payload.asset);
       setAssets((previous) => previous.map((asset) =>
@@ -415,6 +353,7 @@ export function useAssets({
         );
       }
 
+      listOrder.current.invalidate(workspaceId);
       const previousAsset = assetsRef.current.find((asset) => asset.id === id);
       const retriedAsset = toUiAsset(payload.asset);
       setAssets((previous) => previous.map((asset) =>
@@ -446,6 +385,7 @@ export function useAssets({
         );
       }
 
+      listOrder.current.invalidate(workspaceId);
       const previousAsset = assetsRef.current.find((asset) => asset.id === id);
       const deletingAsset = toUiAsset(payload.asset);
       setAssets((previous) => previous.map((asset) =>
@@ -459,9 +399,11 @@ export function useAssets({
 
   const removeWorkspace = useCallback(
     (workspaceId: string) => {
+      listOrder.current.invalidate(workspaceId);
+      removeUploadsWorkspace(workspaceId);
       setAssets(assetsRef.current.filter((asset) => asset.workspaceId !== workspaceId));
     },
-    [assetsRef, setAssets],
+    [assetsRef, setAssets, removeUploadsWorkspace],
   );
 
   const applyTagRelations = useCallback(
@@ -495,7 +437,9 @@ export function useAssets({
   return {
     assets,
     assetsRef,
-    uploadAsset,
+    uploadQueue,
+    enqueueUploads,
+    retryUpload,
     deleteAsset,
     retryAsset,
     retryDeleteAsset,
