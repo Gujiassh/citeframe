@@ -522,6 +522,7 @@ def _planning_runtime_payload(payload: Any, *, run_id: str) -> dict[str, object]
         "planner_prompt_version_id": _field(planning, "planner_prompt_version_id"),
         "prompts": (planner_prompt,),
         "provider_config_fingerprint": _field(provider, "provider_config_fingerprint"),
+        "retrieval_top_k": _field(provider, "retrieval_top_k"),
         "budget_policy_version": _field(planning, "budget_policy_version"),
         "retry_policy_version": _field(planning, "retry_policy_version"),
         "max_parallel_researchers": _field(proposed_limits, "max_parallel_researchers"),

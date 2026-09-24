@@ -277,6 +277,7 @@ class ResearchWorkProcessor(_ApiPort):
             workflow_version_id=str(payload["workflow_version_id"]),
             prompt_version_ids=(str(payload["planner_prompt_version_id"]),),
             provider_config_fingerprint=str(payload["provider_config_fingerprint"]),
+            retrieval_top_k=int(payload["retrieval_top_k"]),
             budget_policy_version=str(payload["budget_policy_version"]),
             retry_policy_version=str(payload["retry_policy_version"]),
             max_parallel_researchers=int(payload["max_parallel_researchers"]),

@@ -40,3 +40,9 @@ Additive shared persistence model/migration, owner settings GET/PATCH and saniti
 ## Outstanding acceptance at candidate freeze
 
 Controller-owned real visible UI walkthrough: owner save/reload/restart; two-workspace routing; both protocols in Quick Answer/Research; upload/reindex and clear failure/recovery. Synthetic fixture output proves protocol/business-flow plumbing only. Real provider/model quality remains outside this fixture evidence. Independent Critical review and frozen broad/source-bound tests remain required before PR approval/merge.
+
+## Runtime-found planner correction
+
+The visible UI walkthrough reached ingestion and Responses Quick Answer, then Research failed before its first HTTP request. The planning DTO included `retrievalTopK`, but Worker planning conversion omitted it and `ApprovedResearchExecution` defaulted to 0. The new immutable provider-fingerprint check correctly rejected this incomplete runtime snapshot. Worker now carries the frozen value through both conversion steps. Two integration regressions create workspace overrides, run actual planner/ledger/provider adapters with frozen topK 9 for Responses and Chat Completions, and verify the selected URL/key/model, succeeded provider ledger and queued approved run. Only network and object storage are fixtures. Focused Worker runtime suite: **33 passed**. Existing user data and failed run snapshots were not changed.
+
+Frozen pre-correction full API suite: **977 passed, 7 skipped** (`uv run --project apps/api pytest apps/api/tests -q --disable-warnings`). Dedicated PostgreSQL rerun: **4 passed**. Worker pre-correction: **464 passed**, with only an orphan historical `r803*.pyc` namespace failure; verified orphan bytecode removed and architecture boundary rerun **4 passed**. Full Worker will be rerun on corrected committed source.

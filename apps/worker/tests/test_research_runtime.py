@@ -476,7 +476,7 @@ def planning_input_payload() -> dict[str, object]:
                 "agentResultSchemaVersion": AGENT_RESULT_SCHEMA_VERSION,
                 "contextPolicyVersion": CONTEXT_POLICY_VERSION,
                 "compactPolicyVersion": COMPACT_POLICY_VERSION,
-                "provider": {"providerConfigFingerprint": "b" * 64},
+                "provider": {"providerConfigFingerprint": "b" * 64, "retrievalTopK": 6},
                 "budgetPolicyVersion": "planning-budget-v1",
                 "retryPolicyVersion": "planning-retry-v1",
                 "limits": {
@@ -502,6 +502,7 @@ def test_planning_adapter_separates_planner_usage_from_proposed_research_budget(
         run_id="run-1",
     )
 
+    assert payload["retrieval_top_k"] == 6
     assert payload["max_provider_calls"] == 2
     assert payload["proposed_max_provider_calls"] == 32
     assert payload["max_parallel_researchers"] == 3
