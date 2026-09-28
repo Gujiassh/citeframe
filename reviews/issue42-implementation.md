@@ -4,7 +4,7 @@
 
 **ACCEPT — bounded P1a instruction-only persistence/management candidate.** Targeted final review closes IR6; IR1–IR5 retain their independently verified closures. No open finding remains in this reviewed slice. The final rerun passed **57 tests: 44 real-PostgreSQL P1a tests and 13 persistence/research boundary tests**, with no skips. The frozen native 85-table/97-index oracle and exact six-table additive boundary are preserved.
 
-Accepted identity: HEAD `9ad428bfa673ac06f85f98a856519516fc079b9c` (shared contract delta after scaffold `eac4de4`) plus the unchanged previously reviewed working-tree core/dependency candidate and the IR6 test correction identified in the final targeted section below. This acceptance covers the pure core only. It is not completion of Issue #42 or #41, hosted CI/final-image acceptance, or acceptance of future adapters/provider loops, compaction, UI or model quality. Controller-reported frozen lock/export checks are recorded with attribution; local Docker is unavailable and final-image smoke remains a hosted-CI gate.
+Accepted identity: committed storage candidate `2e9287638fee9567c6474b8356c3b3ba93fec16a`, including shared contract `9ad428bfa673ac06f85f98a856519516fc079b9c` after scaffold `eac4de4`. The final formatting-only recheck below supersedes the earlier migration/test hashes and retains the bounded ACCEPT. This acceptance covers the pure core only. It is not completion of Issue #42 or #41, hosted CI/final-image acceptance, or acceptance of future adapters/provider loops, compaction, UI or model quality. Controller-reported frozen lock/export checks are recorded with attribution; local Docker is unavailable and final-image smoke remains a hosted-CI gate.
 
 ## Authority and boundary
 
@@ -291,3 +291,104 @@ All entries of the earlier **Exact final inspected file identities** table remai
 | `packages/memory-service/src/citeframe_memory/sources.py` | `805f7e5be3b807444615327b45bc51cba3e19ea04ba6baf24d25413e83df4ce3` |
 | `packages/memory-service/src/citeframe_memory/lifecycle.py` | `7346ac060189247c58a6e337908c7e9bd331828d7ec596ac1121083987c611b8` |
 | `packages/memory-service/tests/test_instruction_memory.py` | `6b906cd254a6b67fad6f33a3d152c58f30bd1d67078564194b014bd45e3cf5d1` |
+
+
+## Final formatting-only delta confirmation — 2026-09-28
+
+**ACCEPT retained. No new finding.** This check is limited to migration EOL cleanup, the corresponding frozen-DDL oracle normalization and controller-owned authority/documentation alignment. Prior IR1–IR6 closure, 57-test independent runtime/boundary evidence and all acceptance limitations remain in force; no architecture review was repeated.
+
+At initial inspection, the index held the previously accepted migration blob `c3d7ffe` and the working tree held the formatting correction. The controller advanced the index and committed during this review. The final comparison therefore pinned that original staged blob explicitly and verified the resulting committed candidate `2e9287638fee9567c6474b8356c3b3ba93fec16a`; the reviewer did not stage, commit or otherwise change Git state.
+
+### Exact delta and oracle check
+
+- The entire new migration text equals the prior staged text after removing only trailing ASCII spaces/tabs from each line. There are exactly **118 changed lines**, all comma-terminated DDL lines; line count/order and every non-EOL character are unchanged. No SQL token or quoted literal was modified. Normalized Python AST equality also passed; functions, triggers, constraints and upgrade/downgrade operations are unchanged.
+- The sole test-code delta adds `line.rstrip(" \t")` on each generated expected DDL line and a reason comment. Full statement equality against `MIGRATION.DDL` remains. The prior statement-set comparison and leading/internal whitespace, SQL identifiers, literal contents, constraints and token ordering are not relaxed by this addition.
+- Independent in-memory negative controls changed `current_version >= 1` to `current_version >= 2`, then `visibility = 'private'` to `visibility = 'workspace'`. The actual updated frozen-DDL oracle rejected both with `AssertionError`. No product/test file was altered by these probes.
+- Controller-owned current design header, brief and delivery checkpoint consistently state the existing spec v4/A1 choice2 and isolated neutral-lane authorization, while retaining historical evidence. Markdown EOL cleanup changes no operative contract. No new private audience/task mode or shared-private consumer is introduced.
+
+### Bounded independent verification
+
+```powershell
+$env:PYTHONDONTWRITEBYTECODE='1'
+$env:PYTHONPATH="$PWD/apps/api/src;$PWD/apps/worker/src;$PWD/packages/backend-contracts/src;$PWD/packages/backend-persistence/src;$PWD/packages/research-persistence/src;$PWD/packages/memory-service/src"
+& D:/Code/citeframe/apps/api/.venv/Scripts/python.exe -B -m pytest -p no:cacheprovider -q packages/memory-service/tests/test_instruction_memory.py::test_frozen_migration_matches_current_six_table_models apps/api/tests/test_persistence_boundary.py::test_persistence_models_share_one_metadata_object_and_match_snapshot --tb=short
+```
+
+Observed: **2 passed, 1 existing Starlette warning, 0.18 seconds**. The six-table migration/model DDL oracle and exact frozen native85/97-index equality both pass on the formatting-clean candidate. The whole-file/AST comparisons and both negative controls above passed independently. `git diff --check` and `git diff --cached --check` returned no errors after the controller's commit. The developer's separate formatting-candidate 57-test real-PG and downgrade/up/check reruns are recorded in `lane42-report.md`; they were not rerun by this bounded review.
+
+No PostgreSQL server was started for this formatting check. The reviewer-owned disposable cluster remains stopped (`postmaster.pid` absent). No paid call, product/test edit or Git write occurred. Only this review addendum was written; the controller can include it in the delivery ledger without changing the accepted product bytes.
+
+### Stable candidate hashes after formatting
+
+| File | SHA-256 |
+|---|---|
+| `apps/api/alembic/versions/t4b5c6d7e8f9_instruction_memory.py` | `8c4b2f0e86dfb6de3f383e29247e7716a040e030179d4157717078d286836bd9` |
+| `packages/memory-service/tests/test_instruction_memory.py` | `f4117dfbcb878cd26b799a8b0c5f9a0d9ec67964f1c6d882a09e3b97d774d3f1` |
+| `specs/v5/memory-management/lane42-report.md` | `e19a2ebc63dd5f0740f5ff14ae5795432f60f44784236a76b827c2d81fc350ce` |
+| `specs/v5/memory-management/spec.md` | `a15b1b55e2542b01455b47b67508cffd673dd532dab2932702ad771b08a1fe85` |
+| `specs/v5/memory-management/design.md` | `828effb02b5fbf9818604e35ea13662814e12ccc605b704dd895fd7bbafe6236` |
+| `specs/v5/memory-management/controller-brief.md` | `5fcb90cd11f87319dc8a1cc9bca9c4013f7824bd8c119f6b2b64ce6d529a350a` |
+| `specs/v5/memory-management/delivery.md` | `21adb2ec4f45e3a309c55be7e55901ce5f47b63efb8eec2b9b28e98fc0a71aaa` |
+
+Final handoff: **bounded P1a ACCEPT, ready for the controller's draft-PR handoff subject to existing hosted CI/final-image gates**. No broad #42/#41 completion, mounted UI/provider/compaction or model-quality claim. Durable write-back remains solely this review artifact.
+
+
+## PR48 four-test-file CI correction — independent final review, 2026-09-28
+
+**ACCEPT for this bounded test-only correction. No new finding.** Prior P1a core ACCEPT and IR1–IR6 closure remain intact. Governing spec v4/A1 choice2, owner-private storage/management and shared-private denial are unchanged. This verifies the observed legacy CI assertion corrections and retained oracles; it does not reopen architecture or accept full #42/#41 delivery.
+
+### Exact candidate and scope
+
+The controller advanced the candidate to commit **1d4f9e377785bda28c62029cd524c3cd6ba4c567** (test(memory): preserve deployment and migration regression contracts) before this resumed review. Independent comparison against 2e9287638fee9567c6474b8356c3b3ba93fec16a found exactly these four test files plus the existing review, delivery ledger and lane report. No production code, migration, contract, adapter, lock, export, manifest, Dockerfile or CI gate changed. Test hashes matched the stable developer handoff before testing and immediately before this write-back.
+
+| Reviewed file | SHA-256 |
+|---|---|
+| apps/api/tests/test_deploy_dependencies.py | 95d147b8434f94adb59b099891b2bcbfc3b0e466ac1286548659dc6e59952729 |
+| apps/worker/tests/test_deploy_dependencies.py | 7943a277794229141121675d76d725fd81bbd2761522169344b70965e31784e9 |
+| apps/api/tests/test_asset_migration.py | 28d928aed61eb8c7230fe4f10cbc59aae353b72fa6a7f729e6dca0954a87409e |
+| apps/api/tests/test_research_migration.py | 0c2981d256b05c34ffafecce0319d6218c51f903c669011d05bb9d7d631810b0 |
+
+### Retained oracle assessment
+
+| Area | Result and direct evidence |
+|---|---|
+| Finite local-package/export/lock maps | **Pass.** API explicitly allows four local distributions; Worker additionally allows ai-pdf-api. Omitted runtime dependencies must equal the complete finite local set, and local distributions remain forbidden in pinned deploy requirements. Manifest source maps are exact. Parsed editable lock package/source maps must exactly equal the declared maps, excluding only the root project. |
+| Standard-library-only contracts | **Pass.** The sole relative-import exception is the exact tuple ("citeframe_contracts/__init__.py", 1, "memory"). Every contract Python source, including memory.py, still undergoes the standard-library dependency scan. Existing isolated source-path import smoke passed. |
+| Docker package paths | **Pass for the static oracle.** Both stages require the exact approved package COPY set, including both memory-service paths, plus full ordered PYTHONPATH assertions. No final-image execution evidence is inferred. |
+| Fixed head and lineage | **Pass.** Exactly one literal head t4b5c6d7e8f9 and explicit t4b5c6d7e8f9 -> s3a4b5c6d7e8 -> r2f3a4b5c6d7 lineage. No dynamic latest-head allowance or new skip. |
+| Original populated payload/evidence oracle | **Pass.** Independent whole-file AST comparison proves the asset file differs only by one expected head literal. Legacy seed data, migrated evidence assertions, full payload snapshot queries/comparisons, actual dump/restore, ciphertext checks and guarded rollback checks are unchanged. All Research AST outside the head-check function is identical to the prior candidate. The populated asset test passed independently on real PostgreSQL. |
+
+**Reverse controls:** 18 in-memory mutations were rejected by the actual candidate assertions. For each API/Worker oracle: omit a direct pinned export, introduce a local distribution into the export, corrupt the memory-service editable path, or add an unapproved editable package. Contract probes: root-relative import of another module, relative .memory import outside the package root, and a non-stdlib dependency inside memory.py. Docker probes: wrong package destination, extra package COPY, wrong PYTHONPATH. Head probes: wrong head, extra head, wrong t4 parent, wrong s3 parent. Each raised AssertionError; no product/test file was edited for these probes.
+
+### Independent bounded runtime evidence
+
+Using D:/Code/citeframe/apps/api/.venv/Scripts/python.exe -B - with bytecode/cache writes disabled, pytest.main ran these three paths:
+
+- apps/api/tests/test_asset_migration.py::test_postgres_asset_migration_preserves_legacy_evidence_contract
+- apps/api/tests/test_research_migration.py
+- apps/api/tests/test_deploy_dependencies.py
+
+Arguments: -p no:cacheprovider -q -rs --tb=short and --basetemp=C:/Users/baiao/AppData/Local/Temp/citeframe-issue42-review-3174ea83c95f4539945ac26ed8ef7eb0/pr48-review-api.
+
+Result: **21 passed, zero skipped, 4.61 seconds**, with one existing Starlette deprecation warning: one real-PG populated asset migration/dump/restore test, 14 Research migration tests, six API deploy tests. Research includes its existing SQLite/mock checks; these are not relabeled as PG tests.
+
+Reproduction environment: PYTHONDONTWRITEBYTECODE=1; PYTHONPATH contains this lane's API/Worker/contracts/persistence/research-persistence/memory-service source paths. Inside Python before importing pytest/settings, set both AI_PDF_DATABASE_URL and CITEFRAME_MEMORY42_POSTGRES_URL to postgresql+psycopg://reviewer@127.0.0.1:55442/citeframe_memory42_test; prepend D:/Code/citeframe/.local-runtime/postgresql/pgsql/bin to os.environ["PATH"]; assert shutil.which("pg_dump") and shutil.which("pg_restore"); set TEMP/TMP to the reviewer temporary root above.
+
+Only the previously initialized reviewer disposable cluster at that root's data directory was restarted, on loopback **55442**, after verifying its exact path, absent PID file and unoccupied port. The unchanged fixture created UUID-named source/restore databases there, seeded legacy evidence, migrated, executed actual PG17 dump/restore, compared payloads, checked rollback refusal and cleaned up its databases. The finally block stopped this cluster with pg_ctl -m fast -w stop. Subsequent readiness returned **no response**, and postmaster.pid was absent. No existing runtime or developer cluster was used.
+
+Separate command, with the same source-path/bytecode settings:
+
+    D:/Code/citeframe/apps/worker/.venv/Scripts/python.exe -B -m pytest apps/worker/tests/test_deploy_dependencies.py -p no:cacheprovider --basetemp=C:/Users/baiao/AppData/Local/Temp/citeframe-issue42-review-3174ea83c95f4539945ac26ed8ef7eb0/pr48-review-worker -q -rs --tb=short
+
+Result: **2 passed, zero skipped, 0.05 seconds**. Total independent tests for this correction: **23 passed, zero skipped**, plus AST comparisons and 18 negative controls.
+
+### Evidence boundaries and handoff
+
+- Developer-supplied evidence remains separately attributed: 78 passed, zero skipped (one PG asset + 14 Research + six API deploy + 13 boundary + 44 P1a), and two Worker deploy passes in the stable lane report. Controller separately reported six API/two Worker deploy passes. Neither is counted as reviewer execution.
+- The 13 native boundary and 44 P1a tests were not repeated in this narrow recheck. Prior independent acceptance remains; their product/test bytes and frozen native snapshot did not change in this correction.
+- Frozen uv resolution/export verification remains prior controller evidence; no new resolution/export pass is claimed.
+- PR48's hosted failure on the old candidate remains the reported hosted state. Controller owns push/rerun and verification of the corrected commit. **Hosted CI and final Docker-image smoke remain outstanding gates.** No local Docker execution occurred.
+- Mounted application/UI, provider/compaction flows and model quality remain unrun/undelivered in this pure-core slice. No broad #42/#41 or #44 adapter acceptance follows.
+- Reviewer made no product/test or Git writes and no paid calls. Only this original review was appended. Durable write-back is confined here; no private/global memory or canonical #40 workbench update.
+
+**Final scoped verdict: ACCEPT the four-file CI assertion correction at the exact commit/hashes above; ready for controller handoff and the required hosted rerun.**
