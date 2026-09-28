@@ -421,6 +421,12 @@ __all__ = [
 ]
 
 from .memory import (
+    MemoryConditions,
+    MemoryStatement,
+    MemoryRequest,
+    MemoryView,
+    MemoryReceipt,
+    InstructionSourceView,
     AccessContext,
     AccessDenied,
     AccessPort,
@@ -453,6 +459,3 @@ from .memory import (
 from .memory import __all__ as _memory_exports
 
 __all__ += _memory_exports
-
-from .memory import MemoryConditions, MemoryStatement, MemoryRequest, MemoryView, MemoryReceipt, InstructionSourceView
-__all__ += ["MemoryConditions", "MemoryStatement", "MemoryRequest", "MemoryView", "MemoryReceipt", "InstructionSourceView"]
