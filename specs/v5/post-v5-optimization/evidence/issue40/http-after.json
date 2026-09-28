@@ -1,0 +1,5190 @@
+[
+  {
+    "method": "get",
+    "path": "/v1/workspaces/{workspace_id}/jobs/{job_id}",
+    "actor": "owner",
+    "variant": "default",
+    "status": 404,
+    "body": {
+      "detail": "Job not found."
+    }
+  },
+  {
+    "method": "get",
+    "path": "/v1/workspaces/{workspace_id}/jobs/{job_id}",
+    "actor": "member",
+    "variant": "default",
+    "status": 404,
+    "body": {
+      "detail": "Job not found."
+    }
+  },
+  {
+    "method": "get",
+    "path": "/v1/workspaces/{workspace_id}/jobs/{job_id}",
+    "actor": "outsider",
+    "variant": "default",
+    "status": 404,
+    "body": {
+      "detail": "Workspace not found."
+    }
+  },
+  {
+    "method": "get",
+    "path": "/v1/workspaces/{workspace_id}/jobs/{job_id}",
+    "actor": "unknown",
+    "variant": "default",
+    "status": 404,
+    "body": {
+      "detail": "Workspace not found."
+    }
+  },
+  {
+    "method": "get",
+    "path": "/v1/workspaces/{workspace_id}/jobs/{job_id}",
+    "actor": "missing-internal",
+    "variant": "default",
+    "status": 401,
+    "body": {
+      "detail": "Internal API authentication required."
+    }
+  },
+  {
+    "method": "get",
+    "path": "/v1/workspaces/{workspace_id}/jobs/{job_id}",
+    "actor": "missing-user",
+    "variant": "default",
+    "status": 401,
+    "body": {
+      "detail": "Authentication required."
+    }
+  },
+  {
+    "method": "get",
+    "path": "/v1/workspaces/{workspace_id}/model-settings",
+    "actor": "owner",
+    "variant": "default",
+    "status": 200,
+    "body": {
+      "encryptionReady": true,
+      "generation": {
+        "source": "server",
+        "revision": 0,
+        "protocol": "openai_responses",
+        "baseUrl": "",
+        "model": "gpt-5.5",
+        "apiKeyConfigured": false,
+        "status": "unconfigured",
+        "errorCode": null
+      },
+      "embedding": {
+        "source": "server",
+        "revision": 0,
+        "protocol": "openai_embeddings",
+        "baseUrl": "",
+        "model": "text-embedding-3-small",
+        "apiKeyConfigured": false,
+        "status": "unconfigured",
+        "errorCode": null,
+        "dimensions": 1024,
+        "reindexRequired": false,
+        "reindexAssetIds": []
+      }
+    }
+  },
+  {
+    "method": "get",
+    "path": "/v1/workspaces/{workspace_id}/model-settings",
+    "actor": "member",
+    "variant": "default",
+    "status": 403,
+    "body": {
+      "detail": "Only workspace owners can manage model settings."
+    }
+  },
+  {
+    "method": "get",
+    "path": "/v1/workspaces/{workspace_id}/model-settings",
+    "actor": "outsider",
+    "variant": "default",
+    "status": 404,
+    "body": {
+      "detail": "Workspace not found."
+    }
+  },
+  {
+    "method": "get",
+    "path": "/v1/workspaces/{workspace_id}/model-settings",
+    "actor": "unknown",
+    "variant": "default",
+    "status": 404,
+    "body": {
+      "detail": "Workspace not found."
+    }
+  },
+  {
+    "method": "get",
+    "path": "/v1/workspaces/{workspace_id}/model-settings",
+    "actor": "missing-internal",
+    "variant": "default",
+    "status": 401,
+    "body": {
+      "detail": "Internal API authentication required."
+    }
+  },
+  {
+    "method": "get",
+    "path": "/v1/workspaces/{workspace_id}/model-settings",
+    "actor": "missing-user",
+    "variant": "default",
+    "status": 401,
+    "body": {
+      "detail": "Authentication required."
+    }
+  },
+  {
+    "method": "patch",
+    "path": "/v1/workspaces/{workspace_id}/model-settings",
+    "actor": "owner",
+    "variant": "default",
+    "status": 422,
+    "body": {
+      "detail": {
+        "code": "model_settings_invalid",
+        "message": "Invalid model settings."
+      }
+    }
+  },
+  {
+    "method": "patch",
+    "path": "/v1/workspaces/{workspace_id}/model-settings",
+    "actor": "member",
+    "variant": "default",
+    "status": 422,
+    "body": {
+      "detail": {
+        "code": "model_settings_invalid",
+        "message": "Invalid model settings."
+      }
+    }
+  },
+  {
+    "method": "patch",
+    "path": "/v1/workspaces/{workspace_id}/model-settings",
+    "actor": "outsider",
+    "variant": "default",
+    "status": 422,
+    "body": {
+      "detail": {
+        "code": "model_settings_invalid",
+        "message": "Invalid model settings."
+      }
+    }
+  },
+  {
+    "method": "patch",
+    "path": "/v1/workspaces/{workspace_id}/model-settings",
+    "actor": "unknown",
+    "variant": "default",
+    "status": 422,
+    "body": {
+      "detail": {
+        "code": "model_settings_invalid",
+        "message": "Invalid model settings."
+      }
+    }
+  },
+  {
+    "method": "patch",
+    "path": "/v1/workspaces/{workspace_id}/model-settings",
+    "actor": "missing-internal",
+    "variant": "default",
+    "status": 401,
+    "body": {
+      "detail": "Internal API authentication required."
+    }
+  },
+  {
+    "method": "patch",
+    "path": "/v1/workspaces/{workspace_id}/model-settings",
+    "actor": "missing-user",
+    "variant": "default",
+    "status": 401,
+    "body": {
+      "detail": "Authentication required."
+    }
+  },
+  {
+    "method": "get",
+    "path": "/v1/workspaces/{workspace_id}",
+    "actor": "owner",
+    "variant": "default",
+    "status": 200,
+    "body": {
+      "workspace": {
+        "id": "w1",
+        "name": "w1",
+        "description": null,
+        "systemPrompt": "You are an AI research assistant. Answer using only the supplied PDF context and cite supporting sources.",
+        "retrievalTopK": 6,
+        "chunkSize": 1200,
+        "embeddingProvider": "openai",
+        "embeddingModel": "text-embedding-3-small",
+        "embeddingDimensions": 1024,
+        "embeddingVersion": "embedding-v1",
+        "generationProvider": "openai",
+        "generationModel": "gpt-5.5",
+        "role": "owner",
+        "assetCount": 0,
+        "noteCount": 0,
+        "threadCount": 0,
+        "createdAt": "2026-09-27T16:00:00+00:00",
+        "updatedAt": "2026-09-27T16:00:00+00:00"
+      }
+    }
+  },
+  {
+    "method": "get",
+    "path": "/v1/workspaces/{workspace_id}",
+    "actor": "member",
+    "variant": "default",
+    "status": 200,
+    "body": {
+      "workspace": {
+        "id": "w1",
+        "name": "w1",
+        "description": null,
+        "systemPrompt": "You are an AI research assistant. Answer using only the supplied PDF context and cite supporting sources.",
+        "retrievalTopK": 6,
+        "chunkSize": 1200,
+        "embeddingProvider": "openai",
+        "embeddingModel": "text-embedding-3-small",
+        "embeddingDimensions": 1024,
+        "embeddingVersion": "embedding-v1",
+        "generationProvider": "openai",
+        "generationModel": "gpt-5.5",
+        "role": "member",
+        "assetCount": 0,
+        "noteCount": 0,
+        "threadCount": 0,
+        "createdAt": "2026-09-27T16:00:00+00:00",
+        "updatedAt": "2026-09-27T16:00:00+00:00"
+      }
+    }
+  },
+  {
+    "method": "get",
+    "path": "/v1/workspaces/{workspace_id}",
+    "actor": "outsider",
+    "variant": "default",
+    "status": 404,
+    "body": {
+      "detail": "Workspace not found."
+    }
+  },
+  {
+    "method": "get",
+    "path": "/v1/workspaces/{workspace_id}",
+    "actor": "unknown",
+    "variant": "default",
+    "status": 401,
+    "body": {
+      "detail": "Authenticated user not found."
+    }
+  },
+  {
+    "method": "get",
+    "path": "/v1/workspaces/{workspace_id}",
+    "actor": "missing-internal",
+    "variant": "default",
+    "status": 401,
+    "body": {
+      "detail": "Internal API authentication required."
+    }
+  },
+  {
+    "method": "get",
+    "path": "/v1/workspaces/{workspace_id}",
+    "actor": "missing-user",
+    "variant": "default",
+    "status": 401,
+    "body": {
+      "detail": "Authentication required."
+    }
+  },
+  {
+    "method": "delete",
+    "path": "/v1/workspaces/{workspace_id}",
+    "actor": "owner",
+    "variant": "default",
+    "status": 204,
+    "body": null
+  },
+  {
+    "method": "delete",
+    "path": "/v1/workspaces/{workspace_id}",
+    "actor": "member",
+    "variant": "default",
+    "status": 403,
+    "body": {
+      "detail": "Only workspace owners can archive this workspace."
+    }
+  },
+  {
+    "method": "delete",
+    "path": "/v1/workspaces/{workspace_id}",
+    "actor": "outsider",
+    "variant": "default",
+    "status": 404,
+    "body": {
+      "detail": "Workspace not found."
+    }
+  },
+  {
+    "method": "delete",
+    "path": "/v1/workspaces/{workspace_id}",
+    "actor": "unknown",
+    "variant": "default",
+    "status": 401,
+    "body": {
+      "detail": "Authenticated user not found."
+    }
+  },
+  {
+    "method": "delete",
+    "path": "/v1/workspaces/{workspace_id}",
+    "actor": "missing-internal",
+    "variant": "default",
+    "status": 401,
+    "body": {
+      "detail": "Internal API authentication required."
+    }
+  },
+  {
+    "method": "delete",
+    "path": "/v1/workspaces/{workspace_id}",
+    "actor": "missing-user",
+    "variant": "default",
+    "status": 401,
+    "body": {
+      "detail": "Authentication required."
+    }
+  },
+  {
+    "method": "patch",
+    "path": "/v1/workspaces/{workspace_id}/settings",
+    "actor": "owner",
+    "variant": "default",
+    "status": 422,
+    "body": {
+      "detail": [
+        {
+          "type": "missing",
+          "loc": [
+            "body",
+            "systemPrompt"
+          ],
+          "msg": "Field required",
+          "input": {}
+        },
+        {
+          "type": "missing",
+          "loc": [
+            "body",
+            "retrievalTopK"
+          ],
+          "msg": "Field required",
+          "input": {}
+        },
+        {
+          "type": "missing",
+          "loc": [
+            "body",
+            "chunkSize"
+          ],
+          "msg": "Field required",
+          "input": {}
+        }
+      ]
+    }
+  },
+  {
+    "method": "patch",
+    "path": "/v1/workspaces/{workspace_id}/settings",
+    "actor": "member",
+    "variant": "default",
+    "status": 422,
+    "body": {
+      "detail": [
+        {
+          "type": "missing",
+          "loc": [
+            "body",
+            "systemPrompt"
+          ],
+          "msg": "Field required",
+          "input": {}
+        },
+        {
+          "type": "missing",
+          "loc": [
+            "body",
+            "retrievalTopK"
+          ],
+          "msg": "Field required",
+          "input": {}
+        },
+        {
+          "type": "missing",
+          "loc": [
+            "body",
+            "chunkSize"
+          ],
+          "msg": "Field required",
+          "input": {}
+        }
+      ]
+    }
+  },
+  {
+    "method": "patch",
+    "path": "/v1/workspaces/{workspace_id}/settings",
+    "actor": "outsider",
+    "variant": "default",
+    "status": 422,
+    "body": {
+      "detail": [
+        {
+          "type": "missing",
+          "loc": [
+            "body",
+            "systemPrompt"
+          ],
+          "msg": "Field required",
+          "input": {}
+        },
+        {
+          "type": "missing",
+          "loc": [
+            "body",
+            "retrievalTopK"
+          ],
+          "msg": "Field required",
+          "input": {}
+        },
+        {
+          "type": "missing",
+          "loc": [
+            "body",
+            "chunkSize"
+          ],
+          "msg": "Field required",
+          "input": {}
+        }
+      ]
+    }
+  },
+  {
+    "method": "patch",
+    "path": "/v1/workspaces/{workspace_id}/settings",
+    "actor": "unknown",
+    "variant": "default",
+    "status": 422,
+    "body": {
+      "detail": [
+        {
+          "type": "missing",
+          "loc": [
+            "body",
+            "systemPrompt"
+          ],
+          "msg": "Field required",
+          "input": {}
+        },
+        {
+          "type": "missing",
+          "loc": [
+            "body",
+            "retrievalTopK"
+          ],
+          "msg": "Field required",
+          "input": {}
+        },
+        {
+          "type": "missing",
+          "loc": [
+            "body",
+            "chunkSize"
+          ],
+          "msg": "Field required",
+          "input": {}
+        }
+      ]
+    }
+  },
+  {
+    "method": "patch",
+    "path": "/v1/workspaces/{workspace_id}/settings",
+    "actor": "missing-internal",
+    "variant": "default",
+    "status": 401,
+    "body": {
+      "detail": "Internal API authentication required."
+    }
+  },
+  {
+    "method": "patch",
+    "path": "/v1/workspaces/{workspace_id}/settings",
+    "actor": "missing-user",
+    "variant": "default",
+    "status": 401,
+    "body": {
+      "detail": "Authentication required."
+    }
+  },
+  {
+    "method": "get",
+    "path": "/v1/workspaces/{workspace_id}/assets",
+    "actor": "owner",
+    "variant": "default",
+    "status": 200,
+    "body": {
+      "items": [],
+      "nextCursor": null
+    }
+  },
+  {
+    "method": "get",
+    "path": "/v1/workspaces/{workspace_id}/assets",
+    "actor": "member",
+    "variant": "default",
+    "status": 200,
+    "body": {
+      "items": [],
+      "nextCursor": null
+    }
+  },
+  {
+    "method": "get",
+    "path": "/v1/workspaces/{workspace_id}/assets",
+    "actor": "outsider",
+    "variant": "default",
+    "status": 404,
+    "body": {
+      "detail": "Workspace not found."
+    }
+  },
+  {
+    "method": "get",
+    "path": "/v1/workspaces/{workspace_id}/assets",
+    "actor": "unknown",
+    "variant": "default",
+    "status": 404,
+    "body": {
+      "detail": "Workspace not found."
+    }
+  },
+  {
+    "method": "get",
+    "path": "/v1/workspaces/{workspace_id}/assets",
+    "actor": "missing-internal",
+    "variant": "default",
+    "status": 401,
+    "body": {
+      "detail": "Internal API authentication required."
+    }
+  },
+  {
+    "method": "get",
+    "path": "/v1/workspaces/{workspace_id}/assets",
+    "actor": "missing-user",
+    "variant": "default",
+    "status": 401,
+    "body": {
+      "detail": "Authentication required."
+    }
+  },
+  {
+    "method": "get",
+    "path": "/v1/workspaces/{workspace_id}/assets/{asset_id}",
+    "actor": "owner",
+    "variant": "default",
+    "status": 404,
+    "body": {
+      "detail": "Asset not found."
+    }
+  },
+  {
+    "method": "get",
+    "path": "/v1/workspaces/{workspace_id}/assets/{asset_id}",
+    "actor": "owner",
+    "variant": "invalid-query",
+    "status": 422,
+    "body": {
+      "detail": [
+        {
+          "type": "int_parsing",
+          "loc": [
+            "query",
+            "pageNumber"
+          ],
+          "msg": "Input should be a valid integer, unable to parse string as an integer",
+          "input": "!"
+        }
+      ]
+    }
+  },
+  {
+    "method": "get",
+    "path": "/v1/workspaces/{workspace_id}/assets/{asset_id}",
+    "actor": "member",
+    "variant": "default",
+    "status": 404,
+    "body": {
+      "detail": "Asset not found."
+    }
+  },
+  {
+    "method": "get",
+    "path": "/v1/workspaces/{workspace_id}/assets/{asset_id}",
+    "actor": "member",
+    "variant": "invalid-query",
+    "status": 422,
+    "body": {
+      "detail": [
+        {
+          "type": "int_parsing",
+          "loc": [
+            "query",
+            "pageNumber"
+          ],
+          "msg": "Input should be a valid integer, unable to parse string as an integer",
+          "input": "!"
+        }
+      ]
+    }
+  },
+  {
+    "method": "get",
+    "path": "/v1/workspaces/{workspace_id}/assets/{asset_id}",
+    "actor": "outsider",
+    "variant": "default",
+    "status": 404,
+    "body": {
+      "detail": "Workspace not found."
+    }
+  },
+  {
+    "method": "get",
+    "path": "/v1/workspaces/{workspace_id}/assets/{asset_id}",
+    "actor": "outsider",
+    "variant": "invalid-query",
+    "status": 422,
+    "body": {
+      "detail": [
+        {
+          "type": "int_parsing",
+          "loc": [
+            "query",
+            "pageNumber"
+          ],
+          "msg": "Input should be a valid integer, unable to parse string as an integer",
+          "input": "!"
+        }
+      ]
+    }
+  },
+  {
+    "method": "get",
+    "path": "/v1/workspaces/{workspace_id}/assets/{asset_id}",
+    "actor": "unknown",
+    "variant": "default",
+    "status": 404,
+    "body": {
+      "detail": "Workspace not found."
+    }
+  },
+  {
+    "method": "get",
+    "path": "/v1/workspaces/{workspace_id}/assets/{asset_id}",
+    "actor": "unknown",
+    "variant": "invalid-query",
+    "status": 422,
+    "body": {
+      "detail": [
+        {
+          "type": "int_parsing",
+          "loc": [
+            "query",
+            "pageNumber"
+          ],
+          "msg": "Input should be a valid integer, unable to parse string as an integer",
+          "input": "!"
+        }
+      ]
+    }
+  },
+  {
+    "method": "get",
+    "path": "/v1/workspaces/{workspace_id}/assets/{asset_id}",
+    "actor": "missing-internal",
+    "variant": "default",
+    "status": 401,
+    "body": {
+      "detail": "Internal API authentication required."
+    }
+  },
+  {
+    "method": "get",
+    "path": "/v1/workspaces/{workspace_id}/assets/{asset_id}",
+    "actor": "missing-internal",
+    "variant": "invalid-query",
+    "status": 401,
+    "body": {
+      "detail": "Internal API authentication required."
+    }
+  },
+  {
+    "method": "get",
+    "path": "/v1/workspaces/{workspace_id}/assets/{asset_id}",
+    "actor": "missing-user",
+    "variant": "default",
+    "status": 401,
+    "body": {
+      "detail": "Authentication required."
+    }
+  },
+  {
+    "method": "get",
+    "path": "/v1/workspaces/{workspace_id}/assets/{asset_id}",
+    "actor": "missing-user",
+    "variant": "invalid-query",
+    "status": 401,
+    "body": {
+      "detail": "Authentication required."
+    }
+  },
+  {
+    "method": "delete",
+    "path": "/v1/workspaces/{workspace_id}/assets/{asset_id}",
+    "actor": "owner",
+    "variant": "default",
+    "status": 404,
+    "body": {
+      "detail": "Asset not found."
+    }
+  },
+  {
+    "method": "delete",
+    "path": "/v1/workspaces/{workspace_id}/assets/{asset_id}",
+    "actor": "member",
+    "variant": "default",
+    "status": 403,
+    "body": {
+      "detail": "Only workspace owners can delete assets."
+    }
+  },
+  {
+    "method": "delete",
+    "path": "/v1/workspaces/{workspace_id}/assets/{asset_id}",
+    "actor": "outsider",
+    "variant": "default",
+    "status": 404,
+    "body": {
+      "detail": "Workspace not found."
+    }
+  },
+  {
+    "method": "delete",
+    "path": "/v1/workspaces/{workspace_id}/assets/{asset_id}",
+    "actor": "unknown",
+    "variant": "default",
+    "status": 404,
+    "body": {
+      "detail": "Workspace not found."
+    }
+  },
+  {
+    "method": "delete",
+    "path": "/v1/workspaces/{workspace_id}/assets/{asset_id}",
+    "actor": "missing-internal",
+    "variant": "default",
+    "status": 401,
+    "body": {
+      "detail": "Internal API authentication required."
+    }
+  },
+  {
+    "method": "delete",
+    "path": "/v1/workspaces/{workspace_id}/assets/{asset_id}",
+    "actor": "missing-user",
+    "variant": "default",
+    "status": 401,
+    "body": {
+      "detail": "Authentication required."
+    }
+  },
+  {
+    "method": "get",
+    "path": "/v1/workspaces/{workspace_id}/assets/{asset_id}/file",
+    "actor": "owner",
+    "variant": "default",
+    "status": 404,
+    "body": {
+      "detail": "Asset not found."
+    }
+  },
+  {
+    "method": "get",
+    "path": "/v1/workspaces/{workspace_id}/assets/{asset_id}/file",
+    "actor": "member",
+    "variant": "default",
+    "status": 404,
+    "body": {
+      "detail": "Asset not found."
+    }
+  },
+  {
+    "method": "get",
+    "path": "/v1/workspaces/{workspace_id}/assets/{asset_id}/file",
+    "actor": "outsider",
+    "variant": "default",
+    "status": 404,
+    "body": {
+      "detail": "Workspace not found."
+    }
+  },
+  {
+    "method": "get",
+    "path": "/v1/workspaces/{workspace_id}/assets/{asset_id}/file",
+    "actor": "unknown",
+    "variant": "default",
+    "status": 404,
+    "body": {
+      "detail": "Workspace not found."
+    }
+  },
+  {
+    "method": "get",
+    "path": "/v1/workspaces/{workspace_id}/assets/{asset_id}/file",
+    "actor": "missing-internal",
+    "variant": "default",
+    "status": 401,
+    "body": {
+      "detail": "Internal API authentication required."
+    }
+  },
+  {
+    "method": "get",
+    "path": "/v1/workspaces/{workspace_id}/assets/{asset_id}/file",
+    "actor": "missing-user",
+    "variant": "default",
+    "status": 401,
+    "body": {
+      "detail": "Authentication required."
+    }
+  },
+  {
+    "method": "get",
+    "path": "/v1/workspaces/{workspace_id}/assets/{asset_id}/representations/{representation_id}/content",
+    "actor": "owner",
+    "variant": "default",
+    "status": 404,
+    "body": {
+      "detail": "Asset not found."
+    }
+  },
+  {
+    "method": "get",
+    "path": "/v1/workspaces/{workspace_id}/assets/{asset_id}/representations/{representation_id}/content",
+    "actor": "member",
+    "variant": "default",
+    "status": 404,
+    "body": {
+      "detail": "Asset not found."
+    }
+  },
+  {
+    "method": "get",
+    "path": "/v1/workspaces/{workspace_id}/assets/{asset_id}/representations/{representation_id}/content",
+    "actor": "outsider",
+    "variant": "default",
+    "status": 404,
+    "body": {
+      "detail": "Workspace not found."
+    }
+  },
+  {
+    "method": "get",
+    "path": "/v1/workspaces/{workspace_id}/assets/{asset_id}/representations/{representation_id}/content",
+    "actor": "unknown",
+    "variant": "default",
+    "status": 404,
+    "body": {
+      "detail": "Workspace not found."
+    }
+  },
+  {
+    "method": "get",
+    "path": "/v1/workspaces/{workspace_id}/assets/{asset_id}/representations/{representation_id}/content",
+    "actor": "missing-internal",
+    "variant": "default",
+    "status": 401,
+    "body": {
+      "detail": "Internal API authentication required."
+    }
+  },
+  {
+    "method": "get",
+    "path": "/v1/workspaces/{workspace_id}/assets/{asset_id}/representations/{representation_id}/content",
+    "actor": "missing-user",
+    "variant": "default",
+    "status": 401,
+    "body": {
+      "detail": "Authentication required."
+    }
+  },
+  {
+    "method": "get",
+    "path": "/v1/workspaces/{workspace_id}/assets/{asset_id}/pptx-media",
+    "actor": "owner",
+    "variant": "default",
+    "status": 422,
+    "body": {
+      "detail": [
+        {
+          "type": "missing",
+          "loc": [
+            "query",
+            "part"
+          ],
+          "msg": "Field required",
+          "input": null
+        }
+      ]
+    }
+  },
+  {
+    "method": "get",
+    "path": "/v1/workspaces/{workspace_id}/assets/{asset_id}/pptx-media",
+    "actor": "owner",
+    "variant": "invalid-query",
+    "status": 404,
+    "body": {
+      "detail": "Asset not found."
+    }
+  },
+  {
+    "method": "get",
+    "path": "/v1/workspaces/{workspace_id}/assets/{asset_id}/pptx-media",
+    "actor": "member",
+    "variant": "default",
+    "status": 422,
+    "body": {
+      "detail": [
+        {
+          "type": "missing",
+          "loc": [
+            "query",
+            "part"
+          ],
+          "msg": "Field required",
+          "input": null
+        }
+      ]
+    }
+  },
+  {
+    "method": "get",
+    "path": "/v1/workspaces/{workspace_id}/assets/{asset_id}/pptx-media",
+    "actor": "member",
+    "variant": "invalid-query",
+    "status": 404,
+    "body": {
+      "detail": "Asset not found."
+    }
+  },
+  {
+    "method": "get",
+    "path": "/v1/workspaces/{workspace_id}/assets/{asset_id}/pptx-media",
+    "actor": "outsider",
+    "variant": "default",
+    "status": 422,
+    "body": {
+      "detail": [
+        {
+          "type": "missing",
+          "loc": [
+            "query",
+            "part"
+          ],
+          "msg": "Field required",
+          "input": null
+        }
+      ]
+    }
+  },
+  {
+    "method": "get",
+    "path": "/v1/workspaces/{workspace_id}/assets/{asset_id}/pptx-media",
+    "actor": "outsider",
+    "variant": "invalid-query",
+    "status": 404,
+    "body": {
+      "detail": "Workspace not found."
+    }
+  },
+  {
+    "method": "get",
+    "path": "/v1/workspaces/{workspace_id}/assets/{asset_id}/pptx-media",
+    "actor": "unknown",
+    "variant": "default",
+    "status": 422,
+    "body": {
+      "detail": [
+        {
+          "type": "missing",
+          "loc": [
+            "query",
+            "part"
+          ],
+          "msg": "Field required",
+          "input": null
+        }
+      ]
+    }
+  },
+  {
+    "method": "get",
+    "path": "/v1/workspaces/{workspace_id}/assets/{asset_id}/pptx-media",
+    "actor": "unknown",
+    "variant": "invalid-query",
+    "status": 404,
+    "body": {
+      "detail": "Workspace not found."
+    }
+  },
+  {
+    "method": "get",
+    "path": "/v1/workspaces/{workspace_id}/assets/{asset_id}/pptx-media",
+    "actor": "missing-internal",
+    "variant": "default",
+    "status": 401,
+    "body": {
+      "detail": "Internal API authentication required."
+    }
+  },
+  {
+    "method": "get",
+    "path": "/v1/workspaces/{workspace_id}/assets/{asset_id}/pptx-media",
+    "actor": "missing-internal",
+    "variant": "invalid-query",
+    "status": 401,
+    "body": {
+      "detail": "Internal API authentication required."
+    }
+  },
+  {
+    "method": "get",
+    "path": "/v1/workspaces/{workspace_id}/assets/{asset_id}/pptx-media",
+    "actor": "missing-user",
+    "variant": "default",
+    "status": 401,
+    "body": {
+      "detail": "Authentication required."
+    }
+  },
+  {
+    "method": "get",
+    "path": "/v1/workspaces/{workspace_id}/assets/{asset_id}/pptx-media",
+    "actor": "missing-user",
+    "variant": "invalid-query",
+    "status": 401,
+    "body": {
+      "detail": "Authentication required."
+    }
+  },
+  {
+    "method": "get",
+    "path": "/v1/workspaces/{workspace_id}/assets/{asset_id}/representations/image-oriented/file",
+    "actor": "owner",
+    "variant": "default",
+    "status": 422,
+    "body": {
+      "detail": [
+        {
+          "type": "missing",
+          "loc": [
+            "query",
+            "processingGeneration"
+          ],
+          "msg": "Field required",
+          "input": null
+        },
+        {
+          "type": "missing",
+          "loc": [
+            "query",
+            "evidenceRepresentationId"
+          ],
+          "msg": "Field required",
+          "input": null
+        }
+      ]
+    }
+  },
+  {
+    "method": "get",
+    "path": "/v1/workspaces/{workspace_id}/assets/{asset_id}/representations/image-oriented/file",
+    "actor": "owner",
+    "variant": "invalid-query",
+    "status": 422,
+    "body": {
+      "detail": [
+        {
+          "type": "int_parsing",
+          "loc": [
+            "query",
+            "processingGeneration"
+          ],
+          "msg": "Input should be a valid integer, unable to parse string as an integer",
+          "input": "!"
+        }
+      ]
+    }
+  },
+  {
+    "method": "get",
+    "path": "/v1/workspaces/{workspace_id}/assets/{asset_id}/representations/image-oriented/file",
+    "actor": "member",
+    "variant": "default",
+    "status": 422,
+    "body": {
+      "detail": [
+        {
+          "type": "missing",
+          "loc": [
+            "query",
+            "processingGeneration"
+          ],
+          "msg": "Field required",
+          "input": null
+        },
+        {
+          "type": "missing",
+          "loc": [
+            "query",
+            "evidenceRepresentationId"
+          ],
+          "msg": "Field required",
+          "input": null
+        }
+      ]
+    }
+  },
+  {
+    "method": "get",
+    "path": "/v1/workspaces/{workspace_id}/assets/{asset_id}/representations/image-oriented/file",
+    "actor": "member",
+    "variant": "invalid-query",
+    "status": 422,
+    "body": {
+      "detail": [
+        {
+          "type": "int_parsing",
+          "loc": [
+            "query",
+            "processingGeneration"
+          ],
+          "msg": "Input should be a valid integer, unable to parse string as an integer",
+          "input": "!"
+        }
+      ]
+    }
+  },
+  {
+    "method": "get",
+    "path": "/v1/workspaces/{workspace_id}/assets/{asset_id}/representations/image-oriented/file",
+    "actor": "outsider",
+    "variant": "default",
+    "status": 422,
+    "body": {
+      "detail": [
+        {
+          "type": "missing",
+          "loc": [
+            "query",
+            "processingGeneration"
+          ],
+          "msg": "Field required",
+          "input": null
+        },
+        {
+          "type": "missing",
+          "loc": [
+            "query",
+            "evidenceRepresentationId"
+          ],
+          "msg": "Field required",
+          "input": null
+        }
+      ]
+    }
+  },
+  {
+    "method": "get",
+    "path": "/v1/workspaces/{workspace_id}/assets/{asset_id}/representations/image-oriented/file",
+    "actor": "outsider",
+    "variant": "invalid-query",
+    "status": 422,
+    "body": {
+      "detail": [
+        {
+          "type": "int_parsing",
+          "loc": [
+            "query",
+            "processingGeneration"
+          ],
+          "msg": "Input should be a valid integer, unable to parse string as an integer",
+          "input": "!"
+        }
+      ]
+    }
+  },
+  {
+    "method": "get",
+    "path": "/v1/workspaces/{workspace_id}/assets/{asset_id}/representations/image-oriented/file",
+    "actor": "unknown",
+    "variant": "default",
+    "status": 422,
+    "body": {
+      "detail": [
+        {
+          "type": "missing",
+          "loc": [
+            "query",
+            "processingGeneration"
+          ],
+          "msg": "Field required",
+          "input": null
+        },
+        {
+          "type": "missing",
+          "loc": [
+            "query",
+            "evidenceRepresentationId"
+          ],
+          "msg": "Field required",
+          "input": null
+        }
+      ]
+    }
+  },
+  {
+    "method": "get",
+    "path": "/v1/workspaces/{workspace_id}/assets/{asset_id}/representations/image-oriented/file",
+    "actor": "unknown",
+    "variant": "invalid-query",
+    "status": 422,
+    "body": {
+      "detail": [
+        {
+          "type": "int_parsing",
+          "loc": [
+            "query",
+            "processingGeneration"
+          ],
+          "msg": "Input should be a valid integer, unable to parse string as an integer",
+          "input": "!"
+        }
+      ]
+    }
+  },
+  {
+    "method": "get",
+    "path": "/v1/workspaces/{workspace_id}/assets/{asset_id}/representations/image-oriented/file",
+    "actor": "missing-internal",
+    "variant": "default",
+    "status": 401,
+    "body": {
+      "detail": "Internal API authentication required."
+    }
+  },
+  {
+    "method": "get",
+    "path": "/v1/workspaces/{workspace_id}/assets/{asset_id}/representations/image-oriented/file",
+    "actor": "missing-internal",
+    "variant": "invalid-query",
+    "status": 401,
+    "body": {
+      "detail": "Internal API authentication required."
+    }
+  },
+  {
+    "method": "get",
+    "path": "/v1/workspaces/{workspace_id}/assets/{asset_id}/representations/image-oriented/file",
+    "actor": "missing-user",
+    "variant": "default",
+    "status": 401,
+    "body": {
+      "detail": "Authentication required."
+    }
+  },
+  {
+    "method": "get",
+    "path": "/v1/workspaces/{workspace_id}/assets/{asset_id}/representations/image-oriented/file",
+    "actor": "missing-user",
+    "variant": "invalid-query",
+    "status": 401,
+    "body": {
+      "detail": "Authentication required."
+    }
+  },
+  {
+    "method": "get",
+    "path": "/v1/workspaces/{workspace_id}/assets/{asset_id}/representations/current-image-oriented/file",
+    "actor": "owner",
+    "variant": "default",
+    "status": 422,
+    "body": {
+      "detail": [
+        {
+          "type": "missing",
+          "loc": [
+            "query",
+            "processingGeneration"
+          ],
+          "msg": "Field required",
+          "input": null
+        }
+      ]
+    }
+  },
+  {
+    "method": "get",
+    "path": "/v1/workspaces/{workspace_id}/assets/{asset_id}/representations/current-image-oriented/file",
+    "actor": "owner",
+    "variant": "invalid-query",
+    "status": 422,
+    "body": {
+      "detail": [
+        {
+          "type": "int_parsing",
+          "loc": [
+            "query",
+            "processingGeneration"
+          ],
+          "msg": "Input should be a valid integer, unable to parse string as an integer",
+          "input": "!"
+        }
+      ]
+    }
+  },
+  {
+    "method": "get",
+    "path": "/v1/workspaces/{workspace_id}/assets/{asset_id}/representations/current-image-oriented/file",
+    "actor": "member",
+    "variant": "default",
+    "status": 422,
+    "body": {
+      "detail": [
+        {
+          "type": "missing",
+          "loc": [
+            "query",
+            "processingGeneration"
+          ],
+          "msg": "Field required",
+          "input": null
+        }
+      ]
+    }
+  },
+  {
+    "method": "get",
+    "path": "/v1/workspaces/{workspace_id}/assets/{asset_id}/representations/current-image-oriented/file",
+    "actor": "member",
+    "variant": "invalid-query",
+    "status": 422,
+    "body": {
+      "detail": [
+        {
+          "type": "int_parsing",
+          "loc": [
+            "query",
+            "processingGeneration"
+          ],
+          "msg": "Input should be a valid integer, unable to parse string as an integer",
+          "input": "!"
+        }
+      ]
+    }
+  },
+  {
+    "method": "get",
+    "path": "/v1/workspaces/{workspace_id}/assets/{asset_id}/representations/current-image-oriented/file",
+    "actor": "outsider",
+    "variant": "default",
+    "status": 422,
+    "body": {
+      "detail": [
+        {
+          "type": "missing",
+          "loc": [
+            "query",
+            "processingGeneration"
+          ],
+          "msg": "Field required",
+          "input": null
+        }
+      ]
+    }
+  },
+  {
+    "method": "get",
+    "path": "/v1/workspaces/{workspace_id}/assets/{asset_id}/representations/current-image-oriented/file",
+    "actor": "outsider",
+    "variant": "invalid-query",
+    "status": 422,
+    "body": {
+      "detail": [
+        {
+          "type": "int_parsing",
+          "loc": [
+            "query",
+            "processingGeneration"
+          ],
+          "msg": "Input should be a valid integer, unable to parse string as an integer",
+          "input": "!"
+        }
+      ]
+    }
+  },
+  {
+    "method": "get",
+    "path": "/v1/workspaces/{workspace_id}/assets/{asset_id}/representations/current-image-oriented/file",
+    "actor": "unknown",
+    "variant": "default",
+    "status": 422,
+    "body": {
+      "detail": [
+        {
+          "type": "missing",
+          "loc": [
+            "query",
+            "processingGeneration"
+          ],
+          "msg": "Field required",
+          "input": null
+        }
+      ]
+    }
+  },
+  {
+    "method": "get",
+    "path": "/v1/workspaces/{workspace_id}/assets/{asset_id}/representations/current-image-oriented/file",
+    "actor": "unknown",
+    "variant": "invalid-query",
+    "status": 422,
+    "body": {
+      "detail": [
+        {
+          "type": "int_parsing",
+          "loc": [
+            "query",
+            "processingGeneration"
+          ],
+          "msg": "Input should be a valid integer, unable to parse string as an integer",
+          "input": "!"
+        }
+      ]
+    }
+  },
+  {
+    "method": "get",
+    "path": "/v1/workspaces/{workspace_id}/assets/{asset_id}/representations/current-image-oriented/file",
+    "actor": "missing-internal",
+    "variant": "default",
+    "status": 401,
+    "body": {
+      "detail": "Internal API authentication required."
+    }
+  },
+  {
+    "method": "get",
+    "path": "/v1/workspaces/{workspace_id}/assets/{asset_id}/representations/current-image-oriented/file",
+    "actor": "missing-internal",
+    "variant": "invalid-query",
+    "status": 401,
+    "body": {
+      "detail": "Internal API authentication required."
+    }
+  },
+  {
+    "method": "get",
+    "path": "/v1/workspaces/{workspace_id}/assets/{asset_id}/representations/current-image-oriented/file",
+    "actor": "missing-user",
+    "variant": "default",
+    "status": 401,
+    "body": {
+      "detail": "Authentication required."
+    }
+  },
+  {
+    "method": "get",
+    "path": "/v1/workspaces/{workspace_id}/assets/{asset_id}/representations/current-image-oriented/file",
+    "actor": "missing-user",
+    "variant": "invalid-query",
+    "status": 401,
+    "body": {
+      "detail": "Authentication required."
+    }
+  },
+  {
+    "method": "post",
+    "path": "/v1/workspaces/{workspace_id}/assets/upload-session",
+    "actor": "owner",
+    "variant": "default",
+    "status": 422,
+    "body": {
+      "detail": [
+        {
+          "type": "missing",
+          "loc": [
+            "body",
+            "sourceFilename"
+          ],
+          "msg": "Field required",
+          "input": {}
+        },
+        {
+          "type": "missing",
+          "loc": [
+            "body",
+            "mimeType"
+          ],
+          "msg": "Field required",
+          "input": {}
+        },
+        {
+          "type": "missing",
+          "loc": [
+            "body",
+            "byteSize"
+          ],
+          "msg": "Field required",
+          "input": {}
+        }
+      ]
+    }
+  },
+  {
+    "method": "post",
+    "path": "/v1/workspaces/{workspace_id}/assets/upload-session",
+    "actor": "member",
+    "variant": "default",
+    "status": 422,
+    "body": {
+      "detail": [
+        {
+          "type": "missing",
+          "loc": [
+            "body",
+            "sourceFilename"
+          ],
+          "msg": "Field required",
+          "input": {}
+        },
+        {
+          "type": "missing",
+          "loc": [
+            "body",
+            "mimeType"
+          ],
+          "msg": "Field required",
+          "input": {}
+        },
+        {
+          "type": "missing",
+          "loc": [
+            "body",
+            "byteSize"
+          ],
+          "msg": "Field required",
+          "input": {}
+        }
+      ]
+    }
+  },
+  {
+    "method": "post",
+    "path": "/v1/workspaces/{workspace_id}/assets/upload-session",
+    "actor": "outsider",
+    "variant": "default",
+    "status": 422,
+    "body": {
+      "detail": [
+        {
+          "type": "missing",
+          "loc": [
+            "body",
+            "sourceFilename"
+          ],
+          "msg": "Field required",
+          "input": {}
+        },
+        {
+          "type": "missing",
+          "loc": [
+            "body",
+            "mimeType"
+          ],
+          "msg": "Field required",
+          "input": {}
+        },
+        {
+          "type": "missing",
+          "loc": [
+            "body",
+            "byteSize"
+          ],
+          "msg": "Field required",
+          "input": {}
+        }
+      ]
+    }
+  },
+  {
+    "method": "post",
+    "path": "/v1/workspaces/{workspace_id}/assets/upload-session",
+    "actor": "unknown",
+    "variant": "default",
+    "status": 401,
+    "body": {
+      "detail": "Authenticated user not found."
+    }
+  },
+  {
+    "method": "post",
+    "path": "/v1/workspaces/{workspace_id}/assets/upload-session",
+    "actor": "missing-internal",
+    "variant": "default",
+    "status": 401,
+    "body": {
+      "detail": "Internal API authentication required."
+    }
+  },
+  {
+    "method": "post",
+    "path": "/v1/workspaces/{workspace_id}/assets/upload-session",
+    "actor": "missing-user",
+    "variant": "default",
+    "status": 401,
+    "body": {
+      "detail": "Authentication required."
+    }
+  },
+  {
+    "method": "put",
+    "path": "/v1/workspaces/{workspace_id}/assets/{asset_id}/upload",
+    "actor": "owner",
+    "variant": "default",
+    "status": 422,
+    "body": {
+      "detail": [
+        {
+          "type": "missing",
+          "loc": [
+            "query",
+            "objectKey"
+          ],
+          "msg": "Field required",
+          "input": null
+        }
+      ]
+    }
+  },
+  {
+    "method": "put",
+    "path": "/v1/workspaces/{workspace_id}/assets/{asset_id}/upload",
+    "actor": "owner",
+    "variant": "invalid-query",
+    "status": 404,
+    "body": {
+      "detail": "Asset not found."
+    }
+  },
+  {
+    "method": "put",
+    "path": "/v1/workspaces/{workspace_id}/assets/{asset_id}/upload",
+    "actor": "member",
+    "variant": "default",
+    "status": 422,
+    "body": {
+      "detail": [
+        {
+          "type": "missing",
+          "loc": [
+            "query",
+            "objectKey"
+          ],
+          "msg": "Field required",
+          "input": null
+        }
+      ]
+    }
+  },
+  {
+    "method": "put",
+    "path": "/v1/workspaces/{workspace_id}/assets/{asset_id}/upload",
+    "actor": "member",
+    "variant": "invalid-query",
+    "status": 404,
+    "body": {
+      "detail": "Asset not found."
+    }
+  },
+  {
+    "method": "put",
+    "path": "/v1/workspaces/{workspace_id}/assets/{asset_id}/upload",
+    "actor": "outsider",
+    "variant": "default",
+    "status": 422,
+    "body": {
+      "detail": [
+        {
+          "type": "missing",
+          "loc": [
+            "query",
+            "objectKey"
+          ],
+          "msg": "Field required",
+          "input": null
+        }
+      ]
+    }
+  },
+  {
+    "method": "put",
+    "path": "/v1/workspaces/{workspace_id}/assets/{asset_id}/upload",
+    "actor": "outsider",
+    "variant": "invalid-query",
+    "status": 404,
+    "body": {
+      "detail": "Workspace not found."
+    }
+  },
+  {
+    "method": "put",
+    "path": "/v1/workspaces/{workspace_id}/assets/{asset_id}/upload",
+    "actor": "unknown",
+    "variant": "default",
+    "status": 422,
+    "body": {
+      "detail": [
+        {
+          "type": "missing",
+          "loc": [
+            "query",
+            "objectKey"
+          ],
+          "msg": "Field required",
+          "input": null
+        }
+      ]
+    }
+  },
+  {
+    "method": "put",
+    "path": "/v1/workspaces/{workspace_id}/assets/{asset_id}/upload",
+    "actor": "unknown",
+    "variant": "invalid-query",
+    "status": 404,
+    "body": {
+      "detail": "Workspace not found."
+    }
+  },
+  {
+    "method": "put",
+    "path": "/v1/workspaces/{workspace_id}/assets/{asset_id}/upload",
+    "actor": "missing-internal",
+    "variant": "default",
+    "status": 401,
+    "body": {
+      "detail": "Internal API authentication required."
+    }
+  },
+  {
+    "method": "put",
+    "path": "/v1/workspaces/{workspace_id}/assets/{asset_id}/upload",
+    "actor": "missing-internal",
+    "variant": "invalid-query",
+    "status": 401,
+    "body": {
+      "detail": "Internal API authentication required."
+    }
+  },
+  {
+    "method": "put",
+    "path": "/v1/workspaces/{workspace_id}/assets/{asset_id}/upload",
+    "actor": "missing-user",
+    "variant": "default",
+    "status": 401,
+    "body": {
+      "detail": "Authentication required."
+    }
+  },
+  {
+    "method": "put",
+    "path": "/v1/workspaces/{workspace_id}/assets/{asset_id}/upload",
+    "actor": "missing-user",
+    "variant": "invalid-query",
+    "status": 401,
+    "body": {
+      "detail": "Authentication required."
+    }
+  },
+  {
+    "method": "post",
+    "path": "/v1/workspaces/{workspace_id}/assets/{asset_id}/finalize-upload",
+    "actor": "owner",
+    "variant": "default",
+    "status": 422,
+    "body": {
+      "detail": [
+        {
+          "type": "missing",
+          "loc": [
+            "body",
+            "objectKey"
+          ],
+          "msg": "Field required",
+          "input": {}
+        }
+      ]
+    }
+  },
+  {
+    "method": "post",
+    "path": "/v1/workspaces/{workspace_id}/assets/{asset_id}/finalize-upload",
+    "actor": "member",
+    "variant": "default",
+    "status": 422,
+    "body": {
+      "detail": [
+        {
+          "type": "missing",
+          "loc": [
+            "body",
+            "objectKey"
+          ],
+          "msg": "Field required",
+          "input": {}
+        }
+      ]
+    }
+  },
+  {
+    "method": "post",
+    "path": "/v1/workspaces/{workspace_id}/assets/{asset_id}/finalize-upload",
+    "actor": "outsider",
+    "variant": "default",
+    "status": 422,
+    "body": {
+      "detail": [
+        {
+          "type": "missing",
+          "loc": [
+            "body",
+            "objectKey"
+          ],
+          "msg": "Field required",
+          "input": {}
+        }
+      ]
+    }
+  },
+  {
+    "method": "post",
+    "path": "/v1/workspaces/{workspace_id}/assets/{asset_id}/finalize-upload",
+    "actor": "unknown",
+    "variant": "default",
+    "status": 401,
+    "body": {
+      "detail": "Authenticated user not found."
+    }
+  },
+  {
+    "method": "post",
+    "path": "/v1/workspaces/{workspace_id}/assets/{asset_id}/finalize-upload",
+    "actor": "missing-internal",
+    "variant": "default",
+    "status": 401,
+    "body": {
+      "detail": "Internal API authentication required."
+    }
+  },
+  {
+    "method": "post",
+    "path": "/v1/workspaces/{workspace_id}/assets/{asset_id}/finalize-upload",
+    "actor": "missing-user",
+    "variant": "default",
+    "status": 401,
+    "body": {
+      "detail": "Authentication required."
+    }
+  },
+  {
+    "method": "post",
+    "path": "/v1/workspaces/{workspace_id}/assets/{asset_id}/retry",
+    "actor": "owner",
+    "variant": "default",
+    "status": 404,
+    "body": {
+      "detail": "Asset not found."
+    }
+  },
+  {
+    "method": "post",
+    "path": "/v1/workspaces/{workspace_id}/assets/{asset_id}/retry",
+    "actor": "member",
+    "variant": "default",
+    "status": 404,
+    "body": {
+      "detail": "Asset not found."
+    }
+  },
+  {
+    "method": "post",
+    "path": "/v1/workspaces/{workspace_id}/assets/{asset_id}/retry",
+    "actor": "outsider",
+    "variant": "default",
+    "status": 404,
+    "body": {
+      "detail": "Workspace not found."
+    }
+  },
+  {
+    "method": "post",
+    "path": "/v1/workspaces/{workspace_id}/assets/{asset_id}/retry",
+    "actor": "unknown",
+    "variant": "default",
+    "status": 401,
+    "body": {
+      "detail": "Authenticated user not found."
+    }
+  },
+  {
+    "method": "post",
+    "path": "/v1/workspaces/{workspace_id}/assets/{asset_id}/retry",
+    "actor": "missing-internal",
+    "variant": "default",
+    "status": 401,
+    "body": {
+      "detail": "Internal API authentication required."
+    }
+  },
+  {
+    "method": "post",
+    "path": "/v1/workspaces/{workspace_id}/assets/{asset_id}/retry",
+    "actor": "missing-user",
+    "variant": "default",
+    "status": 401,
+    "body": {
+      "detail": "Authentication required."
+    }
+  },
+  {
+    "method": "post",
+    "path": "/v1/workspaces/{workspace_id}/assets/{asset_id}/reindex",
+    "actor": "owner",
+    "variant": "default",
+    "status": 404,
+    "body": {
+      "detail": "Asset not found."
+    }
+  },
+  {
+    "method": "post",
+    "path": "/v1/workspaces/{workspace_id}/assets/{asset_id}/reindex",
+    "actor": "member",
+    "variant": "default",
+    "status": 404,
+    "body": {
+      "detail": "Asset not found."
+    }
+  },
+  {
+    "method": "post",
+    "path": "/v1/workspaces/{workspace_id}/assets/{asset_id}/reindex",
+    "actor": "outsider",
+    "variant": "default",
+    "status": 404,
+    "body": {
+      "detail": "Workspace not found."
+    }
+  },
+  {
+    "method": "post",
+    "path": "/v1/workspaces/{workspace_id}/assets/{asset_id}/reindex",
+    "actor": "unknown",
+    "variant": "default",
+    "status": 401,
+    "body": {
+      "detail": "Authenticated user not found."
+    }
+  },
+  {
+    "method": "post",
+    "path": "/v1/workspaces/{workspace_id}/assets/{asset_id}/reindex",
+    "actor": "missing-internal",
+    "variant": "default",
+    "status": 401,
+    "body": {
+      "detail": "Internal API authentication required."
+    }
+  },
+  {
+    "method": "post",
+    "path": "/v1/workspaces/{workspace_id}/assets/{asset_id}/reindex",
+    "actor": "missing-user",
+    "variant": "default",
+    "status": 401,
+    "body": {
+      "detail": "Authentication required."
+    }
+  },
+  {
+    "method": "post",
+    "path": "/v1/workspaces/{workspace_id}/assets/{asset_id}/delete-retry",
+    "actor": "owner",
+    "variant": "default",
+    "status": 404,
+    "body": {
+      "detail": "Asset not found."
+    }
+  },
+  {
+    "method": "post",
+    "path": "/v1/workspaces/{workspace_id}/assets/{asset_id}/delete-retry",
+    "actor": "member",
+    "variant": "default",
+    "status": 403,
+    "body": {
+      "detail": "Only workspace owners can delete assets."
+    }
+  },
+  {
+    "method": "post",
+    "path": "/v1/workspaces/{workspace_id}/assets/{asset_id}/delete-retry",
+    "actor": "outsider",
+    "variant": "default",
+    "status": 404,
+    "body": {
+      "detail": "Workspace not found."
+    }
+  },
+  {
+    "method": "post",
+    "path": "/v1/workspaces/{workspace_id}/assets/{asset_id}/delete-retry",
+    "actor": "unknown",
+    "variant": "default",
+    "status": 401,
+    "body": {
+      "detail": "Authenticated user not found."
+    }
+  },
+  {
+    "method": "post",
+    "path": "/v1/workspaces/{workspace_id}/assets/{asset_id}/delete-retry",
+    "actor": "missing-internal",
+    "variant": "default",
+    "status": 401,
+    "body": {
+      "detail": "Internal API authentication required."
+    }
+  },
+  {
+    "method": "post",
+    "path": "/v1/workspaces/{workspace_id}/assets/{asset_id}/delete-retry",
+    "actor": "missing-user",
+    "variant": "default",
+    "status": 401,
+    "body": {
+      "detail": "Authentication required."
+    }
+  },
+  {
+    "method": "get",
+    "path": "/v1/workspaces/{workspace_id}/threads",
+    "actor": "owner",
+    "variant": "default",
+    "status": 200,
+    "body": {
+      "items": [],
+      "nextCursor": null
+    }
+  },
+  {
+    "method": "get",
+    "path": "/v1/workspaces/{workspace_id}/threads",
+    "actor": "member",
+    "variant": "default",
+    "status": 200,
+    "body": {
+      "items": [],
+      "nextCursor": null
+    }
+  },
+  {
+    "method": "get",
+    "path": "/v1/workspaces/{workspace_id}/threads",
+    "actor": "outsider",
+    "variant": "default",
+    "status": 404,
+    "body": {
+      "detail": "Workspace not found."
+    }
+  },
+  {
+    "method": "get",
+    "path": "/v1/workspaces/{workspace_id}/threads",
+    "actor": "unknown",
+    "variant": "default",
+    "status": 404,
+    "body": {
+      "detail": "Workspace not found."
+    }
+  },
+  {
+    "method": "get",
+    "path": "/v1/workspaces/{workspace_id}/threads",
+    "actor": "missing-internal",
+    "variant": "default",
+    "status": 401,
+    "body": {
+      "detail": "Internal API authentication required."
+    }
+  },
+  {
+    "method": "get",
+    "path": "/v1/workspaces/{workspace_id}/threads",
+    "actor": "missing-user",
+    "variant": "default",
+    "status": 401,
+    "body": {
+      "detail": "Authentication required."
+    }
+  },
+  {
+    "method": "post",
+    "path": "/v1/workspaces/{workspace_id}/threads",
+    "actor": "owner",
+    "variant": "default",
+    "status": 201,
+    "body": {
+      "thread": {
+        "id": "<generated>",
+        "workspaceId": "w1",
+        "title": null,
+        "lastMessageAt": "<generated>",
+        "createdAt": "<generated>"
+      }
+    }
+  },
+  {
+    "method": "post",
+    "path": "/v1/workspaces/{workspace_id}/threads",
+    "actor": "member",
+    "variant": "default",
+    "status": 201,
+    "body": {
+      "thread": {
+        "id": "<generated>",
+        "workspaceId": "w1",
+        "title": null,
+        "lastMessageAt": "<generated>",
+        "createdAt": "<generated>"
+      }
+    }
+  },
+  {
+    "method": "post",
+    "path": "/v1/workspaces/{workspace_id}/threads",
+    "actor": "outsider",
+    "variant": "default",
+    "status": 404,
+    "body": {
+      "detail": "Workspace not found."
+    }
+  },
+  {
+    "method": "post",
+    "path": "/v1/workspaces/{workspace_id}/threads",
+    "actor": "unknown",
+    "variant": "default",
+    "status": 404,
+    "body": {
+      "detail": "Workspace not found."
+    }
+  },
+  {
+    "method": "post",
+    "path": "/v1/workspaces/{workspace_id}/threads",
+    "actor": "missing-internal",
+    "variant": "default",
+    "status": 401,
+    "body": {
+      "detail": "Internal API authentication required."
+    }
+  },
+  {
+    "method": "post",
+    "path": "/v1/workspaces/{workspace_id}/threads",
+    "actor": "missing-user",
+    "variant": "default",
+    "status": 401,
+    "body": {
+      "detail": "Authentication required."
+    }
+  },
+  {
+    "method": "delete",
+    "path": "/v1/workspaces/{workspace_id}/threads/{thread_id}",
+    "actor": "owner",
+    "variant": "default",
+    "status": 404,
+    "body": {
+      "detail": "Thread not found."
+    }
+  },
+  {
+    "method": "delete",
+    "path": "/v1/workspaces/{workspace_id}/threads/{thread_id}",
+    "actor": "member",
+    "variant": "default",
+    "status": 404,
+    "body": {
+      "detail": "Thread not found."
+    }
+  },
+  {
+    "method": "delete",
+    "path": "/v1/workspaces/{workspace_id}/threads/{thread_id}",
+    "actor": "outsider",
+    "variant": "default",
+    "status": 404,
+    "body": {
+      "detail": "Workspace not found."
+    }
+  },
+  {
+    "method": "delete",
+    "path": "/v1/workspaces/{workspace_id}/threads/{thread_id}",
+    "actor": "unknown",
+    "variant": "default",
+    "status": 404,
+    "body": {
+      "detail": "Workspace not found."
+    }
+  },
+  {
+    "method": "delete",
+    "path": "/v1/workspaces/{workspace_id}/threads/{thread_id}",
+    "actor": "missing-internal",
+    "variant": "default",
+    "status": 401,
+    "body": {
+      "detail": "Internal API authentication required."
+    }
+  },
+  {
+    "method": "delete",
+    "path": "/v1/workspaces/{workspace_id}/threads/{thread_id}",
+    "actor": "missing-user",
+    "variant": "default",
+    "status": 401,
+    "body": {
+      "detail": "Authentication required."
+    }
+  },
+  {
+    "method": "get",
+    "path": "/v1/workspaces/{workspace_id}/threads/{thread_id}/messages",
+    "actor": "owner",
+    "variant": "default",
+    "status": 404,
+    "body": {
+      "detail": "Thread not found."
+    }
+  },
+  {
+    "method": "get",
+    "path": "/v1/workspaces/{workspace_id}/threads/{thread_id}/messages",
+    "actor": "member",
+    "variant": "default",
+    "status": 404,
+    "body": {
+      "detail": "Thread not found."
+    }
+  },
+  {
+    "method": "get",
+    "path": "/v1/workspaces/{workspace_id}/threads/{thread_id}/messages",
+    "actor": "outsider",
+    "variant": "default",
+    "status": 404,
+    "body": {
+      "detail": "Workspace not found."
+    }
+  },
+  {
+    "method": "get",
+    "path": "/v1/workspaces/{workspace_id}/threads/{thread_id}/messages",
+    "actor": "unknown",
+    "variant": "default",
+    "status": 404,
+    "body": {
+      "detail": "Workspace not found."
+    }
+  },
+  {
+    "method": "get",
+    "path": "/v1/workspaces/{workspace_id}/threads/{thread_id}/messages",
+    "actor": "missing-internal",
+    "variant": "default",
+    "status": 401,
+    "body": {
+      "detail": "Internal API authentication required."
+    }
+  },
+  {
+    "method": "get",
+    "path": "/v1/workspaces/{workspace_id}/threads/{thread_id}/messages",
+    "actor": "missing-user",
+    "variant": "default",
+    "status": 401,
+    "body": {
+      "detail": "Authentication required."
+    }
+  },
+  {
+    "method": "post",
+    "path": "/v1/workspaces/{workspace_id}/chat/stream",
+    "actor": "owner",
+    "variant": "default",
+    "status": 422,
+    "body": {
+      "detail": [
+        {
+          "type": "missing",
+          "loc": [
+            "body",
+            "threadId"
+          ],
+          "msg": "Field required",
+          "input": {}
+        },
+        {
+          "type": "missing",
+          "loc": [
+            "body",
+            "question"
+          ],
+          "msg": "Field required",
+          "input": {}
+        },
+        {
+          "type": "missing",
+          "loc": [
+            "body",
+            "assetScope"
+          ],
+          "msg": "Field required",
+          "input": {}
+        }
+      ]
+    }
+  },
+  {
+    "method": "post",
+    "path": "/v1/workspaces/{workspace_id}/chat/stream",
+    "actor": "member",
+    "variant": "default",
+    "status": 422,
+    "body": {
+      "detail": [
+        {
+          "type": "missing",
+          "loc": [
+            "body",
+            "threadId"
+          ],
+          "msg": "Field required",
+          "input": {}
+        },
+        {
+          "type": "missing",
+          "loc": [
+            "body",
+            "question"
+          ],
+          "msg": "Field required",
+          "input": {}
+        },
+        {
+          "type": "missing",
+          "loc": [
+            "body",
+            "assetScope"
+          ],
+          "msg": "Field required",
+          "input": {}
+        }
+      ]
+    }
+  },
+  {
+    "method": "post",
+    "path": "/v1/workspaces/{workspace_id}/chat/stream",
+    "actor": "outsider",
+    "variant": "default",
+    "status": 422,
+    "body": {
+      "detail": [
+        {
+          "type": "missing",
+          "loc": [
+            "body",
+            "threadId"
+          ],
+          "msg": "Field required",
+          "input": {}
+        },
+        {
+          "type": "missing",
+          "loc": [
+            "body",
+            "question"
+          ],
+          "msg": "Field required",
+          "input": {}
+        },
+        {
+          "type": "missing",
+          "loc": [
+            "body",
+            "assetScope"
+          ],
+          "msg": "Field required",
+          "input": {}
+        }
+      ]
+    }
+  },
+  {
+    "method": "post",
+    "path": "/v1/workspaces/{workspace_id}/chat/stream",
+    "actor": "unknown",
+    "variant": "default",
+    "status": 422,
+    "body": {
+      "detail": [
+        {
+          "type": "missing",
+          "loc": [
+            "body",
+            "threadId"
+          ],
+          "msg": "Field required",
+          "input": {}
+        },
+        {
+          "type": "missing",
+          "loc": [
+            "body",
+            "question"
+          ],
+          "msg": "Field required",
+          "input": {}
+        },
+        {
+          "type": "missing",
+          "loc": [
+            "body",
+            "assetScope"
+          ],
+          "msg": "Field required",
+          "input": {}
+        }
+      ]
+    }
+  },
+  {
+    "method": "post",
+    "path": "/v1/workspaces/{workspace_id}/chat/stream",
+    "actor": "missing-internal",
+    "variant": "default",
+    "status": 401,
+    "body": {
+      "detail": "Internal API authentication required."
+    }
+  },
+  {
+    "method": "post",
+    "path": "/v1/workspaces/{workspace_id}/chat/stream",
+    "actor": "missing-user",
+    "variant": "default",
+    "status": 401,
+    "body": {
+      "detail": "Authentication required."
+    }
+  },
+  {
+    "method": "get",
+    "path": "/v1/workspaces/{workspace_id}/notes",
+    "actor": "owner",
+    "variant": "default",
+    "status": 200,
+    "body": {
+      "items": [],
+      "nextCursor": null
+    }
+  },
+  {
+    "method": "get",
+    "path": "/v1/workspaces/{workspace_id}/notes",
+    "actor": "member",
+    "variant": "default",
+    "status": 200,
+    "body": {
+      "items": [],
+      "nextCursor": null
+    }
+  },
+  {
+    "method": "get",
+    "path": "/v1/workspaces/{workspace_id}/notes",
+    "actor": "outsider",
+    "variant": "default",
+    "status": 404,
+    "body": {
+      "detail": "Workspace not found."
+    }
+  },
+  {
+    "method": "get",
+    "path": "/v1/workspaces/{workspace_id}/notes",
+    "actor": "unknown",
+    "variant": "default",
+    "status": 404,
+    "body": {
+      "detail": "Workspace not found."
+    }
+  },
+  {
+    "method": "get",
+    "path": "/v1/workspaces/{workspace_id}/notes",
+    "actor": "missing-internal",
+    "variant": "default",
+    "status": 401,
+    "body": {
+      "detail": "Internal API authentication required."
+    }
+  },
+  {
+    "method": "get",
+    "path": "/v1/workspaces/{workspace_id}/notes",
+    "actor": "missing-user",
+    "variant": "default",
+    "status": 401,
+    "body": {
+      "detail": "Authentication required."
+    }
+  },
+  {
+    "method": "post",
+    "path": "/v1/workspaces/{workspace_id}/notes",
+    "actor": "owner",
+    "variant": "default",
+    "status": 422,
+    "body": {
+      "detail": [
+        {
+          "type": "missing",
+          "loc": [
+            "body",
+            "bodyMd"
+          ],
+          "msg": "Field required",
+          "input": {}
+        }
+      ]
+    }
+  },
+  {
+    "method": "post",
+    "path": "/v1/workspaces/{workspace_id}/notes",
+    "actor": "member",
+    "variant": "default",
+    "status": 422,
+    "body": {
+      "detail": [
+        {
+          "type": "missing",
+          "loc": [
+            "body",
+            "bodyMd"
+          ],
+          "msg": "Field required",
+          "input": {}
+        }
+      ]
+    }
+  },
+  {
+    "method": "post",
+    "path": "/v1/workspaces/{workspace_id}/notes",
+    "actor": "outsider",
+    "variant": "default",
+    "status": 422,
+    "body": {
+      "detail": [
+        {
+          "type": "missing",
+          "loc": [
+            "body",
+            "bodyMd"
+          ],
+          "msg": "Field required",
+          "input": {}
+        }
+      ]
+    }
+  },
+  {
+    "method": "post",
+    "path": "/v1/workspaces/{workspace_id}/notes",
+    "actor": "unknown",
+    "variant": "default",
+    "status": 422,
+    "body": {
+      "detail": [
+        {
+          "type": "missing",
+          "loc": [
+            "body",
+            "bodyMd"
+          ],
+          "msg": "Field required",
+          "input": {}
+        }
+      ]
+    }
+  },
+  {
+    "method": "post",
+    "path": "/v1/workspaces/{workspace_id}/notes",
+    "actor": "missing-internal",
+    "variant": "default",
+    "status": 401,
+    "body": {
+      "detail": "Internal API authentication required."
+    }
+  },
+  {
+    "method": "post",
+    "path": "/v1/workspaces/{workspace_id}/notes",
+    "actor": "missing-user",
+    "variant": "default",
+    "status": 401,
+    "body": {
+      "detail": "Authentication required."
+    }
+  },
+  {
+    "method": "get",
+    "path": "/v1/workspaces/{workspace_id}/notes/{note_id}",
+    "actor": "owner",
+    "variant": "default",
+    "status": 404,
+    "body": {
+      "detail": "Note not found."
+    }
+  },
+  {
+    "method": "get",
+    "path": "/v1/workspaces/{workspace_id}/notes/{note_id}",
+    "actor": "member",
+    "variant": "default",
+    "status": 404,
+    "body": {
+      "detail": "Note not found."
+    }
+  },
+  {
+    "method": "get",
+    "path": "/v1/workspaces/{workspace_id}/notes/{note_id}",
+    "actor": "outsider",
+    "variant": "default",
+    "status": 404,
+    "body": {
+      "detail": "Workspace not found."
+    }
+  },
+  {
+    "method": "get",
+    "path": "/v1/workspaces/{workspace_id}/notes/{note_id}",
+    "actor": "unknown",
+    "variant": "default",
+    "status": 404,
+    "body": {
+      "detail": "Workspace not found."
+    }
+  },
+  {
+    "method": "get",
+    "path": "/v1/workspaces/{workspace_id}/notes/{note_id}",
+    "actor": "missing-internal",
+    "variant": "default",
+    "status": 401,
+    "body": {
+      "detail": "Internal API authentication required."
+    }
+  },
+  {
+    "method": "get",
+    "path": "/v1/workspaces/{workspace_id}/notes/{note_id}",
+    "actor": "missing-user",
+    "variant": "default",
+    "status": 401,
+    "body": {
+      "detail": "Authentication required."
+    }
+  },
+  {
+    "method": "patch",
+    "path": "/v1/workspaces/{workspace_id}/notes/{note_id}",
+    "actor": "owner",
+    "variant": "default",
+    "status": 404,
+    "body": {
+      "detail": "Note not found."
+    }
+  },
+  {
+    "method": "patch",
+    "path": "/v1/workspaces/{workspace_id}/notes/{note_id}",
+    "actor": "member",
+    "variant": "default",
+    "status": 404,
+    "body": {
+      "detail": "Note not found."
+    }
+  },
+  {
+    "method": "patch",
+    "path": "/v1/workspaces/{workspace_id}/notes/{note_id}",
+    "actor": "outsider",
+    "variant": "default",
+    "status": 404,
+    "body": {
+      "detail": "Workspace not found."
+    }
+  },
+  {
+    "method": "patch",
+    "path": "/v1/workspaces/{workspace_id}/notes/{note_id}",
+    "actor": "unknown",
+    "variant": "default",
+    "status": 404,
+    "body": {
+      "detail": "Workspace not found."
+    }
+  },
+  {
+    "method": "patch",
+    "path": "/v1/workspaces/{workspace_id}/notes/{note_id}",
+    "actor": "missing-internal",
+    "variant": "default",
+    "status": 401,
+    "body": {
+      "detail": "Internal API authentication required."
+    }
+  },
+  {
+    "method": "patch",
+    "path": "/v1/workspaces/{workspace_id}/notes/{note_id}",
+    "actor": "missing-user",
+    "variant": "default",
+    "status": 401,
+    "body": {
+      "detail": "Authentication required."
+    }
+  },
+  {
+    "method": "delete",
+    "path": "/v1/workspaces/{workspace_id}/notes/{note_id}",
+    "actor": "owner",
+    "variant": "default",
+    "status": 404,
+    "body": {
+      "detail": "Note not found."
+    }
+  },
+  {
+    "method": "delete",
+    "path": "/v1/workspaces/{workspace_id}/notes/{note_id}",
+    "actor": "member",
+    "variant": "default",
+    "status": 404,
+    "body": {
+      "detail": "Note not found."
+    }
+  },
+  {
+    "method": "delete",
+    "path": "/v1/workspaces/{workspace_id}/notes/{note_id}",
+    "actor": "outsider",
+    "variant": "default",
+    "status": 404,
+    "body": {
+      "detail": "Workspace not found."
+    }
+  },
+  {
+    "method": "delete",
+    "path": "/v1/workspaces/{workspace_id}/notes/{note_id}",
+    "actor": "unknown",
+    "variant": "default",
+    "status": 404,
+    "body": {
+      "detail": "Workspace not found."
+    }
+  },
+  {
+    "method": "delete",
+    "path": "/v1/workspaces/{workspace_id}/notes/{note_id}",
+    "actor": "missing-internal",
+    "variant": "default",
+    "status": 401,
+    "body": {
+      "detail": "Internal API authentication required."
+    }
+  },
+  {
+    "method": "delete",
+    "path": "/v1/workspaces/{workspace_id}/notes/{note_id}",
+    "actor": "missing-user",
+    "variant": "default",
+    "status": 401,
+    "body": {
+      "detail": "Authentication required."
+    }
+  },
+  {
+    "method": "get",
+    "path": "/v1/workspaces/{workspace_id}/tags",
+    "actor": "owner",
+    "variant": "default",
+    "status": 200,
+    "body": {
+      "items": [],
+      "nextCursor": null
+    }
+  },
+  {
+    "method": "get",
+    "path": "/v1/workspaces/{workspace_id}/tags",
+    "actor": "member",
+    "variant": "default",
+    "status": 200,
+    "body": {
+      "items": [],
+      "nextCursor": null
+    }
+  },
+  {
+    "method": "get",
+    "path": "/v1/workspaces/{workspace_id}/tags",
+    "actor": "outsider",
+    "variant": "default",
+    "status": 404,
+    "body": {
+      "detail": "Workspace not found."
+    }
+  },
+  {
+    "method": "get",
+    "path": "/v1/workspaces/{workspace_id}/tags",
+    "actor": "unknown",
+    "variant": "default",
+    "status": 404,
+    "body": {
+      "detail": "Workspace not found."
+    }
+  },
+  {
+    "method": "get",
+    "path": "/v1/workspaces/{workspace_id}/tags",
+    "actor": "missing-internal",
+    "variant": "default",
+    "status": 401,
+    "body": {
+      "detail": "Internal API authentication required."
+    }
+  },
+  {
+    "method": "get",
+    "path": "/v1/workspaces/{workspace_id}/tags",
+    "actor": "missing-user",
+    "variant": "default",
+    "status": 401,
+    "body": {
+      "detail": "Authentication required."
+    }
+  },
+  {
+    "method": "post",
+    "path": "/v1/workspaces/{workspace_id}/tags",
+    "actor": "owner",
+    "variant": "default",
+    "status": 422,
+    "body": {
+      "detail": [
+        {
+          "type": "missing",
+          "loc": [
+            "body",
+            "name"
+          ],
+          "msg": "Field required",
+          "input": {}
+        }
+      ]
+    }
+  },
+  {
+    "method": "post",
+    "path": "/v1/workspaces/{workspace_id}/tags",
+    "actor": "member",
+    "variant": "default",
+    "status": 422,
+    "body": {
+      "detail": [
+        {
+          "type": "missing",
+          "loc": [
+            "body",
+            "name"
+          ],
+          "msg": "Field required",
+          "input": {}
+        }
+      ]
+    }
+  },
+  {
+    "method": "post",
+    "path": "/v1/workspaces/{workspace_id}/tags",
+    "actor": "outsider",
+    "variant": "default",
+    "status": 422,
+    "body": {
+      "detail": [
+        {
+          "type": "missing",
+          "loc": [
+            "body",
+            "name"
+          ],
+          "msg": "Field required",
+          "input": {}
+        }
+      ]
+    }
+  },
+  {
+    "method": "post",
+    "path": "/v1/workspaces/{workspace_id}/tags",
+    "actor": "unknown",
+    "variant": "default",
+    "status": 422,
+    "body": {
+      "detail": [
+        {
+          "type": "missing",
+          "loc": [
+            "body",
+            "name"
+          ],
+          "msg": "Field required",
+          "input": {}
+        }
+      ]
+    }
+  },
+  {
+    "method": "post",
+    "path": "/v1/workspaces/{workspace_id}/tags",
+    "actor": "missing-internal",
+    "variant": "default",
+    "status": 401,
+    "body": {
+      "detail": "Internal API authentication required."
+    }
+  },
+  {
+    "method": "post",
+    "path": "/v1/workspaces/{workspace_id}/tags",
+    "actor": "missing-user",
+    "variant": "default",
+    "status": 401,
+    "body": {
+      "detail": "Authentication required."
+    }
+  },
+  {
+    "method": "get",
+    "path": "/v1/workspaces/{workspace_id}/tags/{tag_id}",
+    "actor": "owner",
+    "variant": "default",
+    "status": 404,
+    "body": {
+      "detail": "Tag not found."
+    }
+  },
+  {
+    "method": "get",
+    "path": "/v1/workspaces/{workspace_id}/tags/{tag_id}",
+    "actor": "member",
+    "variant": "default",
+    "status": 404,
+    "body": {
+      "detail": "Tag not found."
+    }
+  },
+  {
+    "method": "get",
+    "path": "/v1/workspaces/{workspace_id}/tags/{tag_id}",
+    "actor": "outsider",
+    "variant": "default",
+    "status": 404,
+    "body": {
+      "detail": "Workspace not found."
+    }
+  },
+  {
+    "method": "get",
+    "path": "/v1/workspaces/{workspace_id}/tags/{tag_id}",
+    "actor": "unknown",
+    "variant": "default",
+    "status": 404,
+    "body": {
+      "detail": "Workspace not found."
+    }
+  },
+  {
+    "method": "get",
+    "path": "/v1/workspaces/{workspace_id}/tags/{tag_id}",
+    "actor": "missing-internal",
+    "variant": "default",
+    "status": 401,
+    "body": {
+      "detail": "Internal API authentication required."
+    }
+  },
+  {
+    "method": "get",
+    "path": "/v1/workspaces/{workspace_id}/tags/{tag_id}",
+    "actor": "missing-user",
+    "variant": "default",
+    "status": 401,
+    "body": {
+      "detail": "Authentication required."
+    }
+  },
+  {
+    "method": "patch",
+    "path": "/v1/workspaces/{workspace_id}/tags/{tag_id}",
+    "actor": "owner",
+    "variant": "default",
+    "status": 404,
+    "body": {
+      "detail": "Tag not found."
+    }
+  },
+  {
+    "method": "patch",
+    "path": "/v1/workspaces/{workspace_id}/tags/{tag_id}",
+    "actor": "member",
+    "variant": "default",
+    "status": 404,
+    "body": {
+      "detail": "Tag not found."
+    }
+  },
+  {
+    "method": "patch",
+    "path": "/v1/workspaces/{workspace_id}/tags/{tag_id}",
+    "actor": "outsider",
+    "variant": "default",
+    "status": 404,
+    "body": {
+      "detail": "Workspace not found."
+    }
+  },
+  {
+    "method": "patch",
+    "path": "/v1/workspaces/{workspace_id}/tags/{tag_id}",
+    "actor": "unknown",
+    "variant": "default",
+    "status": 404,
+    "body": {
+      "detail": "Workspace not found."
+    }
+  },
+  {
+    "method": "patch",
+    "path": "/v1/workspaces/{workspace_id}/tags/{tag_id}",
+    "actor": "missing-internal",
+    "variant": "default",
+    "status": 401,
+    "body": {
+      "detail": "Internal API authentication required."
+    }
+  },
+  {
+    "method": "patch",
+    "path": "/v1/workspaces/{workspace_id}/tags/{tag_id}",
+    "actor": "missing-user",
+    "variant": "default",
+    "status": 401,
+    "body": {
+      "detail": "Authentication required."
+    }
+  },
+  {
+    "method": "delete",
+    "path": "/v1/workspaces/{workspace_id}/tags/{tag_id}",
+    "actor": "owner",
+    "variant": "default",
+    "status": 404,
+    "body": {
+      "detail": "Tag not found."
+    }
+  },
+  {
+    "method": "delete",
+    "path": "/v1/workspaces/{workspace_id}/tags/{tag_id}",
+    "actor": "member",
+    "variant": "default",
+    "status": 404,
+    "body": {
+      "detail": "Tag not found."
+    }
+  },
+  {
+    "method": "delete",
+    "path": "/v1/workspaces/{workspace_id}/tags/{tag_id}",
+    "actor": "outsider",
+    "variant": "default",
+    "status": 404,
+    "body": {
+      "detail": "Workspace not found."
+    }
+  },
+  {
+    "method": "delete",
+    "path": "/v1/workspaces/{workspace_id}/tags/{tag_id}",
+    "actor": "unknown",
+    "variant": "default",
+    "status": 404,
+    "body": {
+      "detail": "Workspace not found."
+    }
+  },
+  {
+    "method": "delete",
+    "path": "/v1/workspaces/{workspace_id}/tags/{tag_id}",
+    "actor": "missing-internal",
+    "variant": "default",
+    "status": 401,
+    "body": {
+      "detail": "Internal API authentication required."
+    }
+  },
+  {
+    "method": "delete",
+    "path": "/v1/workspaces/{workspace_id}/tags/{tag_id}",
+    "actor": "missing-user",
+    "variant": "default",
+    "status": 401,
+    "body": {
+      "detail": "Authentication required."
+    }
+  },
+  {
+    "method": "post",
+    "path": "/v1/workspaces/{workspace_id}/assets/{asset_id}/tags",
+    "actor": "owner",
+    "variant": "default",
+    "status": 422,
+    "body": {
+      "detail": [
+        {
+          "type": "missing",
+          "loc": [
+            "body",
+            "tagIds"
+          ],
+          "msg": "Field required",
+          "input": {}
+        }
+      ]
+    }
+  },
+  {
+    "method": "post",
+    "path": "/v1/workspaces/{workspace_id}/assets/{asset_id}/tags",
+    "actor": "member",
+    "variant": "default",
+    "status": 422,
+    "body": {
+      "detail": [
+        {
+          "type": "missing",
+          "loc": [
+            "body",
+            "tagIds"
+          ],
+          "msg": "Field required",
+          "input": {}
+        }
+      ]
+    }
+  },
+  {
+    "method": "post",
+    "path": "/v1/workspaces/{workspace_id}/assets/{asset_id}/tags",
+    "actor": "outsider",
+    "variant": "default",
+    "status": 422,
+    "body": {
+      "detail": [
+        {
+          "type": "missing",
+          "loc": [
+            "body",
+            "tagIds"
+          ],
+          "msg": "Field required",
+          "input": {}
+        }
+      ]
+    }
+  },
+  {
+    "method": "post",
+    "path": "/v1/workspaces/{workspace_id}/assets/{asset_id}/tags",
+    "actor": "unknown",
+    "variant": "default",
+    "status": 422,
+    "body": {
+      "detail": [
+        {
+          "type": "missing",
+          "loc": [
+            "body",
+            "tagIds"
+          ],
+          "msg": "Field required",
+          "input": {}
+        }
+      ]
+    }
+  },
+  {
+    "method": "post",
+    "path": "/v1/workspaces/{workspace_id}/assets/{asset_id}/tags",
+    "actor": "missing-internal",
+    "variant": "default",
+    "status": 401,
+    "body": {
+      "detail": "Internal API authentication required."
+    }
+  },
+  {
+    "method": "post",
+    "path": "/v1/workspaces/{workspace_id}/assets/{asset_id}/tags",
+    "actor": "missing-user",
+    "variant": "default",
+    "status": 401,
+    "body": {
+      "detail": "Authentication required."
+    }
+  },
+  {
+    "method": "post",
+    "path": "/v1/workspaces/{workspace_id}/notes/{note_id}/tags",
+    "actor": "owner",
+    "variant": "default",
+    "status": 422,
+    "body": {
+      "detail": [
+        {
+          "type": "missing",
+          "loc": [
+            "body",
+            "tagIds"
+          ],
+          "msg": "Field required",
+          "input": {}
+        }
+      ]
+    }
+  },
+  {
+    "method": "post",
+    "path": "/v1/workspaces/{workspace_id}/notes/{note_id}/tags",
+    "actor": "member",
+    "variant": "default",
+    "status": 422,
+    "body": {
+      "detail": [
+        {
+          "type": "missing",
+          "loc": [
+            "body",
+            "tagIds"
+          ],
+          "msg": "Field required",
+          "input": {}
+        }
+      ]
+    }
+  },
+  {
+    "method": "post",
+    "path": "/v1/workspaces/{workspace_id}/notes/{note_id}/tags",
+    "actor": "outsider",
+    "variant": "default",
+    "status": 422,
+    "body": {
+      "detail": [
+        {
+          "type": "missing",
+          "loc": [
+            "body",
+            "tagIds"
+          ],
+          "msg": "Field required",
+          "input": {}
+        }
+      ]
+    }
+  },
+  {
+    "method": "post",
+    "path": "/v1/workspaces/{workspace_id}/notes/{note_id}/tags",
+    "actor": "unknown",
+    "variant": "default",
+    "status": 422,
+    "body": {
+      "detail": [
+        {
+          "type": "missing",
+          "loc": [
+            "body",
+            "tagIds"
+          ],
+          "msg": "Field required",
+          "input": {}
+        }
+      ]
+    }
+  },
+  {
+    "method": "post",
+    "path": "/v1/workspaces/{workspace_id}/notes/{note_id}/tags",
+    "actor": "missing-internal",
+    "variant": "default",
+    "status": 401,
+    "body": {
+      "detail": "Internal API authentication required."
+    }
+  },
+  {
+    "method": "post",
+    "path": "/v1/workspaces/{workspace_id}/notes/{note_id}/tags",
+    "actor": "missing-user",
+    "variant": "default",
+    "status": 401,
+    "body": {
+      "detail": "Authentication required."
+    }
+  },
+  {
+    "method": "post",
+    "path": "/v1/workspaces/{workspace_id}/research-runs",
+    "actor": "owner",
+    "variant": "default",
+    "status": 422,
+    "body": {
+      "error": {
+        "code": "invalid_research_request",
+        "message": "Research request validation failed.",
+        "retryable": false,
+        "details": {
+          "field": "question"
+        }
+      }
+    }
+  },
+  {
+    "method": "post",
+    "path": "/v1/workspaces/{workspace_id}/research-runs",
+    "actor": "member",
+    "variant": "default",
+    "status": 422,
+    "body": {
+      "error": {
+        "code": "invalid_research_request",
+        "message": "Research request validation failed.",
+        "retryable": false,
+        "details": {
+          "field": "question"
+        }
+      }
+    }
+  },
+  {
+    "method": "post",
+    "path": "/v1/workspaces/{workspace_id}/research-runs",
+    "actor": "outsider",
+    "variant": "default",
+    "status": 422,
+    "body": {
+      "error": {
+        "code": "invalid_research_request",
+        "message": "Research request validation failed.",
+        "retryable": false,
+        "details": {
+          "field": "question"
+        }
+      }
+    }
+  },
+  {
+    "method": "post",
+    "path": "/v1/workspaces/{workspace_id}/research-runs",
+    "actor": "unknown",
+    "variant": "default",
+    "status": 422,
+    "body": {
+      "error": {
+        "code": "invalid_research_request",
+        "message": "Research request validation failed.",
+        "retryable": false,
+        "details": {
+          "field": "question"
+        }
+      }
+    }
+  },
+  {
+    "method": "post",
+    "path": "/v1/workspaces/{workspace_id}/research-runs",
+    "actor": "missing-internal",
+    "variant": "default",
+    "status": 401,
+    "body": {
+      "error": {
+        "code": "auth_required",
+        "message": "Authentication is required.",
+        "retryable": false
+      }
+    }
+  },
+  {
+    "method": "post",
+    "path": "/v1/workspaces/{workspace_id}/research-runs",
+    "actor": "missing-user",
+    "variant": "default",
+    "status": 401,
+    "body": {
+      "error": {
+        "code": "auth_required",
+        "message": "Authentication is required.",
+        "retryable": false
+      }
+    }
+  },
+  {
+    "method": "get",
+    "path": "/v1/workspaces/{workspace_id}/research-runs",
+    "actor": "owner",
+    "variant": "default",
+    "status": 200,
+    "body": {
+      "items": [],
+      "nextCursor": null
+    }
+  },
+  {
+    "method": "get",
+    "path": "/v1/workspaces/{workspace_id}/research-runs",
+    "actor": "owner",
+    "variant": "invalid-query",
+    "status": 422,
+    "body": {
+      "error": {
+        "code": "invalid_research_request",
+        "message": "Research request validation failed.",
+        "retryable": false,
+        "details": {
+          "field": "createdBy"
+        }
+      }
+    }
+  },
+  {
+    "method": "get",
+    "path": "/v1/workspaces/{workspace_id}/research-runs",
+    "actor": "member",
+    "variant": "default",
+    "status": 200,
+    "body": {
+      "items": [],
+      "nextCursor": null
+    }
+  },
+  {
+    "method": "get",
+    "path": "/v1/workspaces/{workspace_id}/research-runs",
+    "actor": "member",
+    "variant": "invalid-query",
+    "status": 422,
+    "body": {
+      "error": {
+        "code": "invalid_research_request",
+        "message": "Research request validation failed.",
+        "retryable": false,
+        "details": {
+          "field": "createdBy"
+        }
+      }
+    }
+  },
+  {
+    "method": "get",
+    "path": "/v1/workspaces/{workspace_id}/research-runs",
+    "actor": "outsider",
+    "variant": "default",
+    "status": 404,
+    "body": {
+      "error": {
+        "code": "workspace_not_found",
+        "message": "Workspace not found.",
+        "retryable": false
+      }
+    }
+  },
+  {
+    "method": "get",
+    "path": "/v1/workspaces/{workspace_id}/research-runs",
+    "actor": "outsider",
+    "variant": "invalid-query",
+    "status": 422,
+    "body": {
+      "error": {
+        "code": "invalid_research_request",
+        "message": "Research request validation failed.",
+        "retryable": false,
+        "details": {
+          "field": "createdBy"
+        }
+      }
+    }
+  },
+  {
+    "method": "get",
+    "path": "/v1/workspaces/{workspace_id}/research-runs",
+    "actor": "unknown",
+    "variant": "default",
+    "status": 404,
+    "body": {
+      "error": {
+        "code": "workspace_not_found",
+        "message": "Workspace not found.",
+        "retryable": false
+      }
+    }
+  },
+  {
+    "method": "get",
+    "path": "/v1/workspaces/{workspace_id}/research-runs",
+    "actor": "unknown",
+    "variant": "invalid-query",
+    "status": 422,
+    "body": {
+      "error": {
+        "code": "invalid_research_request",
+        "message": "Research request validation failed.",
+        "retryable": false,
+        "details": {
+          "field": "createdBy"
+        }
+      }
+    }
+  },
+  {
+    "method": "get",
+    "path": "/v1/workspaces/{workspace_id}/research-runs",
+    "actor": "missing-internal",
+    "variant": "default",
+    "status": 401,
+    "body": {
+      "error": {
+        "code": "auth_required",
+        "message": "Authentication is required.",
+        "retryable": false
+      }
+    }
+  },
+  {
+    "method": "get",
+    "path": "/v1/workspaces/{workspace_id}/research-runs",
+    "actor": "missing-internal",
+    "variant": "invalid-query",
+    "status": 401,
+    "body": {
+      "error": {
+        "code": "auth_required",
+        "message": "Authentication is required.",
+        "retryable": false
+      }
+    }
+  },
+  {
+    "method": "get",
+    "path": "/v1/workspaces/{workspace_id}/research-runs",
+    "actor": "missing-user",
+    "variant": "default",
+    "status": 401,
+    "body": {
+      "error": {
+        "code": "auth_required",
+        "message": "Authentication is required.",
+        "retryable": false
+      }
+    }
+  },
+  {
+    "method": "get",
+    "path": "/v1/workspaces/{workspace_id}/research-runs",
+    "actor": "missing-user",
+    "variant": "invalid-query",
+    "status": 401,
+    "body": {
+      "error": {
+        "code": "auth_required",
+        "message": "Authentication is required.",
+        "retryable": false
+      }
+    }
+  },
+  {
+    "method": "get",
+    "path": "/v1/workspaces/{workspace_id}/research-runs/{run_id}",
+    "actor": "owner",
+    "variant": "default",
+    "status": 404,
+    "body": {
+      "error": {
+        "code": "research_run_not_found",
+        "message": "Research run not found.",
+        "retryable": false
+      }
+    }
+  },
+  {
+    "method": "get",
+    "path": "/v1/workspaces/{workspace_id}/research-runs/{run_id}",
+    "actor": "member",
+    "variant": "default",
+    "status": 404,
+    "body": {
+      "error": {
+        "code": "research_run_not_found",
+        "message": "Research run not found.",
+        "retryable": false
+      }
+    }
+  },
+  {
+    "method": "get",
+    "path": "/v1/workspaces/{workspace_id}/research-runs/{run_id}",
+    "actor": "outsider",
+    "variant": "default",
+    "status": 404,
+    "body": {
+      "error": {
+        "code": "workspace_not_found",
+        "message": "Workspace not found.",
+        "retryable": false
+      }
+    }
+  },
+  {
+    "method": "get",
+    "path": "/v1/workspaces/{workspace_id}/research-runs/{run_id}",
+    "actor": "unknown",
+    "variant": "default",
+    "status": 404,
+    "body": {
+      "error": {
+        "code": "workspace_not_found",
+        "message": "Workspace not found.",
+        "retryable": false
+      }
+    }
+  },
+  {
+    "method": "get",
+    "path": "/v1/workspaces/{workspace_id}/research-runs/{run_id}",
+    "actor": "missing-internal",
+    "variant": "default",
+    "status": 401,
+    "body": {
+      "error": {
+        "code": "auth_required",
+        "message": "Authentication is required.",
+        "retryable": false
+      }
+    }
+  },
+  {
+    "method": "get",
+    "path": "/v1/workspaces/{workspace_id}/research-runs/{run_id}",
+    "actor": "missing-user",
+    "variant": "default",
+    "status": 401,
+    "body": {
+      "error": {
+        "code": "auth_required",
+        "message": "Authentication is required.",
+        "retryable": false
+      }
+    }
+  },
+  {
+    "method": "post",
+    "path": "/v1/workspaces/{workspace_id}/research-runs/{run_id}/cancel",
+    "actor": "owner",
+    "variant": "default",
+    "status": 422,
+    "body": {
+      "error": {
+        "code": "invalid_research_request",
+        "message": "Research request validation failed.",
+        "retryable": false,
+        "details": {
+          "field": "expectedStateVersion"
+        }
+      }
+    }
+  },
+  {
+    "method": "post",
+    "path": "/v1/workspaces/{workspace_id}/research-runs/{run_id}/cancel",
+    "actor": "member",
+    "variant": "default",
+    "status": 422,
+    "body": {
+      "error": {
+        "code": "invalid_research_request",
+        "message": "Research request validation failed.",
+        "retryable": false,
+        "details": {
+          "field": "expectedStateVersion"
+        }
+      }
+    }
+  },
+  {
+    "method": "post",
+    "path": "/v1/workspaces/{workspace_id}/research-runs/{run_id}/cancel",
+    "actor": "outsider",
+    "variant": "default",
+    "status": 422,
+    "body": {
+      "error": {
+        "code": "invalid_research_request",
+        "message": "Research request validation failed.",
+        "retryable": false,
+        "details": {
+          "field": "expectedStateVersion"
+        }
+      }
+    }
+  },
+  {
+    "method": "post",
+    "path": "/v1/workspaces/{workspace_id}/research-runs/{run_id}/cancel",
+    "actor": "unknown",
+    "variant": "default",
+    "status": 422,
+    "body": {
+      "error": {
+        "code": "invalid_research_request",
+        "message": "Research request validation failed.",
+        "retryable": false,
+        "details": {
+          "field": "expectedStateVersion"
+        }
+      }
+    }
+  },
+  {
+    "method": "post",
+    "path": "/v1/workspaces/{workspace_id}/research-runs/{run_id}/cancel",
+    "actor": "missing-internal",
+    "variant": "default",
+    "status": 401,
+    "body": {
+      "error": {
+        "code": "auth_required",
+        "message": "Authentication is required.",
+        "retryable": false
+      }
+    }
+  },
+  {
+    "method": "post",
+    "path": "/v1/workspaces/{workspace_id}/research-runs/{run_id}/cancel",
+    "actor": "missing-user",
+    "variant": "default",
+    "status": 401,
+    "body": {
+      "error": {
+        "code": "auth_required",
+        "message": "Authentication is required.",
+        "retryable": false
+      }
+    }
+  },
+  {
+    "method": "post",
+    "path": "/v1/workspaces/{workspace_id}/research-runs/{run_id}/plan-decisions/{decision_id}",
+    "actor": "owner",
+    "variant": "default",
+    "status": 422,
+    "body": {
+      "error": {
+        "code": "invalid_research_request",
+        "message": "Research request validation failed.",
+        "retryable": false,
+        "details": {
+          "field": "expectedStateVersion"
+        }
+      }
+    }
+  },
+  {
+    "method": "post",
+    "path": "/v1/workspaces/{workspace_id}/research-runs/{run_id}/plan-decisions/{decision_id}",
+    "actor": "member",
+    "variant": "default",
+    "status": 422,
+    "body": {
+      "error": {
+        "code": "invalid_research_request",
+        "message": "Research request validation failed.",
+        "retryable": false,
+        "details": {
+          "field": "expectedStateVersion"
+        }
+      }
+    }
+  },
+  {
+    "method": "post",
+    "path": "/v1/workspaces/{workspace_id}/research-runs/{run_id}/plan-decisions/{decision_id}",
+    "actor": "outsider",
+    "variant": "default",
+    "status": 422,
+    "body": {
+      "error": {
+        "code": "invalid_research_request",
+        "message": "Research request validation failed.",
+        "retryable": false,
+        "details": {
+          "field": "expectedStateVersion"
+        }
+      }
+    }
+  },
+  {
+    "method": "post",
+    "path": "/v1/workspaces/{workspace_id}/research-runs/{run_id}/plan-decisions/{decision_id}",
+    "actor": "unknown",
+    "variant": "default",
+    "status": 422,
+    "body": {
+      "error": {
+        "code": "invalid_research_request",
+        "message": "Research request validation failed.",
+        "retryable": false,
+        "details": {
+          "field": "expectedStateVersion"
+        }
+      }
+    }
+  },
+  {
+    "method": "post",
+    "path": "/v1/workspaces/{workspace_id}/research-runs/{run_id}/plan-decisions/{decision_id}",
+    "actor": "missing-internal",
+    "variant": "default",
+    "status": 401,
+    "body": {
+      "error": {
+        "code": "auth_required",
+        "message": "Authentication is required.",
+        "retryable": false
+      }
+    }
+  },
+  {
+    "method": "post",
+    "path": "/v1/workspaces/{workspace_id}/research-runs/{run_id}/plan-decisions/{decision_id}",
+    "actor": "missing-user",
+    "variant": "default",
+    "status": 401,
+    "body": {
+      "error": {
+        "code": "auth_required",
+        "message": "Authentication is required.",
+        "retryable": false
+      }
+    }
+  },
+  {
+    "method": "post",
+    "path": "/v1/workspaces/{workspace_id}/research-runs/{run_id}/conflict-decisions/{decision_id}",
+    "actor": "owner",
+    "variant": "default",
+    "status": 422,
+    "body": {
+      "error": {
+        "code": "invalid_research_request",
+        "message": "Research request validation failed.",
+        "retryable": false,
+        "details": {
+          "field": "expectedStateVersion"
+        }
+      }
+    }
+  },
+  {
+    "method": "post",
+    "path": "/v1/workspaces/{workspace_id}/research-runs/{run_id}/conflict-decisions/{decision_id}",
+    "actor": "member",
+    "variant": "default",
+    "status": 422,
+    "body": {
+      "error": {
+        "code": "invalid_research_request",
+        "message": "Research request validation failed.",
+        "retryable": false,
+        "details": {
+          "field": "expectedStateVersion"
+        }
+      }
+    }
+  },
+  {
+    "method": "post",
+    "path": "/v1/workspaces/{workspace_id}/research-runs/{run_id}/conflict-decisions/{decision_id}",
+    "actor": "outsider",
+    "variant": "default",
+    "status": 422,
+    "body": {
+      "error": {
+        "code": "invalid_research_request",
+        "message": "Research request validation failed.",
+        "retryable": false,
+        "details": {
+          "field": "expectedStateVersion"
+        }
+      }
+    }
+  },
+  {
+    "method": "post",
+    "path": "/v1/workspaces/{workspace_id}/research-runs/{run_id}/conflict-decisions/{decision_id}",
+    "actor": "unknown",
+    "variant": "default",
+    "status": 422,
+    "body": {
+      "error": {
+        "code": "invalid_research_request",
+        "message": "Research request validation failed.",
+        "retryable": false,
+        "details": {
+          "field": "expectedStateVersion"
+        }
+      }
+    }
+  },
+  {
+    "method": "post",
+    "path": "/v1/workspaces/{workspace_id}/research-runs/{run_id}/conflict-decisions/{decision_id}",
+    "actor": "missing-internal",
+    "variant": "default",
+    "status": 401,
+    "body": {
+      "error": {
+        "code": "auth_required",
+        "message": "Authentication is required.",
+        "retryable": false
+      }
+    }
+  },
+  {
+    "method": "post",
+    "path": "/v1/workspaces/{workspace_id}/research-runs/{run_id}/conflict-decisions/{decision_id}",
+    "actor": "missing-user",
+    "variant": "default",
+    "status": 401,
+    "body": {
+      "error": {
+        "code": "auth_required",
+        "message": "Authentication is required.",
+        "retryable": false
+      }
+    }
+  },
+  {
+    "method": "post",
+    "path": "/v1/workspaces/{workspace_id}/research-runs/{run_id}/steps/{step_id}/retry",
+    "actor": "owner",
+    "variant": "default",
+    "status": 422,
+    "body": {
+      "error": {
+        "code": "invalid_research_request",
+        "message": "Research request validation failed.",
+        "retryable": false,
+        "details": {
+          "field": "expectedStateVersion"
+        }
+      }
+    }
+  },
+  {
+    "method": "post",
+    "path": "/v1/workspaces/{workspace_id}/research-runs/{run_id}/steps/{step_id}/retry",
+    "actor": "member",
+    "variant": "default",
+    "status": 422,
+    "body": {
+      "error": {
+        "code": "invalid_research_request",
+        "message": "Research request validation failed.",
+        "retryable": false,
+        "details": {
+          "field": "expectedStateVersion"
+        }
+      }
+    }
+  },
+  {
+    "method": "post",
+    "path": "/v1/workspaces/{workspace_id}/research-runs/{run_id}/steps/{step_id}/retry",
+    "actor": "outsider",
+    "variant": "default",
+    "status": 422,
+    "body": {
+      "error": {
+        "code": "invalid_research_request",
+        "message": "Research request validation failed.",
+        "retryable": false,
+        "details": {
+          "field": "expectedStateVersion"
+        }
+      }
+    }
+  },
+  {
+    "method": "post",
+    "path": "/v1/workspaces/{workspace_id}/research-runs/{run_id}/steps/{step_id}/retry",
+    "actor": "unknown",
+    "variant": "default",
+    "status": 422,
+    "body": {
+      "error": {
+        "code": "invalid_research_request",
+        "message": "Research request validation failed.",
+        "retryable": false,
+        "details": {
+          "field": "expectedStateVersion"
+        }
+      }
+    }
+  },
+  {
+    "method": "post",
+    "path": "/v1/workspaces/{workspace_id}/research-runs/{run_id}/steps/{step_id}/retry",
+    "actor": "missing-internal",
+    "variant": "default",
+    "status": 401,
+    "body": {
+      "error": {
+        "code": "auth_required",
+        "message": "Authentication is required.",
+        "retryable": false
+      }
+    }
+  },
+  {
+    "method": "post",
+    "path": "/v1/workspaces/{workspace_id}/research-runs/{run_id}/steps/{step_id}/retry",
+    "actor": "missing-user",
+    "variant": "default",
+    "status": 401,
+    "body": {
+      "error": {
+        "code": "auth_required",
+        "message": "Authentication is required.",
+        "retryable": false
+      }
+    }
+  },
+  {
+    "method": "get",
+    "path": "/v1/workspaces/{workspace_id}/research-runs/{run_id}/artifacts",
+    "actor": "owner",
+    "variant": "default",
+    "status": 404,
+    "body": {
+      "error": {
+        "code": "research_run_not_found",
+        "message": "Research run not found.",
+        "retryable": false
+      }
+    }
+  },
+  {
+    "method": "get",
+    "path": "/v1/workspaces/{workspace_id}/research-runs/{run_id}/artifacts",
+    "actor": "member",
+    "variant": "default",
+    "status": 404,
+    "body": {
+      "error": {
+        "code": "research_run_not_found",
+        "message": "Research run not found.",
+        "retryable": false
+      }
+    }
+  },
+  {
+    "method": "get",
+    "path": "/v1/workspaces/{workspace_id}/research-runs/{run_id}/artifacts",
+    "actor": "outsider",
+    "variant": "default",
+    "status": 404,
+    "body": {
+      "error": {
+        "code": "workspace_not_found",
+        "message": "Workspace not found.",
+        "retryable": false
+      }
+    }
+  },
+  {
+    "method": "get",
+    "path": "/v1/workspaces/{workspace_id}/research-runs/{run_id}/artifacts",
+    "actor": "unknown",
+    "variant": "default",
+    "status": 404,
+    "body": {
+      "error": {
+        "code": "workspace_not_found",
+        "message": "Workspace not found.",
+        "retryable": false
+      }
+    }
+  },
+  {
+    "method": "get",
+    "path": "/v1/workspaces/{workspace_id}/research-runs/{run_id}/artifacts",
+    "actor": "missing-internal",
+    "variant": "default",
+    "status": 401,
+    "body": {
+      "error": {
+        "code": "auth_required",
+        "message": "Authentication is required.",
+        "retryable": false
+      }
+    }
+  },
+  {
+    "method": "get",
+    "path": "/v1/workspaces/{workspace_id}/research-runs/{run_id}/artifacts",
+    "actor": "missing-user",
+    "variant": "default",
+    "status": 401,
+    "body": {
+      "error": {
+        "code": "auth_required",
+        "message": "Authentication is required.",
+        "retryable": false
+      }
+    }
+  },
+  {
+    "method": "get",
+    "path": "/v1/workspaces/{workspace_id}/research-runs/{run_id}/artifacts/{artifact_id}",
+    "actor": "owner",
+    "variant": "default",
+    "status": 404,
+    "body": {
+      "error": {
+        "code": "research_run_not_found",
+        "message": "Research run not found.",
+        "retryable": false
+      }
+    }
+  },
+  {
+    "method": "get",
+    "path": "/v1/workspaces/{workspace_id}/research-runs/{run_id}/artifacts/{artifact_id}",
+    "actor": "member",
+    "variant": "default",
+    "status": 404,
+    "body": {
+      "error": {
+        "code": "research_run_not_found",
+        "message": "Research run not found.",
+        "retryable": false
+      }
+    }
+  },
+  {
+    "method": "get",
+    "path": "/v1/workspaces/{workspace_id}/research-runs/{run_id}/artifacts/{artifact_id}",
+    "actor": "outsider",
+    "variant": "default",
+    "status": 404,
+    "body": {
+      "error": {
+        "code": "workspace_not_found",
+        "message": "Workspace not found.",
+        "retryable": false
+      }
+    }
+  },
+  {
+    "method": "get",
+    "path": "/v1/workspaces/{workspace_id}/research-runs/{run_id}/artifacts/{artifact_id}",
+    "actor": "unknown",
+    "variant": "default",
+    "status": 404,
+    "body": {
+      "error": {
+        "code": "workspace_not_found",
+        "message": "Workspace not found.",
+        "retryable": false
+      }
+    }
+  },
+  {
+    "method": "get",
+    "path": "/v1/workspaces/{workspace_id}/research-runs/{run_id}/artifacts/{artifact_id}",
+    "actor": "missing-internal",
+    "variant": "default",
+    "status": 401,
+    "body": {
+      "error": {
+        "code": "auth_required",
+        "message": "Authentication is required.",
+        "retryable": false
+      }
+    }
+  },
+  {
+    "method": "get",
+    "path": "/v1/workspaces/{workspace_id}/research-runs/{run_id}/artifacts/{artifact_id}",
+    "actor": "missing-user",
+    "variant": "default",
+    "status": 401,
+    "body": {
+      "error": {
+        "code": "auth_required",
+        "message": "Authentication is required.",
+        "retryable": false
+      }
+    }
+  },
+  {
+    "method": "get",
+    "path": "/v1/workspaces/{workspace_id}/research-runs/{run_id}/artifacts/{artifact_id}/content",
+    "actor": "owner",
+    "variant": "default",
+    "status": 404,
+    "body": {
+      "error": {
+        "code": "research_run_not_found",
+        "message": "Research run not found.",
+        "retryable": false
+      }
+    }
+  },
+  {
+    "method": "get",
+    "path": "/v1/workspaces/{workspace_id}/research-runs/{run_id}/artifacts/{artifact_id}/content",
+    "actor": "member",
+    "variant": "default",
+    "status": 404,
+    "body": {
+      "error": {
+        "code": "research_run_not_found",
+        "message": "Research run not found.",
+        "retryable": false
+      }
+    }
+  },
+  {
+    "method": "get",
+    "path": "/v1/workspaces/{workspace_id}/research-runs/{run_id}/artifacts/{artifact_id}/content",
+    "actor": "outsider",
+    "variant": "default",
+    "status": 404,
+    "body": {
+      "error": {
+        "code": "workspace_not_found",
+        "message": "Workspace not found.",
+        "retryable": false
+      }
+    }
+  },
+  {
+    "method": "get",
+    "path": "/v1/workspaces/{workspace_id}/research-runs/{run_id}/artifacts/{artifact_id}/content",
+    "actor": "unknown",
+    "variant": "default",
+    "status": 404,
+    "body": {
+      "error": {
+        "code": "workspace_not_found",
+        "message": "Workspace not found.",
+        "retryable": false
+      }
+    }
+  },
+  {
+    "method": "get",
+    "path": "/v1/workspaces/{workspace_id}/research-runs/{run_id}/artifacts/{artifact_id}/content",
+    "actor": "missing-internal",
+    "variant": "default",
+    "status": 401,
+    "body": {
+      "error": {
+        "code": "auth_required",
+        "message": "Authentication is required.",
+        "retryable": false
+      }
+    }
+  },
+  {
+    "method": "get",
+    "path": "/v1/workspaces/{workspace_id}/research-runs/{run_id}/artifacts/{artifact_id}/content",
+    "actor": "missing-user",
+    "variant": "default",
+    "status": 401,
+    "body": {
+      "error": {
+        "code": "auth_required",
+        "message": "Authentication is required.",
+        "retryable": false
+      }
+    }
+  },
+  {
+    "method": "get",
+    "path": "/v1/workspaces/{workspace_id}/research-runs/{run_id}/report-edit",
+    "actor": "owner",
+    "variant": "default",
+    "status": 404,
+    "body": {
+      "error": {
+        "code": "research_run_not_found",
+        "message": "Research run not found.",
+        "retryable": false
+      }
+    }
+  },
+  {
+    "method": "get",
+    "path": "/v1/workspaces/{workspace_id}/research-runs/{run_id}/report-edit",
+    "actor": "member",
+    "variant": "default",
+    "status": 404,
+    "body": {
+      "error": {
+        "code": "research_run_not_found",
+        "message": "Research run not found.",
+        "retryable": false
+      }
+    }
+  },
+  {
+    "method": "get",
+    "path": "/v1/workspaces/{workspace_id}/research-runs/{run_id}/report-edit",
+    "actor": "outsider",
+    "variant": "default",
+    "status": 404,
+    "body": {
+      "error": {
+        "code": "workspace_not_found",
+        "message": "Workspace not found.",
+        "retryable": false
+      }
+    }
+  },
+  {
+    "method": "get",
+    "path": "/v1/workspaces/{workspace_id}/research-runs/{run_id}/report-edit",
+    "actor": "unknown",
+    "variant": "default",
+    "status": 404,
+    "body": {
+      "error": {
+        "code": "workspace_not_found",
+        "message": "Workspace not found.",
+        "retryable": false
+      }
+    }
+  },
+  {
+    "method": "get",
+    "path": "/v1/workspaces/{workspace_id}/research-runs/{run_id}/report-edit",
+    "actor": "missing-internal",
+    "variant": "default",
+    "status": 401,
+    "body": {
+      "error": {
+        "code": "auth_required",
+        "message": "Authentication is required.",
+        "retryable": false
+      }
+    }
+  },
+  {
+    "method": "get",
+    "path": "/v1/workspaces/{workspace_id}/research-runs/{run_id}/report-edit",
+    "actor": "missing-user",
+    "variant": "default",
+    "status": 401,
+    "body": {
+      "error": {
+        "code": "auth_required",
+        "message": "Authentication is required.",
+        "retryable": false
+      }
+    }
+  },
+  {
+    "method": "put",
+    "path": "/v1/workspaces/{workspace_id}/research-runs/{run_id}/report-edit",
+    "actor": "owner",
+    "variant": "default",
+    "status": 422,
+    "body": {
+      "error": {
+        "code": "invalid_research_request",
+        "message": "Research request validation failed.",
+        "retryable": false,
+        "details": {
+          "field": "originalArtifactId"
+        }
+      }
+    }
+  },
+  {
+    "method": "put",
+    "path": "/v1/workspaces/{workspace_id}/research-runs/{run_id}/report-edit",
+    "actor": "member",
+    "variant": "default",
+    "status": 422,
+    "body": {
+      "error": {
+        "code": "invalid_research_request",
+        "message": "Research request validation failed.",
+        "retryable": false,
+        "details": {
+          "field": "originalArtifactId"
+        }
+      }
+    }
+  },
+  {
+    "method": "put",
+    "path": "/v1/workspaces/{workspace_id}/research-runs/{run_id}/report-edit",
+    "actor": "outsider",
+    "variant": "default",
+    "status": 422,
+    "body": {
+      "error": {
+        "code": "invalid_research_request",
+        "message": "Research request validation failed.",
+        "retryable": false,
+        "details": {
+          "field": "originalArtifactId"
+        }
+      }
+    }
+  },
+  {
+    "method": "put",
+    "path": "/v1/workspaces/{workspace_id}/research-runs/{run_id}/report-edit",
+    "actor": "unknown",
+    "variant": "default",
+    "status": 422,
+    "body": {
+      "error": {
+        "code": "invalid_research_request",
+        "message": "Research request validation failed.",
+        "retryable": false,
+        "details": {
+          "field": "originalArtifactId"
+        }
+      }
+    }
+  },
+  {
+    "method": "put",
+    "path": "/v1/workspaces/{workspace_id}/research-runs/{run_id}/report-edit",
+    "actor": "missing-internal",
+    "variant": "default",
+    "status": 401,
+    "body": {
+      "error": {
+        "code": "auth_required",
+        "message": "Authentication is required.",
+        "retryable": false
+      }
+    }
+  },
+  {
+    "method": "put",
+    "path": "/v1/workspaces/{workspace_id}/research-runs/{run_id}/report-edit",
+    "actor": "missing-user",
+    "variant": "default",
+    "status": 401,
+    "body": {
+      "error": {
+        "code": "auth_required",
+        "message": "Authentication is required.",
+        "retryable": false
+      }
+    }
+  },
+  {
+    "method": "get",
+    "path": "/v1/workspaces/{workspace_id}/research-runs/{run_id}/events",
+    "actor": "owner",
+    "variant": "default",
+    "status": 406,
+    "body": {
+      "error": {
+        "code": "invalid_research_request",
+        "message": "Accept must allow text/event-stream.",
+        "retryable": false
+      }
+    }
+  },
+  {
+    "method": "get",
+    "path": "/v1/workspaces/{workspace_id}/research-runs/{run_id}/events",
+    "actor": "member",
+    "variant": "default",
+    "status": 406,
+    "body": {
+      "error": {
+        "code": "invalid_research_request",
+        "message": "Accept must allow text/event-stream.",
+        "retryable": false
+      }
+    }
+  },
+  {
+    "method": "get",
+    "path": "/v1/workspaces/{workspace_id}/research-runs/{run_id}/events",
+    "actor": "outsider",
+    "variant": "default",
+    "status": 406,
+    "body": {
+      "error": {
+        "code": "invalid_research_request",
+        "message": "Accept must allow text/event-stream.",
+        "retryable": false
+      }
+    }
+  },
+  {
+    "method": "get",
+    "path": "/v1/workspaces/{workspace_id}/research-runs/{run_id}/events",
+    "actor": "unknown",
+    "variant": "default",
+    "status": 406,
+    "body": {
+      "error": {
+        "code": "invalid_research_request",
+        "message": "Accept must allow text/event-stream.",
+        "retryable": false
+      }
+    }
+  },
+  {
+    "method": "get",
+    "path": "/v1/workspaces/{workspace_id}/research-runs/{run_id}/events",
+    "actor": "missing-internal",
+    "variant": "default",
+    "status": 401,
+    "body": {
+      "error": {
+        "code": "auth_required",
+        "message": "Authentication is required.",
+        "retryable": false
+      }
+    }
+  },
+  {
+    "method": "get",
+    "path": "/v1/workspaces/{workspace_id}/research-runs/{run_id}/events",
+    "actor": "missing-user",
+    "variant": "default",
+    "status": 401,
+    "body": {
+      "error": {
+        "code": "auth_required",
+        "message": "Authentication is required.",
+        "retryable": false
+      }
+    }
+  },
+  {
+    "method": "get",
+    "path": "/v1/workspaces/{workspace_id}/evaluation-suites",
+    "actor": "owner",
+    "variant": "default",
+    "status": 200,
+    "body": {
+      "items": []
+    }
+  },
+  {
+    "method": "get",
+    "path": "/v1/workspaces/{workspace_id}/evaluation-suites",
+    "actor": "member",
+    "variant": "default",
+    "status": 403,
+    "body": {
+      "detail": "Workspace owner access required."
+    }
+  },
+  {
+    "method": "get",
+    "path": "/v1/workspaces/{workspace_id}/evaluation-suites",
+    "actor": "outsider",
+    "variant": "default",
+    "status": 404,
+    "body": {
+      "detail": "Workspace not found."
+    }
+  },
+  {
+    "method": "get",
+    "path": "/v1/workspaces/{workspace_id}/evaluation-suites",
+    "actor": "unknown",
+    "variant": "default",
+    "status": 404,
+    "body": {
+      "detail": "Workspace not found."
+    }
+  },
+  {
+    "method": "get",
+    "path": "/v1/workspaces/{workspace_id}/evaluation-suites",
+    "actor": "missing-internal",
+    "variant": "default",
+    "status": 401,
+    "body": {
+      "detail": "Internal API authentication required."
+    }
+  },
+  {
+    "method": "get",
+    "path": "/v1/workspaces/{workspace_id}/evaluation-suites",
+    "actor": "missing-user",
+    "variant": "default",
+    "status": 401,
+    "body": {
+      "detail": "Authentication required."
+    }
+  },
+  {
+    "method": "get",
+    "path": "/v1/workspaces/{workspace_id}/evaluation-suites/{suite_id}",
+    "actor": "owner",
+    "variant": "default",
+    "status": 404,
+    "body": {
+      "detail": "Evaluation suite not found."
+    }
+  },
+  {
+    "method": "get",
+    "path": "/v1/workspaces/{workspace_id}/evaluation-suites/{suite_id}",
+    "actor": "member",
+    "variant": "default",
+    "status": 403,
+    "body": {
+      "detail": "Workspace owner access required."
+    }
+  },
+  {
+    "method": "get",
+    "path": "/v1/workspaces/{workspace_id}/evaluation-suites/{suite_id}",
+    "actor": "outsider",
+    "variant": "default",
+    "status": 404,
+    "body": {
+      "detail": "Workspace not found."
+    }
+  },
+  {
+    "method": "get",
+    "path": "/v1/workspaces/{workspace_id}/evaluation-suites/{suite_id}",
+    "actor": "unknown",
+    "variant": "default",
+    "status": 404,
+    "body": {
+      "detail": "Workspace not found."
+    }
+  },
+  {
+    "method": "get",
+    "path": "/v1/workspaces/{workspace_id}/evaluation-suites/{suite_id}",
+    "actor": "missing-internal",
+    "variant": "default",
+    "status": 401,
+    "body": {
+      "detail": "Internal API authentication required."
+    }
+  },
+  {
+    "method": "get",
+    "path": "/v1/workspaces/{workspace_id}/evaluation-suites/{suite_id}",
+    "actor": "missing-user",
+    "variant": "default",
+    "status": 401,
+    "body": {
+      "detail": "Authentication required."
+    }
+  },
+  {
+    "method": "get",
+    "path": "/v1/workspaces/{workspace_id}/evaluations",
+    "actor": "owner",
+    "variant": "default",
+    "status": 200,
+    "body": {
+      "items": [],
+      "nextCursor": null
+    }
+  },
+  {
+    "method": "get",
+    "path": "/v1/workspaces/{workspace_id}/evaluations",
+    "actor": "owner",
+    "variant": "invalid-query",
+    "status": 422,
+    "body": {
+      "detail": [
+        {
+          "type": "literal_error",
+          "loc": [
+            "query",
+            "mode"
+          ],
+          "msg": "Input should be 'quick' or 'research'",
+          "input": "!",
+          "ctx": {
+            "expected": "'quick' or 'research'"
+          }
+        },
+        {
+          "type": "int_parsing",
+          "loc": [
+            "query",
+            "limit"
+          ],
+          "msg": "Input should be a valid integer, unable to parse string as an integer",
+          "input": "!"
+        }
+      ]
+    }
+  },
+  {
+    "method": "get",
+    "path": "/v1/workspaces/{workspace_id}/evaluations",
+    "actor": "member",
+    "variant": "default",
+    "status": 403,
+    "body": {
+      "detail": "Workspace owner access required."
+    }
+  },
+  {
+    "method": "get",
+    "path": "/v1/workspaces/{workspace_id}/evaluations",
+    "actor": "member",
+    "variant": "invalid-query",
+    "status": 422,
+    "body": {
+      "detail": [
+        {
+          "type": "literal_error",
+          "loc": [
+            "query",
+            "mode"
+          ],
+          "msg": "Input should be 'quick' or 'research'",
+          "input": "!",
+          "ctx": {
+            "expected": "'quick' or 'research'"
+          }
+        },
+        {
+          "type": "int_parsing",
+          "loc": [
+            "query",
+            "limit"
+          ],
+          "msg": "Input should be a valid integer, unable to parse string as an integer",
+          "input": "!"
+        }
+      ]
+    }
+  },
+  {
+    "method": "get",
+    "path": "/v1/workspaces/{workspace_id}/evaluations",
+    "actor": "outsider",
+    "variant": "default",
+    "status": 404,
+    "body": {
+      "detail": "Workspace not found."
+    }
+  },
+  {
+    "method": "get",
+    "path": "/v1/workspaces/{workspace_id}/evaluations",
+    "actor": "outsider",
+    "variant": "invalid-query",
+    "status": 422,
+    "body": {
+      "detail": [
+        {
+          "type": "literal_error",
+          "loc": [
+            "query",
+            "mode"
+          ],
+          "msg": "Input should be 'quick' or 'research'",
+          "input": "!",
+          "ctx": {
+            "expected": "'quick' or 'research'"
+          }
+        },
+        {
+          "type": "int_parsing",
+          "loc": [
+            "query",
+            "limit"
+          ],
+          "msg": "Input should be a valid integer, unable to parse string as an integer",
+          "input": "!"
+        }
+      ]
+    }
+  },
+  {
+    "method": "get",
+    "path": "/v1/workspaces/{workspace_id}/evaluations",
+    "actor": "unknown",
+    "variant": "default",
+    "status": 404,
+    "body": {
+      "detail": "Workspace not found."
+    }
+  },
+  {
+    "method": "get",
+    "path": "/v1/workspaces/{workspace_id}/evaluations",
+    "actor": "unknown",
+    "variant": "invalid-query",
+    "status": 422,
+    "body": {
+      "detail": [
+        {
+          "type": "literal_error",
+          "loc": [
+            "query",
+            "mode"
+          ],
+          "msg": "Input should be 'quick' or 'research'",
+          "input": "!",
+          "ctx": {
+            "expected": "'quick' or 'research'"
+          }
+        },
+        {
+          "type": "int_parsing",
+          "loc": [
+            "query",
+            "limit"
+          ],
+          "msg": "Input should be a valid integer, unable to parse string as an integer",
+          "input": "!"
+        }
+      ]
+    }
+  },
+  {
+    "method": "get",
+    "path": "/v1/workspaces/{workspace_id}/evaluations",
+    "actor": "missing-internal",
+    "variant": "default",
+    "status": 401,
+    "body": {
+      "detail": "Internal API authentication required."
+    }
+  },
+  {
+    "method": "get",
+    "path": "/v1/workspaces/{workspace_id}/evaluations",
+    "actor": "missing-internal",
+    "variant": "invalid-query",
+    "status": 401,
+    "body": {
+      "detail": "Internal API authentication required."
+    }
+  },
+  {
+    "method": "get",
+    "path": "/v1/workspaces/{workspace_id}/evaluations",
+    "actor": "missing-user",
+    "variant": "default",
+    "status": 401,
+    "body": {
+      "detail": "Authentication required."
+    }
+  },
+  {
+    "method": "get",
+    "path": "/v1/workspaces/{workspace_id}/evaluations",
+    "actor": "missing-user",
+    "variant": "invalid-query",
+    "status": 401,
+    "body": {
+      "detail": "Authentication required."
+    }
+  },
+  {
+    "method": "get",
+    "path": "/v1/workspaces/{workspace_id}/evaluations/{evaluation_run_id}",
+    "actor": "owner",
+    "variant": "default",
+    "status": 404,
+    "body": {
+      "detail": "Evaluation run not found."
+    }
+  },
+  {
+    "method": "get",
+    "path": "/v1/workspaces/{workspace_id}/evaluations/{evaluation_run_id}",
+    "actor": "member",
+    "variant": "default",
+    "status": 403,
+    "body": {
+      "detail": "Workspace owner access required."
+    }
+  },
+  {
+    "method": "get",
+    "path": "/v1/workspaces/{workspace_id}/evaluations/{evaluation_run_id}",
+    "actor": "outsider",
+    "variant": "default",
+    "status": 404,
+    "body": {
+      "detail": "Workspace not found."
+    }
+  },
+  {
+    "method": "get",
+    "path": "/v1/workspaces/{workspace_id}/evaluations/{evaluation_run_id}",
+    "actor": "unknown",
+    "variant": "default",
+    "status": 404,
+    "body": {
+      "detail": "Workspace not found."
+    }
+  },
+  {
+    "method": "get",
+    "path": "/v1/workspaces/{workspace_id}/evaluations/{evaluation_run_id}",
+    "actor": "missing-internal",
+    "variant": "default",
+    "status": 401,
+    "body": {
+      "detail": "Internal API authentication required."
+    }
+  },
+  {
+    "method": "get",
+    "path": "/v1/workspaces/{workspace_id}/evaluations/{evaluation_run_id}",
+    "actor": "missing-user",
+    "variant": "default",
+    "status": 401,
+    "body": {
+      "detail": "Authentication required."
+    }
+  },
+  {
+    "method": "get",
+    "path": "/v1/workspaces/{workspace_id}/evaluations/{evaluation_run_id}/cases",
+    "actor": "owner",
+    "variant": "default",
+    "status": 404,
+    "body": {
+      "detail": "Evaluation run not found."
+    }
+  },
+  {
+    "method": "get",
+    "path": "/v1/workspaces/{workspace_id}/evaluations/{evaluation_run_id}/cases",
+    "actor": "member",
+    "variant": "default",
+    "status": 403,
+    "body": {
+      "detail": "Workspace owner access required."
+    }
+  },
+  {
+    "method": "get",
+    "path": "/v1/workspaces/{workspace_id}/evaluations/{evaluation_run_id}/cases",
+    "actor": "outsider",
+    "variant": "default",
+    "status": 404,
+    "body": {
+      "detail": "Workspace not found."
+    }
+  },
+  {
+    "method": "get",
+    "path": "/v1/workspaces/{workspace_id}/evaluations/{evaluation_run_id}/cases",
+    "actor": "unknown",
+    "variant": "default",
+    "status": 404,
+    "body": {
+      "detail": "Workspace not found."
+    }
+  },
+  {
+    "method": "get",
+    "path": "/v1/workspaces/{workspace_id}/evaluations/{evaluation_run_id}/cases",
+    "actor": "missing-internal",
+    "variant": "default",
+    "status": 401,
+    "body": {
+      "detail": "Internal API authentication required."
+    }
+  },
+  {
+    "method": "get",
+    "path": "/v1/workspaces/{workspace_id}/evaluations/{evaluation_run_id}/cases",
+    "actor": "missing-user",
+    "variant": "default",
+    "status": 401,
+    "body": {
+      "detail": "Authentication required."
+    }
+  },
+  {
+    "method": "get",
+    "path": "/v1/workspaces/{workspace_id}/evaluations/{evaluation_run_id}/cases/{case_key}",
+    "actor": "owner",
+    "variant": "default",
+    "status": 404,
+    "body": {
+      "detail": "Evaluation run not found."
+    }
+  },
+  {
+    "method": "get",
+    "path": "/v1/workspaces/{workspace_id}/evaluations/{evaluation_run_id}/cases/{case_key}",
+    "actor": "member",
+    "variant": "default",
+    "status": 403,
+    "body": {
+      "detail": "Workspace owner access required."
+    }
+  },
+  {
+    "method": "get",
+    "path": "/v1/workspaces/{workspace_id}/evaluations/{evaluation_run_id}/cases/{case_key}",
+    "actor": "outsider",
+    "variant": "default",
+    "status": 404,
+    "body": {
+      "detail": "Workspace not found."
+    }
+  },
+  {
+    "method": "get",
+    "path": "/v1/workspaces/{workspace_id}/evaluations/{evaluation_run_id}/cases/{case_key}",
+    "actor": "unknown",
+    "variant": "default",
+    "status": 404,
+    "body": {
+      "detail": "Workspace not found."
+    }
+  },
+  {
+    "method": "get",
+    "path": "/v1/workspaces/{workspace_id}/evaluations/{evaluation_run_id}/cases/{case_key}",
+    "actor": "missing-internal",
+    "variant": "default",
+    "status": 401,
+    "body": {
+      "detail": "Internal API authentication required."
+    }
+  },
+  {
+    "method": "get",
+    "path": "/v1/workspaces/{workspace_id}/evaluations/{evaluation_run_id}/cases/{case_key}",
+    "actor": "missing-user",
+    "variant": "default",
+    "status": 401,
+    "body": {
+      "detail": "Authentication required."
+    }
+  }
+]
