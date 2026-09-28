@@ -137,3 +137,9 @@ Deploy/boundary invocations also denied socket connection entry points in the te
 The 44 PostgreSQL persistence cases were **not run** and are not reported as passed or accepted. Their fixture requires `CITEFRAME_MEMORY42_POSTGRES_URL` pointing to the disposable `citeframe_memory42_test` database; it fails in CI when absent. These non-DB checks do not establish migration/CAS/erasure/runtime acceptance.
 
 `git diff --check` passes for the working-tree correction/report. Controller retains staging, merge commit, push and PR decisions; original reviewer performs the subsequent integrated-snapshot check. Write-back is confined to this lane report, with no profile/private-memory or shared workbench update.
+
+## Controller hosted integration evidence
+
+Integrated implementation1d624a1d1aa0f5afa59386eedacb108c607b23bd passed API, Worker fast, Worker acceptance, evaluation, Web and Web E2E checks plus dedicated neutral-provider job. Original independent integration review reran117provider+6APIdeploy+2Workerdeploy+13boundary tests and found no integration issue. PR49 is stacked on work/issue42-memory-persistence (PR48), so its owned diff is limited to providers/tests/workflow/evidence; no duplicate shared contract owner.
+
+Three external service gates remain failed; prior inspected pinned-image access is unauthorized. No merge waiver, runtime model-quality or new realUI feature acceptance follows from these checks. Review documentation commit may trigger a new exact-head run; the observation above belongs to1d624a1. App attach_artifact transport remains closed; tool was invoked, attachment not confirmed.

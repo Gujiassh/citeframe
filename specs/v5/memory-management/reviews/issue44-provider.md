@@ -339,3 +339,41 @@ Ubuntu Actions execution and `uv sync --project apps/api --frozen --extra dev` i
 No live-provider compatibility, model-quality, real tokenizer accuracy, chat/UI, privacy-consumer integration, automatic compaction or full #44/#41 completion is accepted by this CI review. The workflow remains aligned with the neutral prerequisite architecture.
 
 Write-back check: durable scoped judgment and exact evidence are appended only to this original review. No product, test, workflow, contract, manifest, lane document, Git index/ref, private/profile memory, canonical/shared-workbench, service or DB write was performed by the reviewer. Controller retains commit/push/PR ownership.
+
+
+## Narrow PR48 dependency integration review — 2026-09-28
+
+**ACCEPT — neutral provider/CI integration at `1d624a1d1aa0f5afa59386eedacb108c607b23bd`. No actionable integration finding identified.** Existing F44-1/F44-2/F44-3 closures and their acceptance limits remain unchanged. This is a source/package-boundary integration judgment, with no merge-permission waiver or full-feature acceptance.
+
+### Exact integration and ownership
+
+Verified merge parents: provider/CI `eb3f022ae099fceb56e2c08066689c1090d1bfe5` and reviewed #42 prerequisite `1d4f9e377785bda28c62029cd524c3cd6ba4c567`. PR49's #42 base branch locally now points to `492624c1f36e17f94f7e5010bf9e374edc40ec2c`; its sole subsequent change from 1d4f9e3 is the #42 review document. No additional dependency product change is hidden in that distinction.
+
+- **PASS — exact conflict resolution.** `packages/backend-contracts/src/citeframe_contracts/__init__.py` at the integration HEAD has Git blob `ad1689e568a54202e51fadc62fbe107ee4e7f51d`, identical to reviewed #42. Independently compared raw worktree bytes with `git show 1d4f9e3:packages/backend-contracts/src/citeframe_contracts/__init__.py`; SHA-256 is `8EFB07BF464BCAA1D745B3B1455E6825AA45BE96B4C0B56435F34FC8FA8D5091`.
+- **PASS — shared ABI and provider stability.** All 14 existing provider/test/shared-memory-contract manifest entries match before and after testing. Adapters, three dedicated test files and workflow have no diff from eb3f022. The workflow retains SHA-256 `0147FB741DB6ED737942A258F189B0D561CEC77BD1B688FFA247D82A86FA5412`. Every name in memory.__all__ resolves to the identical object through the shared package root; local provider/root imports succeed with application imports and socket connections denied. No duplicated port or new Worker-to-API dependency was introduced.
+- **PASS — #42 dependency versus #49-owned change.** The exact `git diff 1d4f9e3 HEAD` contains only provider adapters, their three test files, dedicated workflow and provider evidence/lane/review documents. Shared contracts, package declarations, API/Worker locks/deploy requirements, Docker packaging, persistence implementation/migrations and existing CI are unchanged from the reviewed #42 dependency. They are inherited integration inputs, not new PR49 implementation.
+- **PASS — package availability.** Inspected the memory-service package manifest/wheel source target and exact inherited API/Worker declarations, local lock sources and Docker COPY/PYTHONPATH instructions. Local neutral package imports resolve to this worktree. Deployment regression checks below confirm that the neutral package is present at both application boundaries.
+
+### Independent integrated-snapshot execution
+
+Used read-only `D:/Code/citeframe/apps/api/.venv/Scripts/python.exe -B`, local checkout source paths, PYTHONDONTWRITEBYTECODE=1 and disabled pytest plugin autoload. No install, service, DB or model request occurred.
+
+| Scope | Result |
+|---|---|
+| Exact embedded memory-provider.yml runner, unchanged three-file selection and network/application-import denial | **117 passed in 0.35s** |
+| `apps/api/tests/test_deploy_dependencies.py` | **6 passed in 0.19s** |
+| `apps/worker/tests/test_deploy_dependencies.py` | **2 passed in 0.05s** |
+| `apps/api/tests/test_persistence_boundary.py` plus `test_research_persistence_boundary.py` | **13 passed in 2.65s** |
+| Independent shared-root object identity and neutral adapter import probe | **PASS** |
+
+Deploy/boundary suites ran separately with `--noconftest -p no:cacheprovider -o pythonpath= -q`, socket connection denial in the pytest process, and fresh OS-temporary basetemp directories. Their existing application-import assertions remained enabled; application imports were permitted where those composition tests require them. Python subprocess calls received only an additional `-B` to prevent bytecode writes, preserving their isolated-import behavior. Temporary fixtures were removed; no repository product/test file was written. The PostgreSQL persistence suite was not collected or rerun. `git diff --check` passes.
+
+### Hosted evidence and retained gates
+
+Controller reports the preintegration neutral-provider hosted job passed in 9 seconds; integrated CI was still running at handoff. Controller also reports reviewed PR48's six core CI jobs green, including API 984 passed / 6 skipped, 44 dedicated PostgreSQL cases and API/Worker final-image checks. These are attributed controller results, not new reviewer executions or a re-review of #42's database core.
+
+Three external-service MinIO gates remain failed per controller. They remain unresolved delivery gates; this scoped acceptance does not waive them. Integrated hosted results must be attached to the exact integration commit by the controller. Local tests do not establish a hosted frozen install or actual final-image build for this merge.
+
+The v4/A1 Choice 2 boundary remains in force: no audience/private-thread/private-run schema, no private data at shared consuming boundaries. Consumer negative oracles, same-run automatic compaction, live-provider/model quality and chat/Research/UI acceptance remain outside this integration check.
+
+Write-back check: appended only this original review, preserving all previous evidence. Reviewer performed no product/contract/workflow/Git/private-memory/shared-workbench writes and no live/paid calls. Controller retains staging, commit/push/PR and merge decisions.
