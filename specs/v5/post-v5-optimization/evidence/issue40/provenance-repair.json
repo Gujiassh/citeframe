@@ -1,0 +1,39 @@
+{
+  "fixture": "synthetic issue40 only",
+  "priorAttemptHashMatched": false,
+  "attemptHashNowMatchesArtifactAndObject": true,
+  "fullDomainArtifactDetailValidator": "pass",
+  "modifiedRows": "designated synthetic generating attempt only; no report edit or note data changed",
+  "checks": [
+    {
+      "actor": "owner",
+      "path": "/v1/workspaces/8d9936f0-e1ca-41b6-8015-16d48bdb794c/research-runs/49e63037-ebc8-47b7-af12-ef90754a372e/artifacts/16ccd81f-386a-4109-a5a2-0ac6a9652276",
+      "status": 200
+    },
+    {
+      "actor": "owner",
+      "path": "/v1/workspaces/8d9936f0-e1ca-41b6-8015-16d48bdb794c/research-runs/49e63037-ebc8-47b7-af12-ef90754a372e/artifacts/16ccd81f-386a-4109-a5a2-0ac6a9652276/content",
+      "status": 200
+    },
+    {
+      "actor": "owner",
+      "path": "/v1/workspaces/8d9936f0-e1ca-41b6-8015-16d48bdb794c/research-runs/49e63037-ebc8-47b7-af12-ef90754a372e/report-edit",
+      "status": 200
+    },
+    {
+      "actor": "member",
+      "path": "/v1/workspaces/8d9936f0-e1ca-41b6-8015-16d48bdb794c/research-runs/49e63037-ebc8-47b7-af12-ef90754a372e/artifacts/16ccd81f-386a-4109-a5a2-0ac6a9652276",
+      "status": 200
+    },
+    {
+      "actor": "member",
+      "path": "/v1/workspaces/8d9936f0-e1ca-41b6-8015-16d48bdb794c/research-runs/49e63037-ebc8-47b7-af12-ef90754a372e/artifacts/16ccd81f-386a-4109-a5a2-0ac6a9652276/content",
+      "status": 200
+    },
+    {
+      "actor": "member",
+      "path": "/v1/workspaces/8d9936f0-e1ca-41b6-8015-16d48bdb794c/research-runs/49e63037-ebc8-47b7-af12-ef90754a372e/report-edit",
+      "status": 200
+    }
+  ]
+}
