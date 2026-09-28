@@ -1,0 +1,13 @@
+# Controller I3/I4 targeted verification
+
+Exact45-file manifest: lanes/issue43-core-evidence.json SHA256 A9C9385497F7092DC958ABFA218C3AEA13D089C97EBF621E92D46A24334375FB; migration080BA0EF unchanged. Controller independently verified every file hash before and after execution, zero differences.
+
+Own newly initialized PostgreSQL17.11 loopback56943, database citeframe_memory43_test, public vector/pg_trgm; no developer/reviewer database reused. First attempted to restart the earlier controller-only cluster but role names were not recovered (two connection failures before tests); stopped it normally and initialized this new disposable cluster with an explicit synthetic role. No credentials changed and no existing data deleted.
+
+Command: existing API Python -m pytest packages/memory-service/tests/test_compaction_authority.py packages/memory-service/tests/test_compaction_intervals.py packages/memory-service/tests/test_compaction_provenance.py packages/memory-service/tests/test_compaction_repository.py --strict-markers -q -p no:cacheprovider --tb=short --basetemp=.local-runtime/controller43-i3i4/pytest. CI=true, PYTHONDONTWRITEBYTECODE=1, plugin autoload disabled, lane-local packages/*/src imports and explicit controller database URL.
+
+Actual result: 66 passed in131.65s, exit0, no skips. Raw stdout: controller-i3i4-tests.txt. This includes the22 new authority cases with valid archived-summary prerequisites, protected/partial-overlap/proposed-chain caps, invalidated/erased save refusal, both lock orders and five rollback stages, plus interval/provenance/repository regressions. These are shipped-test independent executions, not newly authored controller adversarial cases.
+
+Post-run fixture schema count was0. Own PostgreSQL stopped normally. Retain generated local data ignored; no recursive cleanup. Original appointed reviewer targeted re-review remains pending. No runtime Chat/Research dispatch, semantic model-quality, actual visible UI or full508-suite claim follows. Historical developer context_busy cause remains unknown and is not erased by this successful run.
+
+Staging check: full cached diff whitespace check reports only trailing spaces inside the frozen migration DDL strings and empty EOF lines in test_compaction_fixture.py, test_compaction_long_branch.py and test_compaction_research.py. Controller preserved the independently reviewed source bytes; no product formatting edit was made and no clean full-whitespace result is claimed. Cached check excluding exactly those four known files passed. This narrow style exception does not waive schema/transaction/runtime/CI gates.

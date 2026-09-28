@@ -190,3 +190,6 @@ from citeframe_persistence.models.research_conflict_turn import ResearchConflict
 from .memory import MemoryInstruction, MemorySource, MemoryRecord, MemoryRevision, MemoryUse, MemoryOperation
 
 __all__ += ["MemoryInstruction", "MemorySource", "MemoryRecord", "MemoryRevision", "MemoryUse", "MemoryOperation"]
+
+from .memory_context import ChatMemoryExecution, MemoryCall, TaskMemorySnapshot, TaskMemoryCoverage
+__all__ += ["ChatMemoryExecution", "MemoryCall", "TaskMemorySnapshot", "TaskMemoryCoverage"]
