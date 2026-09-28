@@ -900,3 +900,94 @@ D:/Code/citeframe/.local-runtime/postgresql/pgsql/bin/pg_restore.EXE — Postgre
 The unmodified asset test executed its actual dump/restore oracle with zero skips, including the changed final source/restored-head assertion. The sole warning was the existing Starlette/httpx deprecation. This is this reviewer's own 18-case run. The report's initial 17+1skip, worker 18, developer-root adjacent 19 and 7 remain their original executor-scoped evidence and are not added to this result.
 
 Both test hashes and the developer-report hash remained exactly as pinned after execution. The unchanged fixtures removed all their `ai_pdf_%` disposable databases (independently queried: empty list); the reviewer server was stopped. Only this review artifact was edited. No product/test/schema/Git write, paid provider or UI operation occurred. This approval is limited to the three-line current-head compatibility correction and identity preservation; it adds no actual Chat/Research/UI or whole-Issue acceptance.
+
+
+## Independent instruction/admission fixture integration review — APPROVE
+
+**Disposition: APPROVE this exact test-only fixture correction. No actionable defect found in the bounded delta.** Reviewed against actual HEAD `0315a735bc6206b87a2e9e49d3ecd72a56f9205b`. This acceptance covers the genuine current-u5 runtime fixture, separate historical-t4 oracle and the corresponding executor-scoped evidence report. It does not accept the separately moving persistence-boundary test correction or assert whole-CI success.
+
+| Reviewed artifact | SHA-256 |
+| --- | --- |
+| `packages/memory-service/tests/test_instruction_memory.py` | `E6A33A6461785F3AFB371B647C0DCF28776DEA46310A76C7FB06C975ED5D2AED` |
+| Developer report `specs/v5/memory-management/evidence/issue43/fixture-integration.md` | `35BF79917315FCDA0766E281BF70651B0814E0BF208D5A4A9F42D1D65B878C49` |
+
+### Semantic and preservation assessment
+
+**Goal / architecture / schema meaning: pass.** The current memory commands use the actual current ORM, whose use records include successor consumer columns. `pg` now migrates the complete genuine chain to literal `u5c6d7e8f9a0`. `pg_t4` separately migrates the complete genuine chain to literal `t4b5c6d7e8f9`. The helper runs Alembic's revision traversal and migration context, including version tracking and transactional DDL. No `create_all`, hand-created native table replacement, new skip or test-selected product mutation was added.
+
+**Historical and business preservation: pass.** Independently compared the diff and function ASTs against HEAD: only existing `pg` and `test_populated_down_refused_empty_down_up_preserves_native` changed; the frozen-DDL/current-ORM equality function was replaced by two distinct historical/current catalog functions. The other **24 existing function ASTs are unchanged**, retaining command validation, permissions, replay, CAS and SQL-boundary assertions. The new helpers/fixture are additive.
+
+The historical downgrade test executes real **t4 -> s3 -> t4**, checks the actual Alembic revisions and full retained workspace row payload, inserts a valid historical instruction with raw SQL, and proves a populated downgrade is refused while t4 and that instruction remain. The actual t4 downgrade guards all six memory tables. Raw historical insertion keeps this migration oracle independent of the successor ORM; current command behavior remains exercised on u5 by the unchanged business tests.
+
+The frozen historical DDL expected hash was independently computed from the committed t4 migration's literal `DDL` using AST/literal evaluation, rather than inferred from current ORM: **`1a2114ae27b2a0097a165dbfa9ad12ade251464028d3500f180ba9d797b1ad2f`**. It matches the hardcoded oracle and loaded migration. The historical test additionally checks the genuine t4 six-table set, explicit column/nullability maps, check names and index names. Current ORM parity independently compares the genuine u5 catalog for those six tables, with both type and server-default comparison enabled, and requires the explicit successor consumer columns and u5 revision. These checks preserve the historical artifact while testing the current runtime schema separately.
+
+**Isolation / failure behavior: pass.** The fixture requires exact database name `citeframe_memory42_test`, verifies both extensions in public, uses a unique schema and disposes/drops it in `finally`. Own inline probes confirmed missing PostgreSQL configuration under CI raises `Failed: CI requires CITEFRAME_MEMORY42_POSTGRES_URL; PostgreSQL oracles must not skip`; a wrong database name rejects `Refusing non-test database` before connection. Existing optional local missing-PG behavior is unchanged. No new success-by-skip was found.
+
+### This reviewer's actual PostgreSQL evidence
+
+Executed on reviewer-owned **PostgreSQL 17.11, 127.0.0.1:56543**; the developer's 56493 cluster was not used. Created a fresh `citeframe_memory42_test` database: independently observed it did not previously exist, had **0 user tables** and only `plpgsql` before fixture execution. Thus the actual fixture exercised extension installation as well as full-chain migrations in a bare database.
+
+Python: `D:/Code/citeframe/apps/api/.venv/Scripts/python.exe`; `PYTHONDONTWRITEBYTECODE=1`; lane `packages/*/src` and `apps/api/src` on PYTHONPATH. `CITEFRAME_MEMORY42_POSTGRES_URL` and `CITEFRAME_MEMORY43_POSTGRES_URL` pointed to their separately named reviewer test databases on 56543.
+
+```text
+python -m pytest packages/memory-service/tests/test_instruction_memory.py packages/memory-service/tests/test_admission_postgres.py packages/memory-service/tests/test_compaction_p1a_compatibility.py -q --tb=short -p no:cacheprovider --basetemp=C:/Users/baiao/AppData/Local/Temp/issue43-review-private-fixture
+106 passed in 147.35s (0:02:27), exit 0; zero skips
+```
+
+This run covers the complete changed module, actual admission PostgreSQL module and frozen P1a compatibility module. The separate pure admission module and the full compaction suite were not rerun for this fixture-only decision. Developer red2, 1709-pass and developer-root98 remain developer evidence; none is relabeled as this reviewer or controller execution. The hosted59-failure result remains reported context; this review did not retrieve or reproduce the entire hosted run.
+
+After tests, independently queried both reviewer databases: `vector` and `pg_trgm` are in `public`, **0 remaining memory42_/memory43_ fixture schemas**, and **0 user base tables**. Stopped the reviewer server; `pg_ctl` completed with `server stopped`, and the launcher exited. No reviewer background verification remains.
+
+### Final identity and scope
+
+Both reviewed hashes remained exact before/after execution. Independently reconciled all **45 approved core files** against the current manifest and this review's accepted hash inventory: **0 mismatches**. The manifest remains `A9C9385497F7092DC958ABFA218C3AEA13D089C97EBF621E92D46A24334375FB`. Admission modules are unchanged against HEAD; `test_admission_postgres.py` remains `0D430E60BA5138E351A61443425D78CB966EEEF6F82CCB038CFE6A9508F976C4`. Scoped diff-check passed.
+
+Observed concurrent edits to `apps/api/tests/test_persistence_boundary.py` belong to the separate developer-owned correction and were neither modified nor accepted here. The report's retained historical boundary-file hash describes its own report-time identity; it is not a claim that the currently moving boundary test has that hash. No need to wait for that independent delta to accept this fixture correction.
+
+Only this original review artifact was edited by the reviewer. Durable write-back is this scoped result; no private/global memory or workbench write was needed for information already recorded here. No product/test/schema/Git writes, model calls or UI operations. The previously approved neutral-core identity is preserved; actual Chat/Research wiring, UI, hosted/whole CI and whole-Issue completion remain outside this approval.
+
+
+## Independent persistence-boundary integration review — APPROVE
+
+**Disposition: APPROVE the exact boundary-test correction and its scoped evidence report. No actionable defect found.** Actual HEAD remained `0315a735bc6206b87a2e9e49d3ecd72a56f9205b`. This decision concerns compiled PostgreSQL DDL, model/export/import boundaries and preservation of the existing native oracle; it introduces no product/schema acceptance beyond the already pinned neutral core.
+
+| Reviewed artifact | SHA-256 |
+| --- | --- |
+| `apps/api/tests/test_persistence_boundary.py` | `5FC30A4EA01F30429BE583AEB6C3D1835AE8B3F7E2B937D47AD66BD8EA9E5935` |
+| Developer report `specs/v5/memory-management/evidence/issue43/persistence-boundary-integration.md` | `14910B80BDEC0F53D3BDA3A538F69CE6A9F6D5828C133B6E909A23D65D34B75F` |
+
+### Exact semantic assessment
+
+- **Table/export/import partition: pass.** Independently compiled current metadata: **95 tables = 85 native + 10 neutral**, with **97 native indexes**. The ten neutral tables are explicitly named as the original six memory models plus the four approved compaction models. Export set/order, model object identity, exact module/table names, one metadata identity and absence from legacy exports remain checked. The isolated Python `-I` subprocess still excludes API/Worker paths and confirms those modules are not imported.
+- **Historical oracle preservation: pass.** `citeframe-a1b-before-metadata.json` remains byte-identical to HEAD and SHA-256 `100C42F7BDCDB3E816FF780E25260EBEA66E889917293E2154CD9FF12585B55E`. Precision on the count: that original file itself contains **81 tables / 97 indexes**; the existing approved autonomy/adaptive/conflict/model-settings delta composition yields the **85-native-table / 97-index oracle** used here. Neither the frozen file nor those existing delta checks was rewritten. The production assertion still compares the complete native table DDL and index payload after only the four explicitly approved additions are projected out.
+- **Four-column projection: pass.** Each hardcoded full declaration must occur exactly once before its removal from a copied table dictionary. The two chat revision declarations require BIGINT, DEFAULT 1, NOT NULL and their exact named positive check; the attempt version requires BIGINT, DEFAULT 0, NOT NULL and the exact named nonnegative check; the checkpoint ID requires nullable VARCHAR(36). Removal uses an exact full-line replacement, not a column-name/regex wildcard. A later failed declaration aborts without modifying caller input. Any extra field or remaining DDL/index difference survives projection and fails final equality. Own deep-copy comparison confirmed the supplied actual compiled metadata is unchanged and each returned table dictionary is separate; immutable DDL strings are replaced only in that copy.
+- **Foreign keys / use_alter: pass.** Because use_alter FKs are omitted by CREATE TABLE compilation, the added oracle explicitly pins the complete ResearchStepAttempt use_alter set: historical `fk_research_attempt_checkpoint_artifact` and new `fk_research_attempt_memory_checkpoint`. Actual ORM source and compiled constraints agree with the exact parent/target pairs, names, no update/delete override, no deferrability override and exact ALTER TABLE SQL. Missing use_alter, changed options or an extra named use_alter FK cannot silently vanish through the native projection. Native inline FKs remain in the exact DDL comparison.
+- **Preserved tests and six new counterexamples: pass.** AST comparison against HEAD found no removed function. Only the existing export partition, composed metadata snapshot and isolated neutral-import tests changed; original dependency and other boundary checks remain. All six added cases genuinely mutate their constructed candidate. Missing, duplicate, type, default and nullable mutations trigger the exact-occurrence assertion. The extra-field case proves the extra declaration survives projection and differs from baseline, matching the final strict equality's rejection mechanism. No skip, create_all or baseline regeneration was introduced.
+
+### Own execution and adversarial probes
+
+Python `D:/Code/citeframe/apps/api/.venv/Scripts/python.exe`; `PYTHONDONTWRITEBYTECODE=1`; PYTHONPATH contains lane-local `packages/*/src`, `apps/api/src`, `apps/worker/src`.
+
+```text
+python -m pytest apps/api/tests/test_persistence_boundary.py apps/api/tests/test_research_persistence_boundary.py -q --tb=short -p no:cacheprovider --basetemp=$env:TEMP/issue43-review-boundary-final
+20 passed, 1 warning in 1.55s; zero skips
+```
+
+The warning is the existing Starlette/httpx deprecation. Both complete modules, including all six new negatives and isolated interpreter, ran in this reviewer's command. No PostgreSQL service was needed or started for these compiled-DDL/import tests; this is not a new live-migration execution. The earlier real-PG fixture/core evidence retains its original scope.
+
+Additional reviewer inline probes loaded the unchanged boundary module with importlib and used **actual current compiled metadata**, rather than only the new tests' synthetic baseline. Results:
+
+```text
+ACTUAL_COUNTS 95 85 10 97
+PROJECTION_INPUT_UNCHANGED_AND_TABLE_COPIES True
+ACTUAL_DDL_COLUMN_MUTATION_REJECTIONS 27
+IN_MEMORY_FK_MUTATIONS_REJECTED_AND_RESTORED 12
+```
+
+For each of the four real column declarations, tested missing, duplicate, wrong type, changed/added default, reversed nullability and an extra field; additionally changed each of the three named check expressions. All 27 mutations rejected projection or retained a detectable exact-baseline mismatch. For each of the two actual use_alter constraints, temporarily changed one in-memory attribute at a time (`use_alter=False`, `ondelete=CASCADE`, `onupdate=CASCADE`, `deferrable=True`, `initially=DEFERRED`, unexpected name), invoked the actual new FK oracle and observed AssertionError for all 12. Each attribute was restored in finally; the unmodified positive oracle passed before and after. No filesystem model/test modification was involved.
+
+### Identity, provenance and closeout
+
+Both reviewed hashes remained exact after execution. All **45 approved core files** match both the manifest and original review's accepted hash inventory: **0 differences**. The approved instruction fixture remains `E6A33A6461785F3AFB371B647C0DCF28776DEA46310A76C7FB06C975ED5D2AED`, and its report remains `35BF79917315FCDA0766E281BF70651B0814E0BF208D5A4A9F42D1D65B878C49`. Scoped diff-check passed.
+
+The report's developer20 and developer-root35 results retain their developer executor labels; this review contributes its own separate20-case run and inline probes. The previous two boundary-test failures are resolved for this pinned correction. No full CI, hosted run, actual Chat/Research/UI or whole-Issue completion is inferred. Only this original review artifact was appended; no product/test/schema/Git writes or model calls. Durable write-back is this review entry, without duplicating it into private/global memory. Review complete; no ongoing verification process.
