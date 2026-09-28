@@ -70,7 +70,7 @@ jobs:
           CITEFRAME_MEMORY42_POSTGRES_URL: postgresql+psycopg://ai_pdf:ai_pdf_dev@127.0.0.1:5432/citeframe_memory42_test
         run: |
           createdb -h 127.0.0.1 -U ai_pdf citeframe_memory42_test
-          uv run --project apps/api pytest packages/memory-service/tests/test_instruction_memory.py
+          uv run --project apps/api pytest packages/memory-service/tests/test_instruction_memory.py packages/memory-service/tests/test_admission.py packages/memory-service/tests/test_admission_postgres.py
       - run: uv run --project apps/api pytest apps/api/tests
       - run: uv run --project apps/api alembic -c apps/api/alembic.ini upgrade head
       - run: uv run --project apps/api alembic -c apps/api/alembic.ini check

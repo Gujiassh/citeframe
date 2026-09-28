@@ -331,3 +331,64 @@ No PostgreSQL server was started for this formatting check. The reviewer-owned d
 | `specs/v5/memory-management/delivery.md` | `21adb2ec4f45e3a309c55be7e55901ce5f47b63efb8eec2b9b28e98fc0a71aaa` |
 
 Final handoff: **bounded P1a ACCEPT, ready for the controller's draft-PR handoff subject to existing hosted CI/final-image gates**. No broad #42/#41 completion, mounted UI/provider/compaction or model-quality claim. Durable write-back remains solely this review artifact.
+
+
+## PR48 four-test-file CI correction — independent final review, 2026-09-28
+
+**ACCEPT for this bounded test-only correction. No new finding.** Prior P1a core ACCEPT and IR1–IR6 closure remain intact. Governing spec v4/A1 choice2, owner-private storage/management and shared-private denial are unchanged. This verifies the observed legacy CI assertion corrections and retained oracles; it does not reopen architecture or accept full #42/#41 delivery.
+
+### Exact candidate and scope
+
+The controller advanced the candidate to commit **1d4f9e377785bda28c62029cd524c3cd6ba4c567** (test(memory): preserve deployment and migration regression contracts) before this resumed review. Independent comparison against 2e9287638fee9567c6474b8356c3b3ba93fec16a found exactly these four test files plus the existing review, delivery ledger and lane report. No production code, migration, contract, adapter, lock, export, manifest, Dockerfile or CI gate changed. Test hashes matched the stable developer handoff before testing and immediately before this write-back.
+
+| Reviewed file | SHA-256 |
+|---|---|
+| apps/api/tests/test_deploy_dependencies.py | 95d147b8434f94adb59b099891b2bcbfc3b0e466ac1286548659dc6e59952729 |
+| apps/worker/tests/test_deploy_dependencies.py | 7943a277794229141121675d76d725fd81bbd2761522169344b70965e31784e9 |
+| apps/api/tests/test_asset_migration.py | 28d928aed61eb8c7230fe4f10cbc59aae353b72fa6a7f729e6dca0954a87409e |
+| apps/api/tests/test_research_migration.py | 0c2981d256b05c34ffafecce0319d6218c51f903c669011d05bb9d7d631810b0 |
+
+### Retained oracle assessment
+
+| Area | Result and direct evidence |
+|---|---|
+| Finite local-package/export/lock maps | **Pass.** API explicitly allows four local distributions; Worker additionally allows ai-pdf-api. Omitted runtime dependencies must equal the complete finite local set, and local distributions remain forbidden in pinned deploy requirements. Manifest source maps are exact. Parsed editable lock package/source maps must exactly equal the declared maps, excluding only the root project. |
+| Standard-library-only contracts | **Pass.** The sole relative-import exception is the exact tuple ("citeframe_contracts/__init__.py", 1, "memory"). Every contract Python source, including memory.py, still undergoes the standard-library dependency scan. Existing isolated source-path import smoke passed. |
+| Docker package paths | **Pass for the static oracle.** Both stages require the exact approved package COPY set, including both memory-service paths, plus full ordered PYTHONPATH assertions. No final-image execution evidence is inferred. |
+| Fixed head and lineage | **Pass.** Exactly one literal head t4b5c6d7e8f9 and explicit t4b5c6d7e8f9 -> s3a4b5c6d7e8 -> r2f3a4b5c6d7 lineage. No dynamic latest-head allowance or new skip. |
+| Original populated payload/evidence oracle | **Pass.** Independent whole-file AST comparison proves the asset file differs only by one expected head literal. Legacy seed data, migrated evidence assertions, full payload snapshot queries/comparisons, actual dump/restore, ciphertext checks and guarded rollback checks are unchanged. All Research AST outside the head-check function is identical to the prior candidate. The populated asset test passed independently on real PostgreSQL. |
+
+**Reverse controls:** 18 in-memory mutations were rejected by the actual candidate assertions. For each API/Worker oracle: omit a direct pinned export, introduce a local distribution into the export, corrupt the memory-service editable path, or add an unapproved editable package. Contract probes: root-relative import of another module, relative .memory import outside the package root, and a non-stdlib dependency inside memory.py. Docker probes: wrong package destination, extra package COPY, wrong PYTHONPATH. Head probes: wrong head, extra head, wrong t4 parent, wrong s3 parent. Each raised AssertionError; no product/test file was edited for these probes.
+
+### Independent bounded runtime evidence
+
+Using D:/Code/citeframe/apps/api/.venv/Scripts/python.exe -B - with bytecode/cache writes disabled, pytest.main ran these three paths:
+
+- apps/api/tests/test_asset_migration.py::test_postgres_asset_migration_preserves_legacy_evidence_contract
+- apps/api/tests/test_research_migration.py
+- apps/api/tests/test_deploy_dependencies.py
+
+Arguments: -p no:cacheprovider -q -rs --tb=short and --basetemp=C:/Users/baiao/AppData/Local/Temp/citeframe-issue42-review-3174ea83c95f4539945ac26ed8ef7eb0/pr48-review-api.
+
+Result: **21 passed, zero skipped, 4.61 seconds**, with one existing Starlette deprecation warning: one real-PG populated asset migration/dump/restore test, 14 Research migration tests, six API deploy tests. Research includes its existing SQLite/mock checks; these are not relabeled as PG tests.
+
+Reproduction environment: PYTHONDONTWRITEBYTECODE=1; PYTHONPATH contains this lane's API/Worker/contracts/persistence/research-persistence/memory-service source paths. Inside Python before importing pytest/settings, set both AI_PDF_DATABASE_URL and CITEFRAME_MEMORY42_POSTGRES_URL to postgresql+psycopg://reviewer@127.0.0.1:55442/citeframe_memory42_test; prepend D:/Code/citeframe/.local-runtime/postgresql/pgsql/bin to os.environ["PATH"]; assert shutil.which("pg_dump") and shutil.which("pg_restore"); set TEMP/TMP to the reviewer temporary root above.
+
+Only the previously initialized reviewer disposable cluster at that root's data directory was restarted, on loopback **55442**, after verifying its exact path, absent PID file and unoccupied port. The unchanged fixture created UUID-named source/restore databases there, seeded legacy evidence, migrated, executed actual PG17 dump/restore, compared payloads, checked rollback refusal and cleaned up its databases. The finally block stopped this cluster with pg_ctl -m fast -w stop. Subsequent readiness returned **no response**, and postmaster.pid was absent. No existing runtime or developer cluster was used.
+
+Separate command, with the same source-path/bytecode settings:
+
+    D:/Code/citeframe/apps/worker/.venv/Scripts/python.exe -B -m pytest apps/worker/tests/test_deploy_dependencies.py -p no:cacheprovider --basetemp=C:/Users/baiao/AppData/Local/Temp/citeframe-issue42-review-3174ea83c95f4539945ac26ed8ef7eb0/pr48-review-worker -q -rs --tb=short
+
+Result: **2 passed, zero skipped, 0.05 seconds**. Total independent tests for this correction: **23 passed, zero skipped**, plus AST comparisons and 18 negative controls.
+
+### Evidence boundaries and handoff
+
+- Developer-supplied evidence remains separately attributed: 78 passed, zero skipped (one PG asset + 14 Research + six API deploy + 13 boundary + 44 P1a), and two Worker deploy passes in the stable lane report. Controller separately reported six API/two Worker deploy passes. Neither is counted as reviewer execution.
+- The 13 native boundary and 44 P1a tests were not repeated in this narrow recheck. Prior independent acceptance remains; their product/test bytes and frozen native snapshot did not change in this correction.
+- Frozen uv resolution/export verification remains prior controller evidence; no new resolution/export pass is claimed.
+- PR48's hosted failure on the old candidate remains the reported hosted state. Controller owns push/rerun and verification of the corrected commit. **Hosted CI and final Docker-image smoke remain outstanding gates.** No local Docker execution occurred.
+- Mounted application/UI, provider/compaction flows and model quality remain unrun/undelivered in this pure-core slice. No broad #42/#41 or #44 adapter acceptance follows.
+- Reviewer made no product/test or Git writes and no paid calls. Only this original review was appended. Durable write-back is confined here; no private/global memory or canonical #40 workbench update.
+
+**Final scoped verdict: ACCEPT the four-file CI assertion correction at the exact commit/hashes above; ready for controller handoff and the required hosted rerun.**
