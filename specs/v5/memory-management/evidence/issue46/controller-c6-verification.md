@@ -1,0 +1,9 @@
+# External controller verification and blocked acceptance
+
+Controller ran the41-file C6 candidate repository memory unit sources directly via existing tsx CLI:40 passed, zero skips/failures,269.3851ms. This is external-controller pure verification. Appointed reviewer independently passed40 feature units,4 earlier assertions and8 hook-orchestration cases with dependency substitutes. Those cases do not establish actual React DOM/navigation behavior.
+
+C6 manifest60E1DFC70C24E47538C59424E2210F80B7E3B7A156C8957CDF06ED28839D06AC matches all41 product/test paths before staging. API integration base is PR50@6ccd8d8, whose own upstream47/48 are still unmerged. Create/correct, owner-private management and explicit successor recovery are included in this draft; same-run Chat/Research compaction UI remains future work.
+
+Actual signed-session/BFF/API/PostgreSQL and visible UI acceptance remain unperformed. Browser localhost3246 and exec proxy launch were explicitly refused; lane process shutdown then returned Access denied. No alternative execution route was attempted. Full local production build last failed fetching unchanged Geist fonts. A draft PR and hosted fixture CI do not waive these gates or establish usability. Runtime credentials/configuration, generated test output and reviewer scratch are excluded from Git.
+
+Controller normalized only empty EOF lines in the inactive reviewer report before staging; no semantic text changed. Raw reviewer SHA before: 38EF1553D5E3D98D8AAE71F4FA4A3494576EC77FE43CAF697C03BF2D6E8D9B51; after: 00BEF9C062A6311ADF2B559E88B4D7C0CCE6AC054FB6F08BB62A786607A0CC40. Original failed-run stdout (c1/browser.txt, c3/original-r5-before.txt) and preservation.txt retain original trailing whitespace/EOF bytes; they are excluded only from whitespace checks, not from review or evidence.

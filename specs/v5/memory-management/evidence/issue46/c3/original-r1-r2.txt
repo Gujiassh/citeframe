@@ -1,0 +1,10 @@
+
+Running 3 tests using 1 worker
+
+(node:44236) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 1 apps\web\.memory-tests\reviewer-adversarial.spec.ts:23:5 › reviewer: unreadable current projection clears copied private draft (1.1s)
+  ok 2 apps\web\.memory-tests\reviewer-adversarial.spec.ts:38:5 › reviewer: erased history removes cached list subject (998ms)
+  ok 3 apps\web\.memory-tests\reviewer-adversarial.spec.ts:47:5 › reviewer: same-workspace Home/back cannot silently abandon unresolved identity (1.5s)
+
+  3 passed (4.3s)

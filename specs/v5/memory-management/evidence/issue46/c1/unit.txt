@@ -1,0 +1,33 @@
+✔ unknown outcome retries retain exact body/request ID/key (6.3078ms)
+✔ reviewer: enum arrays must be rejected as malformed DTOs (2.2786ms)
+✔ reviewer: current response must match requested memory identity (30.956ms)
+✔ reviewer: request poll must match original request identity (0.7398ms)
+✔ reviewer: deletion receipt must match target identity (1.0782ms)
+✔ server identity only; allowlisted query; no-store on both sides (35.467ms)
+✔ DELETE preserves CAS body and request key (1.6906ms)
+✔ foreign fields, URL escapes and query overrides never forward (1.6137ms)
+✔ fixed error matrix suppresses private diagnostics and non-CAS version metadata (5.5238ms)
+✔ unknown outcome keeps original request ID and does not resend (0.6799ms)
+✔ closed admission gate prevents create forwarding (0.4016ms)
+✔ syntax precedes session and initial auth failure has no request ID (0.6847ms)
+✔ cross-origin mutation does not dispatch (0.3956ms)
+✔ malformed successful mutation stays unknown; content-bearing poll fails closed (0.6919ms)
+✔ R3 wrong deletion/poll targets fail safely without accepting unrelated operations (0.9598ms)
+✔ available DTO preserves confirmation and rejects foreign authority (3.0981ms)
+✔ unavailable body cannot carry semantic bytes or source hashes (0.228ms)
+✔ operation resultVersion and currentVersion remain separate content-free metadata (0.1482ms)
+✔ successor receipts require verified predecessor and current memory projection (0.9847ms)
+✔ R4 enum primitives and containers are never coerced (0.4455ms)
+✔ R3 endpoint binding preserves replay aliases and correction successors (0.3545ms)
+✔ mandatory conditions, Unicode bounds, no transformation (2.659ms)
+✔ authority, scopes, sources and unsupported mutations fail closed (0.3989ms)
+✔ exact source version/hash/span only (0.3197ms)
+✔ query/key allowlists reject ambiguity (1.427ms)
+ℹ tests 25
+ℹ suites 0
+ℹ pass 25
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 155.4186

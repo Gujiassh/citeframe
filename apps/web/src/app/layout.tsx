@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 
+import { MemorySessionProvider } from "@/components/memory/memory-session-provider";
 import { AuthProvider } from "@/lib/auth/auth-context";
 import { WorkspaceProvider } from "@/lib/workspace-context";
 import { ThemeProvider } from "@/lib/theme-context";
@@ -51,7 +52,7 @@ export default function RootLayout({
         <I18nProvider>
           <ThemeProvider>
             <AuthProvider>
-              <WorkspaceProvider>{children}</WorkspaceProvider>
+              <WorkspaceProvider><MemorySessionProvider>{children}</MemorySessionProvider></WorkspaceProvider>
             </AuthProvider>
           </ThemeProvider>
         </I18nProvider>

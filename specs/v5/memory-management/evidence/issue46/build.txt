@@ -1,0 +1,11 @@
+Command (apps/web): node scripts/copy-pdfjs.mjs; node node_modules/next/dist/bin/next build
+Observed exit: 1
+Next.js: 16.2.10 (Turbopack)
+Stage: Creating an optimized production build
+Existing layout imports failed to fetch:
+https://fonts.googleapis.com/css2?family=Geist:wght@100..900&display=swap
+https://fonts.googleapis.com/css2?family=Geist+Mono:wght@100..900&display=swap
+Importing application file: apps/web/src/app/layout.tsx (unchanged)
+Errors: next/font failed to fetch Geist and Geist Mono from Google Fonts.
+Result: production build blocked by resource connectivity. No build pass claimed.
+This is a bounded transcription of the tool result; it is not a full raw build log.

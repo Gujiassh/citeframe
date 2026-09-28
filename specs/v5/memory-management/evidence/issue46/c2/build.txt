@@ -1,0 +1,10 @@
+
+> Build error occurred
+Error: ENOTEMPTY: directory not empty, rmdir 'D:\Code\citeframe-lanes\issue46-management-ui\apps\web\.next\memory-c2-browser-results'
+    at ignore-listed frames {
+  errno: -4051,
+  code: 'ENOTEMPTY',
+  syscall: 'rmdir',
+  path: 'D:\\Code\\citeframe-lanes\\issue46-management-ui\\apps\\web\\.next\\memory-c2-browser-results'
+}
+Build exit 1

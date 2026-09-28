@@ -1,0 +1,26 @@
+✔ unknown outcome retries retain exact body/request ID/key (5.311ms)
+✔ server identity only; allowlisted query; no-store on both sides (28.923ms)
+✔ DELETE preserves CAS body and request key (1.2752ms)
+✔ foreign fields, URL escapes and query overrides never forward (1.6797ms)
+✔ fixed error matrix suppresses private diagnostics and non-CAS version metadata (5.3302ms)
+✔ unknown outcome keeps original request ID and does not resend (0.71ms)
+✔ closed admission gate prevents create forwarding (0.401ms)
+✔ syntax precedes session and initial auth failure has no request ID (0.6025ms)
+✔ cross-origin mutation does not dispatch (0.5103ms)
+✔ malformed successful mutation stays unknown; content-bearing poll fails closed (0.9048ms)
+✔ available DTO preserves confirmation and rejects foreign authority (1.5859ms)
+✔ unavailable body cannot carry semantic bytes or source hashes (0.2963ms)
+✔ operation resultVersion and currentVersion remain separate content-free metadata (0.1985ms)
+✔ successor receipts require verified predecessor and current memory projection (0.8841ms)
+✔ mandatory conditions, Unicode bounds, no transformation (2.548ms)
+✔ authority, scopes, sources and unsupported mutations fail closed (0.3583ms)
+✔ exact source version/hash/span only (0.2528ms)
+✔ query/key allowlists reject ambiguity (1.3544ms)
+ℹ tests 18
+ℹ suites 0
+ℹ pass 18
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 129.5184

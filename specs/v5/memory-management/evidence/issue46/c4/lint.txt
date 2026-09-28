@@ -1,0 +1,1 @@
+Whole-source ESLint exit 0
