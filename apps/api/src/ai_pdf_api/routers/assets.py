@@ -41,7 +41,15 @@ from ai_pdf_api.models import (
     PdfPage,
     User,
 )
-from ai_pdf_api.routers.deps import get_accessible_workspace, require_existing_user, require_user_id
+from ai_pdf_api.routers.deps import (
+    WorkspaceAccess,
+    WorkspaceOwnerDependency,
+    WorkspaceRequest,
+    require_existing_user,
+    require_user_id,
+    require_workspace_member,
+    require_workspace_member_existing_user,
+)
 from ai_pdf_api.schemas.asset import (
     CreateUploadSessionRequest,
     CreateUploadSessionResponse,
@@ -213,10 +221,9 @@ def build_delete_cleanup_job(
 @router.get("", response_model=AssetListResponse)
 def list_assets(
     workspace_id: str,
-    user_id: str = Depends(require_user_id),
+    access: WorkspaceAccess = Depends(require_workspace_member),
     db: Session = Depends(get_db),
 ) -> AssetListResponse:
-    get_accessible_workspace(db, user_id, workspace_id)
     items = db.scalars(
         select(Asset)
         .where(Asset.workspace_id == workspace_id, Asset.deleted_at.is_(None))
@@ -225,15 +232,24 @@ def list_assets(
     return AssetListResponse(items=[to_asset_summary(asset) for asset in items], nextCursor=None)
 
 
+def require_get_asset_detail_access(
+    workspace_id: str,
+    page_number: int = Query(1, alias='pageNumber', ge=1),
+    user_id: str = Depends(require_user_id),
+    db: Session = Depends(get_db),
+) -> WorkspaceRequest[int]:
+    access = require_workspace_member(workspace_id, user_id, db)
+    return WorkspaceRequest(access, page_number)
+
+
 @router.get("/{asset_id}", response_model=AssetDetailResponse)
 def get_asset_detail(
     workspace_id: str,
     asset_id: str,
-    page_number: int = Query(1, alias="pageNumber", ge=1),
-    user_id: str = Depends(require_user_id),
+    workspace_request: WorkspaceRequest[int] = Depends(require_get_asset_detail_access),
     db: Session = Depends(get_db),
 ) -> AssetDetailResponse:
-    get_accessible_workspace(db, user_id, workspace_id)
+    page_number = workspace_request.payload
     asset = get_workspace_asset(db, workspace_id, asset_id)
     if asset.asset_kind == "image":
         geometry = db.scalar(
@@ -427,10 +443,9 @@ def get_asset_detail(
 def get_asset_file(
     workspace_id: str,
     asset_id: str,
-    user_id: str = Depends(require_user_id),
+    access: WorkspaceAccess = Depends(require_workspace_member),
     db: Session = Depends(get_db),
 ) -> StreamingResponse:
-    get_accessible_workspace(db, user_id, workspace_id)
     asset = get_workspace_asset(db, workspace_id, asset_id)
     if not object_exists(asset.object_key):
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Asset file not found.")
@@ -458,19 +473,13 @@ def get_document_representation_content(
     workspace_id: str,
     asset_id: str,
     representation_id: str,
-    user_id: str = Depends(require_user_id),
+    access: WorkspaceAccess = Depends(require_workspace_member),
     db: Session = Depends(get_db),
-) -> (
-    DocumentNormalizedContentResponse
-    | HtmlNormalizedContentResponse
-    | DocxNormalizedContentResponse
-    | OfficeNormalizedTextResponse
-):
+) -> DocumentNormalizedContentResponse | HtmlNormalizedContentResponse | DocxNormalizedContentResponse | OfficeNormalizedTextResponse:
     """Generation-scoped normalized content for exact block/text lookup.
 
     Source `/file` remains the immutable upload object and is unchanged.
     """
-    get_accessible_workspace(db, user_id, workspace_id)
     asset = get_workspace_asset(db, workspace_id, asset_id)
     if asset.asset_kind == "html":
         return _html_representation_content(
@@ -839,6 +848,16 @@ def _pptx_source_media_bytes(
 
 
 
+def require_get_pptx_media_part_access(
+    workspace_id: str,
+    part: str = Query(..., min_length=1, max_length=512),
+    user_id: str = Depends(require_user_id),
+    db: Session = Depends(get_db),
+) -> WorkspaceRequest[str]:
+    access = require_workspace_member(workspace_id, user_id, db)
+    return WorkspaceRequest(access, part)
+
+
 @router.get(
     "/{asset_id}/pptx-media",
     status_code=status.HTTP_200_OK,
@@ -846,12 +865,11 @@ def _pptx_source_media_bytes(
 def get_pptx_media_part(
     workspace_id: str,
     asset_id: str,
-    part: str = Query(..., min_length=1, max_length=512),
+    workspace_request: WorkspaceRequest[str] = Depends(require_get_pptx_media_part_access),
     db: Session = Depends(get_db),
-    user_id: str = Depends(require_user_id),
 ) -> Response:
     """Stream an embedded picture/media part from a PPTX source package."""
-    get_accessible_workspace(db, user_id, workspace_id)
+    part = workspace_request.payload
     asset = get_workspace_asset(db, workspace_id, asset_id)
     if asset.asset_kind != "pptx":
         raise HTTPException(
@@ -992,16 +1010,25 @@ def stream_image_oriented_representation(
     )
 
 
+def require_get_image_oriented_file_access(
+    workspace_id: str,
+    processing_generation: int = Query(..., alias='processingGeneration', ge=1),
+    evidence_representation_id: str = Query(..., alias='evidenceRepresentationId', min_length=1),
+    user_id: str = Depends(require_user_id),
+    db: Session = Depends(get_db),
+) -> WorkspaceRequest[tuple[int, str]]:
+    access = require_workspace_member(workspace_id, user_id, db)
+    return WorkspaceRequest(access, (processing_generation, evidence_representation_id))
+
+
 @router.get("/{asset_id}/representations/image-oriented/file")
 def get_image_oriented_file(
     workspace_id: str,
     asset_id: str,
-    processing_generation: int = Query(..., alias="processingGeneration", ge=1),
-    evidence_representation_id: str = Query(..., alias="evidenceRepresentationId", min_length=1),
-    user_id: str = Depends(require_user_id),
+    workspace_request: WorkspaceRequest[tuple[int, str]] = Depends(require_get_image_oriented_file_access),
     db: Session = Depends(get_db),
 ) -> StreamingResponse:
-    get_accessible_workspace(db, user_id, workspace_id)
+    processing_generation, evidence_representation_id = workspace_request.payload
     asset = get_workspace_asset(db, workspace_id, asset_id)
     if asset.asset_kind != "image":
         raise HTTPException(
@@ -1037,15 +1064,24 @@ def get_image_oriented_file(
     )
 
 
+def require_get_current_image_oriented_file_access(
+    workspace_id: str,
+    processing_generation: int = Query(..., alias='processingGeneration', ge=1),
+    user_id: str = Depends(require_user_id),
+    db: Session = Depends(get_db),
+) -> WorkspaceRequest[int]:
+    access = require_workspace_member(workspace_id, user_id, db)
+    return WorkspaceRequest(access, processing_generation)
+
+
 @router.get("/{asset_id}/representations/current-image-oriented/file")
 def get_current_image_oriented_file(
     workspace_id: str,
     asset_id: str,
-    processing_generation: int = Query(..., alias="processingGeneration", ge=1),
-    user_id: str = Depends(require_user_id),
+    workspace_request: WorkspaceRequest[int] = Depends(require_get_current_image_oriented_file_access),
     db: Session = Depends(get_db),
 ) -> StreamingResponse:
-    get_accessible_workspace(db, user_id, workspace_id)
+    processing_generation = workspace_request.payload
     asset = get_workspace_asset(db, workspace_id, asset_id)
     if asset.asset_kind != "image":
         raise HTTPException(
@@ -1071,14 +1107,24 @@ def get_current_image_oriented_file(
     )
 
 
-@router.post("/upload-session", response_model=CreateUploadSessionResponse, status_code=status.HTTP_201_CREATED)
-def create_upload_session(
+def require_create_upload_session_access(
     workspace_id: str,
     payload: CreateUploadSessionRequest,
     user: User = Depends(require_existing_user),
     db: Session = Depends(get_db),
+) -> WorkspaceRequest[CreateUploadSessionRequest]:
+    access = require_workspace_member(workspace_id, user.id, db)
+    return WorkspaceRequest(access, payload)
+
+
+@router.post("/upload-session", response_model=CreateUploadSessionResponse, status_code=status.HTTP_201_CREATED)
+def create_upload_session(
+    workspace_id: str,
+    workspace_request: WorkspaceRequest[CreateUploadSessionRequest] = Depends(require_create_upload_session_access),
+    db: Session = Depends(get_db),
 ) -> CreateUploadSessionResponse:
-    get_accessible_workspace(db, user.id, workspace_id)
+    access = workspace_request.access
+    payload = workspace_request.payload
     try:
         mime_type = payload.mimeType.lower()
         module = modality_registry.for_mime_type(mime_type)
@@ -1088,7 +1134,7 @@ def create_upload_session(
     title = (payload.title or Path(payload.sourceFilename).stem).strip()
     asset = Asset(
         workspace_id=workspace_id,
-        created_by_user_id=user.id,
+        created_by_user_id=access.user_id,
         asset_kind=module.asset_kind,
         title=title or payload.sourceFilename,
         source_filename=payload.sourceFilename,
@@ -1116,16 +1162,25 @@ def create_upload_session(
     )
 
 
+def require_upload_asset_binary_access(
+    workspace_id: str,
+    object_key: str = Query(..., alias='objectKey'),
+    user_id: str = Depends(require_user_id),
+    db: Session = Depends(get_db),
+) -> WorkspaceRequest[str]:
+    access = require_workspace_member(workspace_id, user_id, db)
+    return WorkspaceRequest(access, object_key)
+
+
 @router.put("/{asset_id}/upload", status_code=status.HTTP_204_NO_CONTENT)
 async def upload_asset_binary(
     workspace_id: str,
     asset_id: str,
     request: Request,
-    object_key: str = Query(..., alias="objectKey"),
-    user_id: str = Depends(require_user_id),
+    workspace_request: WorkspaceRequest[str] = Depends(require_upload_asset_binary_access),
     db: Session = Depends(get_db),
 ) -> Response:
-    get_accessible_workspace(db, user_id, workspace_id)
+    object_key = workspace_request.payload
     asset = get_workspace_asset(db, workspace_id, asset_id)
     # Serialize concurrent first PUTs before streaming the body so only one
     # request can persist source bytes / source_sha256 for this Asset.
@@ -1231,15 +1286,26 @@ async def upload_asset_binary(
     return Response(status_code=status.HTTP_204_NO_CONTENT)
 
 
+def require_finalize_upload_access(
+    workspace_id: str,
+    payload: FinalizeUploadRequest,
+    user: User = Depends(require_existing_user),
+    db: Session = Depends(get_db),
+) -> WorkspaceRequest[FinalizeUploadRequest]:
+    access = require_workspace_member(workspace_id, user.id, db)
+    return WorkspaceRequest(access, payload)
+
+
 @router.post("/{asset_id}/finalize-upload", response_model=FinalizeUploadResponse)
 def finalize_upload(
     workspace_id: str,
     asset_id: str,
-    payload: FinalizeUploadRequest,
-    user: User = Depends(require_existing_user),
+    workspace_request: WorkspaceRequest[FinalizeUploadRequest] = Depends(require_finalize_upload_access),
     db: Session = Depends(get_db),
 ) -> FinalizeUploadResponse:
-    workspace, _role = get_accessible_workspace(db, user.id, workspace_id)
+    access = workspace_request.access
+    payload = workspace_request.payload
+    workspace = access.workspace
     asset = get_workspace_asset(db, workspace_id, asset_id)
     db.refresh(asset, with_for_update=True)
     if asset.status != "pending_upload":
@@ -1278,7 +1344,7 @@ def finalize_upload(
         db=db,        workspace_id=workspace_id,
         asset_id=asset.id,
         asset_kind=asset.asset_kind,
-        user_id=user.id,
+        user_id=access.user_id,
         chunk_size=workspace.chunk_size,
         source="finalize_upload",
         now=now,
@@ -1302,10 +1368,10 @@ def finalize_upload(
 def retry_asset(
     workspace_id: str,
     asset_id: str,
-    user: User = Depends(require_existing_user),
+    access: WorkspaceAccess = Depends(require_workspace_member_existing_user),
     db: Session = Depends(get_db),
 ) -> FinalizeUploadResponse:
-    workspace, _role = get_accessible_workspace(db, user.id, workspace_id)
+    workspace = access.workspace
     asset = get_workspace_asset(db, workspace_id, asset_id)
     db.refresh(asset, with_for_update=True)
     if asset.status != "failed":
@@ -1340,7 +1406,7 @@ def retry_asset(
         db=db,        workspace_id=workspace_id,
         asset_id=asset.id,
         asset_kind=asset.asset_kind,
-        user_id=user.id,
+        user_id=access.user_id,
         chunk_size=workspace.chunk_size,
         source="retry",
         now=now,
@@ -1364,10 +1430,10 @@ def retry_asset(
 def reindex_asset(
     workspace_id: str,
     asset_id: str,
-    user: User = Depends(require_existing_user),
+    access: WorkspaceAccess = Depends(require_workspace_member_existing_user),
     db: Session = Depends(get_db),
 ) -> FinalizeUploadResponse:
-    workspace, _role = get_accessible_workspace(db, user.id, workspace_id)
+    workspace = access.workspace
     asset = get_workspace_asset(db, workspace_id, asset_id)
     db.refresh(asset, with_for_update=True)
     if asset.status in {"pending_upload", "uploaded", "parsing", "chunking", "deleting", "deleted"}:
@@ -1406,7 +1472,7 @@ def reindex_asset(
             "chunkSize": workspace.chunk_size,
             **embedding_index_job_snapshot_fields(connection_index_contract(resolve_connection(db, workspace_id, "embedding"))),
         },
-        requested_by_user_id=user.id,
+        requested_by_user_id=access.user_id,
         queued_at=now,
         created_at=now,
     )
@@ -1422,19 +1488,27 @@ def reindex_asset(
     return FinalizeUploadResponse(asset=to_asset_summary(asset), job=to_job_status(job))
 
 
+delete_asset_owner = WorkspaceOwnerDependency('Only workspace owners can delete assets.')
+
+
+def require_delete_asset_access(
+    workspace_id: str,
+    user_id: str = Depends(require_user_id),
+    db: Session = Depends(get_db),
+) -> WorkspaceAccess:
+    access = require_workspace_member(workspace_id, user_id, db)
+    access = delete_asset_owner.check(access)
+    return access
+
+
 @router.delete("/{asset_id}", response_model=FinalizeUploadResponse, status_code=status.HTTP_202_ACCEPTED)
 def delete_asset(
     workspace_id: str,
     asset_id: str,
-    user_id: str = Depends(require_user_id),
+    access: WorkspaceAccess = Depends(require_delete_asset_access),
     db: Session = Depends(get_db),
 ) -> FinalizeUploadResponse:
-    _workspace, role = get_accessible_workspace(db, user_id, workspace_id)
-    if role != "owner":
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Only workspace owners can delete assets.",
-        )
+    user_id = access.user_id
 
     asset = get_workspace_asset(db, workspace_id, asset_id)
     db.refresh(asset, with_for_update=True)
@@ -1468,19 +1542,26 @@ def delete_asset(
     return FinalizeUploadResponse(asset=to_asset_summary(asset), job=to_job_status(job))
 
 
+retry_delete_asset_owner = WorkspaceOwnerDependency('Only workspace owners can delete assets.')
+
+
+def require_retry_delete_asset_access(
+    workspace_id: str,
+    user: User = Depends(require_existing_user),
+    db: Session = Depends(get_db),
+) -> WorkspaceAccess:
+    access = require_workspace_member(workspace_id, user.id, db)
+    access = retry_delete_asset_owner.check(access)
+    return access
+
+
 @router.post("/{asset_id}/delete-retry", response_model=FinalizeUploadResponse)
 def retry_delete_asset(
     workspace_id: str,
     asset_id: str,
-    user: User = Depends(require_existing_user),
+    access: WorkspaceAccess = Depends(require_retry_delete_asset_access),
     db: Session = Depends(get_db),
 ) -> FinalizeUploadResponse:
-    _workspace, role = get_accessible_workspace(db, user.id, workspace_id)
-    if role != "owner":
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Only workspace owners can delete assets.",
-        )
     asset = get_workspace_asset(db, workspace_id, asset_id, allow_deleting=True)
     db.refresh(asset, with_for_update=True)
     if asset.status != "deleting":
@@ -1512,7 +1593,7 @@ def retry_delete_asset(
     job = build_delete_cleanup_job(
         workspace_id=workspace_id,
         asset_id=asset.id,
-        user_id=user.id,
+        user_id=access.user_id,
         source="retry_delete",
         now=now,
         attempt_count=previous_attempt_count + 1,
