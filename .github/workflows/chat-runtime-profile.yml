@@ -1,0 +1,230 @@
+name: Chat runtime profile
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  pure-chat-profile:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      PYTHONDONTWRITEBYTECODE: "1"
+      PYTEST_DISABLE_PLUGIN_AUTOLOAD: "1"
+      PYTHONPATH: ${{ github.workspace }}/apps/api/src:${{ github.workspace }}/packages/memory-service/src:${{ github.workspace }}/packages/backend-contracts/src
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+          cache-dependency-glob: apps/api/uv.lock
+      - run: uv sync --project apps/api --frozen --extra dev
+      - name: Test isolated pure chat profile binding
+        run: |
+          uv run --project apps/api --frozen --no-sync python - <<'PY'
+          import importlib.abc
+          import pathlib
+          import socket
+          import sys
+
+          allowed_api = {
+              "ai_pdf_api",
+              "ai_pdf_api.services",
+              "ai_pdf_api.services.chat_runtime_profile",
+              "ai_pdf_api.services.model_config_types",
+          }
+
+          def forbidden_application(name):
+              root = name.split(".", 1)[0]
+              return root == "ai_pdf_worker" or (root == "ai_pdf_api" and name not in allowed_api)
+
+          class PureProfileImports(importlib.abc.MetaPathFinder):
+              def find_spec(self, fullname, path=None, target=None):
+                  if forbidden_application(fullname):
+                      raise AssertionError("application import forbidden: " + fullname)
+
+          def deny_network(*args, **kwargs):
+              raise AssertionError("chat profile tests forbid sockets and DNS")
+
+          sys.meta_path.insert(0, PureProfileImports())
+          socket.socket = deny_network
+          socket.create_connection = deny_network
+          socket.socketpair = deny_network
+          for name in ("getaddrinfo", "gethostbyname", "gethostbyname_ex", "gethostbyaddr", "getnameinfo"):
+              setattr(socket, name, deny_network)
+
+          import citeframe_contracts.memory as contract
+          import pytest
+
+          expected = pathlib.Path("packages/backend-contracts/src/citeframe_contracts/memory.py").resolve()
+          assert pathlib.Path(contract.__file__).resolve() == expected
+          test_path = "apps/api/tests/test_chat_runtime_profile.py"
+          if not pathlib.Path(test_path).is_file():
+              raise SystemExit("required chat profile test file is missing")
+
+          class RequireExecutedTests:
+              def __init__(self):
+                  self.skipped = False
+                  self.deselected = False
+                  self.xfailed = False
+                  self.passed_calls = 0
+
+              def pytest_collectreport(self, report):
+                  self.skipped |= report.skipped
+
+              def pytest_runtest_logreport(self, report):
+                  self.skipped |= report.skipped
+                  self.xfailed |= hasattr(report, "wasxfail")
+                  if report.when == "call" and report.passed:
+                      self.passed_calls += 1
+
+              def pytest_deselected(self, items):
+                  self.deselected |= bool(items)
+
+              def pytest_sessionfinish(self, session, exitstatus):
+                  if (self.skipped or self.deselected or self.xfailed
+                          or session.testscollected != 183 or self.passed_calls != 183):
+                      session.exitstatus = 1
+
+          status = pytest.main([
+              "--noconftest", "--strict-markers", "-p", "no:cacheprovider",
+              "-o", "pythonpath=", "-o", "xfail_strict=true", "-q",
+              f"{test_path}::test_exact_mapping_and_actual_estimated_counter",
+              f"{test_path}::test_physical_application_caps_and_input_reserve",
+              f"{test_path}::test_invalid_requested_reserve",
+              f"{test_path}::test_strict_all_entry_values",
+              f"{test_path}::test_exact_shapes",
+              f"{test_path}::test_disabled_capabilities_and_unusable_capacity",
+              f"{test_path}::test_duplicate_identity_or_selector",
+              f"{test_path}::test_identity_drift_rejects_old_entry",
+              f"{test_path}::test_other_connection_drift_changes_runtime_binding",
+              f"{test_path}::test_invalid_actual_connection",
+              f"{test_path}::test_unknown_and_empty_and_malformed_root",
+              f"{test_path}::test_cancellation_requires_explicit_boolean_capability",
+              f"{test_path}::test_malformed_callback_result",
+              f"{test_path}::test_safe_callback_error_and_repr",
+              f"{test_path}::test_result_deep_copy_immutable_policy_and_canonical_fingerprint",
+              f"{test_path}::test_isolated_import_and_resolution_without_app_loaders_or_network",
+              f"{test_path}::test_registry_fingerprint_is_canonical_sha256",
+              f"{test_path}::test_canonical_encoding_errors_are_safe",
+              f"{test_path}::test_actual_selector_fields_cannot_be_replaced_by_fingerprint_alone",
+              f"{test_path}::test_explicit_new_source_revision_entry_has_new_runtime_binding",
+          ], plugins=[RequireExecutedTests()])
+          profile_module = sys.modules["ai_pdf_api.services.chat_runtime_profile"]
+          expected_profile = pathlib.Path("apps/api/src/ai_pdf_api/services/chat_runtime_profile.py").resolve()
+          assert pathlib.Path(profile_module.__file__).resolve() == expected_profile
+          assert not any(forbidden_application(name) for name in sys.modules)
+          raise SystemExit(status)
+          PY
+
+  # Existing providers import metrics -> models -> citeframe_persistence ORM declarations.
+  # Builder fixtures use real Settings with env/dotenv/secret sources disabled before helpers load.
+  secure-chat-builder:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      PYTHONDONTWRITEBYTECODE: "1"
+      PYTEST_DISABLE_PLUGIN_AUTOLOAD: "1"
+      PYTHONPATH: ${{ github.workspace }}/apps/api/src:${{ github.workspace }}/packages/memory-service/src:${{ github.workspace }}/packages/backend-contracts/src:${{ github.workspace }}/packages/backend-persistence/src
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+          cache-dependency-glob: apps/api/uv.lock
+      - run: uv sync --project apps/api --frozen --extra dev
+      - name: Test injected builder with real secure transport
+        run: |
+          uv run --project apps/api --frozen --no-sync python - <<'PY'
+          import importlib.abc
+          import pathlib
+          import socket
+          import sys
+
+          allowed_api = {
+              "ai_pdf_api",
+              "ai_pdf_api.services",
+              "ai_pdf_api.services.chat_runtime_profile",
+              "ai_pdf_api.services.model_config_types",
+              "ai_pdf_api.core",
+              "ai_pdf_api.core.settings",
+              "ai_pdf_api.core.metrics",
+              "ai_pdf_api.models",
+              "ai_pdf_api.services.capabilities",
+              "ai_pdf_api.services.providers",
+              "ai_pdf_api.services.model_endpoint",
+              "ai_pdf_api.services.model_transport",
+          }
+
+          def forbidden_application(name):
+              root = name.split(".", 1)[0]
+              return root == "ai_pdf_worker" or (root == "ai_pdf_api" and name not in allowed_api)
+
+          class PureProfileImports(importlib.abc.MetaPathFinder):
+              def find_spec(self, fullname, path=None, target=None):
+                  if forbidden_application(fullname):
+                      raise AssertionError("application import forbidden: " + fullname)
+
+          def deny_network(*args, **kwargs):
+              raise AssertionError("chat profile tests forbid sockets and DNS")
+
+          sys.meta_path.insert(0, PureProfileImports())
+          # Keep the socket class intact for ssl subclasses; all outgoing IO stays denied.
+          socket.socket.connect = deny_network
+          socket.socket.connect_ex = deny_network
+          socket.socket.sendto = deny_network
+          if hasattr(socket.socket, "sendmsg"):
+              socket.socket.sendmsg = deny_network
+          socket.create_connection = deny_network
+          socket.socketpair = deny_network
+          for name in ("getaddrinfo", "gethostbyname", "gethostbyname_ex", "gethostbyaddr", "getnameinfo"):
+              setattr(socket, name, deny_network)
+
+          import citeframe_contracts.memory as contract
+          import pytest
+
+          expected = pathlib.Path("packages/backend-contracts/src/citeframe_contracts/memory.py").resolve()
+          assert pathlib.Path(contract.__file__).resolve() == expected
+          test_path = "apps/api/tests/test_chat_runtime_profile.py"
+          if not pathlib.Path(test_path).is_file():
+              raise SystemExit("required chat profile test file is missing")
+
+          class RequireExecutedTests:
+              def __init__(self):
+                  self.skipped = False
+                  self.deselected = False
+                  self.xfailed = False
+                  self.passed_calls = 0
+
+              def pytest_collectreport(self, report):
+                  self.skipped |= report.skipped
+
+              def pytest_runtest_logreport(self, report):
+                  self.skipped |= report.skipped
+                  self.xfailed |= hasattr(report, "wasxfail")
+                  if report.when == "call" and report.passed:
+                      self.passed_calls += 1
+
+              def pytest_deselected(self, items):
+                  self.deselected |= bool(items)
+
+              def pytest_sessionfinish(self, session, exitstatus):
+                  if (self.skipped or self.deselected or self.xfailed
+                          or session.testscollected != 80 or self.passed_calls != 80):
+                      session.exitstatus = 1
+
+          status = pytest.main([
+              "--noconftest", "--strict-markers", "-p", "no:cacheprovider",
+              "-o", "pythonpath=", "-o", "xfail_strict=true", "-q",
+              f"{test_path}::TestChatGenerationBuilder",
+          ], plugins=[RequireExecutedTests()])
+          profile_module = sys.modules["ai_pdf_api.services.chat_runtime_profile"]
+          expected_profile = pathlib.Path("apps/api/src/ai_pdf_api/services/chat_runtime_profile.py").resolve()
+          assert pathlib.Path(profile_module.__file__).resolve() == expected_profile
+          assert not any(forbidden_application(name) for name in sys.modules)
+          raise SystemExit(status)
+          PY

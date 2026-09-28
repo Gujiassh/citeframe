@@ -1,0 +1,7 @@
+{
+  "loginStatus": 200,
+  "sessionCookiePresent": true,
+  "workspaceListStatus": 200,
+  "workspaceCount": 2,
+  "evidenceScope": "HTTP BFF check; visible browser walkthrough remains controller-owned"
+}

@@ -1,0 +1,16 @@
+[
+  {
+    "workspace": "A",
+    "detailStatus": 200,
+    "pageCount": 1,
+    "fileStatus": 200,
+    "storedSourceHashMatches": true
+  },
+  {
+    "workspace": "B",
+    "detailStatus": 200,
+    "pageCount": 1,
+    "fileStatus": 200,
+    "storedSourceHashMatches": true
+  }
+]
