@@ -66,4 +66,3 @@ The scoped implementation/evidence ledger is
 It records the baseline HTTP oracle, executable graph/cache/scoped-query tests, isolated
 PostgreSQL/MinIO API checks, and completed controller-owned visible-browser acceptance for the recorded paths.
 No schema, public payload, policy engine, RLS, billing, or provider behavior changes.
-
