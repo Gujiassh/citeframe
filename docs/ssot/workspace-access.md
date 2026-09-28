@@ -64,5 +64,6 @@ Worker behavior for archived workspaces.
 The scoped implementation/evidence ledger is
 [`issue40-workspace-access-dependencies-20260928.md`](../../specs/v5/post-v5-optimization/issue40-workspace-access-dependencies-20260928.md).
 It records the baseline HTTP oracle, executable graph/cache/scoped-query tests, isolated
-PostgreSQL/MinIO API checks, and outstanding controller-owned visible-browser acceptance.
+PostgreSQL/MinIO API checks, and completed controller-owned visible-browser acceptance for the recorded paths.
 No schema, public payload, policy engine, RLS, billing, or provider behavior changes.
+

@@ -57,5 +57,6 @@ This command used deterministic test fixtures; actual PostgreSQL lock/CAS and Wo
 - Synthetic completed Research/ingestion data is engineering acceptance data; no full real-provider research run was claimed.
 - Worker/provider revocation, object side effects, hash/CAS and all route guards require their API/persistence evidence in addition to this walkthrough.
 - F2 disposition: the two short initial SSE sessions are accepted for this request-boundary design. Independent measurement found the same4 SQL queries and1 membership query. No write transaction or polling revalidation moved. The initial session lifecycle is explicitly different from baseline.
-- Initial CI exposed a timezone-dependent test fixture and an unadapted Worker direct-handler test; original developer rework remains required. Service CI is separately blocked by the pinned MinIO registry image returning unauthorized, including one retry.
+- Initial CI exposed a timezone-dependent test fixture and an unadapted Worker direct-handler test. Original-developer rework at5903d60 closes both: all six core CI jobs pass. Three service/deployment gates remain blocked by the pinned MinIO registry image returning unauthorized.
 - This artifact is bounded candidate evidence. Independent final review, final CI and merge are not asserted by this document.
+

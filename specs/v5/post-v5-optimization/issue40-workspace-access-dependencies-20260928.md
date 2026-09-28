@@ -6,8 +6,9 @@
 - Start/base: `8812fda4d69b7f0e654e749c357fa05b5e8da72f`.
 - Branch: `refactor/workspace-access-dependencies`; canonical repo: `D:/Code/citeframe`.
 - Initial checkout clean; GitHub remote and matching local/global Git identity verified.
-- Implemented and tested; comprehensive results recorded below. Independent Critical review,
-  visible-browser acceptance, CI, and controller integration remain open.
+- Code/security independently ACCEPTED at `5903d60b7103d32d7d8a0c173691250407460b13`;
+  recorded browser paths and PostgreSQL safety checks passed. Integration is MERGE HOLD
+  until all current-SHA CI gates execute successfully.
 - Controller candidate committed/pushed: `635bb2b8703ae6c77fee5cb28d08d852bd67b7ae`.
 - Draft PR: https://github.com/Gujiassh/citeframe/pull/47.
 - Earlier lane staging failed on `.git/index.lock` permissions; controller subsequently
@@ -357,3 +358,77 @@ research-services. This external gate remains controller-coordinated; neither wo
 nor image source was edited or bypassed. Independent final review, CI rerun, controller
 merge, and total delivery remain open. No commit/push, reviewer artifact, Issue41,
 workbench, private-memory, schema, or product changes in this rework.
+
+
+## R800 exact-product admission follow-up
+
+Pinned source/current HEAD for this slice:
+`5903d60b7103d32d7d8a0c173691250407460b13` (controller's subsequent PR47 candidate).
+The Worker acceptance-test change activated the R800 gate, whose exact admission
+manifest did not yet include Issue40 product-path blobs. This slice edits only
+`specs/v5/worker-layout/integrated-product-delta.json` and owned Issue40 ledger/evidence.
+Independent review of the candidate and new manifest admission remains required.
+
+Git-derived comparison against the unchanged architecture base
+`5ed02c8b7b5f357f58d1c3fd270ead0718e7afbf` found **10 added admissions, 6 updated
+admissions, 0 removals**. The manifest now contains **233 exact paths** (previously 223).
+The 16 changed entries exactly equal the product-path delta between Issue40 start
+`8812fda4d69b7f0e654e749c357fa05b5e8da72f` and pinned candidate `5903d60b`.
+All 217 unrelated entries remain structurally identical. Each of the six replaced
+entries is retained verbatim under `inheritedProvenance`, including any existing nested
+provenance; all prior source heads and functional-oracle entries are preserved.
+
+For every Issue40 entry, reviewedSourceHead is the pinned candidate,
+reviewedSourcePath equals its actual path, and reviewedSourceBlob/integratedBlob both
+come from `git rev-parse 5903d60b:<path>`. No hash was guessed. Exact paths, old
+admissions, new blobs, derivation commands and test logs are recorded in
+`evidence/issue40/r800-delta-admission.json`. The admission labels the source as candidate
+bytes and records pending independent review; it does not imply final approval.
+
+Added admissions (10):
+- `apps/api/src/ai_pdf_api/routers/chat.py`
+- `apps/api/src/ai_pdf_api/routers/deps.py`
+- `apps/api/src/ai_pdf_api/routers/evaluation.py`
+- `apps/api/src/ai_pdf_api/routers/jobs.py`
+- `apps/api/src/ai_pdf_api/routers/notes.py`
+- `apps/api/tests/test_embedding_current_scope.py`
+- `apps/api/tests/test_image_evidence_lifecycle.py`
+- `apps/api/tests/test_image_ingestion.py`
+- `apps/api/tests/test_workspace_access_dependencies.py`
+- `apps/api/tests/test_workspace_permission_precedence.py`
+
+Updated admissions (6):
+- `apps/api/src/ai_pdf_api/routers/assets.py`
+- `apps/api/src/ai_pdf_api/routers/model_settings.py`
+- `apps/api/src/ai_pdf_api/routers/research.py`
+- `apps/api/src/ai_pdf_api/routers/workspaces.py`
+- `apps/api/tests/test_embedding_index_contract.py`
+- `apps/worker/tests/test_v5b_mixed_workspace.py`
+
+Verification:
+- `apps/api/.venv/Scripts/python.exe -m unittest discover -s infra/testing -p test_r800_product_delta.py`:
+  **6 passed**, exit 0, including unknown/missing/changed/duplicate rejection controls.
+- Imported unchanged `verify_product_delta` from `infra/testing/r800_product_delta.py`
+  and called it with repository root and actual current HEAD `5903d60b`: **pass**,
+  **233 exact paths**, all required ancestor/source-blob checks passed, exit 0.
+- `git diff --check`: pass. Validator, ARCHITECTURE_BASE, PRODUCT_PATHS, product code,
+  workflow/image sources, and old admission history are unchanged.
+
+These results support exact-source admission only. The external pinned MinIO 401 in
+R800 historical infrastructure and other service gates remains unresolved; no R800
+runtime pass is claimed. Independent manifest review, controller delivery commit/CI,
+merge and total acceptance remain open. Manifest and ledger/evidence files are outside
+PRODUCT_PATHS, so a future delivery commit limited to these files will preserve the
+verified product blobs and keep pinned `5903d60b` as an ancestor. No commit, push,
+workbench, Issue41, private-memory, or reviewer-artifact edits by this lane.
+
+
+## Controller delivery gate (2026-09-28)
+
+- Product/test candidate `5903d60b7103d32d7d8a0c173691250407460b13` is independently Critical ACCEPT with documented residuals.
+- GitHub run36405609386 has all six core jobs successful: API996 passed/6 skipped plus migrations and no schema drift; Worker acceptance58 passed; Worker-fast, Web, Web E2E and Evaluation passed.
+- R800 exact-delta manifest was repaired by the original developer and independently accepted with Git blob `b1c772cdb2e7bef9fb6b50d3d6fd477552155f92`. Controller also ran the unchanged six manifest tests and exact233-path verifier successfully.
+- Three runtime gates remain blocked: conflict-services36405609257, research-services36405609283 and R80036405609249. The pinned MinIO registry pull returns unauthorized. Earlier retries reproduced it; the R800 historical-baseline artifact also records the same infrastructure failure. No workflow/image substitution or gate waiver is part of this delivery.
+- No merge has occurred. Local/remote main remain at the recorded baseline. No post-merge acceptance is claimed.
+- Issue41's `docs/ssot/memory-management.md` and `specs/v5/memory-management/` are unrelated concurrent additions, explicitly excluded and preserved. Historical worktrees remain untouched.
+- Repository SSoT/spec and workbench contain the durable handoff. No private/global memory file was accessed or updated by the subordinate lanes.

@@ -16,9 +16,10 @@
     "2b9812c7abd8c15a6bcd1172df85ab5cc73c5957",
     "ef585e61d1443df878ff82d680eb5b383370b5b0",
     "31cbb1f584123f0eb4b9fd4c13bc6cdde4c3d370",
-    "8e65033cec6529ecda40f3401166dcd92bd95f46"
+    "8e65033cec6529ecda40f3401166dcd92bd95f46",
+    "5903d60b7103d32d7d8a0c173691250407460b13"
   ],
-  "scope": "PR30 issue25 v4 conflict investigation plus normal architecture/prerequisite merges; exact owner-prepared blobs/provenance, new integration and v4 oracle pending independent Hubble review; exact PR37 upload and PR39 workspace-model/recovery/lock/oracle deltas, retaining unchanged entries and inherited provenance",
+  "scope": "PR30 issue25 v4 conflict investigation plus normal architecture/prerequisite merges; exact owner-prepared blobs/provenance, new integration and v4 oracle pending independent Hubble review; exact PR37 upload and PR39 workspace-model/recovery/lock/oracle deltas, retaining unchanged entries and inherited provenance; exact PR47 Issue40 workspace-access dependency and test blobs pinned at 5903d60b7103d32d7d8a0c173691250407460b13, retaining prior admissions/provenance; manifest admission pending independent review",
   "functionalOracle": [
     "existing R800 scenarios + three Hubble controls + actual fresh serial negative",
     "real PG/S3 publication restore/cancel/revoke service gate",
@@ -31,7 +32,8 @@
     "PR37 multi-file selection is workspace-bound and sequential; per-file failure/retry/cancellation and stale-list protection; specs/v5/post-v5-optimization/issue35-upload-queue-20260924.md",
     "PR39 owner settings persist with write-only encrypted keys and two-workspace/capability isolation; Responses and Chat Completions Quick Answer and Research report/source-viewer workflows; specs/v5/post-v5-optimization/issue36-model-configuration.md",
     "PR39 explicit reindex preserves prior complete index on failure; rejected question survives settings/reindex/retry; restart reuses saved encrypted keys and frozen-run drift rejects without HTTP calls",
-    "PR39 connected-IP/TLS/redirect/proxy/destination controls and real PostgreSQL save-reservation serialization; legacy investigation and new encrypted-config rollback guards independently preserve data; historical deployment oracles unchanged"
+    "PR39 connected-IP/TLS/redirect/proxy/destination controls and real PostgreSQL save-reservation serialization; legacy investigation and new encrypted-config rollback guards independently preserve data; historical deployment oracles unchanged",
+    "PR47 Issue40 typed workspace member/owner dependencies preserve validation-first status/detail/body, resource scope and per-request membership caching; exact 378-case baseline/candidate oracle, Worker acceptance, bounded PostgreSQL revocation/CAS and controller browser evidence in specs/v5/post-v5-optimization/issue40-workspace-access-dependencies-20260928.md; external MinIO deployment gate remains separate"
   ],
   "files": [
     {
@@ -164,35 +166,107 @@
     },
     {
       "path": "apps/api/src/ai_pdf_api/routers/assets.py",
-      "integratedBlob": "eebc1201d187d314062154cfddefa1ee92a0b908",
-      "reviewedSourceHead": "5c2954af42d71eaed52e069b3a4312c995d51d40",
+      "integratedBlob": "09028f89c0e0d192ac872dd6dbf51e67b64119ab",
+      "reviewedSourceHead": "5903d60b7103d32d7d8a0c173691250407460b13",
       "reviewedSourcePath": "apps/api/src/ai_pdf_api/routers/assets.py",
-      "reviewedSourceBlob": "eebc1201d187d314062154cfddefa1ee92a0b908",
-      "transformation": "identical-reviewed-issue36-backend-bytes"
+      "reviewedSourceBlob": "09028f89c0e0d192ac872dd6dbf51e67b64119ab",
+      "transformation": "identical-issue40-candidate-bytes",
+      "inheritedProvenance": {
+        "path": "apps/api/src/ai_pdf_api/routers/assets.py",
+        "integratedBlob": "eebc1201d187d314062154cfddefa1ee92a0b908",
+        "reviewedSourceHead": "5c2954af42d71eaed52e069b3a4312c995d51d40",
+        "reviewedSourcePath": "apps/api/src/ai_pdf_api/routers/assets.py",
+        "reviewedSourceBlob": "eebc1201d187d314062154cfddefa1ee92a0b908",
+        "transformation": "identical-reviewed-issue36-backend-bytes"
+      }
+    },
+    {
+      "path": "apps/api/src/ai_pdf_api/routers/chat.py",
+      "integratedBlob": "c74cb92e33cd2a9a528496f3e4991437d00cc9d7",
+      "reviewedSourceHead": "5903d60b7103d32d7d8a0c173691250407460b13",
+      "reviewedSourcePath": "apps/api/src/ai_pdf_api/routers/chat.py",
+      "reviewedSourceBlob": "c74cb92e33cd2a9a528496f3e4991437d00cc9d7",
+      "transformation": "identical-issue40-candidate-bytes"
+    },
+    {
+      "path": "apps/api/src/ai_pdf_api/routers/deps.py",
+      "integratedBlob": "716f999552417032736bc82bafe0a5743bb5d3b6",
+      "reviewedSourceHead": "5903d60b7103d32d7d8a0c173691250407460b13",
+      "reviewedSourcePath": "apps/api/src/ai_pdf_api/routers/deps.py",
+      "reviewedSourceBlob": "716f999552417032736bc82bafe0a5743bb5d3b6",
+      "transformation": "identical-issue40-candidate-bytes"
+    },
+    {
+      "path": "apps/api/src/ai_pdf_api/routers/evaluation.py",
+      "integratedBlob": "f86fe5c3ed0081003cb174d0abb3502f289b929a",
+      "reviewedSourceHead": "5903d60b7103d32d7d8a0c173691250407460b13",
+      "reviewedSourcePath": "apps/api/src/ai_pdf_api/routers/evaluation.py",
+      "reviewedSourceBlob": "f86fe5c3ed0081003cb174d0abb3502f289b929a",
+      "transformation": "identical-issue40-candidate-bytes"
+    },
+    {
+      "path": "apps/api/src/ai_pdf_api/routers/jobs.py",
+      "integratedBlob": "95fe7dec52569179960bd882d40f71c13df4aba9",
+      "reviewedSourceHead": "5903d60b7103d32d7d8a0c173691250407460b13",
+      "reviewedSourcePath": "apps/api/src/ai_pdf_api/routers/jobs.py",
+      "reviewedSourceBlob": "95fe7dec52569179960bd882d40f71c13df4aba9",
+      "transformation": "identical-issue40-candidate-bytes"
     },
     {
       "path": "apps/api/src/ai_pdf_api/routers/model_settings.py",
-      "integratedBlob": "969647b425c2bde0b100e62ca8a42cdb43206dec",
-      "reviewedSourceHead": "5c2954af42d71eaed52e069b3a4312c995d51d40",
+      "integratedBlob": "c6a91c93325d8f8a2c9f156a53d06b2dbdb9f806",
+      "reviewedSourceHead": "5903d60b7103d32d7d8a0c173691250407460b13",
       "reviewedSourcePath": "apps/api/src/ai_pdf_api/routers/model_settings.py",
-      "reviewedSourceBlob": "969647b425c2bde0b100e62ca8a42cdb43206dec",
-      "transformation": "identical-reviewed-issue36-backend-bytes"
+      "reviewedSourceBlob": "c6a91c93325d8f8a2c9f156a53d06b2dbdb9f806",
+      "transformation": "identical-issue40-candidate-bytes",
+      "inheritedProvenance": {
+        "path": "apps/api/src/ai_pdf_api/routers/model_settings.py",
+        "integratedBlob": "969647b425c2bde0b100e62ca8a42cdb43206dec",
+        "reviewedSourceHead": "5c2954af42d71eaed52e069b3a4312c995d51d40",
+        "reviewedSourcePath": "apps/api/src/ai_pdf_api/routers/model_settings.py",
+        "reviewedSourceBlob": "969647b425c2bde0b100e62ca8a42cdb43206dec",
+        "transformation": "identical-reviewed-issue36-backend-bytes"
+      }
+    },
+    {
+      "path": "apps/api/src/ai_pdf_api/routers/notes.py",
+      "integratedBlob": "f1ed74abfe159561160626486f45fb5c8a8e0f2b",
+      "reviewedSourceHead": "5903d60b7103d32d7d8a0c173691250407460b13",
+      "reviewedSourcePath": "apps/api/src/ai_pdf_api/routers/notes.py",
+      "reviewedSourceBlob": "f1ed74abfe159561160626486f45fb5c8a8e0f2b",
+      "transformation": "identical-issue40-candidate-bytes"
     },
     {
       "path": "apps/api/src/ai_pdf_api/routers/research.py",
-      "integratedBlob": "cc5c8b1374323f04ad9341ea35d53d0fdce8959f",
-      "reviewedSourceHead": "b691406fdc7d38e3f93578b36aaddafe7dbf992f",
+      "integratedBlob": "c8f129e1b3dfdd844c5ca06057270298754748b9",
+      "reviewedSourceHead": "5903d60b7103d32d7d8a0c173691250407460b13",
       "reviewedSourcePath": "apps/api/src/ai_pdf_api/routers/research.py",
-      "reviewedSourceBlob": "cc5c8b1374323f04ad9341ea35d53d0fdce8959f",
-      "transformation": "identical-reviewed-bytes"
+      "reviewedSourceBlob": "c8f129e1b3dfdd844c5ca06057270298754748b9",
+      "transformation": "identical-issue40-candidate-bytes",
+      "inheritedProvenance": {
+        "path": "apps/api/src/ai_pdf_api/routers/research.py",
+        "integratedBlob": "cc5c8b1374323f04ad9341ea35d53d0fdce8959f",
+        "reviewedSourceHead": "b691406fdc7d38e3f93578b36aaddafe7dbf992f",
+        "reviewedSourcePath": "apps/api/src/ai_pdf_api/routers/research.py",
+        "reviewedSourceBlob": "cc5c8b1374323f04ad9341ea35d53d0fdce8959f",
+        "transformation": "identical-reviewed-bytes"
+      }
     },
     {
       "path": "apps/api/src/ai_pdf_api/routers/workspaces.py",
-      "integratedBlob": "4d70dc90012b708f36c08ac730c097eb9a7f062c",
-      "reviewedSourceHead": "5c2954af42d71eaed52e069b3a4312c995d51d40",
+      "integratedBlob": "d7191a2d42a17d97b6cd7ee806e5e7a85502edff",
+      "reviewedSourceHead": "5903d60b7103d32d7d8a0c173691250407460b13",
       "reviewedSourcePath": "apps/api/src/ai_pdf_api/routers/workspaces.py",
-      "reviewedSourceBlob": "4d70dc90012b708f36c08ac730c097eb9a7f062c",
-      "transformation": "identical-reviewed-issue36-backend-bytes"
+      "reviewedSourceBlob": "d7191a2d42a17d97b6cd7ee806e5e7a85502edff",
+      "transformation": "identical-issue40-candidate-bytes",
+      "inheritedProvenance": {
+        "path": "apps/api/src/ai_pdf_api/routers/workspaces.py",
+        "integratedBlob": "4d70dc90012b708f36c08ac730c097eb9a7f062c",
+        "reviewedSourceHead": "5c2954af42d71eaed52e069b3a4312c995d51d40",
+        "reviewedSourcePath": "apps/api/src/ai_pdf_api/routers/workspaces.py",
+        "reviewedSourceBlob": "4d70dc90012b708f36c08ac730c097eb9a7f062c",
+        "transformation": "identical-reviewed-issue36-backend-bytes"
+      }
     },
     {
       "path": "apps/api/src/ai_pdf_api/schemas/model_settings.py",
@@ -763,12 +837,28 @@
       "transformation": "new-real-model-oracle-tests-derived-from-existing-production-publication-fixture; no-journal-and-v4-positive-plus-eight-foreign-relations"
     },
     {
+      "path": "apps/api/tests/test_embedding_current_scope.py",
+      "integratedBlob": "4246324c92d2b39a8c39a385614bdd105188b3ef",
+      "reviewedSourceHead": "5903d60b7103d32d7d8a0c173691250407460b13",
+      "reviewedSourcePath": "apps/api/tests/test_embedding_current_scope.py",
+      "reviewedSourceBlob": "4246324c92d2b39a8c39a385614bdd105188b3ef",
+      "transformation": "identical-issue40-candidate-bytes"
+    },
+    {
       "path": "apps/api/tests/test_embedding_index_contract.py",
-      "integratedBlob": "9df48d13c957f38a64f8a191e32c80a092737bb3",
-      "reviewedSourceHead": "5c2954af42d71eaed52e069b3a4312c995d51d40",
+      "integratedBlob": "640f5dd6a30a032b70578c8a5bb28a70c5e2e647",
+      "reviewedSourceHead": "5903d60b7103d32d7d8a0c173691250407460b13",
       "reviewedSourcePath": "apps/api/tests/test_embedding_index_contract.py",
-      "reviewedSourceBlob": "9df48d13c957f38a64f8a191e32c80a092737bb3",
-      "transformation": "identical-reviewed-issue36-backend-bytes"
+      "reviewedSourceBlob": "640f5dd6a30a032b70578c8a5bb28a70c5e2e647",
+      "transformation": "identical-issue40-candidate-bytes",
+      "inheritedProvenance": {
+        "path": "apps/api/tests/test_embedding_index_contract.py",
+        "integratedBlob": "9df48d13c957f38a64f8a191e32c80a092737bb3",
+        "reviewedSourceHead": "5c2954af42d71eaed52e069b3a4312c995d51d40",
+        "reviewedSourcePath": "apps/api/tests/test_embedding_index_contract.py",
+        "reviewedSourceBlob": "9df48d13c957f38a64f8a191e32c80a092737bb3",
+        "transformation": "identical-reviewed-issue36-backend-bytes"
+      }
     },
     {
       "path": "apps/api/tests/test_health.py",
@@ -777,6 +867,22 @@
       "reviewedSourcePath": "apps/api/tests/test_health.py",
       "reviewedSourceBlob": "1a95a66fc4d066e58cc307cd69498a94725f489d",
       "transformation": "identical-reviewed-issue36-backend-bytes"
+    },
+    {
+      "path": "apps/api/tests/test_image_evidence_lifecycle.py",
+      "integratedBlob": "75c84c3dc915ff8af3db0f089fa82d95496e101a",
+      "reviewedSourceHead": "5903d60b7103d32d7d8a0c173691250407460b13",
+      "reviewedSourcePath": "apps/api/tests/test_image_evidence_lifecycle.py",
+      "reviewedSourceBlob": "75c84c3dc915ff8af3db0f089fa82d95496e101a",
+      "transformation": "identical-issue40-candidate-bytes"
+    },
+    {
+      "path": "apps/api/tests/test_image_ingestion.py",
+      "integratedBlob": "0aaec90d3d95608dcc9da8f074378959fb9bcc5b",
+      "reviewedSourceHead": "5903d60b7103d32d7d8a0c173691250407460b13",
+      "reviewedSourcePath": "apps/api/tests/test_image_ingestion.py",
+      "reviewedSourceBlob": "0aaec90d3d95608dcc9da8f074378959fb9bcc5b",
+      "transformation": "identical-issue40-candidate-bytes"
     },
     {
       "path": "apps/api/tests/test_layout_probe_paths.py",
@@ -1019,6 +1125,14 @@
       "transformation": "identical-reviewed-issue36-backend-bytes"
     },
     {
+      "path": "apps/api/tests/test_workspace_access_dependencies.py",
+      "integratedBlob": "6afe23443c5c361e0a0402f4f11967f37fabcdd4",
+      "reviewedSourceHead": "5903d60b7103d32d7d8a0c173691250407460b13",
+      "reviewedSourcePath": "apps/api/tests/test_workspace_access_dependencies.py",
+      "reviewedSourceBlob": "6afe23443c5c361e0a0402f4f11967f37fabcdd4",
+      "transformation": "identical-issue40-candidate-bytes"
+    },
+    {
       "path": "apps/api/tests/test_workspace_model_protocols.py",
       "integratedBlob": "c725e7c196fb072b828f69b66869a86479d682d7",
       "reviewedSourceHead": "5c2954af42d71eaed52e069b3a4312c995d51d40",
@@ -1041,6 +1155,14 @@
       "reviewedSourcePath": "apps/api/tests/test_workspace_models_postgres.py",
       "reviewedSourceBlob": "552f8e50eedaf59f5cb0d099b0a7fa36d2aae5d1",
       "transformation": "identical-reviewed-issue36-backend-bytes"
+    },
+    {
+      "path": "apps/api/tests/test_workspace_permission_precedence.py",
+      "integratedBlob": "899b726f6132221500b2b53c9c1e721b8d3e4642",
+      "reviewedSourceHead": "5903d60b7103d32d7d8a0c173691250407460b13",
+      "reviewedSourcePath": "apps/api/tests/test_workspace_permission_precedence.py",
+      "reviewedSourceBlob": "899b726f6132221500b2b53c9c1e721b8d3e4642",
+      "transformation": "identical-issue40-candidate-bytes"
     },
     {
       "path": "apps/api/uv.lock",
@@ -1772,11 +1894,19 @@
     },
     {
       "path": "apps/worker/tests/test_v5b_mixed_workspace.py",
-      "integratedBlob": "8ba276a8347a1c020134040f9f968bb4672105a8",
-      "reviewedSourceHead": "5c2954af42d71eaed52e069b3a4312c995d51d40",
+      "integratedBlob": "e0d15faa3af9d72d43e79ca906ff4dfc312a6fd3",
+      "reviewedSourceHead": "5903d60b7103d32d7d8a0c173691250407460b13",
       "reviewedSourcePath": "apps/worker/tests/test_v5b_mixed_workspace.py",
-      "reviewedSourceBlob": "8ba276a8347a1c020134040f9f968bb4672105a8",
-      "transformation": "identical-reviewed-issue36-backend-bytes"
+      "reviewedSourceBlob": "e0d15faa3af9d72d43e79ca906ff4dfc312a6fd3",
+      "transformation": "identical-issue40-candidate-bytes",
+      "inheritedProvenance": {
+        "path": "apps/worker/tests/test_v5b_mixed_workspace.py",
+        "integratedBlob": "8ba276a8347a1c020134040f9f968bb4672105a8",
+        "reviewedSourceHead": "5c2954af42d71eaed52e069b3a4312c995d51d40",
+        "reviewedSourcePath": "apps/worker/tests/test_v5b_mixed_workspace.py",
+        "reviewedSourceBlob": "8ba276a8347a1c020134040f9f968bb4672105a8",
+        "transformation": "identical-reviewed-issue36-backend-bytes"
+      }
     },
     {
       "path": "apps/worker/uv.lock",
