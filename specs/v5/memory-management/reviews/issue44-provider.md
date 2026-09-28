@@ -377,3 +377,14 @@ Three external-service MinIO gates remain failed per controller. They remain unr
 The v4/A1 Choice 2 boundary remains in force: no audience/private-thread/private-run schema, no private data at shared consuming boundaries. Consumer negative oracles, same-run automatic compaction, live-provider/model quality and chat/Research/UI acceptance remain outside this integration check.
 
 Write-back check: appended only this original review, preserving all previous evidence. Reviewer performed no product/contract/workflow/Git/private-memory/shared-workbench writes and no live/paid calls. Controller retains staging, commit/push/PR and merge decisions.
+
+
+## Admission prerequisite merge — integration-only review, 2026-09-28
+
+**ACCEPT — provider integration at `a139336e70086be72a49893c418ecd9730c5f56e`. No integration finding.** Verified merge parents `fb78f83590cbe8a4944a01591922cc6162d27f5c` and accepted admission `893de951672f1a374d552425dfb2b3e7c3e6a223`. No unresolved merge or tracked dirty file was present at inspection; the new untracked chat-loop design was outside this integration test scope.
+
+All 14 provider/test/shared-contract candidate-manifest entries match. Adapters, the three dedicated tests and `memory-provider.yml` have no diff from the provider parent. Shared contracts, API/Worker declarations/locks and Docker packaging have no diff from the accepted admission parent. Admission predicate/command/tests and its CI/documentation changes are inherited #42 dependency content; this review does not re-adjudicate admission rules or PostgreSQL persistence.
+
+Independent exact embedded provider runner: **117 passed in 0.33s**, with application imports and socket connections denied. Additional explicit non-DB scopes: API deploy **6 passed in 0.21s**; Worker deploy **2 passed in 0.05s**; persistence/research-persistence boundary files **13 passed in 2.59s**. Used the same read-only Python interpreter, local source paths, disabled bytecode/plugin/cache writes and separate `--noconftest -p no:cacheprovider -o pythonpath= -q` runs documented above. Deployment fixture basetemps were fresh OS-temporary directories and removed; isolated Python child imports received `-B`. Network denial covered the pytest process; application imports remained permitted in composition-boundary tests. No DB/admission suite, install, hosted CI, real image build or model call was run.
+
+F44 closures and prior neutral-provider/CI limits remain unchanged. This accepts only coexistence with the exact admission prerequisite; it grants no chat-loop, model-quality, full #41/#44 or merge-gate acceptance. Only this integration result is appended here. Controller owns delivery; the separately requested chat-loop design judgment is in `reviews/issue44-chat-loop.md` under this specification directory.
