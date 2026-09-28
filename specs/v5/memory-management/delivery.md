@@ -101,3 +101,8 @@ Shared contract commits: #42 `eac4de417e8610e43fb34b702fbe02c9a4143163` and `9ad
 - PR attachment tool invoked for48/49 but returned Transport closed; attachments are NOT confirmed. GitHub PRs exist, linked above. Retry app attachment only after transport recovery.
 
 Final A1choice2 remains accepted: private owner management only; no private data reuse in shared output paths, no new private native mode/audience. End-to-end automatic compaction, actual source/tool/API/Research/UI integration and semantic acceptance remain required before41completion.
+
+## Shared-history contracts and independent GenerationImage delivery
+
+Current history helper/test/workflow received original independent bounded acceptance, including fresh full42-case source review and controller101localpass. Original historic test bytes were not retained; no historical loader-only equivalence is claimed. GenerationImage is an independently validated type only; GenerationMessage remains four fields without image consumer activation. Source authority, DB/index/hybrid, native runtime and real UI remain mandatory follow-ups. Separate branch work/issue42-shared-source-contracts preserves PR48 original893de951. This slice stacks reviewed43 compaction dependency; frozen hosted101 pending.
+`git diff --cached --check` reports four Markdown hard-break trailing-space lines in frozen independent review artifacts. Controller preserves exact review bytes and records this narrow documentation-format exception; product/test/workflow have no reported whitespace error.

@@ -15,3 +15,7 @@ The migration is additive over `s3a4b5c6d7e8`, installing six tables and narrowl
 Contract/scaffold: commit `eac4de4`, owned solely by #42. Provider #44 consumes `citeframe_contracts.memory` and owns only neutral adapters and their tests. Persistence candidate and evidence are recorded in `specs/v5/memory-management/lane42-report.md`. Independent acceptance is owned by `reviews/issue42-implementation.md`; test counts alone do not accept later runtime/UI/model stages.
 
 Automatic shared-task compaction remains a later required delivery under the full specification. P1a does not activate it or complete issues #42/#41.
+
+## Shared-history contracts and independent GenerationImage delivery
+
+Current history helper/test/workflow received original independent bounded acceptance, including fresh full42-case source review and controller101localpass. Original historic test bytes were not retained; no historical loader-only equivalence is claimed. GenerationImage is an independently validated type only; GenerationMessage remains four fields without image consumer activation. Source authority, DB/index/hybrid, native runtime and real UI remain mandatory follow-ups. Separate branch work/issue42-shared-source-contracts preserves PR48 original893de951. This slice stacks reviewed43 compaction dependency; frozen hosted101 pending.
