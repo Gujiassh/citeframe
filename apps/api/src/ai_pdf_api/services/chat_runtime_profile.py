@@ -8,7 +8,7 @@ import json
 import math
 from types import MappingProxyType
 
-from citeframe_contracts.memory import ProtocolError
+from citeframe_contracts.memory import GenerationPort, HTTPTransport, ModelConnectionSnapshot, ProtocolError, TokenCounter
 from citeframe_memory.adapters import Capabilities, CharacterEstimateCounter, CountingProfile
 
 from .model_config_types import ModelConnection
@@ -218,3 +218,57 @@ def resolve_chat_profile(
                                 entry["supportsStreamingTools"], entry["supportsCancellation"])
     return ResolvedChatProfile(connection, runtime, _freeze(entry), requested_output_tokens,
                                effective, hard, soft, target, counting, capabilities)
+
+
+def build_chat_generation(
+    profile: ResolvedChatProfile, *, transport: HTTPTransport,
+    cancelled: Callable[[], bool] | None = None,
+) -> tuple[GenerationPort, TokenCounter]:
+    if not isinstance(profile, ResolvedChatProfile):
+        _fail()
+    if cancelled is not None:
+        if not callable(cancelled):
+            _fail()
+        if not profile.capabilities.supports_cancellation:
+            _fail("chat_cancellation_unsupported")
+    connection = profile._connection
+    route = (connection.source, connection.provider, connection.protocol)
+    if route not in {
+        ("workspace", "openai", "openai_responses"),
+        ("workspace", "openai", "openai_chat_completions"),
+        ("server", "openai", "openai_responses"),
+        ("server", "openai", "openai_chat_completions"),
+        ("server", "deepseek", "anthropic_messages"),
+    }:
+        _fail("chat_endpoint_unsupported")
+
+    from ai_pdf_api.services.model_config_types import ModelConfigurationError
+    from ai_pdf_api.services.model_endpoint import endpoint_origin, validate_base_url
+    from ai_pdf_api.services.providers import _normalize_api_key, _normalize_deepseek_base, _normalize_openai_base
+    from citeframe_memory.adapters import AnthropicAdapter, ChatCompletionsAdapter, ResponsesAdapter
+
+    adapter, suffix = {
+        "openai_responses": (ResponsesAdapter, "/responses"),
+        "openai_chat_completions": (ChatCompletionsAdapter, "/chat/completions"),
+        "anthropic_messages": (AnthropicAdapter, "/messages"),
+    }[connection.protocol]
+    try:
+        raw_base = validate_base_url(connection.base_url)
+        base = raw_base
+        if connection.source == "server":
+            base = (_normalize_deepseek_base if connection.provider == "deepseek" else _normalize_openai_base)(base)
+        endpoint = validate_base_url(base + suffix)
+        if endpoint_origin(endpoint) != endpoint_origin(raw_base):
+            _fail("model_endpoint_denied")
+    except ModelConfigurationError as error:
+        code = error.code if error.code in {"model_endpoint_invalid", "model_endpoint_denied"} else "chat_profile_invalid"
+        raise ProtocolError(code) from None
+    api_key = _normalize_api_key(connection.api_key)
+    if api_key is None:
+        _fail("generation_not_configured")
+    snapshot = ModelConnectionSnapshot(
+        profile.capabilities.protocol, endpoint, connection.model, api_key,
+        connection.timeout_seconds, profile.runtime_fingerprint,
+        profile.counting_profile.context_window_tokens, profile.effective_max_output_tokens,
+    )
+    return adapter(snapshot, transport, profile.capabilities, cancelled=cancelled), profile.create_counter()

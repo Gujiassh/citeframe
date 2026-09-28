@@ -92,3 +92,42 @@ Lane paths are relative to specs/v5/memory-management. Write-back is this owned 
 Controller independently ran the 183 profile tests (0.60s), then extracted and executed the exact accepted workflow heredoc with isolated PYTHONPATH and plugin autoload disabled: 183 passed in0.54s. No network/provider invocation. Original appointed reviewer separately accepted the frozen profile and CI; review2240D791 retains F44-B1 for the future builder. This commit ships only pure resolution/schema/estimated counting and its dedicated CI. No builder, deployment profile, router/native lifecycle/source or actual-loop activation is included.
 
 Baseline b0e30fb24d3c119573ea7a5d1a7b1607da2fc602 combines unmerged PR49@812ebb1 and unmerged PR47@1b9e1168. DraftPR stacks on PR49 and declares PR47 as a separate prerequisite. No baseline is represented as merged.
+
+
+## 2026-09-29 — R3-B builder candidate for original independent review
+
+Controller reports committed/pushed R3-A+CI at `7e45cf9`, draft PR52 attached, base PR49 plus exact PR47 dependency; old PR49 branch unchanged. This turn performed no Git calls. Before implementation, local product/test/workflow hashes matched the previously accepted PR52 candidate: C3F5DF0B… / E0EC4B92… / 4A816968…. Full baseline hashes and exact planned file changes were written to profile-binding §6 before product edits. Original review SHA is `2240d791041557801f5b65f01b842c9b4755956514a5809881552f9974216e56` and remains untouched.
+
+F44-B1 is incorporated in contract step4 and actual builder: call native `_normalize_api_key` on the same pinned connection's key, reject blank safely, preserve connection/runtime fingerprint and accept no second connection/key. Existing validators and normalizers are lazily imported; original pure resolve path remains free of settings/provider/transport imports. Build returns the real Responses/ChatCompletions/Anthropic adapter and existing estimated counter. No HTTP client creation or closure is hidden in build.
+
+Changed product/CI scope: exactly chat_runtime_profile.py, test_chat_runtime_profile.py and chat-runtime-profile.yml. Builder adds one cohesive function, no factory/parser/service layer. The original pure subprocess's obsolete “builder absent” assertion now requires callable builder with secure/settings modules absent. Original20 pure function identities/183 cases remain. Same test file appends builder fixture/helpers and one80-case class. Dedicated workflow has separate pure183 and secure-builder80 jobs; no -k exclusion and no hidden deselection. AST selector check confirms every test group is explicitly selected.
+
+### Actual execution and controls
+
+- Original developer final extracted workflow bodies: pure183 passed in1.00s; builder80 passed in22.13s.
+- Controller separately executed final workflow heredocs unchanged: **pure183 passed in0.92s; builder80 passed in23.62s**; each exit0. Both missing-path copies exited1 before collection.
+- Controller executed unchanged old neutral workflow heredoc: **181 passed in0.54s**, full API/Worker denial. Three jobs total **444 passed**, separate process boundaries preserved.
+- Developer negative controls for each new workflow job: missing, collect-only, deselection, skip, xfail, forbidden API, Worker, DNS and socket connection all exit1. Only in-memory runner copies changed for these controls.
+
+Run environment: Python3.12.10 with PYTHONDONTWRITEBYTECODE=1/PYTEST_DISABLE_PLUGIN_AUTOLOAD=1, local PYTHONPATH apps/api/src + packages/memory-service/src + packages/backend-contracts/src; builder additionally packages/backend-persistence/src. Cached dependencies are read-only uv archive paths. Exact extraction is `text.split("python - <<'PY'\n")[1:]`, then each segment before `          PY` is textwrap.dedent'ed and passed unchanged to `[sys.executable, '-B', '-c', body]`. No uv sync, package installation or hosted Ubuntu execution occurred locally; those remain controller CI evidence.
+
+The builder's documented API closure is the two pure modules plus core/settings, core/metrics, models, capabilities, providers, model_endpoint and model_transport. Existing providers→metrics→models imports ORM declarations; no DB is opened. Settings fixture suppresses environment/dotenv source reads and selects init-only sources before actual Settings import; no credential files are read. Pure job retains its original narrower whitelist. Both jobs require exact collected and passed-call counts and retain all missing/skip/deselect/xfail guards; old neutral workflow unchanged.
+
+Builder fixtures exercise real model_client, ModelTransport, PolicyNetworkBackend and HTTP parsing. Synthetic DNS answers and numeric peer are injected beneath that boundary. All50 endpoint variants, three actual normalized auth headers, zero construction sends, same raw binding, malformed/unsupported/final origin cases, blank key, cancellation, incomplete terminal status and response/client cleanup execute. Sent read failure occurs after actual request bytes and a first delta: exactly one dial/no retry, protocol transport error, iterator/response/client cleanup. Escaping construction failure and KeyboardInterrupt shutdown also close the real client. Actual origin policy, private-IP rejection and connected-peer mismatch are verified. Synthetic TLS peer records hostname only; no real DNS, socket, TLS handshake or provider call is claimed.
+
+### Frozen candidate SHA-256
+
+| File | SHA-256 |
+|---|---|
+| apps/api/src/ai_pdf_api/services/chat_runtime_profile.py | 07E901D14F9FD49B1C4DB89FE0A0C6408F7227009D719B365E8F680FA13FAC9E |
+| apps/api/tests/test_chat_runtime_profile.py | CE5ADD454FEF14586F88F15C6D84D5CDBB70EA58CFB882E480EDCFE1C3301EE5 |
+| .github/workflows/chat-runtime-profile.yml | 354B158CBAEDB1E98E865AC8A5B9C72FED6FF70582CD99567CF60ABD95D4ABA3 |
+| lanes/issue44-profile-binding.md | 287725302D4092490D46F63A5D35CEC7E73195B81774329A28AC6E880A8E4EA7 |
+| lanes/issue44-chat-loop.md | 39377E36F20476EBC10BD908A0596723A40534A7137FD45C0E78964487946B42 |
+| unchanged .github/workflows/memory-provider.yml | BBEF4AED401E013E1E09A0206D2BD8FC01635DE1B54B5C7FC3F52974873EC091 |
+
+Lane paths are relative to specs/v5/memory-management. Original independent reviewer must decide exact-code/CI acceptance and F44-B1 closure; developer/controller passes do not replace that review. No implementation blocker remains for this bounded candidate. Hosted Actions/uv installation are pending controller execution. R1/R3/R5 owner interfaces, production profiles/capacity, native transactions/router/source/schema/multimodal/loop/SSE/UI remain undelivered and unauthorized here. No shared ABI, adapter, settings, production registry or exact-counter changes. Durable write-back is these owned contracts/evidence; external workbench/private memory are not written under workspace-only permissions. No Git calls/commit/push, model spend or new agent.
+
+## Controller builder verification
+
+Controller ran the two exact updated workflow heredocs in separate fresh Python processes with their declared import paths: pure183 passed0.54s and builder80 passed2.06s. Appointed reviewer subsequently accepted this frozen builder/CI, closed F44-B1 and independently exercised wire/transport negatives. These are synthetic lower-layer transport tests, not live TLS/provider/model or native accounting/loop/UI acceptance. Existing PR52 core/profile checks passed before this follow-up; the new builder job must be observed after push.

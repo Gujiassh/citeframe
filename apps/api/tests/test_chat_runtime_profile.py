@@ -282,7 +282,8 @@ ns = runpy.run_path(sys.argv[1])
 connection, registry = ns["fixture"]()
 ns["resolve"](connection, registry).create_counter()
 module = sys.modules["ai_pdf_api.services.chat_runtime_profile"]
-assert not hasattr(module, "build_chat_generation")
+assert callable(module.build_chat_generation)
+assert not any(name in sys.modules for name in ("ai_pdf_api.core.settings", "ai_pdf_api.services.model_endpoint", "ai_pdf_api.services.providers", "ai_pdf_api.services.model_transport"))
 '''
     result = subprocess.run([sys.executable,"-B","-c",script,str(Path(__file__).resolve())], capture_output=True,text=True)
     assert result.returncode == 0, result.stderr
@@ -326,3 +327,268 @@ def test_explicit_new_source_revision_entry_has_new_runtime_binding(field, entry
     registry["profiles"][0][entry_field] = value
     new = resolve(replace(connection, **{field: value}), registry)
     assert old.runtime_fingerprint != new.runtime_fingerprint
+
+@pytest.fixture
+def builder_dependencies(monkeypatch):
+    from pydantic_settings import BaseSettings, EnvSettingsSource, DotEnvSettingsSource
+    monkeypatch.setattr(EnvSettingsSource, "_load_env_vars", lambda self: {})
+    monkeypatch.setattr(DotEnvSettingsSource, "_load_env_vars", lambda self: {})
+    # Actual Settings defaults only: environment, dotenv and secret-file sources never run.
+    monkeypatch.setattr(BaseSettings, "settings_customise_sources", classmethod(
+        lambda cls, settings_cls, init_settings, env_settings, dotenv_settings, file_secret_settings: (init_settings,)))
+    from ai_pdf_api.core.settings import settings
+    monkeypatch.setattr(settings, "model_private_origins", {})
+    from ai_pdf_api.services import model_endpoint, model_transport, providers
+    from ai_pdf_api.services.chat_runtime_profile import build_chat_generation
+    from types import SimpleNamespace
+    return SimpleNamespace(build=build_chat_generation, endpoint=model_endpoint, transport=model_transport, providers=providers)
+
+
+def builder_profile(protocol="openai_responses", *, source="server", provider="openai", base="https://fixture.invalid", key="synthetic-key", cancellation=False):
+    connection, registry = fixture(protocol)
+    connection = replace(connection, source=source, provider=provider, base_url=base, api_key=key)
+    registry["profiles"][0].update(connectionSource=source, providerIdentity=provider,
+        connectionFingerprint=synthetic_fingerprint(connection), supportsCancellation=cancellation)
+    return resolve(connection, registry)
+
+
+def synthetic_sse(protocol, *, incomplete=False):
+    if protocol == "openai_responses":
+        events = [{"type":"response.output_text.delta","delta":"synthetic answer"},
+                  {"type":"response.completed","response":{"status":"completed"}}]
+    elif protocol == "openai_chat_completions":
+        events = [{"choices":[{"index":0,"delta":{"content":"synthetic answer"},"finish_reason":"stop"}]}, "[DONE]"]
+    else:
+        events = [{"type":"message_start","message":{}},
+                  {"type":"content_block_start","index":0,"content_block":{"type":"text","text":""}},
+                  {"type":"content_block_delta","index":0,"delta":{"type":"text_delta","text":"synthetic answer"}},
+                  {"type":"content_block_stop","index":0},
+                  {"type":"message_delta","delta":{"stop_reason":"end_turn"}}, {"type":"message_stop"}]
+    if incomplete:
+        events = events[:1]
+    return "".join("data: " + (event if isinstance(event,str) else json.dumps(event)) + "\n\n" for event in events).encode()
+
+
+def install_synthetic_wire(monkeypatch, dependencies, body, *, address="93.184.216.34", peer_address=None, read_error=False):
+    """Synthetic DNS answers and numeric wire peer below the real policy backend."""
+    import socket
+    peers, dials = [], []
+    class WirePeer:
+        def __init__(self):
+            self.closed = False
+            self.writes = []
+            self.tls_hosts = []
+            self.reads = 0
+            self.response = b"HTTP/1.1 200 OK\r\nContent-Type: text/event-stream\r\nContent-Length: " + str(len(body)).encode() + b"\r\n\r\n" + body
+        def read(self, max_bytes, timeout=None):
+            self.reads += 1
+            if read_error:
+                if self.reads > 1:
+                    raise dependencies.transport.httpcore.ReadError("synthetic sent read failure")
+                max_bytes = self.response.index(b"\r\n\r\n") + 4 + body.index(b"\n\n") + 2
+            data, self.response = self.response[:max_bytes], self.response[max_bytes:]
+            return data
+        def write(self, buffer, timeout=None):
+            self.writes.append(bytes(buffer))
+        def close(self):
+            self.closed = True
+        def start_tls(self, ssl_context, server_hostname=None, timeout=None):
+            self.tls_hosts.append(server_hostname)
+            return self
+        def get_extra_info(self, info):
+            return (peer_address or address, 443) if info == "server_addr" else None
+    def dial(self, host, port, timeout=None, local_address=None, socket_options=None):
+        dials.append((host, port))
+        peer = WirePeer()
+        peers.append(peer)
+        return peer
+    monkeypatch.setattr(dependencies.transport, "_resolve", lambda host, port, timeout: [(socket.AF_INET, socket.SOCK_STREAM, 6, "", (address, port))])
+    monkeypatch.setattr(dependencies.transport.httpcore.SyncBackend, "connect_tcp", dial)
+    return peers, dials
+
+
+class TestChatGenerationBuilder:
+    @pytest.mark.parametrize("source,provider,protocol", [
+        ("workspace","openai","openai_responses"),("workspace","openai","openai_chat_completions"),
+        ("server","openai","openai_responses"),("server","openai","openai_chat_completions"),
+        ("server","deepseek","anthropic_messages")])
+    @pytest.mark.parametrize("path", ["", "/", "/custom", "/custom/", "/v1", "/v1/", "/anthropic", "/anthropic/", "/anthropic/v1", "/anthropic/v1/"])
+    def test_endpoint_table_zero_sends(self, builder_dependencies, monkeypatch, source, provider, protocol, path):
+        deps = builder_dependencies
+        profile = builder_profile(protocol,source=source,provider=provider,base="https://fixture.invalid"+path)
+        peers,dials = install_synthetic_wire(monkeypatch,deps,b"")
+        original = profile.runtime_fingerprint
+        with deps.transport.model_client(profile._connection.base_url,2) as client:
+            generation,counter = deps.build(profile,transport=client)
+            expected_path = path.rstrip("/")
+            if source == "server":
+                if provider == "openai":
+                    expected_path = expected_path if expected_path.endswith("/v1") else expected_path+"/v1"
+                else:
+                    expected_path = "/custom/anthropic/v1" if expected_path == "/custom" else "/anthropic/v1"
+            suffix = {"openai_responses":"/responses","openai_chat_completions":"/chat/completions","anthropic_messages":"/messages"}[protocol]
+            assert generation.connection.endpoint == "https://fixture.invalid"+expected_path+suffix
+            assert generation.connection.config_fingerprint == counter.profile.config_fingerprint == original
+            assert generation.connection.max_output_tokens == profile.effective_max_output_tokens
+            assert generation.transport is client
+            assert not client.is_closed
+            assert peers == dials == []
+        assert client.is_closed and profile.runtime_fingerprint == original
+        assert profile._connection.base_url == "https://fixture.invalid"+path
+
+    @pytest.mark.parametrize("protocol,provider,adapter_name", [("openai_responses","openai","ResponsesAdapter"),("openai_chat_completions","openai","ChatCompletionsAdapter"),("anthropic_messages","deepseek","AnthropicAdapter")])
+    def test_actual_secure_send_headers_and_close(self,builder_dependencies,monkeypatch,protocol,provider,adapter_name):
+        from citeframe_contracts.memory import TurnComplete, Usage
+        deps=builder_dependencies
+        profile=builder_profile(protocol,provider=provider,key="  synthetic-key \t")
+        original=profile.runtime_fingerprint
+        peers,dials=install_synthetic_wire(monkeypatch,deps,synthetic_sse(protocol))
+        with deps.transport.model_client(profile._connection.base_url,2) as client:
+            generation,counter=deps.build(profile,transport=client)
+            assert type(generation).__name__ == adapter_name
+            assert peers == []
+            request=GenerationRequest((GenerationMessage("user","synthetic question"),),100)
+            iterator=generation.stream_turn(request)
+            try:
+                events=list(iterator)
+            finally:
+                iterator.close()
+            assert events[-1] == TurnComplete("answer")
+            assert any(isinstance(event,Usage) and event.source == "unknown" for event in events)
+            assert counter.count(request,generation.connection).mode == "estimated"
+            wire=b"".join(peers[0].writes).lower()
+            expected=b"x-api-key: synthetic-key\r\n" if protocol=="anthropic_messages" else b"authorization: bearer synthetic-key\r\n"
+            assert expected in wire and b"  synthetic-key" not in wire
+            assert peers[0].tls_hosts == ["fixture.invalid"]
+            assert dials == [("93.184.216.34",443)]
+            assert generation.connection.api_key == "synthetic-key"
+            assert not client.is_closed
+        assert client.is_closed and peers[0].closed
+        assert profile._connection.api_key == "  synthetic-key \t" and profile.runtime_fingerprint == original
+
+    @pytest.mark.parametrize("source,provider,protocol", [("workspace","deepseek","anthropic_messages"),("server","anthropic","anthropic_messages"),("server","openai","anthropic_messages"),("server","deepseek","openai_responses"),("workspace","other","openai_responses")])
+    def test_unsupported_combinations(self,builder_dependencies,monkeypatch,source,provider,protocol):
+        deps=builder_dependencies
+        profile=builder_profile(protocol,source=source,provider=provider)
+        peers,dials=install_synthetic_wire(monkeypatch,deps,b"")
+        with deps.transport.model_client(profile._connection.base_url,2) as client:
+            with pytest.raises(ProtocolError,match="^chat_endpoint_unsupported$"):
+                deps.build(profile,transport=client)
+        assert client.is_closed and peers == dials == []
+
+    @pytest.mark.parametrize("base,code", [("https://fixture.invalid/a b","model_endpoint_invalid"),("http://fixture.invalid","model_endpoint_denied"),("https://metadata","model_endpoint_invalid"),("https://user:password@fixture.invalid","model_endpoint_invalid"),("https://fixture.invalid?q=x","model_endpoint_invalid"),("https://fixture.invalid#x","model_endpoint_invalid"),("https://fixture.invalid/%61","model_endpoint_invalid")])
+    def test_invalid_raw_url(self,builder_dependencies,monkeypatch,base,code):
+        deps=builder_dependencies
+        profile=builder_profile(base=base)
+        peers,dials=install_synthetic_wire(monkeypatch,deps,b"")
+        with deps.transport.model_client("https://fixture.invalid",2) as client:
+            with pytest.raises(ProtocolError,match=f"^{code}$"):
+                deps.build(profile,transport=client)
+        assert client.is_closed and peers == dials == []
+
+    @pytest.mark.parametrize("normalized,code", [("https://fixture.invalid/bad%path","model_endpoint_invalid"),("https://other.invalid/v1","model_endpoint_denied")])
+    def test_final_validation_and_origin(self,builder_dependencies,monkeypatch,normalized,code):
+        deps=builder_dependencies
+        monkeypatch.setattr(deps.providers,"_normalize_openai_base",lambda _:normalized)
+        peers,dials=install_synthetic_wire(monkeypatch,deps,b"")
+        with deps.transport.model_client("https://fixture.invalid",2) as client:
+            with pytest.raises(ProtocolError,match=f"^{code}$"):
+                deps.build(builder_profile(),transport=client)
+        assert client.is_closed and peers == dials == []
+
+    def test_whitespace_only_rejects_before_send(self,builder_dependencies,monkeypatch):
+        deps=builder_dependencies
+        with pytest.raises(ProtocolError,match="^chat_profile_invalid$"):
+            builder_profile(key=" \t ")
+        # Exercise builder defense independently of the resolver's earlier rejection.
+        profile=builder_profile()
+        profile=replace(profile,_connection=replace(profile._connection,api_key=" \t "))
+        peers,dials=install_synthetic_wire(monkeypatch,deps,b"")
+        with deps.transport.model_client("https://fixture.invalid",2) as client:
+            with pytest.raises(ProtocolError,match="^generation_not_configured$"):
+                deps.build(profile,transport=client)
+        assert client.is_closed and peers == dials == []
+
+    @pytest.mark.parametrize("cancelled,code", [(lambda:False,"chat_cancellation_unsupported"),(True,"chat_profile_invalid")])
+    def test_cancellation_rejected_at_construction(self,builder_dependencies,monkeypatch,cancelled,code):
+        deps=builder_dependencies
+        peers,dials=install_synthetic_wire(monkeypatch,deps,b"")
+        with deps.transport.model_client("https://fixture.invalid",2) as client:
+            with pytest.raises(ProtocolError,match=f"^{code}$"):
+                deps.build(builder_profile(),transport=client,cancelled=cancelled)
+        assert client.is_closed and peers == dials == []
+
+    @pytest.mark.parametrize("mode", ["iterator_close","cancel","incomplete","pre_cancel","sent_read_error"])
+    def test_iterator_and_client_cleanup(self,builder_dependencies,monkeypatch,mode):
+        deps=builder_dependencies
+        peers,dials=install_synthetic_wire(monkeypatch,deps,synthetic_sse("openai_responses",incomplete=mode=="incomplete"),read_error=mode=="sent_read_error")
+        cancelled=[mode=="pre_cancel"]
+        closed=[]
+        original_close=deps.transport._ResponseStream.close
+        def tracked_close(stream):
+            closed.append(True)
+            return original_close(stream)
+        monkeypatch.setattr(deps.transport._ResponseStream,"close",tracked_close)
+        with deps.transport.model_client("https://fixture.invalid",2) as client:
+            generation,_=deps.build(builder_profile(cancellation=True),transport=client,cancelled=lambda:cancelled[0])
+            iterator=generation.stream_turn(GenerationRequest((GenerationMessage("user","synthetic"),),100))
+            try:
+                if mode=="pre_cancel":
+                    with pytest.raises(ProtocolError,match="generation_cancelled"):
+                        next(iterator)
+                else:
+                    assert next(iterator).text == "synthetic answer"
+                    if mode=="cancel":
+                        cancelled[0]=True
+                        with pytest.raises(ProtocolError,match="generation_cancelled"):
+                            list(iterator)
+                    elif mode in ("incomplete", "sent_read_error"):
+                        code = "generation_protocol_invalid" if mode == "incomplete" else "generation_transport_error"
+                        with pytest.raises(ProtocolError, match=f"^{code}$"):
+                            list(iterator)
+            finally:
+                iterator.close()
+            assert not client.is_closed
+            assert bool(closed) == (mode!="pre_cancel")
+        assert client.is_closed
+        assert all(peer.closed for peer in peers)
+        assert len(dials) == (0 if mode=="pre_cancel" else 1)
+        if mode == "sent_read_error":
+            assert peers[0].writes and peers[0].reads == 2
+
+    @pytest.mark.parametrize("case", ["request_origin","private_dns","peer_mismatch"])
+    def test_real_security_boundary(self,builder_dependencies,monkeypatch,case):
+        from ai_pdf_api.services.model_config_types import ModelConfigurationError
+        deps=builder_dependencies
+        peers,dials=install_synthetic_wire(monkeypatch,deps,b"",address="127.0.0.1" if case=="private_dns" else "93.184.216.34",peer_address="93.184.216.35" if case=="peer_mismatch" else None)
+        with deps.transport.model_client("https://fixture.invalid",2) as client:
+            if case=="request_origin":
+                with pytest.raises(ModelConfigurationError) as caught:
+                    client.get("https://other.invalid")
+                assert caught.value.code == "model_endpoint_denied"
+            else:
+                generation,_=deps.build(builder_profile(),transport=client)
+                with pytest.raises(ProtocolError,match="generation_transport_error"):
+                    list(generation.stream_turn(GenerationRequest((GenerationMessage("user","synthetic"),),100)))
+        assert client.is_closed
+        assert bool(dials) == (case=="peer_mismatch")
+        assert all(peer.closed for peer in peers)
+
+    @pytest.mark.parametrize("failure", ["construction", "runner_shutdown"])
+    def test_exception_exits_owned_client_context(self, builder_dependencies, monkeypatch, failure):
+        deps = builder_dependencies
+        peers, dials = install_synthetic_wire(monkeypatch, deps, synthetic_sse("openai_responses"))
+        error = ProtocolError if failure == "construction" else KeyboardInterrupt
+        with pytest.raises(error):
+            with deps.transport.model_client("https://fixture.invalid", 2) as client:
+                profile = builder_profile(provider="unsupported" if failure == "construction" else "openai")
+                generation, _ = deps.build(profile, transport=client)
+                iterator = generation.stream_turn(GenerationRequest((GenerationMessage("user", "synthetic"),), 100))
+                try:
+                    assert next(iterator).text == "synthetic answer"
+                    raise KeyboardInterrupt()
+                finally:
+                    iterator.close()
+        assert client.is_closed
+        assert len(dials) == (0 if failure == "construction" else 1)
+        assert all(peer.closed for peer in peers)

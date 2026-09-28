@@ -564,3 +564,86 @@ raw/final校验、同源比较、保留raw-base hash、延迟settings依赖导�
 该文字对齐不自动批准#42/#43当前工作稿、实际HistorySession/分页/SQL/重试消费接口，也不关闭其残留实现问题。R1原生幂等/事务、R3来源接口与原owner验收、R5真实读前/解码渲染资源边界仍维持原gate；原provider/helper/R3-A代码ACCEPT保留。
 
 Write-back：仅追加本原review，追加前SHA **7EC60A4E923C158133868C85948BF1291F2FF63FCDEB445BD2596AC03292CB50**；原字节前缀未改。未写产品/测试/CI候选/合同/Git/DB/service/private-memory/shared-workbench，无网络/paid模型调用。controller负责stage/commit/push与hosted核验；F44-B1交回原developer。
+
+
+## R3-B 冻结builder实现与双job CI独立验收 — 2026-09-29
+
+**最终结论：ACCEPT — bounded text-only builder implementation + updated dedicated CI。F44-B1 CLOSED（实际代码与三协议header证据）。没有新返工finding。** R3-A及neutral provider/helper的既有范围ACCEPT保留；controller可以提交本精确候选，hosted新版builder job仍待push后验证。该结论不包含真实TLS/外网/provider质量、生产profile/capacity/exactcounter、native loop/事务/source/多模态/SSE/UI。
+
+### 1. 目标、基线与精确manifest
+
+先按有效v4/A1选2界定：最终目标仍是同一问题任务内的完整工具续轮、问题后多次自动压缩、冻结预算/来源/效果、共享输出排除所有私有内容。当前真实产品结果仅为未接入router的API-local纯profile与受控provider构造；它不会执行上述循环或授权任何来源。
+
+实际分支 `work/issue44-chat-runtime`，HEAD **7e45cf97329a02cea20016a201b4cd08ed6f3e73**，本候选为其工作区增量。PR52 pure CI八checks全绿为controller提供的先前交付状态，本轮无网络访问核验，不把它用于新版builder验收。新builder仍未push。
+
+| 精确文件 | 审前/审后相同 SHA-256 |
+|---|---|
+| `apps/api/src/ai_pdf_api/services/chat_runtime_profile.py` | `07E901D14F9FD49B1C4DB89FE0A0C6408F7227009D719B365E8F680FA13FAC9E` |
+| `apps/api/tests/test_chat_runtime_profile.py` | `CE5ADD454FEF14586F88F15C6D84D5CDBB70EA58CFB882E480EDCFE1C3301EE5` |
+| `.github/workflows/chat-runtime-profile.yml` | `354B158CBAEDB1E98E865AC8A5B9C72FED6FF70582CD99567CF60ABD95D4ABA3` |
+| 原 `.github/workflows/memory-provider.yml` | `BBEF4AED401E013E1E09A0206D2BD8FC01635DE1B54B5C7FC3F52974873EC091` |
+| `lanes/issue44-profile-binding.md` | `287725302D4092490D46F63A5D35CEC7E73195B81774329A28AC6E880A8E4EA7` |
+| `evidence/issue44-provider/chat-runtime-profile.md` | `7FB5FD4BAC64F6CE6E124FD724DAF5C8DF92E059F32C868AD80DCC5C1132FC75` |
+| `lanes/issue44-chat-loop.md` | `39377E36F20476EBC10BD908A0596723A40534A7137FD45C0E78964487946B42` |
+
+后三路径相对specs/v5/memory-management。实际diff为原module追加一个builder函数及既有DTO类型导入；resolve实现未变。原183测试仅将“builder不存在”断言改为callable且settings/helpers仍未导入，并追加fixture/helper与80项builder class。主runtime文稿只更新小slice交付状态，不产生其他条款新批准。
+
+### 2. 实际实现审查
+
+| 边界/语义 | 结论与证据 |
+|---|---|
+| F44-B1 native credential parity | **PASS/CLOSED。** build直接调用现有providers._normalize_api_key，trim后构造snapshot；原不可变connection和runtime fingerprint不变。不接收第二connection/key。三个真实adapter最终wire header均使用规范化key；空白-only resolver及builder防线安全拒绝。 |
+| pure与lazy import | **PASS。** build调用前不import settings/native providers/model_endpoint；原strict pure job仍能完成全部183。build只在类型/cancel/route检查之后延迟导入既有helper，不新增配置加载器或全局secret。 |
+| exact route / raw-final URL | **PASS。** 仅五个source/provider/protocol组合；workspace exact-base与server规则区分。实际native normalizer、raw/final validate与最终同源比较执行，未知组合/非法URL/normalizer换源均zero-send拒绝。 |
+| binding / counter / ABI | **PASS。** snapshot使用原model、归一key、同runtime fingerprint、profile物理context和effective output ceiling；counter仍为实际CharacterEstimateCounter/estimated。没有第二port、factory框架、parser复制、shared ABI或全局fingerprint修改。请求reserve仍由实际request admission检查，本builder不创建owner预算。 |
+| HTTP ownership | **PASS，composition contract范围。** build只持有注入transport，不创建/关闭client。测试composition使用真正model_client with并finally关闭iterator；正常、构造异常、预取消、流中取消、早关、无完整终态、sent read error和KeyboardInterrupt退出均验证清理。没有实际router/runner消费代码，本结论不代替将来真实consumer必须遵守该生命周期。 |
+| unknown / retry | **PASS，adapter边界范围。** 缺usage成功时保留Usage(None,None,unknown)；sent读失败只有安全transport error、无成功终态/自动请求重发。未执行#43 reservation/unknown账本结算，不授予自动重试权限。 |
+| production/runtime/UI | **NOT APPLICABLE于本slice验收；原activation gates保留。** |
+
+只读核对实际secure依赖未改：model_transport A9E79ACC…、model_endpoint 6E647925…、providers 8338579B…、capabilities FFE48D99…、shared memory.py B1A0D53B…；neutral _generation.py SHA **F7E2335BA034FB79573799916C80529FF540B186C9D97D21556788AC9D0CAD7A**。无通过更改安全helper来制造新测试PASS。
+
+### 3. 原workflow正文的独立执行
+
+本reviewer从当前两份YAML的实际run标量抽取Python heredoc，未修改正文；缓存PyYAML解析、Python AST解析及Git Bash `--noprofile --norc -n`语法检查通过。以 `D:/Code/citeframe/apps/api/.venv/Scripts/python.exe -B -c <exact body>` 在独立进程执行三个job正文。
+
+PYTHONDONTWRITEBYTECODE=1、PYTEST_DISABLE_PLUGIN_AUTOLOAD=1；PYTHONPATH指向本worktree的API/memory-service/backend-contracts，builder再使用backend-persistence。没有安装包/uv sync/网络；这些是本地同正文执行，不声称Ubuntu hosted或真实TLS执行。
+
+| 实际runner | reviewer新结果 |
+|---|---|
+| pure-chat-profile | **183 passed in 0.56s，exit0** |
+| secure-chat-builder | **80 passed in 1.77s，exit0** |
+| 原neutral-provider | **181 passed in 0.40s，exit0** |
+
+合计444只标识本次实际收集范围；安全判断来自具体边界、失败路径与下节反例。开发/controller的此前444与耗时保持开发侧证据，不代替本执行。
+
+**CI partition验证：** 与HEAD已接受workflow的解析run正文逐字比较，将新增20个pure显式node selector恢复为原test_path一行后，pure run正文完全相等；其环境与job属性亦一致。AST验证当前测试文件恰有20个顶层pure test函数和一个TestChatGenerationBuilder class，所有实际组均被选择，无孤立未收集组。纯job的窄API白名单/socket/DNS/skip/xfail/deselection/count/pass-call门禁没有放宽。新增builder job是独立进程，只允许实际helper依赖闭包；providers→metrics→models需要ORM声明，不启动DB。原neutral workflow字节不变。
+
+**双job各自6项负控制：** 对内存runner副本分别制造缺文件、collect-only、全deselection、单项skip、xfail(run=False)、非严格xpass；**12项均exit1**。原candidate/test从未改写或移除。collector与passed-call双计数保证收集数相同也不能用未执行/xfail冒充通过。未来新增test组应同步显式选择与数目，不能通过删门禁规避维护。
+
+### 4. reviewer另行27项实际secure boundary反例
+
+为避免只重放developer fixtures，另用原builder workflow的实际导入/网络guard前缀运行内存脚本。以fixture隔离真实Settings的env/dotenv/secret sources，实际module路径断言为本worktree。使用真实model_client、ModelTransport、PolicyNetworkBackend、httpcore HTTP解析与真实builder/三个adapter；替换**socket.getaddrinfo返回值**，保留真正 `_resolve` 的ThreadPool/Semaphore路径。只在最后SyncBackend numeric connect处注入独立内存wire peer；其start_tls只记录hostname，不握手。安全URL/IP/origin/peer helper未替换。
+
+对Responses、ChatCompletions、Anthropic各执行下列9种情况，**27项全通过**：
+
+1. **302 redirect到另一个origin**，并主动设置client.follow_redirects=True：adapter的每请求False仍有效；只有一次原host DNS、一次原IP dial/POST，无第二destination，无TurnComplete，响应/client关闭。
+2. **307 redirect**同样拒绝，没有重放POST或泄露凭据到目标。
+3. **DNS同时返回公网+127.0.0.1**：原policy先校验全部地址，零numeric dial/零request；没有先给公网地址发送后再发现私有地址。
+4. **已连接peer与所选IP不一致**：原policy关闭peer，零request bytes，安全transport错误。
+5. **已发请求+首text delta后的ReadError**：无TurnComplete；仅一次dial/POST，不自动重发。iterator、response、peer、client均清理。
+6. **首delta后取消**：generation_cancelled，无成功终态，response/peer/client关闭。
+7. **消费者首delta后主动iterator.close**：在client上下文退出前已关闭响应；退出后peer/client关闭。
+8. **完整成功但provider未给usage**：三协议保留双None/unknown，正常终态；不把unknown虚构成0/reported。
+9. **pre-cancel**：零DNS/零dial/零request，client退出仍关闭。
+
+每次build都单独检查零DNS/dial、真实normalize helper被调用一次、合成key的tab/newline首尾空白被剥离、原connection和fingerprint不变、counter/snapshot绑定相同。所有实际请求wire均是一条POST；记录的TLS hostname为fixture.invalid。这里的“无重试”指sent/redirect请求不被再次发送，不否认原backend在未发送时按既有逻辑尝试多个允许的连接地址。
+
+另外80项实际专属测试覆盖50个合法endpoint组合、三adapter正常headers、无效raw/final与不支持组合、cancellation capability构造前拒绝、构造异常及KeyboardInterrupt with清理。其synthetic DNS/wire替身范围已经逐项读代码核对；未把替身自身断言当成真实SSRF/peer检查。
+
+### 5. 限制、交付和write-back
+
+**R3-B与本精确双job CI可交controller提交；F44-B1实际闭环。** 新job hosted执行和frozen uv依赖安装仍待controller提交推送后的证据。原PR52八checks绿不代表这次尚未push的builder已hosted通过。
+
+R1原生start/finish/replay事务、R3 #43 issuer→#42 source及cursor实际消费、R5 native图像资源边界仍归原owners；没有schema/native/router/source/loader授权变化。无production registry、容量背书、exact counter、外网模型质量、真实TLS/cert/代理环境集成或UI acceptance。没有凭此宣布#44/#41完成，也不豁免外部服务/合并门禁。
+
+仅追加此原review；追加前SHA **2240D791041557801F5B65F01B842C9B4755956514A5809881552F9974216E56**，原字节前缀完整保留。候选所有hash复核稳定；`git diff --check`通过。无产品/测试/CI/合同/shared ABI/schema/Git写入，无DB/service/private-memory/shared-workbench写入，无paid/live模型或实际UI/network调用。controller负责stage/commit/push/PR；未创建重复实施owner。

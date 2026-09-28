@@ -1,6 +1,6 @@
 # Issue44 R2/R4 — exact profile-only implementation contract
 
-Status: R3-A pure resolve/schema code independently ACCEPTED at review SHA-256 `7ec60a4e923c158133868c85948bf1291f2ff63fcdeb445bd2596ac03292cb50`; product/test bytes frozen. R2/R4 text-profile design is accepted; R3-B endpoint addendum below awaits review and build remains unimplemented. Governing review: reviews/issue44-chat-loop.md SHA-256 `e06bd82578182a2944dee2f0658558f620e60984318264274eb00fbe7a4e9468`. Only new product files `apps/api/src/ai_pdf_api/services/chat_runtime_profile.py` and `apps/api/tests/test_chat_runtime_profile.py` are assigned. No production profile/capacity/exact counter or loader is authorized.
+Status: R3-A pure resolve/schema code independently ACCEPTED at review SHA-256 `7ec60a4e923c158133868c85948bf1291f2ff63fcdeb445bd2596ac03292cb50`; R3-A baseline hashes are recorded in §6. R2/R4 and R3-B endpoint/lifecycle design are accepted at review `2240d791041557801f5b65f01b842c9b4755956514a5809881552f9974216e56`, with F44-B1 key normalization incorporated below. The authorized R3-B implementation candidate now awaits exact-code independent review; production activation remains excluded. Governing review: reviews/issue44-chat-loop.md SHA-256 `e06bd82578182a2944dee2f0658558f620e60984318264274eb00fbe7a4e9468`. Only product files `apps/api/src/ai_pdf_api/services/chat_runtime_profile.py` and `apps/api/tests/test_chat_runtime_profile.py` are assigned. No production profile/capacity/exact counter or loader is authorized.
 
 ## 1. Pure R3-A callable and trust boundary
 
@@ -41,7 +41,7 @@ ResolvedChatProfile is frozen/API-local, not a shared port. It carries private o
 
 Stable safe ProtocolError codes: chat_profile_invalid (shape/type/relationships), chat_profile_unknown (no exact match), chat_profile_ambiguous (duplicate identities/selectors), chat_counter_unsupported (mode/implementation), chat_images_unsupported, chat_output_limit, chat_capacity_invalid, chat_cancellation_unsupported. Error messages contain no raw entry/endpoint/key. Malformed fingerprint callback result rejects; callback exceptions become safe profile error.
 
-## 3. R3-B builder — proposal only, wait for small-contract approval
+## 3. R3-B builder — accepted design, implementation candidate
 
 ```python
 build_chat_generation(
@@ -62,15 +62,15 @@ with model_client(pinned_connection.base_url, pinned_connection.timeout_seconds)
 
 Build never creates, closes or stores a separate client pool. Production injection must be existing secure model_client (origin/DNS policy, trust_env=False, follow_redirects=False, no retries, bounded response/time); tests inject a context-owned httpx.Client with MockTransport. Context owner closes on normal completion, construction failure, cancellation, unknown outcome and runner shutdown, after active iterator closure. No reliance on adapter private attributes. Returning an iterator outside the with is forbidden. No new service/context wrapper or shared transport-close ABI.
 
-Before R3-B code, owner review must accept exact endpoint construction using existing native protocol-specific builders and validation while preserving raw base binding. Build/config tests must prove zero sends at construction, drift cannot substitute connection, all3 actual adapter classes and client closure under every exit. R3-A does not implement build or a placeholder raising NotImplementedError.
+Original review2240D791 accepts §5 endpoint/lifecycle design subject to the recorded native key normalization condition; implementation review must verify that exact behavior while preserving raw base binding. Build/config tests must prove zero sends at construction, drift cannot substitute connection, all3 actual adapter classes and client closure under every exit. R3-A does not implement build or a placeholder raising NotImplementedError.
 
 ## 4. Evidence and limits
 
 Required R3-A actual-code tests: strict unknown/duplicate/missing entries, bool-vs-int/finite/relationship checks, all3 explicit raw mappings, source/revision changes with unchanged existing fingerprint, secret/endpoint/model/protocol/timeout drift, app-vs-physical stricter cap and request reserve, exact/images/counter rejection, cancellation flag, immutable input copies, safe repr/errors and no IO/settings import. Counter tests stay estimated and use actual CharacterEstimateCounter/native serializer only where an explicit synthetic snapshot is supplied; no physical/tokenizer accuracy inference.
 
-No shared/native/router/assets/settings/DTO/CI file change, no #43 wait for this pure slice, no production activation. R1/R3/R5 remain separate original-owner runtime amendments. No commits/push/paid calls.
+R3-A did not change shared/native/router/assets/settings/DTO/CI files; the later authorized dedicated CI and R3-B delta are recorded in §6. No #43 wait for this bounded slice, no production activation. R1/R3/R5 remain separate original-owner runtime amendments. No commits/push/paid calls.
 
-## 5. R3-B endpoint addendum — proposed, no builder activation
+## 5. R3-B endpoint addendum — accepted design, no production activation
 
 The following closed routing table preserves existing native endpoint rules. `source`, `provider`, and raw `protocol` come solely from the profile's pinned ModelConnection. Matching a pure R3-A profile does not authorize an unsupported endpoint combination.
 
@@ -83,7 +83,7 @@ The following closed routing table preserves existing native endpoint rules. `so
 | server | deepseek | anthropic_messages | existing `_normalize_deepseek_base` | `/messages` / AnthropicAdapter |
 | any other combination | any | any | reject before construction/send with safe `ProtocolError(code="chat_endpoint_unsupported")` | no inferred route |
 
-The server ChatCompletions row proposes explicit neutral routing using the existing ChatCompletions endpoint rule; it does not claim the legacy server factory already dispatches that protocol separately. No arbitrary Anthropic-compatible provider or workspace receives the DeepSeek rewrite. Expanding supported combinations requires its own explicit contract.
+The accepted server ChatCompletions row specifies explicit neutral routing using the existing ChatCompletions endpoint rule; it does not claim the legacy server factory already dispatches that protocol separately. No arbitrary Anthropic-compatible provider or workspace receives the DeepSeek rewrite. Expanding supported combinations requires its own explicit contract.
 
 All examples use the synthetic origin `https://fixture.invalid`. Entries below show final paths for Responses; for the two OpenAI columns only, substitute `/chat/completions` for the final `/responses` when the raw protocol is openai_chat_completions.
 
@@ -95,12 +95,36 @@ All examples use the synthetic origin `https://fixture.invalid`. Entries below s
 | `/anthropic` or `/anthropic/` | `/anthropic/responses` | `/anthropic/v1/responses` | `/anthropic/v1/messages` |
 | `/anthropic/v1` or `/anthropic/v1/` | `/anthropic/v1/responses` | `/anthropic/v1/responses` | `/anthropic/v1/messages` |
 
-Validation/construction sequence, proposed for R3-B only:
+Validation/construction sequence for R3-B only:
 
 1. Trusted composition takes `pinned_connection = profile._connection`, the existing private immutable field, in its bounded construction scope. This is intentional API-local composition access; no new accessor, shared export, second connection argument, settings reload, or adapter-private-field access is needed. Do not log/serialize that value or retain it beyond execution lifetime.
 2. Composition lazily imports existing `model_endpoint.validate_base_url`, `endpoint_origin`, and `model_transport.model_client` after pure resolution. Validate the pinned **raw** base before entering `with model_client(pinned_connection.base_url, pinned_connection.timeout_seconds) as client`. The existing client also validates its base on construction. R3-A remains free of these settings-dependent imports.
 3. Inside that context, build independently validates the same pinned raw base, applies only the selected table rule to the validated base (existing native normalizers imported at build time), appends the fixed suffix, validates the final endpoint with `validate_base_url`, and requires `endpoint_origin(final) == endpoint_origin(validated_raw)`. Reject invalid/denied URLs using the existing safe model_endpoint_invalid/model_endpoint_denied codes and reject an origin mismatch as model_endpoint_denied, without exposing raw URLs/keys. There is no caller-supplied endpoint override. Raw base hash in the accepted runtime binding stays unchanged by normalization.
-4. Only after these checks construct ModelConnectionSnapshot with the validated final endpoint, pinned model/credentials, effective output ceiling and resolved runtime fingerprint; instantiate the selected neutral adapter with the injected client and existing estimated counter. Neither construction nor URL validation performs DNS/HTTP. All iteration and iterator closure remain inside the composition-owned client context, including error/cancel/unknown exits.
+4. Only after these checks take the API key from that same pinned connection and apply the existing providers._normalize_api_key semantics (strip leading/trailing whitespace). Safely reject whitespace-only credentials before any send; accept no second key or connection. Keep the original immutable connection, raw binding and existing fingerprint unchanged, and never expose secrets through hash inputs/repr/errors. Construct ModelConnectionSnapshot with the validated final endpoint, pinned model, normalized key, effective output ceiling and resolved runtime fingerprint; instantiate the selected neutral adapter with the injected client and existing estimated counter. Neither construction nor URL validation performs DNS/HTTP. All iteration and iterator closure remain inside the composition-owned client context, including error/cancel/unknown exits.
 5. Actual request origin enforcement remains in ModelTransport; actual DNS/IP admission remains at PolicyNetworkBackend's resolve/dial boundary. Pure resolution and syntax/origin validation do not certify DNS destinations. Existing trust_env=False/follow_redirects=False and no retry semantics stay unchanged.
 
-This table is grounded in workspace_providers._BoundProvider.adapter, providers._normalize_openai_base/_normalize_deepseek_base, capabilities.normalize_provider_endpoint, chat_completions.ChatCompletionsProvider, model_endpoint and model_transport. R3-B tests must cover every row, all three actual adapters, unsupported combinations, invalid raw/final URLs and origin mismatch, zero construction sends, raw-binding preservation and context/iterator cleanup before implementation acceptance. R1/R3/R5 still require exact original-owner review; no shared/source/schema/native/image changes are granted by this addendum.
+This table is grounded in workspace_providers._BoundProvider.adapter, providers._normalize_openai_base/_normalize_deepseek_base, capabilities.normalize_provider_endpoint, chat_completions.ChatCompletionsProvider, model_endpoint and model_transport. R3-B implementation acceptance requires tests covering every row, all three actual adapters, unsupported combinations, invalid raw/final URLs and origin mismatch, zero construction sends, raw-binding preservation and context/iterator cleanup before implementation acceptance. R1/R3/R5 still require exact original-owner review; no shared/source/schema/native/image changes are granted by this addendum.
+
+## 6. Authorized R3-B implementation change ledger — 2026-09-29
+
+Controller reports PR52 draft pushed at `7e45cf9`, stacked on PR49 plus exact PR47 dependency; old PR49 branch unchanged. Original reviewer `2240D791` accepts CI and endpoint/lifecycle design subject only to F44-B1 native key.strip parity. This section records scope before implementation; no new production activation.
+
+| Assigned file | Planned bounded delta | Verified pre-change SHA-256 |
+|---|---|---|
+| apps/api/src/ai_pdf_api/services/chat_runtime_profile.py | Add reviewed build_chat_generation with lazy existing secure URL/native normalization helpers, pinned snapshot, three existing adapters and estimated counter; preserve pure import/resolve path | C3F5DF0BBC9FF52259AFCEE07A2C5DC4DA53CEE6472788B67536F7CED073CDF8 |
+| apps/api/tests/test_chat_runtime_profile.py | Append isolated builder test group; preserve original183 tests; synthetic header/endpoint/construction/cancel/unknown/context cleanup cases using actual secure helpers | E0EC4B923A191E65068ECF4DB4CD327A7C79D54DD47EDCB0C3E2B71E719BA823 |
+| .github/workflows/chat-runtime-profile.yml | Separate pure183 and exact builder collection/execution jobs; preserve pure API whitelist and all skip/deselect/xfail/missing/network guards | 4A816968A145398CF6EEBF32BED98A24C5845A75A004CCE2184B4BAB84B24F06 |
+
+These local baseline hashes match the accepted candidate recorded for controller's PR52 delivery; no Git inspection is performed. Pure test job must not import settings or native helpers at collection/import time. Builder job permits only documented actual helper dependency closure and uses synthetic settings with real model_client/ModelTransport; security transport must not be replaced with a fake. Wire/network peers may be synthetic below the actual secure boundary; socket/DNS external IO stays denied. No duplicate provider factory, adapter parser, credential service or lifecycle framework. Original neutral workflow remains frozen. Final actual counts/hashes/evidence are recorded after verification and returned for original independent review before controller commit.
+
+Implementation inspection found one obsolete pure subprocess assertion requiring build_chat_generation to be absent. Authorized replacement is narrowly callable(builder) plus explicit absence of settings/secure helper imports after pure import/resolve. The original183 case identities and strict pure import boundary remain; this assertion change is required by the now-authorized builder and will be included in the final diff review.
+
+### R3-B candidate verification and freeze
+
+Implemented build_chat_generation in the assigned module using lazy imports of actual model_endpoint validators and providers._normalize_api_key/_normalize_openai_base/_normalize_deepseek_base. The five source/provider/protocol rows select existing neutral adapters; unsupported combinations reject. Snapshot normalizes the pinned key without changing the original connection/fingerprint. Builder creates neither HTTP client nor configuration loader and returns an existing estimated counter. Pure resolution logic remains unchanged.
+
+Test selection is now pure183 (the original20 function identities) plus TestChatGenerationBuilder80 in the same file. Builder fixtures execute real Settings with environment/dotenv/secret sources disabled, actual model_client/ModelTransport/PolicyNetworkBackend and HTTP parsing. Synthetic DNS answers/numeric peer are injected below policy; no security helper is replaced. A synthetic start_tls peer records the requested hostname; no TLS-handshake/live-provider claim follows. Actual origin denial, private-IP denial and peer mismatch are checked. Cases cover50 endpoint combinations, actual3adapter normalized headers, zero construction sends, malformed/final/unsupported endpoints, blank-key rejection, cancellation, incomplete stream, sent read failure without retry, iterator/client cleanup and escaping construction/shutdown errors.
+
+Dedicated CI keeps pure183 strict API whitelist and selects each original function explicitly. Separate builder80 job allows only actual helper dependency closure (including providers→metrics→models ORM declarations), denies other API/all Worker and all external socket/DNS IO. Both jobs require exact collected AND passed-call counts with missing/skip/deselect/xfail/collect-only failure. Original neutral job is unchanged.
+
+Controller executed actual final workflow bodies: pure183 passed in0.92s; builder80 passed in23.62s; both missing-path controls exit1. Unchanged neutral body181 passed in0.54s. All20 pure functions and the sole builder test class were checked against explicit workflow selectors. Total local execution across three jobs:444 passing tests. This is developer/controller evidence; original independent reviewer and hosted Linux run remain pending. See appended evidence for exact candidate hashes and baseline mapping. F44-B1 actual-code closure remains with that reviewer. No production activation or full-loop/source/transaction/multimodal/UI acceptance.
