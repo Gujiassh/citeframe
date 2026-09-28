@@ -155,3 +155,21 @@ Result: **78 passed, zero skipped**, with the existing Starlette warning. This c
 | `apps/worker/tests/test_deploy_dependencies.py` | `7943a277794229141121675d76d725fd81bbd2761522169344b70965e31784e9` |
 | `apps/api/tests/test_asset_migration.py` | `28d928aed61eb8c7230fe4f10cbc59aae353b72fa6a7f729e6dca0954a87409e` |
 | `apps/api/tests/test_research_migration.py` | `0c2981d256b05c34ffafecce0319d6218c51f903c669011d05bb9d7d631810b0` |
+
+## 2026-09-28 — approved finite credential admission implementation
+
+Implemented the exact admission policy approved in reviews/issue42-admission.md section 6, preserving both pinned contract/proposal hashes. New admission.py and a three-line commands.py delta reject supported credential patterns on fresh remember/correct before instruction construction, after existing authorization/replay/CAS/terminal checks. No schema/DTO/API/provider/compaction changes.
+
+Final combined verification: **1682 passed, zero skipped, 1 warning** (1603 admission unit, 22 real PostgreSQL admission, 44 existing P1a, 13 native boundary tests). Real PG proves six-table equality and no attempted DML/Instruction construction on rejection; clean edited retry, exact sources, historical replay/delete, error precedence and concurrency retain their contracts.
+
+Exact commands, candidate hashes, evidence limits and downstream integration gates: evidence/issue42-admission-runtime.md. Candidate is uncommitted and ready for original Critical implementation review; controller owns commit/push and integration into #43/API. Mutation activation remains gated on that acceptance and CI. No Git writes or paid calls.
+
+### Admission CI collection delta
+
+Added only the two explicit admission test paths to the existing instruction-memory PostgreSQL CI command. Independent local collection from that exact command: 1669 tests (44 P1a + 1603 admission unit + 22 admission PG). A CI=true missing-database probe fails with one setup error and zero skips. Full workflow comparison proves the command replacement is the only CI change; all four implementation hashes remain unchanged. Evidence: evidence/issue42-admission-ci.md. Ready for original reviewer CI-delta check; hosted execution awaits controller push.
+
+## Controller admission acceptance and delivery
+
+Original independent Critical implementation review is `reviews/issue42-admission.md`; policy review remains `specs/v5/memory-management/reviews/issue42-admission.md`. Accepted exact product/test/workflow hashes independently verified by controller. Controller inspected the finite predicate and three-line command hook, reran1603 rule tests with no skips and checked the workflow delta adds only two explicit test paths. Reviewer1669 total includes realPG22 new plus44 prior tests and no-DML six-table comparisons; no general secret/PII detection guarantee.
+
+This accepted delta is ready for scoped commit/push on PR48. Hosted updated-SHA CI remains pending. Exact downstream integration must preserve the shared single predicate; API mutation activation follows integration, with route/runtime acceptance separate. No merge, API/UI or full41 completion claim. External service gates remain failed.

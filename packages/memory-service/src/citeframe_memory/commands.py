@@ -19,6 +19,7 @@ from citeframe_persistence.models.memory import (
     MemoryInstruction, MemoryOperation, MemoryRecord, MemoryRevision, MemorySource, MemoryUse,
 )
 from .access import require_private_management
+from .admission import admit_statement
 from .sources import resolve_instruction
 
 
@@ -170,6 +171,8 @@ class MemoryCommands:
                     raise VersionConflict("version_conflict")
                 if head and (head.intent == "deleted" or (action != "delete" and head.intent == "superseded")):
                     raise VersionConflict("terminal_memory")
+                if action in ("remember", "correct"):
+                    admit_statement(statement)
                 instruction = MemoryInstruction(id=new_id(), workspace_id=context.workspace_id,
                     actor_user_id=context.actor_user_id, operation=action, request_id=request.request_id,
                     target_memory_id=memory_id, expected_version=expected_version,
