@@ -186,3 +186,7 @@ __all__ = [
 ]
 
 from citeframe_persistence.models.research_conflict_turn import ResearchConflictTurn as ResearchConflictTurn
+
+from .memory import MemoryInstruction, MemorySource, MemoryRecord, MemoryRevision, MemoryUse, MemoryOperation
+
+__all__ += ["MemoryInstruction", "MemorySource", "MemoryRecord", "MemoryRevision", "MemoryUse", "MemoryOperation"]

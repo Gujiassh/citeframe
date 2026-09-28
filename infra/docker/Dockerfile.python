@@ -19,6 +19,8 @@ COPY packages/backend-contracts/pyproject.toml /app/packages/backend-contracts/p
 COPY packages/backend-contracts/src /app/packages/backend-contracts/src
 COPY packages/backend-persistence/pyproject.toml /app/packages/backend-persistence/pyproject.toml
 COPY packages/backend-persistence/src /app/packages/backend-persistence/src
+COPY packages/memory-service/pyproject.toml /app/packages/memory-service/pyproject.toml
+COPY packages/memory-service/src /app/packages/memory-service/src
 COPY packages/research-persistence/pyproject.toml /app/packages/research-persistence/pyproject.toml
 COPY packages/research-persistence/src /app/packages/research-persistence/src
 COPY apps/api /app/apps/api
@@ -26,8 +28,8 @@ RUN chown -R app:app /app
 
 USER app
 WORKDIR /app/apps/api
-ENV PYTHONPATH=/app/packages/backend-contracts/src:/app/packages/backend-persistence/src:/app/packages/research-persistence/src:/app/apps/api/src
-RUN python -c 'from pathlib import Path; import citeframe_contracts, citeframe_persistence, citeframe_research_persistence; p = Path(citeframe_research_persistence.__file__).resolve(); assert "/app/apps/api" not in str(p), p; print("backend-package-import-smoke=pass")'
+ENV PYTHONPATH=/app/packages/backend-contracts/src:/app/packages/backend-persistence/src:/app/packages/research-persistence/src:/app/packages/memory-service/src:/app/apps/api/src
+RUN python -c 'from pathlib import Path; import citeframe_contracts, citeframe_persistence, citeframe_research_persistence, citeframe_memory; p = Path(citeframe_research_persistence.__file__).resolve(); assert "/app/apps/api" not in str(p), p; print("backend-package-import-smoke=pass")'
 
 EXPOSE 8000
 CMD ["uvicorn", "ai_pdf_api.main:app", "--host", "0.0.0.0", "--port", "8000"]
@@ -42,6 +44,8 @@ COPY packages/backend-contracts/pyproject.toml /app/packages/backend-contracts/p
 COPY packages/backend-contracts/src /app/packages/backend-contracts/src
 COPY packages/backend-persistence/pyproject.toml /app/packages/backend-persistence/pyproject.toml
 COPY packages/backend-persistence/src /app/packages/backend-persistence/src
+COPY packages/memory-service/pyproject.toml /app/packages/memory-service/pyproject.toml
+COPY packages/memory-service/src /app/packages/memory-service/src
 COPY packages/research-persistence/pyproject.toml /app/packages/research-persistence/pyproject.toml
 COPY packages/research-persistence/src /app/packages/research-persistence/src
 COPY apps/api/pyproject.toml /app/apps/api/pyproject.toml
@@ -54,8 +58,8 @@ RUN chown -R app:app /app
 
 USER app
 WORKDIR /app/apps/worker
-ENV PYTHONPATH=/app/packages/backend-contracts/src:/app/packages/backend-persistence/src:/app/packages/research-persistence/src:/app/apps/api/src:/app/apps/worker/src
-RUN python -c 'from pathlib import Path; import citeframe_contracts, citeframe_persistence, citeframe_research_persistence; p = Path(citeframe_research_persistence.__file__).resolve(); assert "/app/apps/api" not in str(p), p; print("backend-package-import-smoke=pass")'
+ENV PYTHONPATH=/app/packages/backend-contracts/src:/app/packages/backend-persistence/src:/app/packages/research-persistence/src:/app/packages/memory-service/src:/app/apps/api/src:/app/apps/worker/src
+RUN python -c 'from pathlib import Path; import citeframe_contracts, citeframe_persistence, citeframe_research_persistence, citeframe_memory; p = Path(citeframe_research_persistence.__file__).resolve(); assert "/app/apps/api" not in str(p), p; print("backend-package-import-smoke=pass")'
 
 CMD ["python", "-m", "ai_pdf_worker.main"]
 
@@ -69,6 +73,6 @@ RUN chown -R app:app /app/tools /app/docs
 USER app
 WORKDIR /app
 ENV CITEFRAME_REPO_ROOT=/app \
-    PYTHONPATH=/app/tools/evaluation/src:/app/packages/backend-contracts/src:/app/packages/backend-persistence/src:/app/packages/research-persistence/src:/app/apps/api/src:/app/apps/worker/src
+    PYTHONPATH=/app/tools/evaluation/src:/app/packages/backend-contracts/src:/app/packages/backend-persistence/src:/app/packages/research-persistence/src:/app/packages/memory-service/src:/app/apps/api/src:/app/apps/worker/src
 RUN python -m citeframe_evaluation.cli.campaign --help
 CMD ["python", "-m", "citeframe_evaluation.cli.campaign", "--help"]

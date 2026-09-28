@@ -108,3 +108,32 @@ This checkpoint supersedes the earlier pending-delivery and pending-recheck stat
 - Local checks establish workflow structure and exact runner behavior. Ubuntu Actions execution and `uv sync --project apps/api --frozen --extra dev` installation were not run locally; hosted evidence remains pending controller delivery and CI. Original reviewer separately reviews this CI delta before acceptance.
 
 Write-back check: PR49 delivery, scoped final core acceptance, CI verification and limitations are recorded here; historical sections and the original test log/review remain unchanged.
+
+## Authorized PR48 dependency merge reconciliation
+
+Controller began the no-commit merge of `work/issue42-memory-persistence` at `1d4f9e377785bda28c62029cd524c3cd6ba4c567` into provider HEAD `eb3f022ae099fceb56e2c08066689c1090d1bfe5`. This checkpoint records the integrated working tree before controller staging/merge commit; it is not a new commit or merge-completion claim.
+
+The sole conflicted source, `packages/backend-contracts/src/citeframe_contracts/__init__.py`, was written byte-for-byte from `git show 1d4f9e3:packages/backend-contracts/src/citeframe_contracts/__init__.py`. It preserves #42's consolidated memory imports and single shared export extension. No ABI was invented or modified beyond selecting that exact accepted target.
+
+- Exact target/source SHA-256: `8EFB07BF464BCAA1D745B3B1455E6825AA45BE96B4C0B56435F34FC8FA8D5091`.
+- Exact target Git blob: `ad1689e568a54202e51fadc62fbe107ee4e7f51d`.
+- Size/format: 11,130 bytes, LF; equality with raw target bytes verified; conflict markers absent.
+- All 14 provider/contract candidate-manifest entries still match. Provider adapters/tests and `.github/workflows/memory-provider.yml` are unchanged; workflow SHA-256 remains `0147FB741DB6ED737942A258F189B0D561CEC77BD1B688FFA247D82A86FA5412`.
+- All other automatically staged files belong to the reviewed #42 dependency and were untouched. The index retains the unmerged entry until controller stages this source; no Git index/ref write was performed here.
+
+### Integrated-tree verification
+
+Reused the existing read-only `D:/Code/citeframe/apps/api/.venv/Scripts/python.exe` with `-B`, `PYTHONDONTWRITEBYTECODE=1`, `PYTEST_DISABLE_PLUGIN_AUTOLOAD=1` and this worktree's local neutral source paths. No install, service, DB or model call was performed.
+
+| Check | Explicit scope / execution | Result |
+|---|---|---|
+| Neutral provider | Exact embedded runner from `memory-provider.yml`; three explicit provider/counting/wire files, network and application-import denial | **117 passed in 0.36s** |
+| API deploy | `pytest --noconftest -p no:cacheprovider -q apps/api/tests/test_deploy_dependencies.py` plus fresh verified workspace-local `--basetemp` | **6 passed in 0.19s** |
+| Worker deploy | `pytest --noconftest -p no:cacheprovider -q apps/worker/tests/test_deploy_dependencies.py` | **2 passed in 0.06s** |
+| Persistence boundaries | `pytest --noconftest -p no:cacheprovider -q apps/api/tests/test_persistence_boundary.py apps/api/tests/test_research_persistence_boundary.py` | **13 passed in 2.72s** |
+
+Deploy/boundary invocations also denied socket connection entry points in the test process; application imports remain permitted for the boundary tests that explicitly verify existing composition identities. The first API deploy invocation returned 5 passed/1 setup error because the default user pytest temp directory was inaccessible. Re-running all six with a fresh workspace-local basetemp resolved that environment error; no test/product code changed.
+
+The 44 PostgreSQL persistence cases were **not run** and are not reported as passed or accepted. Their fixture requires `CITEFRAME_MEMORY42_POSTGRES_URL` pointing to the disposable `citeframe_memory42_test` database; it fails in CI when absent. These non-DB checks do not establish migration/CAS/erasure/runtime acceptance.
+
+`git diff --check` passes for the working-tree correction/report. Controller retains staging, merge commit, push and PR decisions; original reviewer performs the subsequent integrated-snapshot check. Write-back is confined to this lane report, with no profile/private-memory or shared workbench update.

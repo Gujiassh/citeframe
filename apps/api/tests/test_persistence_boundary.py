@@ -28,6 +28,14 @@ PERSISTENCE_RUNTIME_IMPORT_ROOTS = STDLIB_IMPORT_ROOTS | {
     "sqlalchemy",
 }
 PERSISTENCE_RUNTIME_DISTRIBUTIONS = {"pgvector", "sqlalchemy"}
+MEMORY_MODELS = {
+    "MemoryInstruction": "memory_instructions",
+    "MemorySource": "memory_sources",
+    "MemoryRecord": "memory_records",
+    "MemoryRevision": "memory_revisions",
+    "MemoryUse": "memory_uses",
+    "MemoryOperation": "memory_operations",
+}
 FORBIDDEN_RESEARCH_PERSISTENCE_NAMES = (
     "citeframe_research_persistence",
     "citeframe-research-persistence",
@@ -93,10 +101,12 @@ def test_legacy_and_neutral_persistence_exports_are_same_objects() -> None:
 
     assert legacy_base_module.Base is citeframe_persistence.Base is neutral_base_module.Base
     assert legacy_base_module.Base.metadata is citeframe_persistence.Base.metadata
-    assert legacy_models.__all__ == neutral_models.__all__
+    assert set(neutral_models.__all__) - set(legacy_models.__all__) == set(MEMORY_MODELS)
+    assert legacy_models.__all__ == [name for name in neutral_models.__all__ if name not in MEMORY_MODELS]
 
-    for name in neutral_models.__all__:
+    for name in legacy_models.__all__:
         assert getattr(legacy_models, name) is getattr(neutral_models, name)
+    for name in neutral_models.__all__:
         assert getattr(citeframe_persistence, name) is getattr(neutral_models, name)
 
     for path in sorted((API_SRC / "ai_pdf_api/models").glob("*.py")):
@@ -106,6 +116,21 @@ def test_legacy_and_neutral_persistence_exports_are_same_objects() -> None:
         legacy_submodule = importlib.import_module(f"ai_pdf_api.models.{module_name}")
         neutral_submodule = importlib.import_module(f"citeframe_persistence.models.{module_name}")
         assert legacy_submodule is neutral_submodule, module_name
+
+
+def test_memory_models_are_exactly_six_neutral_only_additions() -> None:
+    import ai_pdf_api.models as legacy_models
+    import citeframe_persistence
+    import citeframe_persistence.models as neutral_models
+
+    assert len(MEMORY_MODELS) == 6
+    for model_name, table_name in MEMORY_MODELS.items():
+        model = getattr(neutral_models, model_name)
+        assert model.__module__ == "citeframe_persistence.models.memory"
+        assert model.__table__.name == table_name
+        assert model.__table__ is citeframe_persistence.Base.metadata.tables[table_name]
+        assert getattr(citeframe_persistence, model_name) is model
+        assert not hasattr(legacy_models, model_name)
 
 
 def test_persistence_models_share_one_metadata_object_and_match_snapshot() -> None:
@@ -130,7 +155,12 @@ def test_persistence_models_share_one_metadata_object_and_match_snapshot() -> No
     }
     assert model_metadata == {metadata}
 
-    actual = _compiled_postgresql_metadata_snapshot(metadata)
+    complete = _compiled_postgresql_metadata_snapshot(metadata)
+    memory_tables = set(MEMORY_MODELS.values())
+    assert memory_tables <= complete["tables"].keys()
+    assert len(complete["tables"]) == 91
+    actual = {"tables": {name: table for name, table in complete["tables"].items()
+                         if name not in memory_tables}}
     assert len(actual["tables"]) == 85
     assert sum(len(table["indexes"]) for table in actual["tables"].values()) == 97
     delta_bytes = (API_ROOT / "tests/fixtures/research-autonomy-metadata-delta-20260923.json").read_bytes()
@@ -153,11 +183,13 @@ def test_persistence_models_share_one_metadata_object_and_match_snapshot() -> No
     model_settings = json.loads((API_ROOT / "tests/fixtures/workspace-model-config-metadata-delta-20260924.json").read_text())["tables"]
     assert set(model_settings) == {"workspace_model_configs"}
     expected["tables"].update(model_settings)
+    assert set(complete["tables"]) == set(expected["tables"]) | memory_tables
     assert actual == expected
 
 
 def test_neutral_persistence_imports_without_api_or_worker_paths() -> None:
     code = """
+import json
 import sys
 from pathlib import Path
 
@@ -183,12 +215,18 @@ import citeframe_persistence.models.asset
 
 package_file = Path(citeframe_persistence.__file__).resolve()
 assert package_file.is_relative_to(persistence_src), package_file
-assert len(citeframe_persistence.Base.metadata.tables) == 85
+memory_tables = set(json.loads(sys.argv[4]))
+all_tables = set(citeframe_persistence.Base.metadata.tables)
+assert len(memory_tables) == 6
+assert memory_tables <= all_tables
+assert len(all_tables) == 91
+assert len(all_tables - memory_tables) == 85
 assert not any(name == "ai_pdf_api" or name.startswith("ai_pdf_api.") for name in sys.modules)
 assert not any(name == "ai_pdf_worker" or name.startswith("ai_pdf_worker.") for name in sys.modules)
 """
     subprocess.run(
-        [sys.executable, "-I", "-c", code, str(PERSISTENCE_SRC), str(API_SRC), str(WORKER_SRC)],
+        [sys.executable, "-I", "-c", code, str(PERSISTENCE_SRC), str(API_SRC), str(WORKER_SRC),
+         json.dumps(sorted(MEMORY_MODELS.values()))],
         check=True,
     )
 
