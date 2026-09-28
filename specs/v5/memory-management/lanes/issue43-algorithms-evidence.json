@@ -1,0 +1,27 @@
+{
+  "head": "cae6379e1f3743b944b745797cf6f157b1915654",
+  "scope": "Pure policy, complete-tool-unit validation and packing; no persistence/runtime/model-quality acceptance",
+  "verification": {
+    "focused_passed": 68,
+    "combined_passed": 185,
+    "combined_seconds": 0.63,
+    "bytecode": false,
+    "pytest_cache": false,
+    "command": "D:/Code/citeframe/apps/api/.venv/Scripts/python.exe -m pytest packages/memory-service/tests/test_compaction_algorithms.py packages/memory-service/tests/test_native_provider.py packages/memory-service/tests/test_token_counting.py packages/memory-service/tests/test_wire_provider.py -q -p no:cacheprovider --tb=short",
+    "executor": "/root (developer lane), combined185 run; /root/core_implementation (developer lane), focused68 run"
+  },
+  "files": {
+    "packages/memory-service/src/citeframe_memory/compaction/__init__.py": "456c29be0a4f60166669a94a432bcc4c89a536740b5ee821a94aa5d762cc7208",
+    "packages/memory-service/src/citeframe_memory/compaction/packing.py": "1db1e16baa026af38e993d2ea309b3abab785364bf7b7bf40dc7fba5677f7010",
+    "packages/memory-service/src/citeframe_memory/compaction/policy.py": "1ec0899b93cd0b828f8f11977958ddd9fd2aba8c6bbd3e4083744767d6281f98",
+    "packages/memory-service/src/citeframe_memory/compaction/units.py": "5ebb23a85ee51818845926bb8c7f4b7347c706a0ed9e3e76a2683a3c5d34be76",
+    "packages/memory-service/tests/test_compaction_algorithms.py": "6b9f9a04ecfc754829c59865469e3eec4c2d4b8b1f22c4fcd612128e094ec4a8"
+  },
+  "not_executed": [
+    "PostgreSQL compaction migration/CAS/races",
+    "semantic omission evaluation",
+    "real model calls",
+    "API/Worker/UI compaction integration"
+  ],
+  "recordType": "Historical pure baseline; developer-side verification only, not current candidate or appointed-reviewer acceptance."
+}

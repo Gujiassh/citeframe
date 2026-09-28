@@ -101,6 +101,9 @@ class ResearchStepAttempt(Base):
         CheckConstraint("cost_microunits >= 0", name="ck_research_step_attempts_cost"),
     )
 
+    memory_context_version: Mapped[int] = mapped_column(BigInteger, CheckConstraint("memory_context_version >= 0", name="ck_research_attempt_memory_version"), server_default=text("0"))
+    memory_checkpoint_id: Mapped[str | None] = mapped_column(String(36), ForeignKey("task_memory_snapshots.id", name="fk_research_attempt_memory_checkpoint", use_alter=True), nullable=True)
+
     id: Mapped[str] = mapped_column(String(36), primary_key=True, default=lambda: str(uuid4()))
     workspace_id: Mapped[str] = mapped_column(String(36), ForeignKey("workspaces.id"))
     step_id: Mapped[str] = mapped_column(String(36), ForeignKey("research_steps.id"), index=True)

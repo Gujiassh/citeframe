@@ -1,0 +1,906 @@
+{
+  "schemaVersion": "issue43-core-evidence-v1",
+  "scope": "Neutral shared-task compaction core, additive persistence and deterministic real PostgreSQL proof. API/Worker/UI integrations remain #44/#45/#46.",
+  "branch": "work/issue43-inloop-compaction",
+  "head": "2d6c5b2fd8ab0ec7f2092f2be9e34162e61dfea3",
+  "start": "2e9287638fee9567c6474b8356c3b3ba93fec16a",
+  "gitDelivery": "Uncommitted; no commit, push, merge or issue closure authored by implementation lane.",
+  "database": "Dedicated PostgreSQL 17.11, full real Alembic chain through u5c6d7e8f9a0; disposable test schemas, existing extensions checked read-only.",
+  "verification": [
+    {
+      "tests": "test_compaction_algorithms.py",
+      "passed": 68,
+      "scope": "Pure whole-unit policy/packing algorithms; earlier reproduced by developer-lane /root.",
+      "executor": "/root/core_implementation development subtree; worker-reported execution (specific sub-executor not retained for this historical entry)",
+      "acceptanceAuthority": "Developer-side verification only; not the external controller or appointed independent reviewer."
+    },
+    {
+      "tests": "test_compaction_requests.py",
+      "passed": 8,
+      "seconds": 12.64,
+      "scope": "Request object bytes/readback, crash/lost-ack/recovery, corruption, revoke, budget no-object effects.",
+      "executor": "/root/core_implementation development subtree; worker-reported execution (specific sub-executor not retained for this historical entry)",
+      "acceptanceAuthority": "Developer-side verification only; not the external controller or appointed independent reviewer."
+    },
+    {
+      "tests": "test_compaction_p1a_compatibility.py",
+      "passed": 39,
+      "seconds": 66.35,
+      "scope": "Unchanged P1a command oracles against successor schema.",
+      "executor": "/root/core_implementation development subtree; worker-reported execution (specific sub-executor not retained for this historical entry)",
+      "acceptanceAuthority": "Developer-side verification only; not the external controller or appointed independent reviewer."
+    },
+    {
+      "tests": "test_compaction_constraints.py + test_compaction_research.py",
+      "passed": 51,
+      "seconds": 90.61,
+      "scope": "16 direct SQL deferred-integrity negatives/positive last-good pointer;35 actual native Research accounting/frozen originals.",
+      "executor": "/root/core_implementation development subtree; worker-reported execution (specific sub-executor not retained for this historical entry)",
+      "acceptanceAuthority": "Developer-side verification only; not the external controller or appointed independent reviewer."
+    },
+    {
+      "tests": "test_compaction_guard_limits.py + test_compaction_long_branch.py",
+      "passed": 8,
+      "seconds": 41.22,
+      "scope": "Final frozen guard and full capture/adopt long-branch bounds.",
+      "executor": "/root/core_implementation development subtree; worker-reported execution (specific sub-executor not retained for this historical entry)",
+      "acceptanceAuthority": "Developer-side verification only; not the external controller or appointed independent reviewer."
+    },
+    {
+      "tests": "test_compaction_repository.py::test_retry_child_keeps_root_cumulative_budget",
+      "passed": 1,
+      "seconds": 8.51,
+      "executor": "/root/core_implementation development subtree; worker-reported execution (specific sub-executor not retained for this historical entry)",
+      "acceptanceAuthority": "Developer-side verification only; not the external controller or appointed independent reviewer."
+    },
+    {
+      "tests": "All dedicated current test_compaction*.py excluding fixture",
+      "collected": 247,
+      "status": "Completed developer-root364pass571.91s on pre-pure-rework identity, excluding new lifecycle2fail. Subsequent pure214/focusedgate21 evidence is separately scoped.",
+      "executor": "/root (developer lane)",
+      "acceptanceAuthority": "Developer-side verification only; not the external controller or appointed independent reviewer."
+    },
+    {
+      "tests": "test_research_persistence_boundary.py + test_research_worker_budget_recovery.py",
+      "passed": 28,
+      "seconds": 133.03,
+      "scope": "Developer-lane /root final native regression run; SQLite boundary/recovery, one preexisting Starlette warning.",
+      "executor": "/root (developer lane)",
+      "acceptanceAuthority": "Developer-side verification only; not the external controller or appointed independent reviewer."
+    },
+    {
+      "tests": "All dedicated tests available at local candidate collection (236 cases)",
+      "passed": 236,
+      "seconds": 590.25,
+      "scope": "Complete realPG/pure local run; collection preceded final long2+retry1 tests and small final freeze changes, so later developer-root239+117 run is authoritative final identity evidence.",
+      "executor": "/root/core_implementation development subtree; worker-reported execution (specific sub-executor not retained for this historical entry)",
+      "acceptanceAuthority": "Developer-side verification only; not the external controller or appointed independent reviewer."
+    },
+    {
+      "tests": "Developer-lane /root consolidated pre-manifest-fix compaction239 + provider/count117",
+      "passed": 356,
+      "seconds": 635.9,
+      "scope": "Migration640B1021 identity contained subsequently corrected xmin coverage admission weakness; this success does not establish final migration integrity.",
+      "executor": "/root (developer lane)",
+      "acceptanceAuthority": "Developer-side verification only; not the external controller or appointed independent reviewer."
+    },
+    {
+      "tests": "Final manifest fix targeted chat2checkpoints, mixedtool/source archive, Researchgate2cases",
+      "passed": 4,
+      "seconds": 8.76,
+      "migrationSha256": "5CA29D7517C65710133AE5A1EAAD4A6F59BF10A35126656B01C2D631EB043468",
+      "executor": "/root/core_implementation development subtree; worker-reported execution (specific sub-executor not retained for this historical entry)",
+      "acceptanceAuthority": "Developer-side verification only; not the external controller or appointed independent reviewer."
+    },
+    {
+      "tests": "Final digest-fix constraints24 + schema31 + Research35",
+      "passed": 90,
+      "seconds": 259.9,
+      "migrationSha256": "5CA29D7517C65710133AE5A1EAAD4A6F59BF10A35126656B01C2D631EB043468",
+      "scope": "Excludes newly added failing native lifecycle oracle.",
+      "executor": "/root/core_implementation development subtree; worker-reported execution (specific sub-executor not retained for this historical entry)",
+      "acceptanceAuthority": "Developer-side verification only; not the external controller or appointed independent reviewer."
+    },
+    {
+      "tests": "Developer-lane /root digest-fix247 compaction +117 provider/count before pure rework",
+      "passed": 364,
+      "seconds": 571.91,
+      "scope": "Pre/post hashed files unchanged during run. Excludes red native lifecycle2 and does not accept later independently identified pure/runtime findings.",
+      "executor": "/root (developer lane)",
+      "acceptanceAuthority": "Developer-side verification only; not the external controller or appointed independent reviewer."
+    },
+    {
+      "tests": "Pure70 + native serializers/counters27 + provider/count117",
+      "passed": 214,
+      "seconds": 1.34,
+      "scope": "Worker final pure rework; actual3protocol counters. External controller separately reports214passed1.16s in controller-next; this record is the worker run.",
+      "executor": "/root/core_implementation development subtree; worker-reported execution (specific sub-executor not retained for this historical entry)",
+      "acceptanceAuthority": "Developer-side verification only; not the external controller or appointed independent reviewer."
+    },
+    {
+      "tests": "test_compaction_gate.py + test_compaction_research_gate.py after pure rework",
+      "passed": 21,
+      "seconds": 97.18,
+      "scope": "Includes9 native-counter tests proving changed current physical/output/configured caps deny previously reserved permits before object/provider effects. Does not exercise blocked durable nonprefix interval adoption.",
+      "executor": "/root/core_implementation development subtree; worker-reported execution (specific sub-executor not retained for this historical entry)",
+      "acceptanceAuthority": "Developer-side verification only; not the external controller or appointed independent reviewer."
+    },
+    {
+      "tests": "Developer-lane /root final gate19 + ResearchGate2 + request archive8",
+      "passed": 29,
+      "seconds": 122.6,
+      "scope": "Current pure/gate rework identity; includes9 native-counter send admission cases. Both lifecycle and durable interval/profile amendments remain unapproved and unimplemented.",
+      "executor": "/root (developer lane)",
+      "acceptanceAuthority": "Developer-side verification only; not the external controller or appointed independent reviewer."
+    },
+    {
+      "tests": "test_compaction_native_races.py + test_compaction_repository.py",
+      "passed": 47,
+      "seconds": 75.27,
+      "scope": "Final native lifecycle product; malformed pair denial before body reads, pending/streaming source exclusion, NULL branch switch, captured ABA/body/reparent/status races before adoption/send, repository atomic/budget proof.",
+      "executor": "/root/core_implementation development subtree; worker-reported execution (specific sub-executor not retained for this historical entry)",
+      "acceptanceAuthority": "Developer-side verification only; not the external controller or appointed independent reviewer."
+    },
+    {
+      "tests": "test_compaction_constraints.py + test_compaction_guard_limits.py + test_compaction_long_branch.py + test_compaction_native_lifecycle.py",
+      "passed": 45,
+      "seconds": 99.57,
+      "scope": "Approved nullable-anchor migration and strict streaming fixtures. Lifecycle citation assertions expanded in subsequent 13-case run.",
+      "executor": "/root/core_implementation/schema_proof (developer-side test delegate, reported by product owner)",
+      "acceptanceAuthority": "Developer-side verification only; not the external controller or appointed independent reviewer."
+    },
+    {
+      "tests": "test_compaction_native_lifecycle.py",
+      "passed": 13,
+      "seconds": 47.63,
+      "scope": "Final actual native lifecycle oracle including citation/locator/detail parity and native terminal preservation/deletion.",
+      "executor": "/root/core_implementation/schema_proof (developer-side test delegate, reported by product owner)",
+      "acceptanceAuthority": "Developer-side verification only; not the external controller or appointed independent reviewer."
+    },
+    {
+      "tests": "test_compaction_schema.py",
+      "passed": 31,
+      "seconds": 62.66,
+      "scope": "Final nullable-anchor migration/model/catalog/full-chain/populated/downgrade proof.",
+      "executor": "/root/core_implementation development subtree; worker-reported execution (specific sub-executor not retained for this historical entry)",
+      "acceptanceAuthority": "Developer-side verification only; not the external controller or appointed independent reviewer."
+    },
+    {
+      "tests": "test_compaction_gate.py + test_compaction_research_gate.py + test_compaction_requests.py",
+      "passed": 29,
+      "seconds": 65.87,
+      "scope": "Final native lifecycle guard regression for gate, Research gate and archive.",
+      "executor": "/root/core_implementation development subtree; worker-reported execution (specific sub-executor not retained for this historical entry)",
+      "acceptanceAuthority": "Developer-side verification only; not the external controller or appointed independent reviewer."
+    },
+    {
+      "tests": "test_compaction_research.py + test_compaction_p1a_compatibility.py",
+      "passed": 74,
+      "seconds": 263.8,
+      "scope": "Final lifecycle product regression; actual native Research accounting/frozen originals and unchanged P1a command oracles against successor schema.",
+      "executor": "/root/core_implementation development subtree; worker-reported execution (specific sub-executor not retained for this historical entry)",
+      "acceptanceAuthority": "Developer-side verification only; not the external controller or appointed independent reviewer."
+    },
+    {
+      "tests": "native races + repository + schema + constraints",
+      "passed": 102,
+      "seconds": 313.78,
+      "executor": "/root (developer lane)",
+      "scope": "Frozen lifecycle candidate; developer-side PostgreSQL verification before admission integration."
+    },
+    {
+      "tests": "native lifecycle + guard limits + long branch",
+      "passed": 21,
+      "seconds": 108.08,
+      "executor": "/root (developer lane)",
+      "scope": "Actual native lifecycle and bounded support/refusal; developer-side verification before admission integration."
+    },
+    {
+      "tests": "pure algorithms + native packing + provider/count/wire",
+      "passed": 214,
+      "seconds": 1.2,
+      "executor": "/root (developer lane)",
+      "scope": "Developer-side pure verification before admission integration."
+    },
+    {
+      "tests": "intervals, provenance, profiles, repository, requests, native_races, research_gate",
+      "passed": 135,
+      "seconds": 573.6,
+      "executor": "/root/core_implementation",
+      "scope": "Completed before final native-metadata SQL enforcement; later appended cases excluded if collection predated them.",
+      "acceptanceAuthority": "Developer-side verification only; not appointed independent acceptance."
+    },
+    {
+      "tests": "scope, constraints, schema, native_lifecycle, guard_limits, long_branch, main_question, gate",
+      "passed": 163,
+      "seconds": 651.09,
+      "executor": "/root/core_implementation/schema_proof",
+      "scope": "Completed before final native-metadata SQL enforcement; later appended cases excluded if collection predated them.",
+      "acceptanceAuthority": "Developer-side verification only; not appointed independent acceptance."
+    },
+    {
+      "tests": "test_compaction_scope.py + test_compaction_schema.py + test_compaction_long_branch.py",
+      "passed": 92,
+      "seconds": 171.99,
+      "executor": "/root/core_implementation/schema_proof",
+      "migrationSha256": "080BA0EF0CA227B7E367ED2BB97164A06479ED9CC77398DF611EC1A8729DFDEA",
+      "scope": "Current exact native metadata enforcement; three persisted body-only update admission negatives, five exact metadata predicate negatives; historical pointer remains.",
+      "acceptanceAuthority": "Developer-side only."
+    },
+    {
+      "tests": "test_compaction_provenance.py",
+      "passed": 12,
+      "seconds": 21.54,
+      "executor": "/root/core_implementation",
+      "scope": "Strict physical source envelope/message fields and changed body rejection; archive-required and merge input provenance.",
+      "acceptanceAuthority": "Developer-side only."
+    },
+    {
+      "tests": "registration + main_question + intervals + provenance + scope",
+      "passed": 101,
+      "failed": 1,
+      "seconds": 385.19,
+      "executor": "/root (developer lane)",
+      "scope": "Frozen44-file candidate. openai_chat_completions current-question mode case failed with context_busy during read_source/native metadata FOR UPDATE NOWAIT; two250ms lock-timeout log entries. Concurrent aggregate was active. Blocking lock owner was not captured, so concurrency cause remains unproven. Serial rerun pending.",
+      "acceptanceAuthority": "Developer-side only; original failure retained independently of rerun."
+    },
+    {
+      "tests": "pure algorithms/native packing/provider/count/wire",
+      "passed": 214,
+      "seconds": 1.19,
+      "executor": "/root (developer lane)",
+      "acceptanceAuthority": "Developer-side only; not DB/current-question integration evidence."
+    },
+    {
+      "tests": "dynamic glob test_compaction*.py collection",
+      "collected": 486,
+      "modules": 22,
+      "seconds": 1.2,
+      "executor": "/root (developer lane)",
+      "scope": "Matches dedicated workflow dynamic inventory; hosted CI has not run."
+    },
+    {
+      "tests": "All22 dynamically collected test_compaction*.py modules",
+      "passed": 486,
+      "failed": 0,
+      "skipped": 0,
+      "seconds": 1135.14,
+      "exitCode": 0,
+      "executor": "/root/core_implementation",
+      "scope": "Complete frozen44-file real PostgreSQL/pure candidate, all tests from sorted glob, unchanged hashes before/after. Full genuine Alembic chain; no paid/live models.",
+      "command": "$env:PYTHONDONTWRITEBYTECODE='1'; $env:CITEFRAME_MEMORY43_POSTGRES_URL='postgresql+psycopg://memory43@127.0.0.1:56493/citeframe_memory43_test'; $env:PYTHONPATH=((Get-ChildItem packages -Directory | ForEach-Object { Join-Path $_.FullName 'src' }) + (Join-Path $PWD 'apps/api/src')) -join ';'; $tests = @(Get-ChildItem packages/memory-service/tests/test_compaction*.py | Sort-Object Name | ForEach-Object FullName); & D:/Code/citeframe/apps/api/.venv/Scripts/python.exe -m pytest @tests -q --strict-markers --tb=short -p no:cacheprovider --basetemp=.local-runtime/full-compaction-final",
+      "acceptanceAuthority": "Developer-side verification only; neither independent reviewer nor full application acceptance."
+    },
+    {
+      "tests": "test_compaction_main_question.py (serial full module)",
+      "passed": 17,
+      "failed": 0,
+      "seconds": 35.36,
+      "executor": "/root (developer lane)",
+      "scope": "Same frozen candidate, no concurrent root suite; includes exact previously failing openai_chat_completions case. Production caps unchanged. Prior failure cause remains unproven.",
+      "acceptanceAuthority": "Developer-side verification only; prior101+1 run retained."
+    },
+    {
+      "tests": "intervals,provenance,profiles,repository,gate,research,research_gate,native_lifecycle,long_branch",
+      "passed": 176,
+      "seconds": 314.88,
+      "executor": "/root/core_implementation",
+      "scope": "Frozen I3/I4 product, serial PostgreSQL; before final six authority tests added.",
+      "acceptanceAuthority": "Developer-side only."
+    },
+    {
+      "tests": "test_compaction_authority.py initial expanded suite",
+      "passed": 16,
+      "seconds": 30.58,
+      "executor": "/root/core_implementation",
+      "scope": "I3/I4 + proposed-chain caps, no-DML observations and both lifecycle states.",
+      "acceptanceAuthority": "Developer-side only."
+    },
+    {
+      "tests": "test_compaction_authority.py final full module",
+      "passed": 22,
+      "seconds": 38.7,
+      "executor": "/root/core_implementation",
+      "scope": "Final45 candidate: noDML negatives, genuine lifecycle lock ordering both directions, five exact last-good second-adoption rollback stages, malformed history and unchanged candidate caps.",
+      "acceptanceAuthority": "Developer-side only."
+    },
+    {
+      "tests": "authority + intervals + provenance + repository",
+      "passed": 66,
+      "seconds": 120.61,
+      "scope": "Root serial PostgreSQL frozen45; no hash mismatches.",
+      "executor": "/root (developer lane)",
+      "acceptanceAuthority": "Developer-side verification; not appointed independent reviewer."
+    },
+    {
+      "tests": "pure/native packing/provider/count/wire",
+      "passed": 214,
+      "seconds": 1.15,
+      "scope": "Frozen correction product pure regression.",
+      "executor": "/root (developer lane)",
+      "acceptanceAuthority": "Developer-side verification; not appointed independent reviewer."
+    },
+    {
+      "tests": "workflow dynamic glob collection",
+      "collected": 508,
+      "modules": 23,
+      "seconds": 1.21,
+      "scope": "Collection only;508 not run as full aggregate.",
+      "executor": "/root (developer lane)",
+      "acceptanceAuthority": "Developer-side verification; not appointed independent reviewer."
+    }
+  ],
+  "longBranch": [
+    {
+      "messages": 128,
+      "sources": 127,
+      "sourceUnitManifestBytes": 32015,
+      "captureMs": 135.666,
+      "adoptMs": 828.408,
+      "result": "All127source coverage rows atomically committed; streaming assistant metadata excluded from sources."
+    },
+    {
+      "messages": 1024,
+      "sources": 1023,
+      "sourceUnitManifestBytes": 259650,
+      "refusalMs": 23.104,
+      "result": "Explicit context_too_large with no partial pointer/snapshot/coverage/use/call effects; originals retained."
+    }
+  ],
+  "bounds": {
+    "nativeThreadRows": 1024,
+    "nativeManifestBytes": 131072,
+    "coverageManifestBytes": 131072,
+    "contextBodyBytes": 1048576,
+    "requestArchiveBytes": 1048576,
+    "toolResultArchiveBytes": 16777216,
+    "taskToolArchiveBytes": 67108864,
+    "statementTimeoutMs": 2000,
+    "lockTimeoutMs": 250,
+    "transactionTimeoutMs": 5000
+  },
+  "limitations": [
+    "No API/router/Worker/Research engine/UI runtime wiring or visible user-path acceptance; dependent #44/#45/#46 remain open.",
+    "Deterministic provider fixtures prove structural/transactional behavior and annotated semantic omission detection; no live model quality claim.",
+    "Exact archived request is the complete neutral GenerationRequest, not provider-specific HTTP wire bytes or authentication headers.",
+    "ObjectStorePort exposes bounded whole-byte put/get, so archive IO buffers complete bounded objects and does not implement streaming upload.",
+    "Known pre-send archive failures remain reserved/unsent and conservatively budgeted until recovery or existing native reclaim; no automatic refund is introduced.",
+    "A synchronous blocking provider iterator cannot be forcibly interrupted by neutral event-loop wall checks; port-level network timeout remains composition responsibility.",
+    "The1024message fixture exceeds the independent complete-unit manifest cap and is safely refused; successful1024source compaction is not established.",
+    "Old P1a instruction-only test fixture remains pinned to t4b5c6d7e8f9 and was not rewritten; successor compatibility uses dedicated wrapper suite.",
+    "Registration-to-first-capture ABA is not detected; complete revision protection begins at capture.",
+    "Low-level prefix adoption is not main-dispatch authority; the mandatory main gate rejects checkpoints hiding designated current or protected originals.",
+    "The developer-root concurrent targeted run had one context_busy failure with unobserved blocking lock owner; serial full main-question module passed17 cases in35.36s without changes; original failure cause remains unproven."
+  ],
+  "files": [
+    {
+      "path": ".github/workflows/memory-compaction.yml",
+      "sha256": "449DCE5287F862B4A1AB810D021D1E9E3BD0BFF2AC695E9DB2926901098D97AB"
+    },
+    {
+      "path": "apps/api/alembic/versions/u5c6d7e8f9a0_inloop_compaction.py",
+      "sha256": "080BA0EF0CA227B7E367ED2BB97164A06479ED9CC77398DF611EC1A8729DFDEA"
+    },
+    {
+      "path": "packages/backend-contracts/src/citeframe_contracts/compaction.py",
+      "sha256": "D77617A25ECF5CD9C0B808537F6C884B7EE67E2A2250BB0D955E99597DDB5E2B"
+    },
+    {
+      "path": "packages/backend-persistence/src/citeframe_persistence/models/__init__.py",
+      "sha256": "41B9E70E1F5F146F0D4C77E5EEE45CFBC0C503E4F8045DA2B80EDC6A20EBE452"
+    },
+    {
+      "path": "packages/backend-persistence/src/citeframe_persistence/models/chat_message.py",
+      "sha256": "4AC8D13A2F4C9322596C42A81A1EEE472C4499D9F0016B1CAAE533A1ABBFC303"
+    },
+    {
+      "path": "packages/backend-persistence/src/citeframe_persistence/models/chat_thread.py",
+      "sha256": "0687EF3FA9F2CE29FE9C4563A8C7BEE57D0349A1AFCE09A10F5AC630128288C9"
+    },
+    {
+      "path": "packages/backend-persistence/src/citeframe_persistence/models/memory.py",
+      "sha256": "FFCBF49EBB8EB3283220231E6E41DB4809D36A64790E638EE05E7477BF3E5C97"
+    },
+    {
+      "path": "packages/backend-persistence/src/citeframe_persistence/models/memory_context.py",
+      "sha256": "26CB462272BA7765F6ED804AE56971FE105CCAAA96175CFDD8EB7CF4FACBC67A"
+    },
+    {
+      "path": "packages/backend-persistence/src/citeframe_persistence/models/research_execution.py",
+      "sha256": "CF53DC4694FF7EA99D64E20E4E03455BD5960E21DB6DC66FC88EBFA92A29726D"
+    },
+    {
+      "path": "packages/memory-service/src/citeframe_memory/compaction/__init__.py",
+      "sha256": "2026CC0CD44D5F3475F58B0ABEE0A8F6531328D3E24FFB992150202CEC5BDD0A"
+    },
+    {
+      "path": "packages/memory-service/src/citeframe_memory/compaction/archive.py",
+      "sha256": "87BD63C47A8D3A9EBCD8B214F3004CC5FFE8BA4B040BCDE2A957487E42D2D5E6"
+    },
+    {
+      "path": "packages/memory-service/src/citeframe_memory/compaction/gate.py",
+      "sha256": "FAC0A06E9A2D74FB63C023B457CC3343A71254836A373D8628850A035D55FA59"
+    },
+    {
+      "path": "packages/memory-service/src/citeframe_memory/compaction/guards.py",
+      "sha256": "969C91CBD30429D5FF89F850B1CFB5D35986C4AEDC35E14192094323A8AEE7D2"
+    },
+    {
+      "path": "packages/memory-service/src/citeframe_memory/compaction/journal.py",
+      "sha256": "A338C0CCFAB594ADE8D704DB4002776FFEBD8BB38E992F4B8D0E8275B14CBF37"
+    },
+    {
+      "path": "packages/memory-service/src/citeframe_memory/compaction/packing.py",
+      "sha256": "A9F32697DF3D3AAA2BF42C56396349782E77627D1C0A422CBCECD8D83D94120F"
+    },
+    {
+      "path": "packages/memory-service/src/citeframe_memory/compaction/policy.py",
+      "sha256": "F992B4D5E0D512A6CAE7756CAB3ED0E33DEF8F178A4948C05A919DC9B2796B44"
+    },
+    {
+      "path": "packages/memory-service/src/citeframe_memory/compaction/rendering.py",
+      "sha256": "9D5D982D1C4B045C4F7F23E67EF2ADB265DD2AC8EC4BD42930C6C561C66049F5"
+    },
+    {
+      "path": "packages/memory-service/src/citeframe_memory/compaction/repository.py",
+      "sha256": "74D6EEEF9339F36369F474CE6D7EE4D41BC61EB32D504F2B6FB1543D964C8471"
+    },
+    {
+      "path": "packages/memory-service/src/citeframe_memory/compaction/requests.py",
+      "sha256": "7FB058C9B566FD025B2762012EDDC47772BB48E442835C3B65416659A2BA9477"
+    },
+    {
+      "path": "packages/memory-service/src/citeframe_memory/compaction/sources.py",
+      "sha256": "D783D49F377459FD5A1B9DDD544562EA1DC5741947DF24642AE882A35AF5A66E"
+    },
+    {
+      "path": "packages/memory-service/src/citeframe_memory/compaction/summary.py",
+      "sha256": "703FE529562EC677E6E3AD01756B3F38A47AD2A6097FA2F9F7F4E5EF1E6B91BD"
+    },
+    {
+      "path": "packages/memory-service/src/citeframe_memory/compaction/units.py",
+      "sha256": "5EBB23A85EE51818845926BB8C7F4B7347C706A0ED9E3E76A2683A3C5D34BE76"
+    },
+    {
+      "path": "packages/memory-service/tests/test_compaction_algorithms.py",
+      "sha256": "9CB0A2FF185660F55EE751A5C0A4B3728624F12FADD8A7C0907E35D9CEC86D60"
+    },
+    {
+      "path": "packages/memory-service/tests/test_compaction_authority.py",
+      "sha256": "DB494F3A5ACA5CE123952F371AE0F78C5BF4B6B5FE7C5683099769DB8F0CA5F0"
+    },
+    {
+      "path": "packages/memory-service/tests/test_compaction_call_fixture.py",
+      "sha256": "C4210B1FF26318C2809A6F9F908109CF80B6A962AAEC1E9549FCCBAC0844C67C"
+    },
+    {
+      "path": "packages/memory-service/tests/test_compaction_constraints.py",
+      "sha256": "DE2ABCC4A743A4B6A7C6B6B69A890BF0F8CA58263A4B60DB97A34CED46D48944"
+    },
+    {
+      "path": "packages/memory-service/tests/test_compaction_fixture.py",
+      "sha256": "645190AA83C40A2BD1F175C9C425E571CA011920A6C2E162B1AECE755E491040"
+    },
+    {
+      "path": "packages/memory-service/tests/test_compaction_gate.py",
+      "sha256": "73C48925030B2E1D4CF68B26046D8945527CC545F133CAF87884F16BF87EC2A3"
+    },
+    {
+      "path": "packages/memory-service/tests/test_compaction_guard_limits.py",
+      "sha256": "28F6E32260FE4866210D7CE1A39B6B08D3037BBF9B3C68AAF286169FDD14268A"
+    },
+    {
+      "path": "packages/memory-service/tests/test_compaction_intervals.py",
+      "sha256": "C961BA51642966C6FE6EE62AECF1F4DA8BF527210734C003EEC4BAC5AF0914A5"
+    },
+    {
+      "path": "packages/memory-service/tests/test_compaction_long_branch.py",
+      "sha256": "52D6B6665232466E7B9BF749437EE35F6C81DBCD59858EC99245516CF2897812"
+    },
+    {
+      "path": "packages/memory-service/tests/test_compaction_main_question.py",
+      "sha256": "F2C592340983D02ECA6973089D3CBA21FB26E9B8850EA420E6FBA685D121BC1C"
+    },
+    {
+      "path": "packages/memory-service/tests/test_compaction_native_lifecycle.py",
+      "sha256": "9F9DBDD7694CC2B7CDFA9F4E2ACFC070043A4BD5904C12C1790ED7389FF47FE8"
+    },
+    {
+      "path": "packages/memory-service/tests/test_compaction_native_packing.py",
+      "sha256": "92C7CCA41324165380FFB1AA0E4C0A1DE5B7F01236FCD6B92BCAA0B971637FCC"
+    },
+    {
+      "path": "packages/memory-service/tests/test_compaction_native_races.py",
+      "sha256": "C408876D0122AC2C66370CCCA3B9FE987CE98B69DD35D992142CB9B9AE8D4CFC"
+    },
+    {
+      "path": "packages/memory-service/tests/test_compaction_p1a_compatibility.py",
+      "sha256": "FEDFEEB0737462AAEE585E6C27986665F0186527805D03FFF64F8067E43E1ADA"
+    },
+    {
+      "path": "packages/memory-service/tests/test_compaction_profiles.py",
+      "sha256": "5BA0CF99B007AEE69C980A0EFFD23EEA566545123E75CE0FAA52A3A80CB931B1"
+    },
+    {
+      "path": "packages/memory-service/tests/test_compaction_provenance.py",
+      "sha256": "77497C3CC8314602321E75DFC96F87417F2F2EB16EAFF93E6AA8C3AF07D5A2D3"
+    },
+    {
+      "path": "packages/memory-service/tests/test_compaction_registration.py",
+      "sha256": "F6F4F0F1B3A99D5006EF0AF4323E71B845D23586A27B25B59828001B95E2B365"
+    },
+    {
+      "path": "packages/memory-service/tests/test_compaction_repository.py",
+      "sha256": "ED687DE3C7B694A35418A6322FF0AD47E2F3118879C4803657B267D17AC78F30"
+    },
+    {
+      "path": "packages/memory-service/tests/test_compaction_requests.py",
+      "sha256": "44B067D56B1E95A43FDBC33ABFAB1B8402A6CCB8EBCCD459E443AE19C163E0E2"
+    },
+    {
+      "path": "packages/memory-service/tests/test_compaction_research.py",
+      "sha256": "119895A603E898094C074F9B84513DDE02D747D75BADF255D76D4199D7D9B761"
+    },
+    {
+      "path": "packages/memory-service/tests/test_compaction_research_gate.py",
+      "sha256": "3AEA8EF3729862E7BABF227D7B133D9D2FEFD50DD8B8435D6F1319366D47A597"
+    },
+    {
+      "path": "packages/memory-service/tests/test_compaction_schema.py",
+      "sha256": "930F1B9D10851AD8C6CEE6C25186B0EF182C3708F9A3657C1A2C1B3833506450"
+    },
+    {
+      "path": "packages/memory-service/tests/test_compaction_scope.py",
+      "sha256": "C080D03F8F4D64A41EF934242012EC6FDF645E432558B0BFC5B3CE032BAAFF43"
+    }
+  ],
+  "writeback": "Owned task-local lane/core evidence finalized; old44 inventory/history retained, approved contracts and reviewer/controller artifacts untouched. No Git/private/global/canonical writes. Root owns PostgreSQL shutdown and original-reviewer followup.",
+  "nonbehavioralFreezeDelta": {
+    "path": "packages/memory-service/src/citeframe_memory/compaction/__init__.py",
+    "beforeSha256": "456C29BE0A4F60166669A94A432BCC4C89A536740B5EE821A94AA5D762CC7208",
+    "afterSha256": "2026CC0CD44D5F3475F58B0ABEE0A8F6531328D3E24FFB992150202CEC5BDD0A",
+    "change": "Package docstring updated to match implemented neutral components; developer-lane /root coordinated during consolidated verification."
+  },
+  "functionalFreezeDelta": {
+    "migration": "u5c6d7e8f9a0",
+    "beforeSha256": "640B1021F0C820E28A5B3A09D49E8C2002DA4ACE28A5EB20A2F728C713B727E7",
+    "afterSha256": "5CA29D7517C65710133AE5A1EAAD4A6F59BF10A35126656B01C2D631EB043468",
+    "reason": "Developer-lane /root found no-op/lifecycle tuple rewrite could reopen historical coverage when admission depended on snapshot xmin. Final constraint removes xmin completely and recomputes immutable exact ordered coverage manifest SHA256 at deferred commit; native context versions cannot regress. No new schema fields or extensions. New direct SQL/adversarial canonical encoding cases passed in affected90-test suite."
+  },
+  "accountingSettlementContract": {
+    "receiptIdentity": "Forged/mismatched receipt identity is rejected before accounting mutation.",
+    "knownSettledConflict": "For settled succeeded/failed, conflicting normalized state/input/output/usage_source raises accounting_receipt_conflict without further arithmetic.",
+    "authoritativeUnknownOrCancelled": "For settled outcome_unknown/cancelled, all late observations return immutable persisted state/input/output; differing submitted metadata is not applied and is not acknowledged as accepted. No second callback or billing occurs. Native reclaim and neutral conservative unknown fixtures cover this behavior.",
+    "reviewBoundary": "This authoritative-result exception is broader than a literal all-conflicting-metadata-rejected statement; independent review must evaluate the documented distinction. No ABI/product change was made for this final documentation check."
+  },
+  "acceptanceStatus": "I3/I4 correction frozen45: developer authority22 and affected176 passed; developer-root serial66 and pure214 passed. Original independent review pending. No new508 aggregate run claimed. API/Worker/UI integrations remain #44/#45/#46.",
+  "nativeLifecycleBlocker": {
+    "amendment": "specs/v5/memory-management/lanes/issue43-native-lifecycle-delta.md",
+    "amendmentSha256": "2F8B0A52DD07A47758DBAD85441859CEBDCDB282380508D071A9BB4E90A9F005",
+    "oracle": "packages/memory-service/tests/test_compaction_native_lifecycle.py",
+    "failed": 2,
+    "seconds": 10.0,
+    "firstTurn": "NotNullViolation on chat_memory_executions.anchor_leaf_id when actual native active_message_id remainsNULL.",
+    "laterTurn": "source_branch_mismatch for current completed user while streaming assistant has not finalized and active_message_id still identifies prior leaf.",
+    "implementation": "At this historical run the affected changes were withheld. Exact amendment subsequently approved and implemented; see nativeLifecycleImplementation.",
+    "scope": "Existing completed-chat/Research suites exclude this dedicated failing acceptance oracle.",
+    "developerRootReproduction": {
+      "failed": 2,
+      "seconds": 6.44,
+      "result": "Same exact NotNullViolation first turn and source_branch_mismatch later turn, no xfail; oracle SHA0B1C764191BEFD50948F649F13BCBCC4FE4F65ABE0B7D32C8AD34BEC578BBE50.",
+      "executor": "/root (developer lane)"
+    },
+    "recordType": "Historical pre-amendment failure; superseded by nativeLifecycleImplementation",
+    "executor": "/root/core_implementation (developer lane)"
+  },
+  "pureRework": {
+    "reviewFindings": [
+      "P43-A1",
+      "P43-A2",
+      "P43-A3"
+    ],
+    "implemented": "Pure explicit interval before/start/end/retained representation and protected anchor preservation; tool-less exact attributed transcript chunks; current physical/configured capacity checks at planning and authorize_send.",
+    "runtimeA1": "Durable interval rendering implemented, including containing/disjoint episodes and fresh Python-process reload.",
+    "durableProfileBinding": "Complete profile, compactionPlan and actual summaryInput provenance bound at reserve/archive/send/recovery/adoption; physical payload checked against exact registered originals/children.",
+    "amendment": "specs/v5/memory-management/lanes/issue43-interval-rendering-delta.md",
+    "amendmentSha256": "B34DEAC14AF9A7438E6453EBD46649B07F18B5EF8904BB43AB2BA63B092BD736",
+    "approval": "B34 exact original-reviewer/controller approval recorded in review/controller-next artifacts; implementation pending independent acceptance.",
+    "previousAmendmentSha256": "ADF9667B7C33821F84B89972436AF0BFB3CF34CB19CE5DB9861DB8576979C540"
+  },
+  "nativeLifecycleImplementation": {
+    "amendmentSha256": "2F8B0A52DD07A47758DBAD85441859CEBDCDB282380508D071A9BB4E90A9F005",
+    "approval": "Original independent reviewer approval recorded in controller-next and review artifact.",
+    "implementation": "Nullable actual captured anchor, NULL-safe active-leaf equality, completed designated user/streaming assistant metadata validation before body access, selected-user ancestry independent of active leaf; streaming assistant body excluded. Native service functions unchanged.",
+    "nativeProof": "Actual prepare_chat first/later/older sibling/root edit/failed parent and finalize_chat/fail_chat on full migrated assets/representations/citations/locators. Native thread/message/citation/locator/detail payloads unchanged across compaction; terminal native citation retention/deletion asserted separately.",
+    "registrationBoundary": "Registration stores anchor ID only. ID/NULL change before first source admission rejects; registration-to-capture A-B-A is not detectable. Complete captured revisions detect ABA after capture.",
+    "migrationSha256": "080BA0EF0CA227B7E367ED2BB97164A06479ED9CC77398DF611EC1A8729DFDEA",
+    "independentImplementationAcceptance": "Pending controller and original-reviewer verification."
+  },
+  "longBranchHistoricalBeforeStreamingFixture": [
+    {
+      "messages": 128,
+      "nativeMembershipBytes": 5661,
+      "sourceUnitManifestBytes": 32269,
+      "captureMs": 159.565,
+      "adoptMs": 805.619,
+      "result": "All128coverage rows atomically committed."
+    },
+    {
+      "messages": 1024,
+      "nativeMembershipBytes": 46010,
+      "sourceUnitManifestBytes": 259906,
+      "refusalMs": 21.7,
+      "result": "Explicit context_too_large before source-body reads; zero pointer/snapshot/coverage/use/call effects; originals retained."
+    }
+  ],
+  "externalVerificationReports": [
+    {
+      "executor": "External controlling task",
+      "passed": 214,
+      "seconds": 1.16,
+      "scope": "Pure algorithm/native packing/provider/count/wire only; no DB/native lifecycle run by that controller turn.",
+      "source": "issue43-controller-next.md / Current actual controller verification"
+    },
+    {
+      "executor": "Appointed original independent reviewer",
+      "passed": 214,
+      "seconds": 1.09,
+      "scope": "Pure suite and separate provenance counterexample probes; no full DB/core acceptance.",
+      "source": "../reviews/issue43-compaction.md / Interval rendering targeted review"
+    },
+    {
+      "executor": "External controlling task",
+      "passed": 102,
+      "seconds": 207.85,
+      "scope": "Old44 candidate on own56943 PostgreSQL, not I3/I4 correction.",
+      "source": "specs/v5/memory-management/evidence/issue43/controller-critical-verification.md",
+      "provenance": "Read locally, artifact retained unchanged."
+    }
+  ],
+  "candidateIntegration": {
+    "currentHead": "2d6c5b2fd8ab0ec7f2092f2be9e34162e61dfea3",
+    "acceptedAdmission": "893de95",
+    "executor": "External controlling task",
+    "verificationBoundary": "Current developer verification includes accepted-admission HEAD integration; earlier entries remain historical candidate evidence."
+  },
+  "evidenceProvenance": "All verification[] records are developer-side. External controlling-task and appointed-reviewer executions are separately attributed in externalVerificationReports. Neither developer root nor its delegates confer independent acceptance.",
+  "delegates": [
+    {
+      "agent": "/root/core_implementation",
+      "role": "Single product owner",
+      "status": "completed implementation, full frozen aggregate and owned evidence handoff"
+    },
+    {
+      "agent": "/root/core_implementation/schema_proof",
+      "role": "Developer-side nonoverlapping scope/schema/native tests and new dedicated CI",
+      "status": "completed final native metadata92 proof; tests frozen"
+    },
+    {
+      "agent": "/root/schema_proof",
+      "role": "Developer-side read-only static audit; no product/test/DB writes and no appointed-reviewer authority",
+      "status": "completed"
+    }
+  ],
+  "documentationRevision": {
+    "scope": "I3/I4 frozen45 manifest with old44 preserved",
+    "productTestsFrozen": true,
+    "fullAggregatePending": false,
+    "currentEvidenceScope": "22 authority and176 affected regressions; old486 aggregate historical only.",
+    "postVerificationHashMismatches": []
+  },
+  "sourceRevisionEnforcement": {
+    "amendmentSha256": "69A7115EA197C780345285E0611F5E2488C2AD86C96D788292B9393B6974FC92",
+    "implementation": "Current native revision and exact id/parent/role/status metadata in source and set-based snapshot admission; coverage parent exact; no body hash recomputation, new lock or Research change.",
+    "proof": "92-case scope/schema/long-branch run passed171.99s; three persisted body-only native UPDATE negatives and five exact metadata predicate negatives. Fresh scope/use/snapshot rejected; unchanged historical pointer/owner retained."
+  },
+  "longBranchEvidenceScope": "Historical timing entries retained. Current frozen migration passes both long-branch cases in92 focused and486 aggregate;127-source adoption under unchanged5s cap,1023-source manifest explicitly refused. No general performance guarantee.",
+  "historicalFrozenManifests": [
+    {
+      "candidate": "pre-I3-I4",
+      "files": [
+        {
+          "path": ".github/workflows/memory-compaction.yml",
+          "sha256": "449DCE5287F862B4A1AB810D021D1E9E3BD0BFF2AC695E9DB2926901098D97AB"
+        },
+        {
+          "path": "apps/api/alembic/versions/u5c6d7e8f9a0_inloop_compaction.py",
+          "sha256": "080BA0EF0CA227B7E367ED2BB97164A06479ED9CC77398DF611EC1A8729DFDEA"
+        },
+        {
+          "path": "packages/backend-contracts/src/citeframe_contracts/compaction.py",
+          "sha256": "D77617A25ECF5CD9C0B808537F6C884B7EE67E2A2250BB0D955E99597DDB5E2B"
+        },
+        {
+          "path": "packages/backend-persistence/src/citeframe_persistence/models/__init__.py",
+          "sha256": "41B9E70E1F5F146F0D4C77E5EEE45CFBC0C503E4F8045DA2B80EDC6A20EBE452"
+        },
+        {
+          "path": "packages/backend-persistence/src/citeframe_persistence/models/chat_message.py",
+          "sha256": "4AC8D13A2F4C9322596C42A81A1EEE472C4499D9F0016B1CAAE533A1ABBFC303"
+        },
+        {
+          "path": "packages/backend-persistence/src/citeframe_persistence/models/chat_thread.py",
+          "sha256": "0687EF3FA9F2CE29FE9C4563A8C7BEE57D0349A1AFCE09A10F5AC630128288C9"
+        },
+        {
+          "path": "packages/backend-persistence/src/citeframe_persistence/models/memory.py",
+          "sha256": "FFCBF49EBB8EB3283220231E6E41DB4809D36A64790E638EE05E7477BF3E5C97"
+        },
+        {
+          "path": "packages/backend-persistence/src/citeframe_persistence/models/memory_context.py",
+          "sha256": "26CB462272BA7765F6ED804AE56971FE105CCAAA96175CFDD8EB7CF4FACBC67A"
+        },
+        {
+          "path": "packages/backend-persistence/src/citeframe_persistence/models/research_execution.py",
+          "sha256": "CF53DC4694FF7EA99D64E20E4E03455BD5960E21DB6DC66FC88EBFA92A29726D"
+        },
+        {
+          "path": "packages/memory-service/src/citeframe_memory/compaction/__init__.py",
+          "sha256": "2026CC0CD44D5F3475F58B0ABEE0A8F6531328D3E24FFB992150202CEC5BDD0A"
+        },
+        {
+          "path": "packages/memory-service/src/citeframe_memory/compaction/archive.py",
+          "sha256": "87BD63C47A8D3A9EBCD8B214F3004CC5FFE8BA4B040BCDE2A957487E42D2D5E6"
+        },
+        {
+          "path": "packages/memory-service/src/citeframe_memory/compaction/gate.py",
+          "sha256": "FAC0A06E9A2D74FB63C023B457CC3343A71254836A373D8628850A035D55FA59"
+        },
+        {
+          "path": "packages/memory-service/src/citeframe_memory/compaction/guards.py",
+          "sha256": "969C91CBD30429D5FF89F850B1CFB5D35986C4AEDC35E14192094323A8AEE7D2"
+        },
+        {
+          "path": "packages/memory-service/src/citeframe_memory/compaction/journal.py",
+          "sha256": "8BD92A66B81A9E703791155E068513F2885C3F20F2C2545A3B1027EA3E005972"
+        },
+        {
+          "path": "packages/memory-service/src/citeframe_memory/compaction/packing.py",
+          "sha256": "A9F32697DF3D3AAA2BF42C56396349782E77627D1C0A422CBCECD8D83D94120F"
+        },
+        {
+          "path": "packages/memory-service/src/citeframe_memory/compaction/policy.py",
+          "sha256": "F992B4D5E0D512A6CAE7756CAB3ED0E33DEF8F178A4948C05A919DC9B2796B44"
+        },
+        {
+          "path": "packages/memory-service/src/citeframe_memory/compaction/rendering.py",
+          "sha256": "AA65B267CFD074517FCD205DC06BDA103BE3700F451FA9B4E17E33E00139A2C1"
+        },
+        {
+          "path": "packages/memory-service/src/citeframe_memory/compaction/repository.py",
+          "sha256": "DDAB087A72977D6FD9B0D5AC96BF34C195A89BB5DBE4739C85155E5F00B13163"
+        },
+        {
+          "path": "packages/memory-service/src/citeframe_memory/compaction/requests.py",
+          "sha256": "7FB058C9B566FD025B2762012EDDC47772BB48E442835C3B65416659A2BA9477"
+        },
+        {
+          "path": "packages/memory-service/src/citeframe_memory/compaction/sources.py",
+          "sha256": "D783D49F377459FD5A1B9DDD544562EA1DC5741947DF24642AE882A35AF5A66E"
+        },
+        {
+          "path": "packages/memory-service/src/citeframe_memory/compaction/summary.py",
+          "sha256": "703FE529562EC677E6E3AD01756B3F38A47AD2A6097FA2F9F7F4E5EF1E6B91BD"
+        },
+        {
+          "path": "packages/memory-service/src/citeframe_memory/compaction/units.py",
+          "sha256": "5EBB23A85EE51818845926BB8C7F4B7347C706A0ED9E3E76A2683A3C5D34BE76"
+        },
+        {
+          "path": "packages/memory-service/tests/test_compaction_algorithms.py",
+          "sha256": "9CB0A2FF185660F55EE751A5C0A4B3728624F12FADD8A7C0907E35D9CEC86D60"
+        },
+        {
+          "path": "packages/memory-service/tests/test_compaction_call_fixture.py",
+          "sha256": "C4210B1FF26318C2809A6F9F908109CF80B6A962AAEC1E9549FCCBAC0844C67C"
+        },
+        {
+          "path": "packages/memory-service/tests/test_compaction_constraints.py",
+          "sha256": "DE2ABCC4A743A4B6A7C6B6B69A890BF0F8CA58263A4B60DB97A34CED46D48944"
+        },
+        {
+          "path": "packages/memory-service/tests/test_compaction_fixture.py",
+          "sha256": "645190AA83C40A2BD1F175C9C425E571CA011920A6C2E162B1AECE755E491040"
+        },
+        {
+          "path": "packages/memory-service/tests/test_compaction_gate.py",
+          "sha256": "73C48925030B2E1D4CF68B26046D8945527CC545F133CAF87884F16BF87EC2A3"
+        },
+        {
+          "path": "packages/memory-service/tests/test_compaction_guard_limits.py",
+          "sha256": "28F6E32260FE4866210D7CE1A39B6B08D3037BBF9B3C68AAF286169FDD14268A"
+        },
+        {
+          "path": "packages/memory-service/tests/test_compaction_intervals.py",
+          "sha256": "C961BA51642966C6FE6EE62AECF1F4DA8BF527210734C003EEC4BAC5AF0914A5"
+        },
+        {
+          "path": "packages/memory-service/tests/test_compaction_long_branch.py",
+          "sha256": "52D6B6665232466E7B9BF749437EE35F6C81DBCD59858EC99245516CF2897812"
+        },
+        {
+          "path": "packages/memory-service/tests/test_compaction_main_question.py",
+          "sha256": "F2C592340983D02ECA6973089D3CBA21FB26E9B8850EA420E6FBA685D121BC1C"
+        },
+        {
+          "path": "packages/memory-service/tests/test_compaction_native_lifecycle.py",
+          "sha256": "9F9DBDD7694CC2B7CDFA9F4E2ACFC070043A4BD5904C12C1790ED7389FF47FE8"
+        },
+        {
+          "path": "packages/memory-service/tests/test_compaction_native_packing.py",
+          "sha256": "92C7CCA41324165380FFB1AA0E4C0A1DE5B7F01236FCD6B92BCAA0B971637FCC"
+        },
+        {
+          "path": "packages/memory-service/tests/test_compaction_native_races.py",
+          "sha256": "C408876D0122AC2C66370CCCA3B9FE987CE98B69DD35D992142CB9B9AE8D4CFC"
+        },
+        {
+          "path": "packages/memory-service/tests/test_compaction_p1a_compatibility.py",
+          "sha256": "FEDFEEB0737462AAEE585E6C27986665F0186527805D03FFF64F8067E43E1ADA"
+        },
+        {
+          "path": "packages/memory-service/tests/test_compaction_profiles.py",
+          "sha256": "5BA0CF99B007AEE69C980A0EFFD23EEA566545123E75CE0FAA52A3A80CB931B1"
+        },
+        {
+          "path": "packages/memory-service/tests/test_compaction_provenance.py",
+          "sha256": "77497C3CC8314602321E75DFC96F87417F2F2EB16EAFF93E6AA8C3AF07D5A2D3"
+        },
+        {
+          "path": "packages/memory-service/tests/test_compaction_registration.py",
+          "sha256": "F6F4F0F1B3A99D5006EF0AF4323E71B845D23586A27B25B59828001B95E2B365"
+        },
+        {
+          "path": "packages/memory-service/tests/test_compaction_repository.py",
+          "sha256": "ED687DE3C7B694A35418A6322FF0AD47E2F3118879C4803657B267D17AC78F30"
+        },
+        {
+          "path": "packages/memory-service/tests/test_compaction_requests.py",
+          "sha256": "44B067D56B1E95A43FDBC33ABFAB1B8402A6CCB8EBCCD459E443AE19C163E0E2"
+        },
+        {
+          "path": "packages/memory-service/tests/test_compaction_research.py",
+          "sha256": "119895A603E898094C074F9B84513DDE02D747D75BADF255D76D4199D7D9B761"
+        },
+        {
+          "path": "packages/memory-service/tests/test_compaction_research_gate.py",
+          "sha256": "3AEA8EF3729862E7BABF227D7B133D9D2FEFD50DD8B8435D6F1319366D47A597"
+        },
+        {
+          "path": "packages/memory-service/tests/test_compaction_schema.py",
+          "sha256": "930F1B9D10851AD8C6CEE6C25186B0EF182C3708F9A3657C1A2C1B3833506450"
+        },
+        {
+          "path": "packages/memory-service/tests/test_compaction_scope.py",
+          "sha256": "C080D03F8F4D64A41EF934242012EC6FDF645E432558B0BFC5B3CE032BAAFF43"
+        }
+      ],
+      "aggregate": "486 passed1135.14s developer; independent review found I3/I4"
+    }
+  ],
+  "i3i4Correction": {
+    "productPaths": [
+      "packages/memory-service/src/citeframe_memory/compaction/journal.py",
+      "packages/memory-service/src/citeframe_memory/compaction/rendering.py",
+      "packages/memory-service/src/citeframe_memory/compaction/repository.py"
+    ],
+    "testPath": "packages/memory-service/tests/test_compaction_authority.py",
+    "old44Preserved": true,
+    "schemaChanged": false,
+    "red": [
+      {
+        "failed": 5,
+        "seconds": 8.72,
+        "scope": "Original three adoption/two delayed-save negatives on unchanged old44 product; all failed expected rejection."
+      },
+      {
+        "failed": 2,
+        "seconds": 5.37,
+        "scope": "Added proposed-chain episode/combined-byte limit negatives after initial fix, before candidate-cap correction; actual DML observed."
+      }
+    ],
+    "implementation": "Same adoption transaction authenticates old chain and proposed caps, shared advance_intervals with reload; absent/valid-only save under existing call lock. No SQL lifecycle monotonicity claim.",
+    "fixtureCorrections": "Preliminary malformed valid-result UPDATE was correctly refused by immutable trigger; corrected via ordinary isolated lifecycle transitions. New execution fixture needed distinct streaming assistant. No constraints disabled.",
+    "finalProof": "22 passed38.70s;176 passed314.88s; root66 passed120.61s and pure214 passed1.15s. Exact45 files unchanged across final runs."
+  }
+}

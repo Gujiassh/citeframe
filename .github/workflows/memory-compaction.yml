@@ -1,0 +1,76 @@
+name: Memory compaction
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  compaction-postgres:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    services:
+      postgres:
+        image: pgvector/pgvector:pg17
+        env:
+          POSTGRES_DB: citeframe_memory43_test
+          POSTGRES_USER: memory43
+          POSTGRES_PASSWORD: memory43_ci_only
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U memory43 -d citeframe_memory43_test"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 20
+    env:
+      CI: "true"
+      PYTHONDONTWRITEBYTECODE: "1"
+      CITEFRAME_MEMORY43_POSTGRES_URL: postgresql+psycopg://memory43:memory43_ci_only@127.0.0.1:5432/citeframe_memory43_test
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+          cache-dependency-glob: apps/api/uv.lock
+      - name: Install frozen API test dependencies
+        run: uv sync --project apps/api --frozen --extra dev
+      - name: Provision and verify isolated PostgreSQL prerequisites
+        run: |
+          uv run --project apps/api --frozen --no-sync python - <<'PY'
+          import os
+          from sqlalchemy import create_engine, text
+          from sqlalchemy.engine import make_url
+
+          url = os.environ["CITEFRAME_MEMORY43_POSTGRES_URL"]
+          assert url and make_url(url).database == "citeframe_memory43_test"
+          engine = create_engine(url)
+          with engine.begin() as connection:
+              assert connection.scalar(text("SHOW server_version_num")).startswith("17")
+              connection.execute(text("CREATE EXTENSION IF NOT EXISTS vector WITH SCHEMA public"))
+              connection.execute(text("CREATE EXTENSION IF NOT EXISTS pg_trgm WITH SCHEMA public"))
+              extensions = set(connection.execute(text("SELECT extname FROM pg_extension e JOIN pg_namespace n ON n.oid=e.extnamespace WHERE n.nspname='public'")).scalars())
+              assert {"vector", "pg_trgm"} <= extensions
+          engine.dispose()
+          PY
+      - name: Collect and run every compaction regression module
+        run: |
+          uv run --project apps/api --frozen --no-sync python - <<'PY'
+          import os
+          from pathlib import Path
+          import subprocess
+          import sys
+
+          assert os.environ.get("CI") == "true"
+          assert os.environ.get("CITEFRAME_MEMORY43_POSTGRES_URL"), "PostgreSQL is mandatory"
+          files = sorted(str(path) for path in Path("packages/memory-service/tests").glob("test_compaction*.py"))
+          assert files, "No compaction regression modules found"
+          print("Compaction module inventory:\n" + "\n".join(files), flush=True)
+          command = [sys.executable, "-m", "pytest", "-p", "no:cacheprovider", "--strict-markers"]
+          subprocess.run(command + ["--collect-only", "-q", *files], check=True)
+          subprocess.run(command + ["-q", "--tb=short", *files], check=True)
+          PY
