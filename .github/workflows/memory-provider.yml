@@ -74,6 +74,7 @@ jobs:
               "packages/memory-service/tests/test_native_provider.py",
               "packages/memory-service/tests/test_token_counting.py",
               "packages/memory-service/tests/test_wire_provider.py",
+              "packages/memory-service/tests/test_chat_loop_turns.py",
           ], plugins=[RequireExecutedTests()])
           assert not any(name.split(".", 1)[0] in {"ai_pdf_api", "ai_pdf_worker"} for name in sys.modules)
           raise SystemExit(status)
