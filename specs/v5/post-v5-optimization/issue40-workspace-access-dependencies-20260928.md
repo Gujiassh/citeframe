@@ -8,9 +8,10 @@
 - Initial checkout clean; GitHub remote and matching local/global Git identity verified.
 - Implemented and tested; comprehensive results recorded below. Independent Critical review,
   visible-browser acceptance, CI, and controller integration remain open.
-- Git staging was attempted after identity verification and failed creating
-  `.git/index.lock` with `Permission denied`. No commit was created; controller Git
-  metadata write access is required. No permission bypass was attempted.
+- Controller candidate committed/pushed: `635bb2b8703ae6c77fee5cb28d08d852bd67b7ae`.
+- Draft PR: https://github.com/Gujiassh/citeframe/pull/47.
+- Earlier lane staging failed on `.git/index.lock` permissions; controller subsequently
+  completed the scope commit/push. This lane has not committed or pushed follow-up evidence.
 - No push, PR, merge, workbench state changes, private memory access, shared environment
   upgrades, or historical-worktree changes by this lane.
 
@@ -163,17 +164,17 @@ without moving business/storage logic; a broader split is outside this refactor.
 validated inputs must be added to the thin dependency to retain error order. SSE uses
 two short initial sessions; polling and service transaction checks are unchanged.
 
-Independent Critical review, five environment-limited gates, controller-visible browser
-acceptance, CI, push/PR/merge, and total-delivery acceptance remain open. Scope commits
-will be recorded below. This lane remains available for original-developer rework.
+Independent final Critical approval, five environment-limited gates, remaining browser
+acceptance, CI, merge, and total-delivery acceptance remain open. Controller candidate
+and draft PR are recorded above. This lane remains available for original-developer rework.
 Durable write-back is confined to repo SSoT/spec/evidence; controller-owned workbench
 records and private memory remain untouched.
 
 
 ## Final lane state
 
-- Commit IDs: none. Staging failed on `.git/index.lock` permissions; all issue40 changes
-  remain unstaged. No push/PR/merge was attempted.
+- Controller candidate: `635bb2b8703ae6c77fee5cb28d08d852bd67b7ae`, pushed with draft PR47.
+  This follow-up changes evidence/docs only, without another lane commit or push.
 - Final comprehensive results and exact skipped/failed node IDs:
   `evidence/issue40/verification-summary.json`. The 11 skips cover PostgreSQL migration/retrieval/configuration-concurrency and
   historical differential prerequisites; live issue40 PostgreSQL
@@ -201,7 +202,9 @@ sets that link when installing synthetic content. The unchanged complete artifac
 domain validator passes, and artifact detail/content/report-edit reads return 200 for
 both owner and creator (six live requests). Evidence: `evidence/issue40/provenance-repair.json`.
 No note, saved report edit, artifact bytes, or production validator was changed by this
-repair. Controller can resume visible report save/reload/conflict/draft checks.
+repair. Controller subsequently reported that the visible report page renders and the
+creator save succeeds. Controller subsequently confirmed two-tab conflict/draft recovery and new-tab persistence
+passed; see the CI follow-up below.
 
 F2 (initial SSE session boundary): implementation decision is to retain two short initial
 sessions. It keeps the access dependency limited to authentication/header validation and
@@ -210,11 +213,147 @@ responsibility to the permission dependency. Independent measurement found 4 SQL
 and 1 membership query in both baseline and candidate, with initial sessions changing
 from 1 to 2. The extra pool checkout/transaction boundary is explicit; this is not a claim
 of identical session lifecycle. No permission lock or write transaction was moved, and
-fresh polling checks remain. Final controller disposition remains part of acceptance.
+fresh polling checks remain. Controller explicitly accepted this bounded F2 tradeoff on
+2026-09-28; identical session lifecycle is not asserted.
 
 The nine-file product digest still matches the review checkpoint:
 `4dd71da985aa47bb8ea6f3be8ae0ade44978e4efcd1b16bbeb28f3ede02e3349`.
 Subsequent changes concern the strengthened fresh-database oracle, evidence/docs, and
-ignored synthetic fixture repair. A completed candidate SHA is still blocked by Git
-metadata permissions. Independent final approval, visible report editing, real-PG race
-scope disposition, and environment/CI gates remain open.
+ignored synthetic fixture repair. Controller has since committed/pushed the candidate
+identified above. Independent final approval, remaining browser checks, PostgreSQL
+evidence-scope acceptance, and environment/CI gates remain open.
+
+## Bounded PostgreSQL and model-setting follow-up
+
+Product code remains identical to candidate `635bb2b8703ae6c77fee5cb28d08d852bd67b7ae`.
+No controller A/B note/report was reset or edited in this follow-up. Issue41 documents,
+reviewer artifact, private memory, and workbench state were not edited.
+
+### Browser model-setting fixture
+
+Only A generation was changed from inherited/unconfigured revision 2 to an override at
+revision 3. It uses `http://127.0.0.1:18481/v1`, `openai_chat_completions`, and model
+`issue40-synthetic-generation-no-calls`. A had no existing configured key; an explicitly
+fake local key was established in an ignored local file. Once stored, a same-base model
+name save can omit the key. Live PATCH/GET returned 200 and `apiKeyConfigured=true`.
+Embedding was not changed; no provider request was made.
+
+The isolated `runtime/run.py` now allowlists only origin `http://127.0.0.1:18481` for
+`127.0.0.1/32`. Only the identified isolated API was restarted, hidden; Web, PostgreSQL,
+MinIO, sessions, and A/B notes/reports remained in place. API logs:
+`runtime/api-model.out.log` and `runtime/api-model.err.log`. Evidence:
+`evidence/issue40/model-browser-ready.json`. Reproduction helper:
+`apps/api/.venv/Scripts/python.exe specs/v5/post-v5-optimization/evidence/issue40/model_browser_setup.py`.
+Do not rerun preparation during the controller's model-settings edit. The helper retains
+an existing same-base key; its first-run key file is ignored. Browser save/reload
+acceptance is controller-owned, independent of this API readiness check.
+
+Web URL: `http://127.0.0.1:18430`. Local credential paths only:
+`.local-runtime/artifacts/issue40-dev/runtime/credentials.json` (login/runtime) and
+`.local-runtime/artifacts/issue40-dev/runtime/synthetic-provider.json` (fake local key).
+
+### PostgreSQL safety evidence
+
+Command, from repository root:
+
+```powershell
+apps/api/.venv/Scripts/python.exe specs/v5/post-v5-optimization/evidence/issue40/postgres_safety.py > .local-runtime/artifacts/issue40-dev/runtime/postgres-safety-final.log 2>&1
+```
+
+Exit 0; six bounded checks passed on PostgreSQL **17.11**, migrated through
+`s3a4b5c6d7e8`, database `issue40_safety_1ab12e684a6c`. Evidence:
+`evidence/issue40/postgres-safety.json`. Each invocation creates a new explicitly
+synthetic DB in the isolated cluster and new workspace-based MinIO prefixes. The
+acceptance database and browser fixture IDs are not used. No schema constraint was
+removed or relaxed, no product code was patched, and no external provider was called.
+
+- Actual Worker-facing claim after revocation: 403 `research_permission_denied`, idle
+  run cancelled with `creator_membership_removed`, zero work attempts created.
+- Actual heartbeat after revocation: 403, run becomes `cancel_requested`, existing active
+  attempt remains running for the established cancellation protocol.
+- Actual persistence adoption finalizer with a synthetic uploaded publisher intent:
+  revocation changes intent to `compensating`, run to `cancel_requested`; zero final
+  artifacts and zero completion events. The existing uploaded object is unchanged.
+  Its compensation is pending; this check does not claim a cleanup sweep ran.
+- Two independent PostgreSQL sessions saving expectedVersion 0 concurrently: exactly
+  one success/version 1 and one 409 `report_edit_version_conflict`.
+- Repeated at expectedVersion 1: exactly one success/version 2 and one 409.
+- Revocation after a successful preliminary membership read, while the report save is
+  demonstrably waiting on the PostgreSQL run lock (`pg_stat_activity` reports `Lock`):
+  after lock release, service recheck returns 403. The complete edit row remains equal
+  and the real MinIO original-report byte hash is unchanged.
+
+Fixture preparation uses actual request dependencies for run creation/plan approval,
+existing deterministic plan builders, and migrated PostgreSQL constraints. Worker
+claim/heartbeat and report-write services execute unchanged. The adoption case is a
+narrow **finalizer boundary** fixture with an uploaded intent and publisher attempt;
+it does not validate end-to-end publication preparation or successful report provenance.
+Report edit checks validate actual original object bytes/hash, with synthetic
+completed-report state. Full view provenance was separately validated in the F1 repair.
+
+Residual scope: no long-running Worker process, broad multi-Worker stress, crash/restart
+schedule, compensation sweep, or exhaustive revocation interleaving. Controller decides
+whether this bounded real-PG evidence closes the required race-safety gate. Earlier
+harness attempts exposed fixture-only FK/required-field issues and failed before a final
+result (runs 01-05); run 06 passed, followed by the strengthened final pass. Logs
+`runtime/postgres-safety-01.log` through `-06.log` are retained. The final
+script uses valid ordered seed data; no fixture constraint was bypassed. Disposable
+`issue40_safety_*` databases/prefixes are retained in the isolated runtime; none were
+removed and no existing user path was recursively deleted.
+
+### Remaining gates
+
+Controller-visible model save/reload and report conflict/draft acceptance have since
+passed (recorded below). Final Critical review, CI/external service disposition,
+controller merge, and total delivery remain open. Prior comprehensive API result remains
+983 passed / 11 skipped / 5 environment-reproduced failures; this bounded follow-up does
+not convert it to an all-green suite. Lane remains available for original-developer CI
+or review rework. Durable write-back is this owned ledger/evidence; no private-memory or
+controller-owned state update was made.
+
+
+## PR47 CI rework — original developer lane
+
+Exact candidate CI log: `.local-runtime/artifacts/issue40-ci-635bb2b.log`. Linux API
+recorded 992 passed / 6 skipped / 1 failed; Worker acceptance recorded 57 passed /
+411 deselected / 1 failed. The five previously recorded Windows environment failures
+passed on Linux. This slice repairs only the two diagnosed test/oracle regressions.
+
+1. SQLite stripped the fixed workspace fixture's timezone; the unchanged DTO interpreted
+   the resulting naive timestamp in the machine's local timezone. The oracle fixture
+   now restores UTC only for its exact known fixed timestamps on ORM load/refresh.
+   No product conversion changed, and no response normalization was added. A regression
+   checks actual SQLite load, refresh, and HTTP serialization in the native host timezone
+   and, on POSIX, `UTC0` and `CST-8`.
+2. The Worker mixed-workspace test now gets `WorkspaceAccess` from the actual
+   `require_delete_asset_access` dependency before calling `delete_asset`. All deletion,
+   cleanup, generation, and late-ingest non-resurrection assertions remain intact.
+   Worker/tools/infra Python imports/calls were audited; no other stale handler caller
+   was found. Remaining router imports use unchanged helpers or mount the router.
+
+The baseline overlay was freshly extracted using `git show` from original
+`8812fda4d69b7f0e654e749c357fa05b5e8da72f` for all nine router modules, with package-path
+shims only. Local overlay: `.local-runtime/artifacts/issue40-dev/ci-baseline-source`.
+Source hashes, exact commands/results/log paths: `evidence/issue40/ci-rework.json`.
+Both oracle captures returned 378 cases and match exactly. Compared to the prior
+baseline, only indices 18/19 changed: fixed fixture createdAt/updatedAt now serialize
+as `2026-09-28T00:00:00+00:00`; all other payload/status/detail fields are unchanged.
+
+Verification:
+- API access + permission-precedence suites: **11 passed, 2 skipped**, 22.41s. The skips
+  are only POSIX timezone switching on Windows; native UTC+8 load/refresh/HTTP passed.
+- Full CI Worker acceptance selection (`--strict-markers -m acceptance apps/worker/tests`):
+  **58 passed, 411 deselected**, 200.78s, using the existing Worker venv.
+- `git diff --check`: pass. Nine product router modules remain unchanged from candidate.
+- Full API suite was not rerun in this bounded slice; Linux CI rerun remains required.
+
+Controller browser evidence at `.local-runtime/artifacts/issue40-controller-browser.md`
+now confirms generation revision4 model-name save/reload with credential field untouched,
+report creator save, new-tab persistence, two-tab conflict, and preserved-draft recovery.
+No browser fixtures were modified during this CI slice.
+
+The pinned quay MinIO image still returns unauthorized for conflict-services and
+research-services. This external gate remains controller-coordinated; neither workflow
+nor image source was edited or bypassed. Independent final review, CI rerun, controller
+merge, and total delivery remain open. No commit/push, reviewer artifact, Issue41,
+workbench, private-memory, schema, or product changes in this rework.

@@ -4,6 +4,7 @@ import json
 import re
 import sys
 from datetime import UTC, datetime
+from contextlib import contextmanager
 from pathlib import Path
 
 sys.path[:0] = ['apps/api/tests', 'apps/api/src', 'packages/backend-contracts/src', 'packages/backend-persistence/src', 'packages/research-persistence/src']
@@ -13,10 +14,38 @@ if __name__ == '__main__' and len(sys.argv) > 2:
 import pytest
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
-from sqlalchemy import select
+from sqlalchemy import event, inspect, select
+from sqlalchemy.orm.attributes import set_committed_value
 from test_workspace_model_settings import configured_api, headers
 from ai_pdf_api.db.session import get_db
 from ai_pdf_api.models import Workspace
+
+
+FIXTURE_TIME = datetime(2026, 9, 28, tzinfo=UTC)
+
+
+@contextmanager
+def fixed_workspace_times(db):
+    # SQLite drops timezone metadata. Restore this fixture's known UTC input on
+    # ORM loads/refreshes so DTO astimezone() never interprets it as host-local.
+    def restore(workspace, *args):
+        if inspect(workspace).session is not db:
+            return
+        for field in ('created_at', 'updated_at'):
+            value = getattr(workspace, field)
+            if value == FIXTURE_TIME.replace(tzinfo=None):
+                set_committed_value(workspace, field, FIXTURE_TIME)
+
+    event.listen(Workspace, 'load', restore)
+    event.listen(Workspace, 'refresh', restore)
+    try:
+        for workspace in db.scalars(select(Workspace)):
+            workspace.created_at = workspace.updated_at = FIXTURE_TIME
+        db.commit()
+        yield
+    finally:
+        event.remove(Workspace, 'load', restore)
+        event.remove(Workspace, 'refresh', restore)
 
 
 def capture():
@@ -46,13 +75,10 @@ def capture():
                     fixture = configured_api.__wrapped__(patch)
                     _, db = next(fixture)
                     try:
-                        for workspace in db.scalars(select(Workspace)):
-                            workspace.created_at = workspace.updated_at = datetime(2026, 9, 28, tzinfo=UTC)
-                        db.commit()
                         app.dependency_overrides[get_db] = lambda: db
                         # Header-precedence cases do not open the independent SSE database.
                         request_headers = {**auth, 'Accept': 'application/json'} if path.endswith('/events') else auth
-                        with TestClient(app) as client:
+                        with fixed_workspace_times(db), TestClient(app) as client:
                             result = client.request(method, url, headers=request_headers, params=params, **({'json': {}} if 'requestBody' in operation else {}))
                         body = result.json() if result.content else None
                         if isinstance(body, dict) and 'error' in body:

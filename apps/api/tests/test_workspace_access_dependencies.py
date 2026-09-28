@@ -3,6 +3,10 @@ from __future__ import annotations
 import importlib
 import importlib.util
 import json
+import os
+import time
+
+import pytest
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import get_origin, get_type_hints
@@ -34,6 +38,43 @@ def test_error_oracle_matches_baseline():
     after = module.capture()
     assert len(after) == 378
     assert after == before
+
+
+@pytest.mark.parametrize('local_timezone', [None, 'UTC0', 'CST-8'])
+def test_oracle_workspace_fixture_preserves_utc_on_sqlite_reload(configured_api, local_timezone):
+    if local_timezone is not None and not hasattr(time, 'tzset'):
+        pytest.skip('Host timezone switching requires POSIX tzset; native timezone case still runs')
+    previous = os.environ.get('TZ')
+    spec = importlib.util.spec_from_file_location('issue40_timezone_oracle', EVIDENCE / 'http_oracle.py')
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    _, db = configured_api
+    app = FastAPI()
+    app.include_router(importlib.import_module('ai_pdf_api.routers.workspaces').router)
+    app.dependency_overrides[get_db] = lambda: db
+    try:
+        if local_timezone is not None:
+            os.environ['TZ'] = local_timezone
+            time.tzset()
+        with module.fixed_workspace_times(db):
+            db.expunge_all()
+            workspace = db.get(Workspace, 'w1')
+            assert workspace.created_at == module.FIXTURE_TIME
+            assert workspace.created_at.tzinfo is UTC
+            db.expire_all()
+            assert workspace.updated_at.tzinfo is UTC
+            with TestClient(app) as client:
+                response = client.get('/v1/workspaces/w1', headers=headers())
+            assert response.status_code == 200
+            assert response.json()['workspace']['createdAt'] == '2026-09-28T00:00:00+00:00'
+            assert response.json()['workspace']['updatedAt'] == '2026-09-28T00:00:00+00:00'
+    finally:
+        if local_timezone is not None:
+            if previous is None:
+                os.environ.pop('TZ', None)
+            else:
+                os.environ['TZ'] = previous
+            time.tzset()
 
 
 def test_every_workspace_operation_has_typed_access_and_internal_auth_graph():
