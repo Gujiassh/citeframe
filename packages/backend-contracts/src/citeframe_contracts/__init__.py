@@ -419,3 +419,43 @@ __all__ = [
     "VerifiedClaim",
     "Verifier",
 ]
+
+from .memory import (
+    MemoryConditions,
+    MemoryStatement,
+    MemoryRequest,
+    MemoryView,
+    MemoryReceipt,
+    InstructionSourceView,
+    AccessContext,
+    AccessDenied,
+    AccessPort,
+    Clock,
+    EmbeddingPort,
+    GenerationEvent,
+    GenerationMessage,
+    GenerationObserver,
+    GenerationPort,
+    GenerationRequest,
+    HTTPResponse,
+    HTTPTransport,
+    IdempotencyConflict,
+    MemoryError,
+    ModelConnectionSnapshot,
+    ObjectStorePort,
+    ProtocolError,
+    SourceUnavailable,
+    TextDelta,
+    TokenCount,
+    TokenCounter,
+    ToolCall,
+    ToolCallComplete,
+    ToolCallDelta,
+    ToolDefinition,
+    TurnComplete,
+    Usage,
+    VersionConflict
+)
+from .memory import __all__ as _memory_exports
+
+__all__ += _memory_exports
