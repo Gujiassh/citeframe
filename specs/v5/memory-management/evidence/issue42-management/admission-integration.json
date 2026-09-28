@@ -1,0 +1,35 @@
+{
+  "sourceCommit": "893de951672f1a374d552425dfb2b3e7c3e6a223",
+  "integratedCommit": "7d47607778a9212e9f3cb076442cd7c497c1f8ca",
+  "review": "reviews/issue42-admission.md",
+  "files": {
+    "packages/memory-service/src/citeframe_memory/admission.py": {
+      "committedLF": "801aa9b4e3e2efb8457e1dfc64e6ce90bea49f0a60b4928206d4c425a5d4d48b",
+      "workingTree": "8d43fe23e42af9c37211837185272a658c280839923051cbb642d998320a48ce",
+      "sourceCommitBlobEqual": true,
+      "checkoutDifference": "CRLF only"
+    },
+    "packages/memory-service/src/citeframe_memory/commands.py": {
+      "committedLF": "119d45a326e6f247847f927187b19baad11e4fc0b1bf32dce8d40c7f6e59a0d9",
+      "workingTree": "23a3e407330c14c8bfc4dcdbae8fe211f8834751624651e34088d8f1e0965b95",
+      "sourceCommitBlobEqual": true,
+      "checkoutDifference": "CRLF only"
+    },
+    "packages/memory-service/tests/test_admission.py": {
+      "committedLF": "2a8530c4dcd816ff778ae4a2c5d5c5a823f282cc7c6490bb32bc6667b50e5563",
+      "workingTree": "4008f776da93418113ee8ae83739b944f8be4d0fdfe17bcc4ab1b7c4bc3496d0",
+      "sourceCommitBlobEqual": true,
+      "checkoutDifference": "CRLF only"
+    },
+    "packages/memory-service/tests/test_admission_postgres.py": {
+      "committedLF": "1d65b7fedd3b889f2b2cdd22a2dacc8a358f86a1e001e073bc25097766a65be8",
+      "workingTree": "0d430e60ba5138e351a61443425d78cb966eeef6f82ccb038cfe6a9508f976c4",
+      "sourceCommitBlobEqual": true,
+      "checkoutDifference": "CRLF only"
+    }
+  },
+  "reviewedAdmissionRawHash": "95956d8d28bc00ec59964ff6f6512d92f0db2668a930ed56ebc291bb6259ff81",
+  "reviewedAdmissionCRLFCount": 1,
+  "reviewedAdmissionLFCount": 79,
+  "reviewedToIntegratedDifference": "one CRLF normalized to LF; otherwise exact bytes; original worktree read-only"
+}

@@ -1,0 +1,26 @@
+{
+  "base": "7d47607778a9212e9f3cb076442cd7c497c1f8ca",
+  "finding": "M42-I1",
+  "status": "ready for original independent re-review",
+  "changedFiles": {
+    "apps/api/src/ai_pdf_api/routers/memories.py": {
+      "reviewedSha256": "0047bcf26b7149b64b91bfe53c099c4d2b0d12c0d4c9038eda4c025d1dc667be",
+      "repairedSha256": "0d00e0ff0fd37d1278048e264b68b86c98f3a52ae59ea7667648aed8eb0f4c10"
+    },
+    "apps/api/src/ai_pdf_api/services/memory_management.py": {
+      "reviewedSha256": "8f37f45c83267f57e959bcf0996f6dcf03dc77890c1a1c4881b9cf4f314657dd",
+      "repairedSha256": "189a86b0a99e3947e3915e43436f0eaf6e540397158d58929c7940a233d6d61f"
+    },
+    "apps/api/tests/test_memory_management.py": {
+      "reviewedSha256": "b1f677de7504f4841f15aa09d38d222762f06a7ca3fd50e592bb39d0c62497ae",
+      "repairedSha256": "4ff2b6a7a3cacd999f98e6003673e9306f213503b61dee9d569fa88140331ea5"
+    }
+  },
+  "otherPreviouslyManifestedProductFilesUnchanged": true,
+  "workflowSha256": "de69b0aaff39849af7f0cab8fe2302685dcac5fd35bd1de3063b1205b523422c",
+  "combinedTests": 1748,
+  "dedicatedTests": 56,
+  "reverseRaceCases": 10,
+  "liveHttpChecks": 76,
+  "dedicatedCiCollection": 1725
+}

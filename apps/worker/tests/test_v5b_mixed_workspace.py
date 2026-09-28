@@ -50,7 +50,7 @@ from ai_pdf_api.models import (
     Workspace,
     WorkspaceMembership,
 )
-from ai_pdf_api.routers.assets import build_ingest_job, delete_asset
+from ai_pdf_api.routers.assets import build_ingest_job, delete_asset, require_delete_asset_access
 from ai_pdf_api.routers.chat import to_citation
 from ai_pdf_api.services.capabilities import embedding_profile_snapshot_fields
 from ai_pdf_api.services.chat import active_message_path
@@ -1081,7 +1081,8 @@ def test_delete_route_cleanup_and_late_ingest_cannot_resurrect(
     assert race_job_id == race_job.id
     db.refresh(race_job)
     assert race_job.status == "running"
-    delete_asset(workspace.id, asset.id, user.id, db)
+    access = require_delete_asset_access(workspace.id, user.id, db)
+    delete_asset(workspace.id, asset.id, access, db)
     db.refresh(asset)
     assert asset.status == "deleting"
     assert asset.latest_ingestion_job_id != race_job.id

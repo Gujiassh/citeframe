@@ -1,0 +1,595 @@
+{
+  "scope": "mounted owner-private management lifecycle including shared admission",
+  "transport": "live socket HTTP to ai_pdf_api.main:app",
+  "database": "fresh disposable PostgreSQL; full Alembic head t4b5c6d7e8f9",
+  "checks": [
+    {
+      "case": "first_use_empty",
+      "method": "GET",
+      "path": "/memories",
+      "status": 200,
+      "code": null,
+      "passed": true
+    },
+    {
+      "case": "create_scope_refused",
+      "method": "POST",
+      "path": "/memories",
+      "status": 422,
+      "code": "invalid_scope",
+      "passed": true
+    },
+    {
+      "case": "create_owner_grant_refused",
+      "method": "POST",
+      "path": "/memories",
+      "status": 422,
+      "code": "invalid_request",
+      "passed": true
+    },
+    {
+      "case": "create_source_grant_refused",
+      "method": "POST",
+      "path": "/memories",
+      "status": 422,
+      "code": "invalid_source_ref",
+      "passed": true
+    },
+    {
+      "case": "create",
+      "method": "POST",
+      "path": "/memories",
+      "status": 201,
+      "code": null,
+      "passed": true
+    },
+    {
+      "case": "current",
+      "method": "GET",
+      "path": "/memories/648a4ee9-3e01-418a-b6cf-335ca44a48a6",
+      "status": 200,
+      "code": null,
+      "passed": true
+    },
+    {
+      "case": "exact_source",
+      "method": "POST",
+      "path": "/sources/read",
+      "status": 200,
+      "code": null,
+      "passed": true
+    },
+    {
+      "case": "correct",
+      "method": "POST",
+      "path": "/memories/648a4ee9-3e01-418a-b6cf-335ca44a48a6/corrections",
+      "status": 201,
+      "code": null,
+      "passed": true
+    },
+    {
+      "case": "superseded_current",
+      "method": "GET",
+      "path": "/memories/648a4ee9-3e01-418a-b6cf-335ca44a48a6",
+      "status": 200,
+      "code": null,
+      "passed": true
+    },
+    {
+      "case": "correction_replay",
+      "method": "POST",
+      "path": "/memories/648a4ee9-3e01-418a-b6cf-335ca44a48a6/corrections",
+      "status": 201,
+      "code": null,
+      "passed": true
+    },
+    {
+      "case": "correction_cas",
+      "method": "POST",
+      "path": "/memories/648a4ee9-3e01-418a-b6cf-335ca44a48a6/corrections",
+      "status": 409,
+      "code": null,
+      "passed": true
+    },
+    {
+      "case": "corrected_source",
+      "method": "POST",
+      "path": "/sources/read",
+      "status": 200,
+      "code": null,
+      "passed": true
+    },
+    {
+      "case": "erase_predecessor",
+      "method": "DELETE",
+      "path": "/memories/648a4ee9-3e01-418a-b6cf-335ca44a48a6",
+      "status": 200,
+      "code": null,
+      "passed": true
+    },
+    {
+      "case": "successor_source_survives",
+      "method": "POST",
+      "path": "/sources/read",
+      "status": 200,
+      "code": null,
+      "passed": true
+    },
+    {
+      "case": "admission_remember_content",
+      "method": "POST",
+      "path": "/memories",
+      "status": 422,
+      "code": "sensitive_content_unsupported",
+      "passed": true
+    },
+    {
+      "case": "rejected_request_absent_remember_content",
+      "method": "GET",
+      "path": "/memories/requests/30fd7ef0-c45c-4a05-8a56-9d6d435ef9fa",
+      "status": 404,
+      "code": "operation_not_found",
+      "passed": true
+    },
+    {
+      "case": "admission_remember_subject",
+      "method": "POST",
+      "path": "/memories",
+      "status": 422,
+      "code": "sensitive_content_unsupported",
+      "passed": true
+    },
+    {
+      "case": "rejected_request_absent_remember_subject",
+      "method": "GET",
+      "path": "/memories/requests/914b70ca-473c-431c-8f66-32c3cdf98fe0",
+      "status": 404,
+      "code": "operation_not_found",
+      "passed": true
+    },
+    {
+      "case": "admission_remember_applicability",
+      "method": "POST",
+      "path": "/memories",
+      "status": 422,
+      "code": "sensitive_content_unsupported",
+      "passed": true
+    },
+    {
+      "case": "rejected_request_absent_remember_applicability",
+      "method": "GET",
+      "path": "/memories/requests/98628f77-46ba-4d0e-b29b-b263b6c57d75",
+      "status": 404,
+      "code": "operation_not_found",
+      "passed": true
+    },
+    {
+      "case": "admission_correct_content",
+      "method": "POST",
+      "path": "/memories/3940f73d-6fdb-4fdb-ac94-1bc1f2511951/corrections",
+      "status": 422,
+      "code": "sensitive_content_unsupported",
+      "passed": true
+    },
+    {
+      "case": "rejected_request_absent_correct_content",
+      "method": "GET",
+      "path": "/memories/requests/e001f763-3167-40d3-8bfe-200e599eb533",
+      "status": 404,
+      "code": "operation_not_found",
+      "passed": true
+    },
+    {
+      "case": "admission_correct_subject",
+      "method": "POST",
+      "path": "/memories/3940f73d-6fdb-4fdb-ac94-1bc1f2511951/corrections",
+      "status": 422,
+      "code": "sensitive_content_unsupported",
+      "passed": true
+    },
+    {
+      "case": "rejected_request_absent_correct_subject",
+      "method": "GET",
+      "path": "/memories/requests/16b88ec5-b523-4009-b6ff-90ee32ddd19e",
+      "status": 404,
+      "code": "operation_not_found",
+      "passed": true
+    },
+    {
+      "case": "admission_correct_applicability",
+      "method": "POST",
+      "path": "/memories/3940f73d-6fdb-4fdb-ac94-1bc1f2511951/corrections",
+      "status": 422,
+      "code": "sensitive_content_unsupported",
+      "passed": true
+    },
+    {
+      "case": "rejected_request_absent_correct_applicability",
+      "method": "GET",
+      "path": "/memories/requests/942a66da-b5dd-42e5-aa66-e9f9badf45dc",
+      "status": 404,
+      "code": "operation_not_found",
+      "passed": true
+    },
+    {
+      "case": "admission_before_edit",
+      "method": "POST",
+      "path": "/memories",
+      "status": 422,
+      "code": "sensitive_content_unsupported",
+      "passed": true
+    },
+    {
+      "case": "edited_same_identity",
+      "method": "POST",
+      "path": "/memories",
+      "status": 201,
+      "code": null,
+      "passed": true
+    },
+    {
+      "case": "edited_create_replay",
+      "method": "POST",
+      "path": "/memories",
+      "status": 201,
+      "code": null,
+      "passed": true
+    },
+    {
+      "case": "owner_cannot_read_member",
+      "method": "GET",
+      "path": "/memories/3940f73d-6fdb-4fdb-ac94-1bc1f2511951",
+      "status": 404,
+      "code": "memory_not_found",
+      "passed": true
+    },
+    {
+      "case": "outsider",
+      "method": "GET",
+      "path": "/memories/3940f73d-6fdb-4fdb-ac94-1bc1f2511951",
+      "status": 404,
+      "code": "workspace_not_found",
+      "passed": true
+    },
+    {
+      "case": "missing_auth",
+      "method": "GET",
+      "path": "/memories/3940f73d-6fdb-4fdb-ac94-1bc1f2511951",
+      "status": 401,
+      "code": "authentication_required",
+      "passed": true
+    },
+    {
+      "case": "malformed_before_auth",
+      "method": "PATCH",
+      "path": "/memories/3940f73d-6fdb-4fdb-ac94-1bc1f2511951",
+      "status": 422,
+      "code": "invalid_request",
+      "passed": true
+    },
+    {
+      "case": "auth_before_missing_key",
+      "method": "PATCH",
+      "path": "/memories/3940f73d-6fdb-4fdb-ac94-1bc1f2511951",
+      "status": 401,
+      "code": "authentication_required",
+      "passed": true
+    },
+    {
+      "case": "workspace_before_bad_body",
+      "method": "PATCH",
+      "path": "/memories/3940f73d-6fdb-4fdb-ac94-1bc1f2511951",
+      "status": 404,
+      "code": "workspace_not_found",
+      "passed": true
+    },
+    {
+      "case": "unsupported_scope",
+      "method": "GET",
+      "path": "/memories?scope=thread",
+      "status": 422,
+      "code": "invalid_scope",
+      "passed": true
+    },
+    {
+      "case": "unknown_query",
+      "method": "GET",
+      "path": "/memories?author=foreign",
+      "status": 422,
+      "code": "invalid_request",
+      "passed": true
+    },
+    {
+      "case": "source_version",
+      "method": "POST",
+      "path": "/sources/read",
+      "status": 410,
+      "code": "source_version_unavailable",
+      "passed": true
+    },
+    {
+      "case": "foreign_source_version",
+      "method": "POST",
+      "path": "/sources/read",
+      "status": 404,
+      "code": "source_not_found",
+      "passed": true
+    },
+    {
+      "case": "create",
+      "method": "POST",
+      "path": "/memories",
+      "status": 201,
+      "code": null,
+      "passed": true
+    },
+    {
+      "case": "create",
+      "method": "POST",
+      "path": "/memories",
+      "status": 201,
+      "code": null,
+      "passed": true
+    },
+    {
+      "case": "page1",
+      "method": "GET",
+      "path": "/memories?limit=1",
+      "status": 200,
+      "code": null,
+      "passed": true
+    },
+    {
+      "case": "page2",
+      "method": "GET",
+      "path": "/memories",
+      "status": 200,
+      "code": null,
+      "passed": true
+    },
+    {
+      "case": "foreign_cursor",
+      "method": "GET",
+      "path": "/memories",
+      "status": 422,
+      "code": "invalid_cursor",
+      "passed": true
+    },
+    {
+      "case": "tampered_cursor",
+      "method": "GET",
+      "path": "/memories",
+      "status": 422,
+      "code": "invalid_cursor",
+      "passed": true
+    },
+    {
+      "case": "cross_workspace_id",
+      "status": 404,
+      "passed": true
+    },
+    {
+      "case": "cross_workspace_source",
+      "status": 404,
+      "passed": true
+    },
+    {
+      "case": "cross_workspace_request",
+      "status": 404,
+      "passed": true
+    },
+    {
+      "case": "cross_workspace_operation",
+      "status": 404,
+      "passed": true
+    },
+    {
+      "case": "deactivate",
+      "method": "PATCH",
+      "path": "/memories/3940f73d-6fdb-4fdb-ac94-1bc1f2511951",
+      "status": 200,
+      "code": null,
+      "passed": true
+    },
+    {
+      "case": "same_key_replay",
+      "method": "PATCH",
+      "path": "/memories/3940f73d-6fdb-4fdb-ac94-1bc1f2511951",
+      "status": 200,
+      "code": null,
+      "passed": true
+    },
+    {
+      "case": "key_conflict",
+      "method": "PATCH",
+      "path": "/memories/3940f73d-6fdb-4fdb-ac94-1bc1f2511951",
+      "status": 409,
+      "code": "idempotency_conflict",
+      "passed": true
+    },
+    {
+      "case": "stale_version",
+      "method": "PATCH",
+      "path": "/memories/3940f73d-6fdb-4fdb-ac94-1bc1f2511951",
+      "status": 409,
+      "code": null,
+      "passed": true
+    },
+    {
+      "case": "immutable_history",
+      "method": "GET",
+      "path": "/memories/3940f73d-6fdb-4fdb-ac94-1bc1f2511951/revisions",
+      "status": 200,
+      "code": null,
+      "passed": true
+    },
+    {
+      "case": "request_receipt",
+      "method": "GET",
+      "path": "/memories/requests/dca957bf-34d6-4d84-a734-06174e5d4701",
+      "status": 200,
+      "code": null,
+      "passed": true
+    },
+    {
+      "case": "operation_receipt",
+      "method": "GET",
+      "path": "/memories/operations/c4a443e8-1b04-4a29-996e-d27f40e65c2f",
+      "status": 200,
+      "code": null,
+      "passed": true
+    },
+    {
+      "case": "invalidated_source",
+      "method": "POST",
+      "path": "/sources/read",
+      "status": 410,
+      "code": "source_version_unavailable",
+      "passed": true
+    },
+    {
+      "case": "lost_deactivate_http_ack",
+      "status": 200,
+      "passed": true
+    },
+    {
+      "case": "lost_create_http_ack",
+      "status": 200,
+      "passed": true
+    },
+    {
+      "case": "lost_create_replay",
+      "method": "POST",
+      "path": "/memories",
+      "status": 201,
+      "code": null,
+      "passed": true
+    },
+    {
+      "case": "lost_correct_http_ack",
+      "status": 200,
+      "passed": true
+    },
+    {
+      "case": "lost_correct_replay",
+      "method": "POST",
+      "path": "/memories/29130127-7856-4cfa-aac3-549820cee92f/corrections",
+      "status": 201,
+      "code": null,
+      "passed": true
+    },
+    {
+      "case": "concurrent_create_replay",
+      "statuses": [
+        201,
+        201
+      ],
+      "passed": true
+    },
+    {
+      "case": "concurrent_correction_cas",
+      "statuses": [
+        201,
+        409
+      ],
+      "passed": true
+    },
+    {
+      "case": "concurrent_cas",
+      "statuses": [
+        200,
+        409
+      ],
+      "passed": true
+    },
+    {
+      "case": "delete",
+      "method": "DELETE",
+      "path": "/memories/3940f73d-6fdb-4fdb-ac94-1bc1f2511951",
+      "status": 200,
+      "code": null,
+      "passed": true
+    },
+    {
+      "case": "owner_erased",
+      "method": "GET",
+      "path": "/memories/3940f73d-6fdb-4fdb-ac94-1bc1f2511951",
+      "status": 410,
+      "code": "erased",
+      "passed": true
+    },
+    {
+      "case": "owner_erased_history",
+      "method": "GET",
+      "path": "/memories/3940f73d-6fdb-4fdb-ac94-1bc1f2511951/revisions",
+      "status": 410,
+      "code": "erased",
+      "passed": true
+    },
+    {
+      "case": "foreign_erased",
+      "method": "GET",
+      "path": "/memories/3940f73d-6fdb-4fdb-ac94-1bc1f2511951",
+      "status": 404,
+      "code": "memory_not_found",
+      "passed": true
+    },
+    {
+      "case": "old_mutation_replay_after_delete",
+      "method": "PATCH",
+      "path": "/memories/3940f73d-6fdb-4fdb-ac94-1bc1f2511951",
+      "status": 200,
+      "code": null,
+      "passed": true
+    },
+    {
+      "case": "correction_replay_after_erasure",
+      "method": "POST",
+      "path": "/memories/648a4ee9-3e01-418a-b6cf-335ca44a48a6/corrections",
+      "status": 201,
+      "code": null,
+      "passed": true
+    },
+    {
+      "case": "role_unknown",
+      "method": "GET",
+      "path": "/memories",
+      "status": 404,
+      "code": "workspace_not_found",
+      "passed": true
+    },
+    {
+      "case": "role_member",
+      "method": "GET",
+      "path": "/memories",
+      "status": 200,
+      "code": null,
+      "passed": true
+    },
+    {
+      "case": "revoked",
+      "method": "GET",
+      "path": "/memories",
+      "status": 404,
+      "code": "workspace_not_found",
+      "passed": true
+    },
+    {
+      "case": "archived",
+      "method": "GET",
+      "path": "/memories",
+      "status": 404,
+      "code": "workspace_not_found",
+      "passed": true
+    },
+    {
+      "case": "admission_response_and_application_log_redaction",
+      "passed": true
+    }
+  ],
+  "limits": [
+    "Independent API review and hosted CI remain required",
+    "No UI/BFF/shared-model acceptance",
+    "Dependency merges remain gated"
+  ]
+}

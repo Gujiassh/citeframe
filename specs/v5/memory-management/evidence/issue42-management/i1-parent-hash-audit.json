@@ -1,0 +1,104 @@
+{
+  "pristineParent": "7d47607778a9212e9f3cb076442cd7c497c1f8ca",
+  "method": "SHA1-verified immutable object reads; no Git calls",
+  "files": {
+    "apps/api/src/ai_pdf_api/main.py": {
+      "pristineParentSha256": "3d312110e5a4fb24a3d95f5b384827bb612b65035b544716069d30725dfe51c5",
+      "checkoutSha256": "da153ec753c03628a68335d91f6e196d26f41cd11f0dc6b5a684858d11d06e1d",
+      "normalizedCheckoutSha256": "86dd4b44bda75bf6b5b0cfd677581e8500aa1b3305b3692565db34f2c44c366d",
+      "matchesParent": false,
+      "matchesParentAfterCRLFNormalization": false
+    },
+    "apps/worker/tests/test_multimodal_golden_execution.py": {
+      "pristineParentSha256": "0a4a1be3d34068ed79c637eb70a2998f79b5050359e062a11d629eced3d3a01c",
+      "checkoutSha256": "42d5f082eb08f29db498ec794f89919bef8bd432df47811aae7b46d0aba7fcf6",
+      "normalizedCheckoutSha256": "0a4a1be3d34068ed79c637eb70a2998f79b5050359e062a11d629eced3d3a01c",
+      "matchesParent": false,
+      "matchesParentAfterCRLFNormalization": true
+    },
+    "docs/evals/artifacts/m402-v1/worker-execution.json": {
+      "pristineParentSha256": "10f59a464ba216e959cefa067295ba13f1346b13023f62aa7951341d7dbb58a6",
+      "checkoutSha256": "4eec7df5d8430b516c4b7941e47893cfd67eed71fd4717e256e87030c08a6444",
+      "normalizedCheckoutSha256": "10f59a464ba216e959cefa067295ba13f1346b13023f62aa7951341d7dbb58a6",
+      "matchesParent": false,
+      "matchesParentAfterCRLFNormalization": true
+    },
+    "docs/evals/artifacts/m402-v1/real-model-execution.json": {
+      "pristineParentSha256": "55d0a545ac8add011d7e16e0f422b2c224636c03d509e5297c951e6d5d6e5ea8",
+      "checkoutSha256": "9c1db92cfe7c6d6760f103d502ec4ff3332b96fcfe6b89e9f3ec24add95ab6c0",
+      "normalizedCheckoutSha256": "55d0a545ac8add011d7e16e0f422b2c224636c03d509e5297c951e6d5d6e5ea8",
+      "matchesParent": false,
+      "matchesParentAfterCRLFNormalization": true
+    },
+    "docs/evals/m402-execution-source-provenance-v1.json": {
+      "pristineParentSha256": "32611f818219424c2601371950e8667b487cab26063d70b1ee4fc77c194bd1fa",
+      "checkoutSha256": "285b75c13b9c7a7cf6b9638dd0d8f53f7b36540ebc5d07636024efceb79b906a",
+      "normalizedCheckoutSha256": "32611f818219424c2601371950e8667b487cab26063d70b1ee4fc77c194bd1fa",
+      "matchesParent": false,
+      "matchesParentAfterCRLFNormalization": true
+    },
+    "docs/evals/multimodal-failures-v1.json": {
+      "pristineParentSha256": "b99972c0394a7de09755599cb19892b48cfdfce07a0b64129d0914811a76b285",
+      "checkoutSha256": "6d340e594a7b4fd1abc5ecca0b6ec727c824a3b0a1d56a6f9372855c5b4c8950",
+      "normalizedCheckoutSha256": "b99972c0394a7de09755599cb19892b48cfdfce07a0b64129d0914811a76b285",
+      "matchesParent": false,
+      "matchesParentAfterCRLFNormalization": true
+    },
+    "docs/evals/r100-research-cases-v1.json": {
+      "pristineParentSha256": "acc5ca446127d8dbb144f810324c8bb01a5f98cf8f95a672804e46293d32b377",
+      "checkoutSha256": "acc5ca446127d8dbb144f810324c8bb01a5f98cf8f95a672804e46293d32b377",
+      "normalizedCheckoutSha256": "acc5ca446127d8dbb144f810324c8bb01a5f98cf8f95a672804e46293d32b377",
+      "matchesParent": true,
+      "matchesParentAfterCRLFNormalization": true
+    },
+    "apps/api/src/ai_pdf_api/services/multimodal_execution.py": {
+      "pristineParentSha256": "54344806361193484a9f8a8120144169701ea293b9874446b10e640f0f4c30d0",
+      "checkoutSha256": "d8c33191549e80fb2bfaa3b40454ae382f5923c2027fc2ef7acdbb54c2795c98",
+      "normalizedCheckoutSha256": "54344806361193484a9f8a8120144169701ea293b9874446b10e640f0f4c30d0",
+      "matchesParent": false,
+      "matchesParentAfterCRLFNormalization": true
+    },
+    "apps/api/src/ai_pdf_api/services/r100_evaluation.py": {
+      "pristineParentSha256": "d7fe3fae7a5469cc5efd4b2ac2e283ab37918ce63159837464c721759e8515dd",
+      "checkoutSha256": "4b848c6e044dc5ed3240750d3f29087b7a2c42ee4ee58d1e36bbbe37f3d9be50",
+      "normalizedCheckoutSha256": "d7fe3fae7a5469cc5efd4b2ac2e283ab37918ce63159837464c721759e8515dd",
+      "matchesParent": false,
+      "matchesParentAfterCRLFNormalization": true
+    },
+    "apps/api/tests/test_multimodal_execution.py": {
+      "pristineParentSha256": "4b4c72d37d91ebdd41a78e713254e4c5a40da9f30b0d1d5b7680d975ffead2f6",
+      "checkoutSha256": "c1d6fba4cffccb661ceee9bb777427b1a04b774ec78fb029b316f44324df5d19",
+      "normalizedCheckoutSha256": "4b4c72d37d91ebdd41a78e713254e4c5a40da9f30b0d1d5b7680d975ffead2f6",
+      "matchesParent": false,
+      "matchesParentAfterCRLFNormalization": true
+    },
+    "apps/api/tests/test_r100_research_eval.py": {
+      "pristineParentSha256": "2794df441e602afd57b682c2fc9679b5af413100c6f9569c693e36663a45d0ed",
+      "checkoutSha256": "bed01a6f29176ea20fe006c7c54892ee7bfb09867fa205c2775f000949699f08",
+      "normalizedCheckoutSha256": "2794df441e602afd57b682c2fc9679b5af413100c6f9569c693e36663a45d0ed",
+      "matchesParent": false,
+      "matchesParentAfterCRLFNormalization": true
+    }
+  },
+  "historicalHashChecks": [
+    {
+      "path": "docs/evals/artifacts/m402-v1/worker-execution.json",
+      "expected": "10f59a464ba216e959cefa067295ba13f1346b13023f62aa7951341d7dbb58a6",
+      "parentMatches": true,
+      "checkoutMatches": false
+    },
+    {
+      "path": "docs/evals/artifacts/m402-v1/real-model-execution.json",
+      "expected": "55d0a545ac8add011d7e16e0f422b2c224636c03d509e5297c951e6d5d6e5ea8",
+      "parentMatches": true,
+      "checkoutMatches": false
+    },
+    {
+      "path": "docs/evals/multimodal-failures-v1.json",
+      "expected": "b99972c0394a7de09755599cb19892b48cfdfce07a0b64129d0914811a76b285",
+      "parentMatches": true,
+      "checkoutMatches": false
+    }
+  ],
+  "mainOnlyTwoRegistrationLines": true
+}

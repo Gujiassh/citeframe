@@ -1,0 +1,12 @@
+{
+  "dedicatedCommand": "uv run --project apps/api pytest packages/memory-service/tests/test_instruction_memory.py packages/memory-service/tests/test_admission.py packages/memory-service/tests/test_admission_postgres.py apps/api/tests/test_memory_management.py",
+  "collected": {
+    "packages/memory-service/tests/test_instruction_memory.py": 44,
+    "packages/memory-service/tests/test_admission.py": 1603,
+    "packages/memory-service/tests/test_admission_postgres.py": 22,
+    "apps/api/tests/test_memory_management.py": 56
+  },
+  "total": 1725,
+  "missingUrlControl": "failed fixture as required; zero skips",
+  "regularApiStepUrl": "same dedicated disposable database URL configured step-locally"
+}

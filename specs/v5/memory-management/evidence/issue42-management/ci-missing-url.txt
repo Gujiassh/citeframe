@@ -1,0 +1,15 @@
+E                                                                        [100%]
+=================================== ERRORS ====================================
+________ ERROR at setup of test_actual_dependency_and_mounted_openapi _________
+packages\memory-service\tests\test_instruction_memory.py:80: in pg
+    pytest.fail("CI requires CITEFRAME_MEMORY42_POSTGRES_URL; PostgreSQL oracles must not skip")
+E   Failed: CI requires CITEFRAME_MEMORY42_POSTGRES_URL; PostgreSQL oracles must not skip
+============================== warnings summary ===============================
+..\..\citeframe\apps\api\.venv\Lib\site-packages\fastapi\testclient.py:1
+  D:\Code\citeframe\apps\api\.venv\Lib\site-packages\fastapi\testclient.py:1: StarletteDeprecationWarning: Using `httpx` with `starlette.testclient` is deprecated; install `httpx2` instead.
+    from starlette.testclient import TestClient as TestClient  # noqa
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ===========================
+ERROR apps/api/tests/test_memory_management.py::test_actual_dependency_and_mounted_openapi - Failed: CI requires CITEFRAME_MEMORY42_POSTGRES_URL; PostgreSQL oracles must not skip
+1 warning, 1 error in 0.33s

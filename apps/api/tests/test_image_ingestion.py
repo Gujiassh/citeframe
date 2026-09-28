@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from ai_pdf_api.routers.assets import require_get_asset_detail_access
+
 from collections.abc import Generator, Mapping
 from datetime import UTC, datetime
 from hashlib import sha256
@@ -569,8 +571,8 @@ def test_image_detail_selects_only_current_processing_generation(db_session: Ses
     response = get_asset_detail(
         workspace.id,
         asset.id,
-        user_id=user.id,
         db=db_session,
+        workspace_request=require_get_asset_detail_access(workspace.id, 1, user.id, db_session),
     )
 
     assert response.detail.kind == "image"

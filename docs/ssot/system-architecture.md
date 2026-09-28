@@ -466,6 +466,14 @@ V1 采用 `Next.js 会话鉴权 + 内部服务鉴权` 双层架构。
 - FastAPI 不信任前端直接传来的 `workspace_id`
 - `workspace_id` 必须来自已认证上下文
 
+### 8.5 当前 Workspace API 权限实现
+
+当前 BFF 转发 `x-user-id` 与 `x-ai-pdf-internal-token`；FastAPI 验证内部 token 后，
+通过数据库成员关系校验 Workspace 路径。上文 V1 设计中的 role/JWT 转发未作为当前实现。
+Workspace 业务路由统一消费 typed `WorkspaceAccess`，带 body/query 的路由用薄依赖保持
+既有校验优先级，保留路由特定 owner 错误、独立资源 scope、Research 事务权限及 SSE/Worker
+重新校验。具体依赖组合与边界见 [Workspace access dependencies](workspace-access.md)。
+
 ## 9. 缓存架构
 
 ### 9.1 缓存选型
