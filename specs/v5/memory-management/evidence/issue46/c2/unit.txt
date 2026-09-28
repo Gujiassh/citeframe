@@ -1,0 +1,38 @@
+✔ unknown outcome retries retain exact body/request ID/key (5.3959ms)
+✔ reviewer: enum arrays must be rejected as malformed DTOs (2.16ms)
+✔ reviewer: current response must match requested memory identity (27.5221ms)
+✔ reviewer: request poll must match original request identity (0.7266ms)
+✔ reviewer: deletion receipt must match target identity (0.9477ms)
+✔ server identity only; allowlisted query; no-store on both sides (25.279ms)
+✔ DELETE preserves CAS body and request key (1.1194ms)
+✔ foreign fields, URL escapes and query overrides never forward (1.577ms)
+✔ fixed error matrix suppresses private diagnostics and non-CAS version metadata (6.4941ms)
+✔ unknown outcome keeps original request ID and does not resend (0.8058ms)
+✔ closed admission gate prevents create forwarding (0.45ms)
+✔ syntax precedes session and initial auth failure has no request ID (0.5687ms)
+✔ cross-origin mutation does not dispatch (0.3848ms)
+✔ malformed successful mutation stays unknown; content-bearing poll fails closed (0.7561ms)
+✔ R3 wrong deletion/poll targets fail safely without accepting unrelated operations (1.0303ms)
+✔ available DTO preserves confirmation and rejects foreign authority (1.3521ms)
+✔ unavailable body cannot carry semantic bytes or source hashes (0.2749ms)
+✔ operation resultVersion and currentVersion remain separate content-free metadata (0.1862ms)
+✔ successor receipts require verified predecessor and current memory projection (0.9831ms)
+✔ R4 enum primitives and containers are never coerced (0.4649ms)
+✔ R3 endpoint binding preserves replay aliases and correction successors (0.3622ms)
+✔ R2 Home and Back retain exactly the same runtime operation without recreation (4.5809ms)
+✔ R2 actor clears the triple and rejects late mutation/poll setters (0.2061ms)
+✔ R2 workspace clears the triple and rejects late mutation/poll setters (0.0959ms)
+✔ R2 logout clears the triple and rejects late mutation/poll setters (0.089ms)
+✔ R2 revoke clears the triple and rejects late mutation/poll setters (0.1246ms)
+✔ mandatory conditions, Unicode bounds, no transformation (2.0285ms)
+✔ authority, scopes, sources and unsupported mutations fail closed (0.2413ms)
+✔ exact source version/hash/span only (0.1906ms)
+✔ query/key allowlists reject ambiguity (1.0126ms)
+ℹ tests 30
+ℹ suites 0
+ℹ pass 30
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 126.5326

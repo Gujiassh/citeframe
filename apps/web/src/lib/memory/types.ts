@@ -1,0 +1,23 @@
+export const kinds = ["preference", "constraint", "fact", "decision"] as const;
+export const statuses = ["active", "inactive", "superseded", "invalidated", "expired", "deleted", "all"] as const;
+export type Kind = typeof kinds[number];
+export type Status = typeof statuses[number];
+export type Conditions = { subject: string; applicability: string; effectiveFrom: string | null };
+export type SourceRef = { sourceId: string; sourceVersion: number; contentSha256: string; span: null };
+type Head = { id: string; version: number; intent: "active" | "inactive" | "superseded" | "deleted"; validity: "valid" | "invalidated"; displayStatus: Exclude<Status, "all"> };
+export type AvailableMemory = Head & {
+  contentAvailable: true; workspaceId: string; ownerUserId: string; visibility: "private";
+  scope: { kind: "workspace"; threadId: null; runId: null }; revisionId: string;
+  kind: Kind; confirmation: "explicit_remember" | "user_confirmed"; conditions: Conditions; pinned: boolean; validUntil: string | null;
+  supersedesId: string | null; createdAt: string; updatedAt: string; content: string; sourceRefs: SourceRef[];
+};
+export type Memory = AvailableMemory | (Head & { contentAvailable: false; reason: "erased" | "source_unavailable" });
+export type Page = { items: Memory[]; nextCursor: string | null };
+export type Statement = { kind: Kind; content: string; conditions: Conditions; pinned: boolean; validUntil: string | null };
+export type CreateRequest = Statement & { requestId: string; scope: { kind: "workspace" }; sourceRefs: [] };
+export type CorrectionRequest = Statement & { requestId: string; expectedVersion: number };
+export type MutationReceipt = { requestId: string; operationId: string; resultVersion: number; memory: Memory; indexState: "not_enabled" };
+export type CorrectionReceipt = MutationReceipt & { supersededMemoryId: string };
+export type DeleteReceipt = { requestId: string; operationId: string; resultVersion: number; id: string; intent: "deleted"; version: number; cleanupState: "completed" };
+export type Operation = { requestId: string; accepted: true; operationId: string; state: "committed"; resourceId: string; resultVersion: number; currentVersion: number; intent: Head["intent"]; contentAvailable: boolean; cleanupState: "not_required" | "completed" };
+export type InstructionSource = { sourceRef: SourceRef; content: string; contentKind: "explicit_instruction"; occurredAt: string; sourceState: "current"; provenance: { role: "user"; actorUserId: string; actorAttribution: "authenticated"; threadId: null; runId: null; parentMessageId: null; confirmation: "explicit_remember" }; branchRelation: "other_task"; truncated: false; nextCursor: null };

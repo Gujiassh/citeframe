@@ -1,0 +1,26 @@
+Working directory: apps/web
+Command: node node_modules/tsx/dist/cli.mjs --test <all src/lib/memory/*.test.ts expanded by PowerShell>
+Scope: pure Node tests with in-process synthetic readers/fetch doubles; no browser or real network
+node:os:306
+    throw new ERR_SYSTEM_ERROR(ctx);
+          ^
+
+SystemError [ERR_SYSTEM_ERROR]: A system error occurred: uv_os_get_passwd returned ENOMEM (not enough memory)
+    at Object.userInfo (node:os:306:11)
+    at file:///D:/Code/citeframe-lanes/issue46-management-ui/node_modules/.pnpm/tsx@4.23.0/node_modules/tsx/dist/temporary-directory-BDDVQOvU.mjs:1:84
+    at ModuleJob.run (node:internal/modules/esm/module_job:439:25)
+    at async node:internal/modules/esm/loader:643:26
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:101:5) {
+  code: 'ERR_SYSTEM_ERROR',
+  info: {
+    errno: -4057,
+    code: 'ENOMEM',
+    message: 'not enough memory',
+    syscall: 'uv_os_get_passwd'
+  },
+  errno: [Getter/Setter],
+  syscall: [Getter/Setter]
+}
+
+Node.js v24.19.0
+Exit: 1

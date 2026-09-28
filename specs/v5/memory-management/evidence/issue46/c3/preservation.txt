@@ -1,0 +1,7 @@
+Reviewer scratch mismatches: 0
+
+Algorithm : SHA256
+Hash      : 92ABDA8449469E3DDAF9009063C29D6145282F185217B04BFE17D77455E16581
+Path      : D:\Code\citeframe-lanes\issue46-management-ui\specs\v5\memory-management\reviews\issue46-management-ui.md
+
+

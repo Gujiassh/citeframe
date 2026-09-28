@@ -1,0 +1,88 @@
+
+Running 2 tests using 1 worker
+
+(node:67044) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  x  1 apps\web\.memory-tests\reviewer-c2-extra.spec.ts:24:6 › C2 reviewer: owner can delete a content-unavailable active record (6.9s)
+(node:63600) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  x  2 apps\web\.memory-tests\reviewer-c2-extra.spec.ts:24:6 › C2 reviewer: owner can delete a content-unavailable inactive record (6.1s)
+
+
+  1) apps\web\.memory-tests\reviewer-c2-extra.spec.ts:24:6 › C2 reviewer: owner can delete a content-unavailable active record 
+
+    Error: expect(locator).toBeVisible() failed
+
+    Locator: getByRole('button', { name: /^删除$|^Delete$/ })
+    Expected: visible
+    Timeout: 5000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toBeVisible" with timeout 5000ms
+      - waiting for getByRole('button', { name: /^删除$|^Delete$/ })
+
+
+      37 |   await expect(page.getByText(memory.content)).toHaveCount(0);
+      38 |   page.on("dialog",dialog=>dialog.accept());
+    > 39 |   await expect(page.getByRole("button",{name:/^删除$|^Delete$/})).toBeVisible();
+         |                                                                 ^
+      40 |   await page.getByRole("button",{name:/^删除$|^Delete$/}).click();
+      41 |   await expect.poll(()=>deletes.length).toBe(1);
+      42 |   expect(deletes[0]).toMatchObject({expectedVersion:2});
+        at D:\Code\citeframe-lanes\issue46-management-ui\apps\web\.memory-tests\reviewer-c2-extra.spec.ts:39:65
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    apps\web\test-results\memory-c3-before\reviewer-c2-extra-C2-revie-1b863-t-unavailable-active-record\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: apps\web\test-results\memory-c3-before\reviewer-c2-extra-C2-revie-1b863-t-unavailable-active-record\error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    apps\web\test-results\memory-c3-before\reviewer-c2-extra-C2-revie-1b863-t-unavailable-active-record\trace.zip
+    Usage:
+
+        npx playwright show-trace apps\web\test-results\memory-c3-before\reviewer-c2-extra-C2-revie-1b863-t-unavailable-active-record\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  2) apps\web\.memory-tests\reviewer-c2-extra.spec.ts:24:6 › C2 reviewer: owner can delete a content-unavailable inactive record 
+
+    Error: expect(locator).toBeVisible() failed
+
+    Locator: getByRole('button', { name: /^删除$|^Delete$/ })
+    Expected: visible
+    Timeout: 5000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toBeVisible" with timeout 5000ms
+      - waiting for getByRole('button', { name: /^删除$|^Delete$/ })
+
+
+      37 |   await expect(page.getByText(memory.content)).toHaveCount(0);
+      38 |   page.on("dialog",dialog=>dialog.accept());
+    > 39 |   await expect(page.getByRole("button",{name:/^删除$|^Delete$/})).toBeVisible();
+         |                                                                 ^
+      40 |   await page.getByRole("button",{name:/^删除$|^Delete$/}).click();
+      41 |   await expect.poll(()=>deletes.length).toBe(1);
+      42 |   expect(deletes[0]).toMatchObject({expectedVersion:2});
+        at D:\Code\citeframe-lanes\issue46-management-ui\apps\web\.memory-tests\reviewer-c2-extra.spec.ts:39:65
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    apps\web\test-results\memory-c3-before\reviewer-c2-extra-C2-revie-2ba41-unavailable-inactive-record\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: apps\web\test-results\memory-c3-before\reviewer-c2-extra-C2-revie-2ba41-unavailable-inactive-record\error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    apps\web\test-results\memory-c3-before\reviewer-c2-extra-C2-revie-2ba41-unavailable-inactive-record\trace.zip
+    Usage:
+
+        npx playwright show-trace apps\web\test-results\memory-c3-before\reviewer-c2-extra-C2-revie-2ba41-unavailable-inactive-record\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  2 failed
+    apps\web\.memory-tests\reviewer-c2-extra.spec.ts:24:6 › C2 reviewer: owner can delete a content-unavailable active record 
+    apps\web\.memory-tests\reviewer-c2-extra.spec.ts:24:6 › C2 reviewer: owner can delete a content-unavailable inactive record 

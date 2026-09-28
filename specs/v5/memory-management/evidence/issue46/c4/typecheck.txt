@@ -1,0 +1,1 @@
+Strict whole-web TypeScript exit 0

@@ -1,0 +1,13 @@
+
+Running 8 tests using 1 worker
+
+  ok 1 e2e\memory-management.spec.ts:24:7 › fixture: member enters native Settings memory and gated empty/create form (1.2s)
+  ok 2 e2e\memory-management.spec.ts:24:7 › fixture: owner enters native Settings memory and gated empty/create form (1.0s)
+  ok 3 e2e\memory-management.spec.ts:40:5 › fixture: exact original source, revision page and list cursor (1.2s)
+  ok 4 e2e\memory-management.spec.ts:65:5 › fixture: conflict refresh preserves draft and requires explicit version comparison (1.0s)
+  ok 5 e2e\memory-management.spec.ts:81:5 › fixture: lost acknowledgement polls and retries the unchanged request, then shows tombstone honestly (2.9s)
+  ok 6 e2e\memory-management.spec.ts:112:5 › fixture: revocation clears private views and unsent draft (933ms)
+  ok 7 e2e\memory-management.spec.ts:123:5 › fixture: mobile memory preserves the existing compact shell (887ms)
+  ok 8 e2e\memory-management.spec.ts:132:5 › fixture: logout ignores a delayed original-source response and removes drafts (1.1s)
+
+  8 passed (11.3s)

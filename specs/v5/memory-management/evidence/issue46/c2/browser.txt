@@ -1,0 +1,25 @@
+
+Running 18 tests using 1 worker
+
+(node:58496) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok  1 e2e\memory-management.spec.ts:25:7 › fixture: member enters native Settings memory and gated empty/create form (1.1s)
+  ok  2 e2e\memory-management.spec.ts:25:7 › fixture: owner enters native Settings memory and gated empty/create form (938ms)
+  ok  3 e2e\memory-management.spec.ts:41:5 › fixture: exact original source, revision page and list cursor (1.1s)
+  ok  4 e2e\memory-management.spec.ts:66:5 › fixture: conflict refresh preserves draft and requires explicit version comparison (1.0s)
+  ok  5 e2e\memory-management.spec.ts:82:5 › fixture: lost acknowledgement polls and retries the unchanged request, then shows tombstone honestly (3.0s)
+  ok  6 e2e\memory-management.spec.ts:116:5 › fixture: revocation clears private views and unsent draft (909ms)
+  ok  7 e2e\memory-management.spec.ts:127:5 › fixture: mobile memory preserves the existing compact shell (765ms)
+  ok  8 e2e\memory-management.spec.ts:136:5 › fixture: logout ignores a delayed original-source response and removes drafts (1.0s)
+  ok  9 e2e\memory-management.spec.ts:157:5 › C1 regression: unreadable current projection clears copied private draft (898ms)
+  ok 10 e2e\memory-management.spec.ts:172:5 › C1 regression: erased history removes cached list subject (878ms)
+  ok 11 e2e\memory-management.spec.ts:181:5 › C1 regression: same-workspace Home/back cannot silently abandon unresolved identity (1.2s)
+  ok 12 e2e\memory-management.spec.ts:210:7 › R1 exact source source_version_unavailable removes all copied projections without claiming erasure (924ms)
+  ok 13 e2e\memory-management.spec.ts:210:7 › R1 exact source source_not_found removes all copied projections without claiming erasure (905ms)
+  ok 14 e2e\memory-management.spec.ts:222:5 › R1 late list cannot restore an erased subject (973ms)
+  ok 15 e2e\memory-management.spec.ts:255:7 › R2 explicit workspace change fences late mutation and clears the old triple (1.5s)
+  ok 16 e2e\memory-management.spec.ts:255:7 › R2 explicit workspace change fences late poll and clears the old triple (3.4s)
+  ok 17 e2e\memory-management.spec.ts:291:5 › R2 logout and actor change cannot adopt an old accepted poll (3.4s)
+  ok 18 e2e\memory-management.spec.ts:327:5 › R2 revocation drops pending identity and fences a late poll across Home Back (3.0s)
+
+  18 passed (27.7s)

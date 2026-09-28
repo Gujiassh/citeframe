@@ -1,0 +1,3 @@
+Working directory: apps/web
+Command: node node_modules/eslint/bin/eslint.js src/components/memory src/lib/memory src/lib/i18n-context.tsx e2e/memory-management.spec.ts e2e/memory-management-live.spec.ts
+Exit: 0

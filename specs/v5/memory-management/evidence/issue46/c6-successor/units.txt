@@ -1,0 +1,51 @@
+Command: node --test <all apps/web/test-results/memory-successor-main-unit/*.test.js expanded by PowerShell>
+Scope: pure Node tests with synthetic readers/fetch doubles; no real network/browser
+✔ R5 body-free projection keeps lifecycle metadata without semantic fields (1.7158ms)
+✔ R5 unavailable revisions preserve their own intent, version and erasure reason (0.3367ms)
+✔ unknown outcome retries retain exact body/request ID/key (6.8925ms)
+✔ successor proof uses backward identities and keeps intermediate bodies out of metadata (2.2778ms)
+✔ selection permits exactly eight edges/nine actual GETs; adoption exactly ten GETs and no extra distinct node (1.4373ms)
+✔ over-limit chain stops at nine actual GETs without fetching tenth distinct node (0.7339ms)
+✔ same identity, no relation, cycles, stale active row and unsuperseded parent fail without retries (0.4836ms)
+✔ readable guard binds owner/workspace/endpoint and never infers a link from unavailable data (0.4258ms)
+✔ comparison includes exact Unicode/whitespace, optional fields and source tuples even without version change (0.7943ms)
+✔ final C reread change requires another explicit comparison; it never silently adopts (0.5136ms)
+✔ outcome correlation requires matching epoch, draft generation, POST/path and original request (0.3601ms)
+✔ recurrent conflict retains original P, every draft field and proven participant identities (1.194ms)
+✔ matching definitive target denial clears recovery while unknown acknowledgement retains exact draft (0.395ms)
+✔ final fresh candidate link change invalidates proof without a follow-link or mutation (0.3284ms)
+✔ server identity only; allowlisted query; no-store on both sides (31.0285ms)
+✔ DELETE preserves CAS body and request key (1.4958ms)
+✔ foreign fields, URL escapes and query overrides never forward (1.3531ms)
+✔ fixed error matrix suppresses private diagnostics and non-CAS version metadata (5.1224ms)
+✔ unknown outcome keeps original request ID and does not resend (0.6407ms)
+✔ accepted API activation forwards strict create with unchanged identity and command (0.6902ms)
+✔ accepted API activation forwards strict correct with unchanged identity and command (0.3902ms)
+✔ syntax precedes session and initial auth failure has no request ID (0.4915ms)
+✔ cross-origin mutation does not dispatch (0.5022ms)
+✔ malformed successful mutation stays unknown; content-bearing poll fails closed (0.8665ms)
+✔ R3 wrong deletion/poll targets fail safely without accepting unrelated operations (0.7072ms)
+✔ available DTO preserves confirmation and rejects foreign authority (1.969ms)
+✔ unavailable body cannot carry semantic bytes or source hashes (0.3038ms)
+✔ operation resultVersion and currentVersion remain separate content-free metadata (0.1896ms)
+✔ successor receipts require verified predecessor and current memory projection (1.1959ms)
+✔ R4 enum primitives and containers are never coerced (0.528ms)
+✔ R3 endpoint binding preserves replay aliases and correction successors (0.3251ms)
+✔ R2 Home and Back retain exactly the same runtime operation without recreation (5.1738ms)
+✔ R2 actor clears the triple and rejects late mutation/poll setters (0.3106ms)
+✔ R2 workspace clears the triple and rejects late mutation/poll setters (0.1481ms)
+✔ R2 logout clears the triple and rejects late mutation/poll setters (0.1329ms)
+✔ R2 revoke clears the triple and rejects late mutation/poll setters (0.187ms)
+✔ mandatory conditions, Unicode bounds, no transformation (2.4921ms)
+✔ authority, scopes, sources and unsupported mutations fail closed (0.2814ms)
+✔ exact source version/hash/span only (0.1992ms)
+✔ query/key allowlists reject ambiguity (1.1226ms)
+ℹ tests 40
+ℹ suites 0
+ℹ pass 40
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 158.7626
+Exit: 0

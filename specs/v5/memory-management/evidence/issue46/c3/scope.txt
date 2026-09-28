@@ -1,0 +1,5 @@
+C3 verification scope
+- Original R5 baseline: unchanged reviewer-c2-extra.spec.ts/config, --output=apps/web/test-results/memory-c3-before; 2/2 failures at missing Delete.
+- Browser commands use lane-local Next16 at http://127.0.0.1:3146 and intercepted synthetic data. No authenticated actual-API or visible-browser acceptance is inferred.
+- Original reviewer scratch was snapshotted read-only in reviewer-scratch-before.sha256; all new output is outside that directory and outside .next.
+- Governing original review hash at start: 92ABDA8449469E3DDAF9009063C29D6145282F185217B04BFE17D77455E16581.

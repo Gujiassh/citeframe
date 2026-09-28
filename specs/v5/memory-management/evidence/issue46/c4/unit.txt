@@ -1,0 +1,41 @@
+✔ R5 body-free projection keeps lifecycle metadata without semantic fields (1.3295ms)
+✔ R5 unavailable revisions preserve their own intent, version and erasure reason (0.2139ms)
+✔ unknown outcome retries retain exact body/request ID/key (6.9363ms)
+✔ reviewer: enum arrays must be rejected as malformed DTOs (1.5235ms)
+✔ reviewer: current response must match requested memory identity (22.6023ms)
+✔ reviewer: request poll must match original request identity (0.5665ms)
+✔ reviewer: deletion receipt must match target identity (1.1622ms)
+✔ server identity only; allowlisted query; no-store on both sides (25.7993ms)
+✔ DELETE preserves CAS body and request key (1.5598ms)
+✔ foreign fields, URL escapes and query overrides never forward (1.3511ms)
+✔ fixed error matrix suppresses private diagnostics and non-CAS version metadata (4.4719ms)
+✔ unknown outcome keeps original request ID and does not resend (0.8299ms)
+✔ accepted API activation forwards strict create with unchanged identity and command (0.8339ms)
+✔ accepted API activation forwards strict correct with unchanged identity and command (0.3897ms)
+✔ syntax precedes session and initial auth failure has no request ID (0.4611ms)
+✔ cross-origin mutation does not dispatch (0.4509ms)
+✔ malformed successful mutation stays unknown; content-bearing poll fails closed (0.7711ms)
+✔ R3 wrong deletion/poll targets fail safely without accepting unrelated operations (0.5656ms)
+✔ available DTO preserves confirmation and rejects foreign authority (1.1367ms)
+✔ unavailable body cannot carry semantic bytes or source hashes (0.1758ms)
+✔ operation resultVersion and currentVersion remain separate content-free metadata (0.159ms)
+✔ successor receipts require verified predecessor and current memory projection (0.8869ms)
+✔ R4 enum primitives and containers are never coerced (0.4164ms)
+✔ R3 endpoint binding preserves replay aliases and correction successors (0.2499ms)
+✔ R2 Home and Back retain exactly the same runtime operation without recreation (4.0937ms)
+✔ R2 actor clears the triple and rejects late mutation/poll setters (0.2196ms)
+✔ R2 workspace clears the triple and rejects late mutation/poll setters (0.1243ms)
+✔ R2 logout clears the triple and rejects late mutation/poll setters (0.1033ms)
+✔ R2 revoke clears the triple and rejects late mutation/poll setters (0.1398ms)
+✔ mandatory conditions, Unicode bounds, no transformation (2.4851ms)
+✔ authority, scopes, sources and unsupported mutations fail closed (0.3576ms)
+✔ exact source version/hash/span only (0.2698ms)
+✔ query/key allowlists reject ambiguity (1.3567ms)
+ℹ tests 33
+ℹ suites 0
+ℹ pass 33
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 138.1007

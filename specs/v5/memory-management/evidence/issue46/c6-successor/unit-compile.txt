@@ -1,0 +1,2 @@
+Command: node apps/web/node_modules/typescript/bin/tsc --target es2022 --module commonjs --moduleResolution node --esModuleInterop --skipLibCheck --strict --types node --typeRoots apps/web/node_modules/@types --outDir apps/web/test-results/memory-successor-main-unit <all memory *.test.ts>
+Exit: 0

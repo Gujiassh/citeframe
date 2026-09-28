@@ -1,0 +1,22 @@
+Activation/runtime checkpoint; incomplete real integration
+
+Observed before policy block:
+- Source branch ref file resolves to 6ccd8d8a1de7afeb2c8edb0f3f07d0b9cf0a38e8.
+- New isolated PostgreSQL17.11 data path .local-runtime/issue46-management-ui/pgdata, loopback56846, database citeframe_memory46_ui; no existing cluster reused.
+- initdb completed; pg_ctl start failed restricted-token creation (87/3). Direct postgres process launched hidden successfully; pg_isready reported accepting connections. No privilege bypass or altered permissions used.
+- Complete actual Alembic upgrade completed through t4b5c6d7e8f9 against this database.
+- Actual full ai_pdf_api.main uvicorn startup on127.0.0.1:5846 completed.
+- Three synthetic accounts registered by real HTTP POST /v1/auth/register; owner workspace created by real HTTP POST /v1/workspaces. Generated credentials retained only in ignored runtime files.
+- Two member rows added via SQL to this isolated database, no permission dependency override.
+- Next16 dev running on127.0.0.1:3246 with generated session/internal secrets; configured API upstream127.0.0.1:5847.
+
+Blocking observations:
+- Visible Chrome open of http://127.0.0.1:3246 was explicitly denied by browser security policy/user permission. No alternate browser/CDP/Playwright live execution followed this denial.
+- Subsequent command to start hidden transport proxy and perform raw HTTP readiness was rejected: exec_command CreateProcess, blocked by policy. Proxy5847 was not launched. No alternative syntax/tool used to achieve that rejected command.
+- Consequently actual Next signed-cookie -> memory BFF -> API -> PG lifecycle is NOT verified. No actual memory network transcript, visible screenshots or UI acceptance exists for this checkpoint.
+
+Separate fixture execution:
+- Activation implementation agent reports27/27 intercepted-browser fixtures passed (39.4s), run before browser denial. This is not real API evidence.
+- Main independently reran33 unit/helper assertions and whole-web strict TS + whole-source lint, all passed.
+- Live E2E and HTTP/proxy/revocation helpers authored and static checked only. Browser unknown-navigation and revocation race tests remain unwritten; HTTP helper covers protocol only and has not run.
+- Build not rerun while preserving running Next. Existing C3 production build remains blocked by Geist/Geist Mono fetch; no font substitution or build pass.

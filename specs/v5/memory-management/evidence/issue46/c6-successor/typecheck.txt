@@ -1,0 +1,3 @@
+Command: node apps/web/node_modules/typescript/bin/tsc --noEmit --incremental false -p apps/web/tsconfig.json
+Scope: static whole-web TypeScript; no browser/network/runtime execution
+Exit: 0
