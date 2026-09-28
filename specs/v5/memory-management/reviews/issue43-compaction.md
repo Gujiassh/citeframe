@@ -861,3 +861,42 @@ The 22-case module was inspected as well as run. It proves zero-DML incompatible
 **Original developer may deliver this frozen neutral-core candidate within that boundary.** Controller may separately rerun the 22-case correction and related checks, then arrange downstream integration. Further product changes require identity reconciliation and affected-path verification; this approval does not float to later edits.
 
 After all executions, independently confirmed **0** remaining `memory43_%` fixture schemas and stopped the reviewer PostgreSQL server. Only this review artifact was edited; no product/test/schema/Git/paid-model/private-memory writes. Runtime request objects and disposable database data were verification scratch only.
+
+## Independent post-integration current-head test delta — APPROVE
+
+**Disposition: APPROVE the exact three assertion-line changes in the two API test files below for controller commit. No defect found in this bounded delta.** Actual read-only `git rev-parse HEAD` returned `b4e773a8fed882cd8cd8c6164c2b8814299eab56`. Core commit/PR delivery history is controller-reported; no reviewer commit, push or merge was performed.
+
+| Reviewed artifact | SHA-256 |
+| --- | --- |
+| `apps/api/tests/test_research_migration.py` | `52F83664473A9644829C4B50AC718E171197D8C0A6668F43AEB79DD2418CCD05` |
+| `apps/api/tests/test_asset_migration.py` | `B5F85E71FBF92AEE4144D7B48CEBD5B65220546C2F703909595D77D30DBFC6E6` |
+| Developer report `specs/v5/memory-management/evidence/issue43/controller-integration.md` | `675FC475D4806EDE46D87D6B7F6C30B20E96551DC8C344E1459C64E476D6BC6B` |
+
+**Exact diff verified against current HEAD:** research test replaces the literal expected single head t4 with u5 and adds literal `u5.down_revision == t4`; asset test replaces one literal t4 post-head assertion with u5. Numstat is research +2/-1 and asset +1/-1. Scoped `git diff --check` passed; LF/CRLF checkout warnings do not change the inspected delta or raw hashes.
+
+**Semantic assessment: pass.**
+
+- `test_alembic_has_one_evolvable_head_after_autonomy` calls `ScriptDirectory.get_heads()`, so this assertion is the repository's current single head, not a historical checkpoint. The actual u5 migration declares `revision='u5c6d7e8f9a0'` and `down_revision='t4b5c6d7e8f9'`. The new literal edge strengthens the chain check. Existing t4→s3→r2 assertions remain unchanged; expectations are not derived from the observed head.
+- The asset test explicitly upgrades to `head`, takes the populated evidence payload snapshot, performs real dump/restore, then verifies rollback refusal and both databases' retained head/configuration. u5 is therefore the correct expected value at that final assertion. Its separate explicit upgrade to r2 and r2 retention assertion after the earlier refused downgrade remain unchanged. Legacy/image/document migration anchors, evidence payload comparisons, encryption-related refusal and corruption negatives were not weakened.
+- Independently compared all **45 previously approved core raw hashes** against both the current manifest and this review's own accepted hash inventory (prior inventory plus I3/I4 delta): **0 mismatches**. End-of-run manifest recheck also found 0. No product, schema or core workflow change is part of this test delta; the prior bounded neutral-core approval remains valid at its exact identity.
+
+### Own bounded verification
+
+Executed both complete affected modules on the reviewer's own isolated **PostgreSQL 17.11 at 127.0.0.1:56543**, not the developer cluster:
+
+```text
+apps/api/tests/test_research_migration.py
+apps/api/tests/test_asset_migration.py
+18 passed, 1 warning in 9.43s; zero skips
+```
+
+Used `D:/Code/citeframe/apps/api/.venv/Scripts/python.exe`, `PYTHONDONTWRITEBYTECODE=1`, lane-local API/tests/Worker/packages PYTHONPATH, `AI_PDF_DATABASE_URL` pointing only to the reviewer test server, and `pytest -q -p no:cacheprovider --tb=short` with an explicit unique temporary basetemp. A Python launcher prefixed the actual PostgreSQL binary directory to PATH before pytest; no test monkeypatch or fixture bypass was used. Independently printed/discovered:
+
+```text
+D:/Code/citeframe/.local-runtime/postgresql/pgsql/bin/pg_dump.EXE — PostgreSQL 17.11
+D:/Code/citeframe/.local-runtime/postgresql/pgsql/bin/pg_restore.EXE — PostgreSQL 17.11
+```
+
+The unmodified asset test executed its actual dump/restore oracle with zero skips, including the changed final source/restored-head assertion. The sole warning was the existing Starlette/httpx deprecation. This is this reviewer's own 18-case run. The report's initial 17+1skip, worker 18, developer-root adjacent 19 and 7 remain their original executor-scoped evidence and are not added to this result.
+
+Both test hashes and the developer-report hash remained exactly as pinned after execution. The unchanged fixtures removed all their `ai_pdf_%` disposable databases (independently queried: empty list); the reviewer server was stopped. Only this review artifact was edited. No product/test/schema/Git write, paid provider or UI operation occurred. This approval is limited to the three-line current-head compatibility correction and identity preservation; it adds no actual Chat/Research/UI or whole-Issue acceptance.
