@@ -83,3 +83,28 @@ Suggested commit subject: `feat(memory): add neutral provider and counting adapt
 PR references: `Refs #44 (partial prerequisite); parent #41 remains open.`
 
 Write-back check completed: exact dependency, bounded changes, stable hashes, reproducible tests and acceptance limitations are recorded in the lane/evidence. No private/profile-memory or out-of-lane workbench write occurred. Controller synchronizes its shared ledger.
+
+## PR49 delivery and scoped final acceptance
+
+This checkpoint supersedes the earlier pending-delivery and pending-recheck statuses above; historical evidence remains retained.
+
+- PR: https://github.com/Gujiassh/citeframe/pull/49 (controller reports pushed; draft delivery, no merge claim).
+- Provider commit: `20717edba6e77e100e0cb2d18e6d75361a678586`.
+- Independent review artifact commit: `c739650f8f85d1d4c23745b1de104b624bd05d71`.
+- Original reviewer final disposition: **ACCEPT, neutral text-provider core only**. Final exact-candidate rerun: 117 passed with network/application-import denial. F44-1/F44-3 closed; F44-2 remains closed for total-token translation. This maps to the cleaned `_wire.py` content and the provider commit.
+- The evidence manifest now corrects only the stale `_wire.py` EOF-formatting hash to `17A31AA4AAE50FFDB3CEE93F41C8A95A87E005FBB62EA707624ABDA6AE319D25`, matching the reviewer's final manifest. No adapter code changed in this CI slice.
+- New hosted workflow `.github/workflows/memory-provider.yml` is authorized separately. Existing `ci.yml`, shared dependencies, locks and deployment remain untouched and #42/controller-owned. This small CI delta requires the original reviewer's separate review; core acceptance does not pre-approve it.
+- The workflow targets only `test_native_provider.py`, `test_token_counting.py` and `test_wire_provider.py` through the frozen API dev environment and local neutral source paths. No PostgreSQL suite or database URL is required by this dedicated job.
+- Controller retains commit/push/PR attachment and merge decisions. No Git writes are performed by this lane for the CI delta. #44/#41 remain open; downstream composition, real tokenizer/model quality, private-source exclusion, loops, compaction, Research and UI acceptance remain outside the core approval.
+
+### Dedicated CI verification
+
+- Workflow SHA-256: `0147FB741DB6ED737942A258F189B0D561CEC77BD1B688FFA247D82A86FA5412`.
+- Parsed the YAML with PyYAML 6.0.3 `BaseLoader` and verified PR/main-push triggers, existing action versions, frozen API dev installation, absent service dependencies and exactly the three named test paths.
+- Extracted and executed the workflow's exact embedded Python runner locally with the previously documented read-only pytest/httpx cache dependencies: **117 passed in 0.43s**. API/Worker imports and socket connections are denied by that runner. The `--noconftest` and cleared pytest pythonpath options isolate the dedicated files from future #42 PostgreSQL discovery/conftest loading; no database URL is supplied or needed.
+- Independently exercised the runner's guard: collection skip, test skip, deselection and zero collection each fail; a successful execution remains successful. Application-import and network-denial checks pass. No skip, marker exclusion, broad test directory or hard-coded test count bypasses execution.
+- Recomputed all 14 entries of the existing candidate manifest: all match. Its only edited line is the stale `_wire.py` EOF hash. Adapter/test/dependency/shared-workflow files have no delta.
+- `git diff --check` passes after the documentation update. No Git writes, services, live providers or paid calls were used.
+- Local checks establish workflow structure and exact runner behavior. Ubuntu Actions execution and `uv sync --project apps/api --frozen --extra dev` installation were not run locally; hosted evidence remains pending controller delivery and CI. Original reviewer separately reviews this CI delta before acceptance.
+
+Write-back check: PR49 delivery, scoped final core acceptance, CI verification and limitations are recorded here; historical sections and the original test log/review remain unchanged.

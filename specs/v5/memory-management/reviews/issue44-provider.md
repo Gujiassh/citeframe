@@ -294,3 +294,48 @@ During report delivery, controller-side staging and an external `_wire.py` clean
 Independently reran the complete dedicated suite after that cleanup with the same network/app-import denial: **117 passed in 0.38s**, all candidate source/test hashes stable during the run and application import list empty. The scoped ACCEPT remains valid for this final manifest. Reviewer performed no staging or other Git write.
 
 Controller subsequently created provider commit 20717edba6e77e100e0cb2d18e6d75361a678586, parent a07b881529aded9dfcbead0634ec1eea15a7d36c, while this reviewer delivered the report. Read-only verification confirmed that all 14 entries in the final manifest still match the current worktree. This maps the content-scoped ACCEPT to that controller-created commit; no reviewer commit/push or remote CI/PR acceptance is implied.
+
+
+## Scoped hosted-CI review — 2026-09-28
+
+**ACCEPT — the new dedicated provider workflow and its scoped manifest/document delta. No actionable finding identified.** F44-1/F44-3 remain closed; F44-2 remains closed for total-token translation. The accepted neutral text-provider core and all earlier review evidence are retained unchanged.
+
+### Scope and candidate identity
+
+Revalidated effective specification v4 §§13–14 / A1 Choice 2. This change enforces the three existing synthetic provider/counting suites in an isolated CI job. It introduces no audience/private-thread/private-run schema, consumer integration, or wider acceptance. Private-source exclusion at every later shared consuming boundary and same-run compaction remain required downstream oracles.
+
+Read-only HEAD at review: `c739650f8f85d1d4c23745b1de104b624bd05d71`; accepted provider commit: `20717edba6e77e100e0cb2d18e6d75361a678586`; integrated shared-contract commit: `a07b881529aded9dfcbead0634ec1eea15a7d36c`. The CI candidate is an uncommitted delta identified by these SHA-256 hashes:
+
+| Repository-relative file | SHA-256 |
+|---|---|
+| `.github/workflows/memory-provider.yml` | `0147FB741DB6ED737942A258F189B0D561CEC77BD1B688FFA247D82A86FA5412` |
+| `specs/v5/memory-management/evidence/issue44-provider/sha256.txt` | `49207EF2E3F86ADFE03D26D18666C6683DF24FC6DAD9EE8A9D247596C82CF571` |
+| `specs/v5/memory-management/lanes/issue44-provider.md` | `0A3183ED5CC2961F47AC12CBAC20AF46E3A24BF0E3419D409BC1AF2F4715A2D7` |
+
+Review artifact SHA-256 before this append: `CB93ABCAA2C6D1CF9839CC75092B414135621141BD0F6A23041C936AEECE0A9D`.
+
+### Independent verification
+
+| Area | Result and evidence |
+|---|---|
+| Frozen environment and exact contract | **PASS.** Installation is `uv sync --project apps/api --frozen --extra dev`; execution is `uv run --project apps/api --frozen --no-sync python -`. Explicit repository source paths precede installed packages. The runner asserts the imported contract resolves to this checkout's `packages/backend-contracts/src/citeframe_contracts/memory.py`. Its hash remains `B1A0D53B5D21BAC31AC12609A5A798CCEDA5F9AAB43EEFAA4E178A3D9D5AAE45`. |
+| Exact YAML/heredoc | **PASS.** Parsed the actual file with PyYAML 6.0.3 BaseLoader; verified PR/main-push triggers, standalone job, permissions and frozen commands. The extracted run block has the exact quoted `<<'PY'` opener and unindented `PY` terminator after YAML deindent. Its Python AST parses; feeding the shell block to Git Bash `bash -n` exits 0. The workflow uses the correct Linux colon-separated PYTHONPATH. |
+| Exact runner execution | **PASS.** Executed the extracted Python body without modifying it, using read-only `D:/Code/citeframe/apps/api/.venv/Scripts/python.exe`, CPython 3.12.14 / pytest 9.1.1 / httpx 0.28.1 (matching locked pytest/httpx versions). Only the local environment's PYTHONPATH separator was adapted for Windows. Independent initial run: **117 passed in 0.33s**; final exact-file rerun: **117 passed in 0.38s**, exit 0. PYTHONDONTWRITEBYTECODE=1 and PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 were retained. |
+| Isolation and collection | **PASS.** Before collection, the runner rejects ai_pdf_api/ai_pdf_worker imports and denies socket connect/connect_ex/create_connection. It verifies application modules are absent afterward. An additional observation-only collection probe confirmed exactly 117 items from `test_native_provider.py`, `test_token_counting.py`, `test_wire_provider.py`, with no API/Worker, sqlalchemy, psycopg or psycopg2 modules loaded. No broad directory target, PostgreSQL service or database URL is used. |
+| Failure/skip enforcement | **PASS.** Exact three-file selection uses `--noconftest --strict-markers -p no:cacheprovider -o pythonpath= -o xfail_strict=true -q`. Current dedicated sources contain no skip/xfail/selection weakening. Exercised the extracted RequireExecutedTests class through actual pytest hooks using in-memory items: a clean pass exits 0; failure, runtime skip, collection skip, partial deselection with a remaining passing item, zero collection, strict expected-failure and explicitly nonstrict expected-failure cases all exit 1. No continue-on-error or failure suppression appears in the job. |
+| Privileges and external calls | **PASS within test-runner scope.** `contents: read`, ordinary pull_request/main-push events, ten-minute timeout, no secrets, pull_request_target, privileged command, service or paid-model invocation. Dependency setup uses the ordinary hosted install path. Python connection guards protect fixture execution; this is not a claim of an OS-level network sandbox or offline dependency installation. |
+| Manifest/document delta | **PASS.** Recomputed all 14 manifest entries, all matching. Its sole changed entry corrects the already accepted `_wire.py` EOF-cleaned hash to `17A31AA4AAE50FFDB3CEE93F41C8A95A87E005FBB62EA707624ABDA6AE319D25`. The lane document records scoped core acceptance, CI behavior and pending hosted evidence accurately. Product/tests, shared contract, API dependency files/lock and existing #42-owned `.github/workflows/ci.yml` have no delta from accepted provider commit. |
+
+### Standalone PR49 and later PR48 integration
+
+**PASS for the inspected dependency/collection structure.** The current API frozen lock supplies the fixture dependencies; PYTHONPATH supplies the local provider package, so standalone PR49 does not require PR48's package registration. Read-only comparison with the #42 worktree shows its package root remains inert and its persistence tests are in a separate `test_instruction_memory.py`. Explicit three-file targets, disabled plugin autoload, `--noconftest` and the overridden empty pytest pythonpath avoid that PostgreSQL collection path after integration. The workflow has no `needs` coupling to #42 CI. Shared contracts/manifests remain single-owner; no duplicate port or Worker-to-API import is introduced.
+
+Actual merged PR48 execution and the owner-maintained merged dependency locks still require controller/hosted verification. This structural review does not certify an unexecuted future merge snapshot.
+
+### Limits and handoff
+
+Ubuntu Actions execution and `uv sync --project apps/api --frozen --extra dev` installation were **not run locally**. Local evidence covers the exact runner, compatible shell syntax, candidate hashes, negative enforcement oracles and inspected dependency structure. Hosted results remain pending controller push/CI; no remote-green claim is made.
+
+No live-provider compatibility, model-quality, real tokenizer accuracy, chat/UI, privacy-consumer integration, automatic compaction or full #44/#41 completion is accepted by this CI review. The workflow remains aligned with the neutral prerequisite architecture.
+
+Write-back check: durable scoped judgment and exact evidence are appended only to this original review. No product, test, workflow, contract, manifest, lane document, Git index/ref, private/profile memory, canonical/shared-workbench, service or DB write was performed by the reviewer. Controller retains commit/push/PR ownership.

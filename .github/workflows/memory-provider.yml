@@ -1,0 +1,80 @@
+name: Memory provider
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  neutral-provider:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      PYTHONDONTWRITEBYTECODE: "1"
+      PYTEST_DISABLE_PLUGIN_AUTOLOAD: "1"
+      PYTHONPATH: ${{ github.workspace }}/packages/memory-service/src:${{ github.workspace }}/packages/backend-contracts/src
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+          cache-dependency-glob: apps/api/uv.lock
+      - run: uv sync --project apps/api --frozen --extra dev
+      - name: Test isolated native protocols and counting
+        run: |
+          uv run --project apps/api --frozen --no-sync python - <<'PY'
+          import importlib.abc
+          import pathlib
+          import socket
+          import sys
+
+          class NoApplications(importlib.abc.MetaPathFinder):
+              def find_spec(self, fullname, path=None, target=None):
+                  if fullname.split(".", 1)[0] in {"ai_pdf_api", "ai_pdf_worker"}:
+                      raise AssertionError("application import forbidden: " + fullname)
+
+          def deny_network(*args, **kwargs):
+              raise AssertionError("provider tests forbid network connections")
+
+          sys.meta_path.insert(0, NoApplications())
+          socket.socket.connect = deny_network
+          socket.socket.connect_ex = deny_network
+          socket.create_connection = deny_network
+
+          import citeframe_contracts.memory as contract
+          import pytest
+
+          expected = pathlib.Path("packages/backend-contracts/src/citeframe_contracts/memory.py").resolve()
+          assert pathlib.Path(contract.__file__).resolve() == expected
+
+          class RequireExecutedTests:
+              def __init__(self):
+                  self.skipped = False
+                  self.deselected = False
+
+              def pytest_collectreport(self, report):
+                  self.skipped |= report.skipped
+
+              def pytest_runtest_logreport(self, report):
+                  self.skipped |= report.skipped
+
+              def pytest_deselected(self, items):
+                  self.deselected |= bool(items)
+
+              def pytest_sessionfinish(self, session, exitstatus):
+                  if self.skipped or self.deselected or session.testscollected == 0:
+                      session.exitstatus = 1
+
+          status = pytest.main([
+              "--noconftest", "--strict-markers", "-p", "no:cacheprovider",
+              "-o", "pythonpath=", "-o", "xfail_strict=true", "-q",
+              "packages/memory-service/tests/test_native_provider.py",
+              "packages/memory-service/tests/test_token_counting.py",
+              "packages/memory-service/tests/test_wire_provider.py",
+          ], plugins=[RequireExecutedTests()])
+          assert not any(name.split(".", 1)[0] in {"ai_pdf_api", "ai_pdf_worker"} for name in sys.modules)
+          raise SystemExit(status)
+          PY
