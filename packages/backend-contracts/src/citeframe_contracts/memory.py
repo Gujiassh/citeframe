@@ -124,6 +124,8 @@ class ToolCallComplete:
 
 @dataclass(frozen=True)
 class Usage:
+    """Input tokens include uncached, cache-read and cache-creation tokens; unknown totals stay None."""
+
     input_tokens: int | None
     output_tokens: int | None
     source: Literal["reported", "estimated", "unknown"] = "reported"
@@ -149,7 +151,8 @@ class HTTPResponse(Protocol):
 
 class HTTPTransport(Protocol):
     def stream(self, method: str, url: str, *, headers: Mapping[str, str],
-               json: Mapping[str, object], timeout: float) -> AbstractContextManager[HTTPResponse]: ...
+               json: Mapping[str, object], timeout: float,
+               follow_redirects: bool) -> AbstractContextManager[HTTPResponse]: ...
 
 
 @dataclass(frozen=True)
