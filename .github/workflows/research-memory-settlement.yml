@@ -1,0 +1,159 @@
+name: Research memory settlement
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  settlement-postgres:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    services:
+      postgres:
+        image: postgres:17.11
+        env:
+          POSTGRES_DB: citeframe_issue45_settlement_test
+          POSTGRES_USER: issue45_test
+          POSTGRES_PASSWORD: issue45_ci
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U issue45_test -d citeframe_issue45_settlement_test"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 20
+    env:
+      PYTHONDONTWRITEBYTECODE: "1"
+      PYTEST_DISABLE_PLUGIN_AUTOLOAD: "1"
+      PYTEST_ADDOPTS: ""
+      CITEFRAME_ISSUE45_POSTGRES_URL: postgresql+psycopg://issue45_test:issue45_ci@127.0.0.1:5432/citeframe_issue45_settlement_test
+      AI_PDF_DATABASE_URL: postgresql+psycopg://issue45_test:issue45_ci@127.0.0.1:5432/citeframe_issue45_settlement_test
+      PYTHONPATH: ${{ github.workspace }}/apps/worker/src:${{ github.workspace }}/apps/api/src:${{ github.workspace }}/apps/api/tests:${{ github.workspace }}/packages/backend-contracts/src:${{ github.workspace }}/packages/backend-persistence/src:${{ github.workspace }}/packages/research-persistence/src:${{ github.workspace }}/packages/memory-service/src:${{ github.workspace }}/packages/prompt-contracts/src
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+          cache-dependency-glob: apps/api/uv.lock
+      - name: Select job-owned Python environment
+        run: echo "UV_PROJECT_ENVIRONMENT=$RUNNER_TEMP/research-memory-settlement-venv" >> "$GITHUB_ENV"
+      - name: Install frozen API dependencies
+        run: |
+          uv lock --project apps/api --check --python 3.12
+          uv sync --project apps/api --frozen --extra dev --python 3.12
+      - name: Verify own imports and execute all settlement regressions
+        run: |
+          uv run --project apps/api --frozen --no-sync python - <<'PY'
+          from collections import Counter
+          import importlib
+          import os
+          from pathlib import Path
+          import sys
+
+          import pytest
+          from sqlalchemy import create_engine, text
+          from sqlalchemy.engine import make_url
+
+          root = Path.cwd().resolve()
+          own_roots = {
+              "ai_pdf_api": root / "apps/api/src/ai_pdf_api",
+              "ai_pdf_worker": root / "apps/worker/src/ai_pdf_worker",
+              "citeframe_contracts": root / "packages/backend-contracts/src/citeframe_contracts",
+              "citeframe_persistence": root / "packages/backend-persistence/src/citeframe_persistence",
+              "citeframe_research_persistence": root / "packages/research-persistence/src/citeframe_research_persistence",
+              "citeframe_memory": root / "packages/memory-service/src/citeframe_memory",
+          }
+          for name in own_roots:
+              importlib.import_module(name)
+          for name, relative in {
+              "citeframe_research_persistence.tools": "packages/research-persistence/src/citeframe_research_persistence/tools.py",
+              "ai_pdf_worker.research.memory_context": "apps/worker/src/ai_pdf_worker/research/memory_context.py",
+          }.items():
+              module = importlib.import_module(name)
+              assert Path(module.__file__).resolve() == root / relative, name
+
+          def verify_own_imports():
+              for name, module in tuple(sys.modules.items()):
+                  expected = own_roots.get(name.split(".", 1)[0])
+                  if expected is not None and module is not None:
+                      location = getattr(module, "__file__", None)
+                      locations = [location] if location else list(getattr(module, "__path__", ()))
+                      assert locations and all(Path(path).resolve().is_relative_to(expected)
+                                               for path in locations), name
+
+          verify_own_imports()
+          url = os.environ.get("CITEFRAME_ISSUE45_POSTGRES_URL")
+          if not url:
+              raise SystemExit("CITEFRAME_ISSUE45_POSTGRES_URL is required; no PostgreSQL skip is permitted")
+          parsed = make_url(url)
+          assert parsed.drivername == "postgresql+psycopg"
+          assert parsed.host == "127.0.0.1" and parsed.port == 5432
+          assert parsed.database == "citeframe_issue45_settlement_test"
+          engine = create_engine(url)
+          try:
+              with engine.connect() as connection:
+                  assert connection.scalar(text("SELECT current_database()")) == parsed.database
+                  assert connection.scalar(text("SHOW server_version_num")) == "170011"
+          finally:
+              engine.dispose()
+
+          expected_counts = {
+              "packages/research-persistence/tests/test_memory_tool_settlement.py": 56,
+              "apps/api/tests/test_research_worker_budget_recovery.py": 22,
+              "apps/api/tests/test_research_persistence_boundary.py": 6,
+              "apps/worker/tests/test_research_memory_context.py": 36,
+          }
+
+          class RequireFullExecution:
+              def __init__(self):
+                  self.counts = Counter()
+                  self.collected = set()
+                  self.passed = set()
+                  self.invalid = False
+
+              def pytest_collection_finish(self, session):
+                  self.counts = Counter(item.path.resolve().relative_to(root).as_posix()
+                                        for item in session.items)
+                  self.collected = {item.nodeid for item in session.items}
+                  self.invalid |= len(self.collected) != len(session.items)
+
+              def pytest_collectreport(self, report):
+                  self.invalid |= not report.passed
+
+              def pytest_deselected(self, items):
+                  self.invalid |= bool(items)
+
+              def pytest_runtest_logreport(self, report):
+                  self.invalid |= not report.passed or hasattr(report, "wasxfail")
+                  if report.when == "call" and report.passed:
+                      self.passed.add(report.nodeid)
+
+              def pytest_sessionfinish(self, session, exitstatus):
+                  if (self.invalid or session.config.option.collectonly
+                          or self.counts != expected_counts
+                          or session.testscollected != sum(expected_counts.values())
+                          or self.passed != self.collected):
+                      print("Settlement CI requires all 120 selected cases to execute and pass; "
+                            "collection-only, omission, skip, deselection and xfail are rejected.")
+                      session.exitstatus = 1
+
+          status = pytest.main([
+              "--noconftest", "-p", "research_worker_test_support",
+              "--strict-markers", "-p", "no:cacheprovider",
+              "-o", "addopts=", "-o", "pythonpath=", "-o", "xfail_strict=true",
+              "-q", "--tb=short", *expected_counts,
+          ], plugins=[RequireFullExecution()])
+          verify_own_imports()
+          support = sys.modules.get("research_worker_test_support")
+          assert support is not None and Path(support.__file__).resolve() == (
+              root / "apps/api/tests/research_worker_test_support.py"
+          )
+          raise SystemExit(status)
+          PY

@@ -101,3 +101,9 @@ Shared contract commits: #42 `eac4de417e8610e43fb34b702fbe02c9a4143163` and `9ad
 - PR attachment tool invoked for48/49 but returned Transport closed; attachments are NOT confirmed. GitHub PRs exist, linked above. Retry app attachment only after transport recovery.
 
 Final A1choice2 remains accepted: private owner management only; no private data reuse in shared output paths, no new private native mode/audience. End-to-end automatic compaction, actual source/tool/API/Research/UI integration and semantic acceptance remain required before41completion.
+
+## Native settlement preparation delivery — 2026-09-29
+
+This isolated follow-up starts from PR51 e7b3e86ae4de70764c4d17bcbe272686c1c8063a on work/issue45-memory-settlement. Original developer agt_d03b4a29 and independent reviewer agt_26025b40 accepted the exact bounded native tools.py transaction-neutral extraction. Public error/rollback/lock/field/flush semantics remain unchanged; the private inner command supports future caller-owned atomic composition and is not activated here. Controller independently ran56 tests including55PG,23.59s, owncluster stopped. Reviewer ran120+11 additionalPG scenarios; no Alembic parity claim follows from ORM-created fixture tables.
+
+Dedicated workflow E17B81A4 independently accepted after F45-CI-1 invalid job runner context and F45-CI-2 empty-reason XPASS fixes. Reviewer actionlint0 and actual5 guard probes; controller actionlint0. Earlier reviewer120 inlinePG pass remains prior-workflow evidence. New hosted frozen install/job remains pending; local uv startup was denied and not replaced. Full Research schema/source/reclaim/every-dispatch and same-live-Attempt compaction/UI remain unaccepted. Existing PR51 stays pure projection and unchanged.

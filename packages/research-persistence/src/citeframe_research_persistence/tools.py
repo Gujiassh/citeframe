@@ -148,27 +148,73 @@ def complete_tool_call(
     error_message: str | None = None,
     now: datetime | None = None,
 ) -> None:
+    call, ledger, attempt = _tool_call_for_settlement(db, tool_call_id, status)
+    # Legacy callers rely on precondition errors leaving their transaction open.
+    try:
+        _settle_tool_call(db, call, ledger, attempt, status=status, complete=complete,
+                          error_code=error_code, error_message=error_message, now=now)
+    except Exception:
+        db.rollback()
+        raise
+
+
+def _complete_tool_call_in_transaction(
+    db: Session,
+    *,
+    tool_call_id: str,
+    status: str,
+    complete: ToolResultCallback | None = None,
+    error_code: str | None = None,
+    error_message: str | None = None,
+    now: datetime | None = None,
+) -> None:
+    """Settle a native tool under caller-owned commit/rollback.
+
+    Acquire and validate the native chain by ID; supplied ORM rows cannot stand
+    in for its locks or scope checks. The callback must also leave transaction
+    ownership with the caller. This does not authorize new tool kinds.
+    """
+    call, ledger, attempt = _tool_call_for_settlement(db, tool_call_id, status)
+    _settle_tool_call(db, call, ledger, attempt, status=status, complete=complete,
+                      error_code=error_code, error_message=error_message, now=now)
+
+
+def _tool_call_for_settlement(
+    db: Session, tool_call_id: str, status: str,
+) -> tuple[ResearchToolCall, ResearchBudgetLedger, ResearchStepAttempt]:
     if status not in {"succeeded", "failed", "cancelled", "abandoned"}:
         raise ValueError("invalid tool terminal status")
     call, ledger, attempt, _step, _run = _tool_call_chain(db, tool_call_id)
     if call.status not in {"requested", "running"}:
         raise ResearchError("research_state_conflict", "Research tool call cannot be completed.", 409)
-    try:
-        result_count = complete(db, call) if complete else 0
-        call.status = status
-        call.result_count = result_count
-        call.error_code = error_code
-        call.error_message = error_message
-        call.finished_at = now or datetime.now(UTC)
-        ledger.reserved_tool_calls -= 1
-        ledger.actual_tool_calls += 1
-        ledger.state_version += 1
-        ledger.updated_at = call.finished_at
-        attempt.tool_call_count += 1
-        db.flush()
-    except Exception:
-        db.rollback()
-        raise
+    return call, ledger, attempt
+
+
+def _settle_tool_call(
+    db: Session,
+    call: ResearchToolCall,
+    ledger: ResearchBudgetLedger,
+    attempt: ResearchStepAttempt,
+    *,
+    status: str,
+    complete: ToolResultCallback | None,
+    error_code: str | None,
+    error_message: str | None,
+    now: datetime | None,
+) -> None:
+    """Apply settlement only to the chain returned by _tool_call_for_settlement."""
+    result_count = complete(db, call) if complete else 0
+    call.status = status
+    call.result_count = result_count
+    call.error_code = error_code
+    call.error_message = error_message
+    call.finished_at = now or datetime.now(UTC)
+    ledger.reserved_tool_calls -= 1
+    ledger.actual_tool_calls += 1
+    ledger.state_version += 1
+    ledger.updated_at = call.finished_at
+    attempt.tool_call_count += 1
+    db.flush()
 
 
 def restore_evidence_handles(
