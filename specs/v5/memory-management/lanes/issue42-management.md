@@ -1,6 +1,6 @@
 # Issue #42 owner-private management API consumer contract
 
-Status: **PROPOSED — assigned Critical reviewer approval required before routing/code writes.**
+Status: **Consumer contract approved; mounted implementation candidate awaits independent runtime review. See §9 for current activation/evidence state.**
 Date: 2026-09-28. Parent #41 remains open; intended delivery is a partial #42 PR.
 
 ## Authority, identity and acceptance boundary
@@ -162,3 +162,14 @@ Assigned independent reviewer recorded by prepare_session task: `agt_4e74d255`; 
 Allowed subsequent files: NEW `apps/api/src/ai_pdf_api/routers/memories.py`, `schemas/memory.py`, thin `services/memory_management.py`; NEW neutral management query module if needed; `apps/api/src/ai_pdf_api/main.py` import/registration only; dedicated API tests and lane spec/evidence. All Git writes, commit/push/PR attachment and dependent merge are controller-owned. No existing core/#43/#40/legacy/frontend files are assigned here.
 
 Bootstrap verified remote GitHub Gujiassh/citeframe; local/global user identity match. prepare_session succeeded and its project/state/task were read. Private profile MEMORY was not read. Write-back check: durable lane state is this artifact; shared workbench/profile writes are outside the granted workspace. Controller can checkpoint `memory42-management-api` with contract-review pending. No product code or Git state changed.
+
+
+## 9. Mounted candidate checkpoint after approved admission integration
+
+This checkpoint supersedes earlier preparation-time statements that the contract is proposed, tests are unexecuted or admission integration is absent. The approved endpoint/DTO/error/scope semantics above are unchanged.
+
+Controller integrated admission source `893de951672f1a374d552425dfb2b3e7c3e6a223` as `7d47607778a9212e9f3cb076442cd7c497c1f8ca` after original independent ACCEPT in `reviews/issue42-admission.md`, and explicitly authorized create/correct mounting for implementation/tests. All four source/integrated Git blobs match; working-tree checkout differences and the reviewed admission file's single mixed CRLF line are reconciled in `evidence/issue42-management/admission-integration.json`. No core file was edited by this consumer lane.
+
+All declared management endpoints are now mounted through the existing commands, including create/correct and shared `sensitive_content_unsupported` handling. Response bytes are serialized inside the fresh projection authorization transaction. PostgreSQL, live HTTP, all19 frozen error fixtures, six command/field admission no-write cases, logs, recovery/replay/CAS and lifecycle evidence are recorded in `evidence/issue42-management/implementation.md`; the historical fixture planning label is preserved.
+
+The dedicated CI PostgreSQL command now explicitly selects `test_memory_management.py`. The later broad API step still lacks that dedicated URL in the current workflow; an additional step-local environment grant was requested, with no unauthorized edit or skip workaround. The existing missing-URL guard demonstrably fails in CI. This duplicate-run environment issue must be resolved before hosted CI can pass. Independent mounted-API review, hosted/core CI, prerequisite merge/release, controller Git delivery and #46 UI remain separate gates. This lane made no commits/pushes or paid calls.

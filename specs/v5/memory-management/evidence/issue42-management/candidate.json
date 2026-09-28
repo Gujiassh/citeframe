@@ -1,0 +1,70 @@
+{
+  "head": "7d47607778a9212e9f3cb076442cd7c497c1f8ca",
+  "integration": "32bb6764c785a0d3e424519d9a977df5182b4927",
+  "admissionSource": "893de951672f1a374d552425dfb2b3e7c3e6a223",
+  "admissionIntegrated": true,
+  "mountedCreateCorrect": true,
+  "pytest": {
+    "passed": 1748,
+    "skipped": 0,
+    "apiTests": 56
+  },
+  "liveHttpChecks": 76,
+  "ciRegularApiStep": "resolved: same disposable URL added step-locally",
+  "independentMountedReview": "pending",
+  "files": {
+    ".github/workflows/ci.yml": "de69b0aaff39849af7f0cab8fe2302685dcac5fd35bd1de3063b1205b523422c",
+    "apps/api/src/ai_pdf_api/main.py": "da153ec753c03628a68335d91f6e196d26f41cd11f0dc6b5a684858d11d06e1d",
+    "apps/api/src/ai_pdf_api/routers/deps.py": "ac067cdae26a100c99dc435ee3b5d76f5bcb0084f3b371e30942cf2c11cf38da",
+    "apps/api/src/ai_pdf_api/routers/memories.py": "0d00e0ff0fd37d1278048e264b68b86c98f3a52ae59ea7667648aed8eb0f4c10",
+    "apps/api/src/ai_pdf_api/schemas/memory.py": "cb61bc652e98999b1741557c32c136ad0e85fdc62921cff732436c0c5b723dda",
+    "apps/api/src/ai_pdf_api/services/memory_management.py": "189a86b0a99e3947e3915e43436f0eaf6e540397158d58929c7940a233d6d61f",
+    "apps/api/tests/fixtures/memory/management_contract_cases.json": "34b9ca270ee2291d8302f7923a5da2814ce103db714800ce265958346aea2a3d",
+    "apps/api/tests/test_memory_management.py": "4ff2b6a7a3cacd999f98e6003673e9306f213503b61dee9d569fa88140331ea5",
+    "packages/memory-service/src/citeframe_memory/access.py": "286a3ffecdd83469c871351264283f078749ffea06622b60bd1c33dcbbbb972b",
+    "packages/memory-service/src/citeframe_memory/admission.py": "8d43fe23e42af9c37211837185272a658c280839923051cbb642d998320a48ce",
+    "packages/memory-service/src/citeframe_memory/commands.py": "23a3e407330c14c8bfc4dcdbae8fe211f8834751624651e34088d8f1e0965b95",
+    "packages/memory-service/src/citeframe_memory/management_queries.py": "53464b1b938ba398f93e557d82b11146a1e1b5c86703f756f4903c27a1882598",
+    "packages/memory-service/src/citeframe_memory/sources.py": "805f7e5be3b807444615327b45bc51cba3e19ea04ba6baf24d25413e83df4ce3",
+    "specs/v5/memory-management/evidence/issue42-management/admission-contract-preintegration.md": "9a8d943a39ade6b224e9a21a6b9ff0485e9f3b7963094e21868441ad64dc2693",
+    "specs/v5/memory-management/evidence/issue42-management/admission-integration.json": "06348fee1d0b6651b0de458fecad9e1549076fc15491d8cc046b899d2418af7b",
+    "specs/v5/memory-management/evidence/issue42-management/ci-collection.json": "397c42994dd6df53b1cfc37e39f3dca9b3b768404ea869a7092661a72d180548",
+    "specs/v5/memory-management/evidence/issue42-management/ci-followup.md": "ae5522b99753520b420226a627c554bb9541fac3c73001ec1d32e6506514cf73",
+    "specs/v5/memory-management/evidence/issue42-management/ci-frozen-files.json": "e06ddf4ecae26bcbcf82beef7e4c5453b88bfd999727cd35afe0eededadc8d07",
+    "specs/v5/memory-management/evidence/issue42-management/ci-missing-url.txt": "2bead9d1b41f5f16612b5f3e3289e8013dd2600e3088f56fa8f5306e5dce7ec0",
+    "specs/v5/memory-management/evidence/issue42-management/ci-unreachable-db.txt": "6c4a212ea9b6fc163e8da69ed9048cf2a7f56ce6993449331d99f2355d9d3ddd",
+    "specs/v5/memory-management/evidence/issue42-management/i1-candidate.json": "56502f436c9fb6b93d5f926f6dc767f09d4190703a8c65a014bc77cf9ea6ab5a",
+    "specs/v5/memory-management/evidence/issue42-management/i1-parent-hash-audit.json": "1503fab64de292092661fcde0ae1c2e09b6f2318c918cffd9bf3a1dc52ad261c",
+    "specs/v5/memory-management/evidence/issue42-management/i1-repair.md": "b8230f6e4d61249f87dd08f79341acbb4c2fccb7070bbc8c3eaecacf8134b8ef",
+    "specs/v5/memory-management/evidence/issue42-management/i1_parent_hash_audit.py": "631bf9ca8e5e5c31adc8eac4d265ef3887d58b0178bc79c7231cc90457928d53",
+    "specs/v5/memory-management/evidence/issue42-management/implementation.md": "81206757e86383e39f3f0235b5ec409bc050153a5ce352d5b4a8dcf39425065c",
+    "specs/v5/memory-management/evidence/issue42-management/live-http.json": "fb4daf8d35e262bc7870ee0cecd15e78ae4b5966e9e725e26559d202835418c1",
+    "specs/v5/memory-management/evidence/issue42-management/live_http.py": "62c4c46938a194564c1d51db6956eb0168c30100f0ff27a932b9d026f20cc0a6",
+    "specs/v5/memory-management/evidence/issue42-management/openapi.json": "2a789047302af6d23bcbf2829fc44ff9326ecda2f05769b47089e8ceb648a8e1",
+    "specs/v5/memory-management/evidence/issue42-management/pytest-ci-management.txt": "70cf3a151acf567f73c4804e76bacdb3d14f057c4a319e5a98b85e98b4e20325",
+    "specs/v5/memory-management/evidence/issue42-management/pytest-full-api.txt": "42f10a10f47a6300cfbd1dc9a28d68db83c61d969e1c9118262d6e5f8dc2620e",
+    "specs/v5/memory-management/evidence/issue42-management/pytest-i1.txt": "fbd43e7f258861abcb749f6dc64cb502dd71e56f7e444a578ff9f67eda1c5407",
+    "specs/v5/memory-management/evidence/issue42-management/pytest.txt": "e0c73768b0962c8b0549fbf6275ae947cd25c202e91079cecc4a95b092567c86",
+    "specs/v5/memory-management/lanes/issue42-management.md": "af82373eb17ae00c5ec24d0bbeb9e19ed40297205263a699dc5be4d96804aac7"
+  },
+  "ciFollowup": {
+    "fullApi": {
+      "passed": 1011,
+      "failed": 29,
+      "skipped": 9,
+      "seconds": 986.97
+    },
+    "managementCiMode": {
+      "passed": 46,
+      "skipped": 0
+    },
+    "sixFrozenFilesUnchanged": true,
+    "missingUrlFailsClosed": true,
+    "unreachableDatabaseFailsClosed": true
+  },
+  "i1Repair": {
+    "status": "pending original independent re-review",
+    "reverseRaceCases": 10,
+    "manifest": "i1-candidate.json"
+  }
+}

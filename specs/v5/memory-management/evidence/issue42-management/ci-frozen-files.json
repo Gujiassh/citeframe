@@ -1,0 +1,29 @@
+{
+  "sixFrozenFiles": {
+    "apps/api/src/ai_pdf_api/main.py": {
+      "sha256": "da153ec753c03628a68335d91f6e196d26f41cd11f0dc6b5a684858d11d06e1d",
+      "unchanged": true
+    },
+    "apps/api/src/ai_pdf_api/routers/memories.py": {
+      "sha256": "0047bcf26b7149b64b91bfe53c099c4d2b0d12c0d4c9038eda4c025d1dc667be",
+      "unchanged": true
+    },
+    "apps/api/src/ai_pdf_api/schemas/memory.py": {
+      "sha256": "cb61bc652e98999b1741557c32c136ad0e85fdc62921cff732436c0c5b723dda",
+      "unchanged": true
+    },
+    "apps/api/src/ai_pdf_api/services/memory_management.py": {
+      "sha256": "8f37f45c83267f57e959bcf0996f6dcf03dc77890c1a1c4881b9cf4f314657dd",
+      "unchanged": true
+    },
+    "packages/memory-service/src/citeframe_memory/management_queries.py": {
+      "sha256": "53464b1b938ba398f93e557d82b11146a1e1b5c86703f756f4903c27a1882598",
+      "unchanged": true
+    },
+    "apps/api/tests/test_memory_management.py": {
+      "sha256": "b1f677de7504f4841f15aa09d38d222762f06a7ca3fd50e592bb39d0c62497ae",
+      "unchanged": true
+    }
+  },
+  "workflowExactAuthorizedDiff": true
+}

@@ -1,0 +1,389 @@
+FFFs.............................s...................................... [  6%]
+........................................................................ [ 13%]
+........................................................................ [ 20%]
+........................................................................ [ 27%]
+........................................................................ [ 34%]
+.......................FF..FFFFFFFFFFFFFF.FFFFF..F...................... [ 41%]
+........................................................................ [ 48%]
+.........................................FF............................. [ 54%]
+........................................................................ [ 61%]
+.....................FF...................s............................. [ 68%]
+........................................................................ [ 75%]
+........................................................................ [ 82%]
+........................................................................ [ 89%]
+..........................................................ss............ [ 96%]
+.........................ssss............                                [100%]
+================================== FAILURES ===================================
+____________ test_a2a_historical_invariants_and_explicit_r2_delta _____________
+apps\api\tests\test_a2a_differential.py:38: in test_a2a_historical_invariants_and_explicit_r2_delta
+    assert completed.returncode == 0, completed.stdout
+E   AssertionError: a2a_differential status=error detail=[WinError 5] 拒绝访问。
+E     
+E   assert 2 == 0
+E    +  where 2 = CompletedProcess(args=['D:\\Code\\citeframe\\apps\\api\\.venv\\Scripts\\python.exe', 'D:\\Code\\citeframe-lanes\\issue...invariants0\\a2a-differential.json'], returncode=2, stdout='a2a_differential status=error detail=[WinError 5] 拒绝访问。\n').returncode
+_________ test_candidate_api_facade_composition_mutation_fails_closed _________
+apps\api\tests\test_a2a_differential.py:161: in test_candidate_api_facade_composition_mutation_fails_closed
+    assert "candidate probe failed" in completed.stdout
+E   AssertionError: assert 'candidate probe failed' in 'a2a_differential status=error detail=[WinError 5] 拒绝访问。\n'
+E    +  where 'a2a_differential status=error detail=[WinError 5] 拒绝访问。\n' = CompletedProcess(args=['D:\\Code\\citeframe\\apps\\api\\.venv\\Scripts\\python.exe', 'D:\\Code\\citeframe-lanes\\issue...e-mutation', 'candidate-api-facade'], returncode=2, stdout='a2a_differential status=error detail=[WinError 5] 拒绝访问。\n').stdout
+_________ test_exact_worker_sync_removes_real_pytest_plugin_pollution _________
+apps\api\tests\test_a2a_differential.py:242: in test_exact_worker_sync_removes_real_pytest_plugin_pollution
+    subprocess.run(
+C:\Users\baiao\AppData\Roaming\uv\python\cpython-3.12.14-windows-x86_64-none\Lib\subprocess.py:548: in run
+    with Popen(*popenargs, **kwargs) as process:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+C:\Users\baiao\AppData\Roaming\uv\python\cpython-3.12.14-windows-x86_64-none\Lib\subprocess.py:1026: in __init__
+    self._execute_child(args, executable, preexec_fn, close_fds,
+C:\Users\baiao\AppData\Roaming\uv\python\cpython-3.12.14-windows-x86_64-none\Lib\subprocess.py:1538: in _execute_child
+    hp, ht, pid, tid = _winapi.CreateProcess(executable, args,
+E   PermissionError: [WinError 5] 拒绝访问。
+______ test_m402_canonical_execution_report_matches_controlled_generator ______
+apps\api\tests\test_multimodal_execution.py:143: in test_m402_canonical_execution_report_matches_controlled_generator
+    report = build_multimodal_execution_report(
+apps\api\src\ai_pdf_api\services\multimodal_execution.py:506: in build_multimodal_execution_report
+    _validate_test_source(
+apps\api\src\ai_pdf_api\services\multimodal_execution.py:865: in _validate_test_source
+    raise QualityDataError(f"M402 test source hash drifted: {relative_path!r}.")
+E   ai_pdf_api.services.multimodal_quality.QualityDataError: M402 test source hash drifted: 'apps/worker/tests/test_multimodal_golden_execution.py'.
+______ test_m402_execution_report_accepts_worker_and_real_bff_artifacts _______
+apps\api\tests\test_multimodal_execution.py:165: in test_m402_execution_report_accepts_worker_and_real_bff_artifacts
+    report = build_multimodal_execution_report(
+apps\api\src\ai_pdf_api\services\multimodal_execution.py:506: in build_multimodal_execution_report
+    _validate_test_source(
+apps\api\src\ai_pdf_api\services\multimodal_execution.py:865: in _validate_test_source
+    raise QualityDataError(f"M402 test source hash drifted: {relative_path!r}.")
+E   ai_pdf_api.services.multimodal_quality.QualityDataError: M402 test source hash drifted: 'apps/worker/tests/test_multimodal_golden_execution.py'.
+_________ test_m402_execution_report_rejects_mocked_playwright_source _________
+apps\api\tests\test_multimodal_execution.py:258: in test_m402_execution_report_rejects_mocked_playwright_source
+    with pytest.raises(QualityDataError, match="must not intercept routes"):
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   AssertionError: Regex pattern did not match.
+E     Expected regex: 'must not intercept routes'
+E     Actual message: "M402 test source hash drifted: 'apps/worker/tests/test_multimodal_golden_execution.py'."
+____________ test_m402_execution_report_recomputes_golden_overlap _____________
+apps\api\tests\test_multimodal_execution.py:276: in test_m402_execution_report_recomputes_golden_overlap
+    with pytest.raises(QualityDataError, match="overlap result drifted"):
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   AssertionError: Regex pattern did not match.
+E     Expected regex: 'overlap result drifted'
+E     Actual message: "M402 test source hash drifted: 'apps/worker/tests/test_multimodal_golden_execution.py'."
+_____ test_m402_execution_report_independently_accepts_real_model_outputs _____
+apps\api\tests\test_multimodal_execution.py:291: in test_m402_execution_report_independently_accepts_real_model_outputs
+    report = build_multimodal_execution_report(
+apps\api\src\ai_pdf_api\services\multimodal_execution.py:506: in build_multimodal_execution_report
+    _validate_test_source(
+apps\api\src\ai_pdf_api\services\multimodal_execution.py:865: in _validate_test_source
+    raise QualityDataError(f"M402 test source hash drifted: {relative_path!r}.")
+E   ai_pdf_api.services.multimodal_quality.QualityDataError: M402 test source hash drifted: 'apps/worker/tests/test_multimodal_golden_execution.py'.
+____ test_m402_execution_report_ignores_stale_runner_semantic_diagnostics _____
+apps\api\tests\test_multimodal_execution.py:317: in test_m402_execution_report_ignores_stale_runner_semantic_diagnostics
+    report = build_multimodal_execution_report(
+apps\api\src\ai_pdf_api\services\multimodal_execution.py:506: in build_multimodal_execution_report
+    _validate_test_source(
+apps\api\src\ai_pdf_api\services\multimodal_execution.py:865: in _validate_test_source
+    raise QualityDataError(f"M402 test source hash drifted: {relative_path!r}.")
+E   ai_pdf_api.services.multimodal_quality.QualityDataError: M402 test source hash drifted: 'apps/worker/tests/test_multimodal_golden_execution.py'.
+_ test_m402_execution_report_rejects_semantically_opposite_outputs[answer-pdf-table-Atlas does not have a score of 91.4.] _
+apps\api\tests\test_multimodal_execution.py:365: in test_m402_execution_report_rejects_semantically_opposite_outputs
+    with pytest.raises(QualityDataError, match="answer oracle failed"):
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   AssertionError: Regex pattern did not match.
+E     Expected regex: 'answer oracle failed'
+E     Actual message: "M402 test source hash drifted: 'apps/worker/tests/test_multimodal_golden_execution.py'."
+_ test_m402_execution_report_rejects_semantically_opposite_outputs[answer-pdf-chart-The trend does not rise after the third point.] _
+apps\api\tests\test_multimodal_execution.py:365: in test_m402_execution_report_rejects_semantically_opposite_outputs
+    with pytest.raises(QualityDataError, match="answer oracle failed"):
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   AssertionError: Regex pattern did not match.
+E     Expected regex: 'answer oracle failed'
+E     Actual message: "M402 test source hash drifted: 'apps/worker/tests/test_multimodal_golden_execution.py'."
+_ test_m402_execution_report_rejects_semantically_opposite_outputs[answer-image-trend-Release 4 begins a sustained increase, not a sustained drop.] _
+apps\api\tests\test_multimodal_execution.py:365: in test_m402_execution_report_rejects_semantically_opposite_outputs
+    with pytest.raises(QualityDataError, match="answer oracle failed"):
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   AssertionError: Regex pattern did not match.
+E     Expected regex: 'answer oracle failed'
+E     Actual message: "M402 test source hash drifted: 'apps/worker/tests/test_multimodal_golden_execution.py'."
+_ test_m402_execution_report_rejects_semantically_opposite_outputs[answer-image-constraint-Verify the chart and caption separately, not together.] _
+apps\api\tests\test_multimodal_execution.py:365: in test_m402_execution_report_rejects_semantically_opposite_outputs
+    with pytest.raises(QualityDataError, match="answer oracle failed"):
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   AssertionError: Regex pattern did not match.
+E     Expected regex: 'answer oracle failed'
+E     Actual message: "M402 test source hash drifted: 'apps/worker/tests/test_multimodal_golden_execution.py'."
+_ test_m402_execution_report_rejects_semantically_opposite_outputs[answer-mixed-compare-The PDF says Release 4 begins a sustained drop. The image trend rises after the third point.] _
+apps\api\tests\test_multimodal_execution.py:365: in test_m402_execution_report_rejects_semantically_opposite_outputs
+    with pytest.raises(QualityDataError, match="answer oracle failed"):
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   AssertionError: Regex pattern did not match.
+E     Expected regex: 'answer oracle failed'
+E     Actual message: "M402 test source hash drifted: 'apps/worker/tests/test_multimodal_golden_execution.py'."
+_ test_m402_execution_report_rejects_semantically_opposite_outputs[answer-refuse-pdf-Atlas consumes 42 kWh, although that value is not mentioned in the fixtures.] _
+apps\api\tests\test_multimodal_execution.py:365: in test_m402_execution_report_rejects_semantically_opposite_outputs
+    with pytest.raises(QualityDataError, match="answer oracle failed"):
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   AssertionError: Regex pattern did not match.
+E     Expected regex: 'answer oracle failed'
+E     Actual message: "M402 test source hash drifted: 'apps/worker/tests/test_multimodal_golden_execution.py'."
+_ test_m402_execution_report_rejects_semantically_opposite_outputs[answer-refuse-mixed-The approving production customer was Acme, although it is not mentioned in the fixtures.] _
+apps\api\tests\test_multimodal_execution.py:365: in test_m402_execution_report_rejects_semantically_opposite_outputs
+    with pytest.raises(QualityDataError, match="answer oracle failed"):
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   AssertionError: Regex pattern did not match.
+E     Expected regex: 'answer oracle failed'
+E     Actual message: "M402 test source hash drifted: 'apps/worker/tests/test_multimodal_golden_execution.py'."
+_______ test_m402_execution_report_rejects_nonproduction_prompt_fixture _______
+apps\api\tests\test_multimodal_execution.py:390: in test_m402_execution_report_rejects_nonproduction_prompt_fixture
+    with pytest.raises(QualityDataError, match="production Chat prompt contract"):
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   AssertionError: Regex pattern did not match.
+E     Expected regex: 'production Chat prompt contract'
+E     Actual message: "M402 test source hash drifted: 'apps/worker/tests/test_multimodal_golden_execution.py'."
+_______ test_m402_execution_report_rejects_provider_configuration_drift _______
+apps\api\tests\test_multimodal_execution.py:408: in test_m402_execution_report_rejects_provider_configuration_drift
+    with pytest.raises(QualityDataError, match="provider configuration drifted"):
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   AssertionError: Regex pattern did not match.
+E     Expected regex: 'provider configuration drifted'
+E     Actual message: "M402 test source hash drifted: 'apps/worker/tests/test_multimodal_golden_execution.py'."
+____________ test_m402_execution_report_rejects_forged_prompt_hash ____________
+apps\api\tests\test_multimodal_execution.py:426: in test_m402_execution_report_rejects_forged_prompt_hash
+    with pytest.raises(QualityDataError, match="prompt hash drifted"):
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   AssertionError: Regex pattern did not match.
+E     Expected regex: 'prompt hash drifted'
+E     Actual message: "M402 test source hash drifted: 'apps/worker/tests/test_multimodal_golden_execution.py'."
+______ test_m402_frozen_worker_artifact_accepted_via_provenance_contract ______
+apps\api\tests\test_multimodal_execution.py:514: in test_m402_frozen_worker_artifact_accepted_via_provenance_contract
+    report = build_multimodal_execution_report(
+apps\api\src\ai_pdf_api\services\multimodal_execution.py:506: in build_multimodal_execution_report
+    _validate_test_source(
+apps\api\src\ai_pdf_api\services\multimodal_execution.py:865: in _validate_test_source
+    raise QualityDataError(f"M402 test source hash drifted: {relative_path!r}.")
+E   ai_pdf_api.services.multimodal_quality.QualityDataError: M402 test source hash drifted: 'apps/worker/tests/test_multimodal_golden_execution.py'.
+____ test_m402_frozen_real_model_artifact_accepted_via_provenance_contract ____
+apps\api\tests\test_multimodal_execution.py:532: in test_m402_frozen_real_model_artifact_accepted_via_provenance_contract
+    report = build_multimodal_execution_report(
+apps\api\src\ai_pdf_api\services\multimodal_execution.py:506: in build_multimodal_execution_report
+    _validate_test_source(
+apps\api\src\ai_pdf_api\services\multimodal_execution.py:865: in _validate_test_source
+    raise QualityDataError(f"M402 test source hash drifted: {relative_path!r}.")
+E   ai_pdf_api.services.multimodal_quality.QualityDataError: M402 test source hash drifted: 'apps/worker/tests/test_multimodal_golden_execution.py'.
+____ test_m402_current_generated_real_model_payload_uses_live_source_hash _____
+apps\api\tests\test_multimodal_execution.py:557: in test_m402_current_generated_real_model_payload_uses_live_source_hash
+    report = build_multimodal_execution_report(
+apps\api\src\ai_pdf_api\services\multimodal_execution.py:506: in build_multimodal_execution_report
+    _validate_test_source(
+apps\api\src\ai_pdf_api\services\multimodal_execution.py:865: in _validate_test_source
+    raise QualityDataError(f"M402 test source hash drifted: {relative_path!r}.")
+E   ai_pdf_api.services.multimodal_quality.QualityDataError: M402 test source hash drifted: 'apps/worker/tests/test_multimodal_golden_execution.py'.
+_ test_m402_report_rejects_screenshot_path_colliding_with_execution_artifact __
+apps\api\tests\test_multimodal_execution.py:576: in test_m402_report_rejects_screenshot_path_colliding_with_execution_artifact
+    with pytest.raises(QualityDataError, match="duplicate artifact path|artifact path collision"):
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   AssertionError: Regex pattern did not match.
+E     Expected regex: 'duplicate artifact path|artifact path collision'
+E     Actual message: "M402 test source hash drifted: 'apps/worker/tests/test_multimodal_golden_execution.py'."
+_______ test_m402_report_binds_execution_artifact_to_first_parsed_bytes _______
+apps\api\tests\test_multimodal_execution.py:611: in test_m402_report_binds_execution_artifact_to_first_parsed_bytes
+    report = build_multimodal_execution_report(
+apps\api\src\ai_pdf_api\services\multimodal_execution.py:506: in build_multimodal_execution_report
+    _validate_test_source(
+apps\api\src\ai_pdf_api\services\multimodal_execution.py:865: in _validate_test_source
+    raise QualityDataError(f"M402 test source hash drifted: {relative_path!r}.")
+E   ai_pdf_api.services.multimodal_quality.QualityDataError: M402 test source hash drifted: 'apps/worker/tests/test_multimodal_golden_execution.py'.
+_______________ test_m402_copied_frozen_artifact_path_rejected ________________
+apps\api\tests\test_multimodal_execution.py:723: in test_m402_copied_frozen_artifact_path_rejected
+    assert sha256(original).hexdigest() == FROZEN_WORKER_ARTIFACT_SHA256
+E   AssertionError: assert '4eec7df5d843...87030c08a6444' == '10f59a464ba2...1341d7dbb58a6'
+E     
+E     - 10f59a464ba216e959cefa067295ba13f1346b13023f62aa7951341d7dbb58a6
+E     + 4eec7df5d8430b516c4b7941e47893cfd67eed71fd4717e256e87030c08a6444
+_________ test_r100_fixture_scorer_and_quick_baseline_are_replayable __________
+apps\api\tests\test_r100_research_eval.py:16: in test_r100_fixture_scorer_and_quick_baseline_are_replayable
+    report = evaluate(CASES, BASELINE)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+apps\api\src\ai_pdf_api\services\r100_evaluation.py:132: in evaluate
+    cases = _validate_cases(_load(cases_path))
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+apps\api\src\ai_pdf_api\services\r100_evaluation.py:49: in _validate_cases
+    raise R100DataError("Reference failure taxonomy hash mismatch")
+E   ai_pdf_api.services.r100_evaluation.R100DataError: Reference failure taxonomy hash mismatch
+_____________ test_r100_refusal_case_rejects_forbidden_claim_text _____________
+apps\api\tests\test_r100_research_eval.py:35: in test_r100_refusal_case_rejects_forbidden_claim_text
+    report = evaluate(CASES, path)
+             ^^^^^^^^^^^^^^^^^^^^^
+apps\api\src\ai_pdf_api\services\r100_evaluation.py:132: in evaluate
+    cases = _validate_cases(_load(cases_path))
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+apps\api\src\ai_pdf_api\services\r100_evaluation.py:49: in _validate_cases
+    raise R100DataError("Reference failure taxonomy hash mismatch")
+E   ai_pdf_api.services.r100_evaluation.R100DataError: Reference failure taxonomy hash mismatch
+____________ test_automatic_plan_production_event_consumed_by_web _____________
+apps\api\tests\test_research_policy_sse.py:25: in test_automatic_plan_production_event_consumed_by_web
+    assert "plan_approval" in consume(db, run.id, tmp_path)
+                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+apps\api\tests\test_research_policy_sse.py:18: in consume
+    assert result.returncode == 0, result.stdout + result.stderr
+E   AssertionError: node:internal/modules/package_json_reader:301
+E       throw new ERR_MODULE_NOT_FOUND(packageName, fileURLToPath(base), null);
+E             ^
+E     
+E     Error [ERR_MODULE_NOT_FOUND]: Cannot find package 'tsx' imported from D:\Code\citeframe-lanes\issue42-management\apps\web\
+E         at Object.getPackageJSONURL (node:internal/modules/package_json_reader:301:9)
+E         at packageResolve (node:internal/modules/esm/resolve:768:81)
+E         at moduleResolve (node:internal/modules/esm/resolve:859:18)
+E         at defaultResolve (node:internal/modules/esm/resolve:992:11)
+E         at #cachedDefaultResolve (node:internal/modules/esm/loader:701:20)
+E         at #resolveAndMaybeBlockOnLoaderThread (node:internal/modules/esm/loader:721:38)
+E         at ModuleLoader.resolveSync (node:internal/modules/esm/loader:759:56)
+E         at #resolve (node:internal/modules/esm/loader:683:17)
+E         at ModuleLoader.getOrCreateModuleJob (node:internal/modules/esm/loader:603:35)
+E         at node:internal/modules/esm/loader:632:32 {
+E       code: 'ERR_MODULE_NOT_FOUND'
+E     }
+E     
+E     Node.js v24.19.0
+E     
+E   assert 1 == 0
+E    +  where 1 = CompletedProcess(args=['C:\\Program Files\\nodejs\\node.EXE', '--import', 'tsx', 'scripts/check-research-sse.mjs', 'D:...er:603:35)\n    at node:internal/modules/esm/loader:632:32 {\n  code: 'ERR_MODULE_NOT_FOUND'\n}\n\nNode.js v24.19.0\n").returncode
+__________ test_automatic_conflict_production_event_consumed_by_web ___________
+apps\api\tests\test_research_policy_sse.py:30: in test_automatic_conflict_production_event_consumed_by_web
+    assert "conflict_resolution" in consume(research_worker_db.db, research_worker_db.run.id, tmp_path)
+                                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+apps\api\tests\test_research_policy_sse.py:18: in consume
+    assert result.returncode == 0, result.stdout + result.stderr
+E   AssertionError: node:internal/modules/package_json_reader:301
+E       throw new ERR_MODULE_NOT_FOUND(packageName, fileURLToPath(base), null);
+E             ^
+E     
+E     Error [ERR_MODULE_NOT_FOUND]: Cannot find package 'tsx' imported from D:\Code\citeframe-lanes\issue42-management\apps\web\
+E         at Object.getPackageJSONURL (node:internal/modules/package_json_reader:301:9)
+E         at packageResolve (node:internal/modules/esm/resolve:768:81)
+E         at moduleResolve (node:internal/modules/esm/resolve:859:18)
+E         at defaultResolve (node:internal/modules/esm/resolve:992:11)
+E         at #cachedDefaultResolve (node:internal/modules/esm/loader:701:20)
+E         at #resolveAndMaybeBlockOnLoaderThread (node:internal/modules/esm/loader:721:38)
+E         at ModuleLoader.resolveSync (node:internal/modules/esm/loader:759:56)
+E         at #resolve (node:internal/modules/esm/loader:683:17)
+E         at ModuleLoader.getOrCreateModuleJob (node:internal/modules/esm/loader:603:35)
+E         at node:internal/modules/esm/loader:632:32 {
+E       code: 'ERR_MODULE_NOT_FOUND'
+E     }
+E     
+E     Node.js v24.19.0
+E     
+E   assert 1 == 0
+E    +  where 1 = CompletedProcess(args=['C:\\Program Files\\nodejs\\node.EXE', '--import', 'tsx', 'scripts/check-research-sse.mjs', 'D:...er:603:35)\n    at node:internal/modules/esm/loader:632:32 {\n  code: 'ERR_MODULE_NOT_FOUND'\n}\n\nNode.js v24.19.0\n").returncode
+============================== warnings summary ===============================
+..\..\citeframe\apps\api\.venv\Lib\site-packages\fastapi\testclient.py:1
+  D:\Code\citeframe\apps\api\.venv\Lib\site-packages\fastapi\testclient.py:1: StarletteDeprecationWarning: Using `httpx` with `starlette.testclient` is deprecated; install `httpx2` instead.
+    from starlette.testclient import TestClient as TestClient  # noqa
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ===========================
+FAILED apps/api/tests/test_a2a_differential.py::test_a2a_historical_invariants_and_explicit_r2_delta - AssertionError: a2a_differential status=error detail=[WinError 5] 拒绝访问。
+  
+assert 2 == 0
+ +  where 2 = CompletedProcess(args=['D:\\Code\\citeframe\\apps\\api\\.venv\\Scripts\\python.exe', 'D:\\Code\\citeframe-lanes\\issue...invariants0\\a2a-differential.json'], returncode=2, stdout='a2a_differential status=error detail=[WinError 5] 拒绝访问。\n').returncode
+FAILED apps/api/tests/test_a2a_differential.py::test_candidate_api_facade_composition_mutation_fails_closed - AssertionError: assert 'candidate probe failed' in 'a2a_differential status=error detail=[WinError 5] 拒绝访问。\n'
+ +  where 'a2a_differential status=error detail=[WinError 5] 拒绝访问。\n' = CompletedProcess(args=['D:\\Code\\citeframe\\apps\\api\\.venv\\Scripts\\python.exe', 'D:\\Code\\citeframe-lanes\\issue...e-mutation', 'candidate-api-facade'], returncode=2, stdout='a2a_differential status=error detail=[WinError 5] 拒绝访问。\n').stdout
+FAILED apps/api/tests/test_a2a_differential.py::test_exact_worker_sync_removes_real_pytest_plugin_pollution - PermissionError: [WinError 5] 拒绝访问。
+FAILED apps/api/tests/test_multimodal_execution.py::test_m402_canonical_execution_report_matches_controlled_generator - ai_pdf_api.services.multimodal_quality.QualityDataError: M402 test source hash drifted: 'apps/worker/tests/test_multimodal_golden_execution.py'.
+FAILED apps/api/tests/test_multimodal_execution.py::test_m402_execution_report_accepts_worker_and_real_bff_artifacts - ai_pdf_api.services.multimodal_quality.QualityDataError: M402 test source hash drifted: 'apps/worker/tests/test_multimodal_golden_execution.py'.
+FAILED apps/api/tests/test_multimodal_execution.py::test_m402_execution_report_rejects_mocked_playwright_source - AssertionError: Regex pattern did not match.
+  Expected regex: 'must not intercept routes'
+  Actual message: "M402 test source hash drifted: 'apps/worker/tests/test_multimodal_golden_execution.py'."
+FAILED apps/api/tests/test_multimodal_execution.py::test_m402_execution_report_recomputes_golden_overlap - AssertionError: Regex pattern did not match.
+  Expected regex: 'overlap result drifted'
+  Actual message: "M402 test source hash drifted: 'apps/worker/tests/test_multimodal_golden_execution.py'."
+FAILED apps/api/tests/test_multimodal_execution.py::test_m402_execution_report_independently_accepts_real_model_outputs - ai_pdf_api.services.multimodal_quality.QualityDataError: M402 test source hash drifted: 'apps/worker/tests/test_multimodal_golden_execution.py'.
+FAILED apps/api/tests/test_multimodal_execution.py::test_m402_execution_report_ignores_stale_runner_semantic_diagnostics - ai_pdf_api.services.multimodal_quality.QualityDataError: M402 test source hash drifted: 'apps/worker/tests/test_multimodal_golden_execution.py'.
+FAILED apps/api/tests/test_multimodal_execution.py::test_m402_execution_report_rejects_semantically_opposite_outputs[answer-pdf-table-Atlas does not have a score of 91.4.] - AssertionError: Regex pattern did not match.
+  Expected regex: 'answer oracle failed'
+  Actual message: "M402 test source hash drifted: 'apps/worker/tests/test_multimodal_golden_execution.py'."
+FAILED apps/api/tests/test_multimodal_execution.py::test_m402_execution_report_rejects_semantically_opposite_outputs[answer-pdf-chart-The trend does not rise after the third point.] - AssertionError: Regex pattern did not match.
+  Expected regex: 'answer oracle failed'
+  Actual message: "M402 test source hash drifted: 'apps/worker/tests/test_multimodal_golden_execution.py'."
+FAILED apps/api/tests/test_multimodal_execution.py::test_m402_execution_report_rejects_semantically_opposite_outputs[answer-image-trend-Release 4 begins a sustained increase, not a sustained drop.] - AssertionError: Regex pattern did not match.
+  Expected regex: 'answer oracle failed'
+  Actual message: "M402 test source hash drifted: 'apps/worker/tests/test_multimodal_golden_execution.py'."
+FAILED apps/api/tests/test_multimodal_execution.py::test_m402_execution_report_rejects_semantically_opposite_outputs[answer-image-constraint-Verify the chart and caption separately, not together.] - AssertionError: Regex pattern did not match.
+  Expected regex: 'answer oracle failed'
+  Actual message: "M402 test source hash drifted: 'apps/worker/tests/test_multimodal_golden_execution.py'."
+FAILED apps/api/tests/test_multimodal_execution.py::test_m402_execution_report_rejects_semantically_opposite_outputs[answer-mixed-compare-The PDF says Release 4 begins a sustained drop. The image trend rises after the third point.] - AssertionError: Regex pattern did not match.
+  Expected regex: 'answer oracle failed'
+  Actual message: "M402 test source hash drifted: 'apps/worker/tests/test_multimodal_golden_execution.py'."
+FAILED apps/api/tests/test_multimodal_execution.py::test_m402_execution_report_rejects_semantically_opposite_outputs[answer-refuse-pdf-Atlas consumes 42 kWh, although that value is not mentioned in the fixtures.] - AssertionError: Regex pattern did not match.
+  Expected regex: 'answer oracle failed'
+  Actual message: "M402 test source hash drifted: 'apps/worker/tests/test_multimodal_golden_execution.py'."
+FAILED apps/api/tests/test_multimodal_execution.py::test_m402_execution_report_rejects_semantically_opposite_outputs[answer-refuse-mixed-The approving production customer was Acme, although it is not mentioned in the fixtures.] - AssertionError: Regex pattern did not match.
+  Expected regex: 'answer oracle failed'
+  Actual message: "M402 test source hash drifted: 'apps/worker/tests/test_multimodal_golden_execution.py'."
+FAILED apps/api/tests/test_multimodal_execution.py::test_m402_execution_report_rejects_nonproduction_prompt_fixture - AssertionError: Regex pattern did not match.
+  Expected regex: 'production Chat prompt contract'
+  Actual message: "M402 test source hash drifted: 'apps/worker/tests/test_multimodal_golden_execution.py'."
+FAILED apps/api/tests/test_multimodal_execution.py::test_m402_execution_report_rejects_provider_configuration_drift - AssertionError: Regex pattern did not match.
+  Expected regex: 'provider configuration drifted'
+  Actual message: "M402 test source hash drifted: 'apps/worker/tests/test_multimodal_golden_execution.py'."
+FAILED apps/api/tests/test_multimodal_execution.py::test_m402_execution_report_rejects_forged_prompt_hash - AssertionError: Regex pattern did not match.
+  Expected regex: 'prompt hash drifted'
+  Actual message: "M402 test source hash drifted: 'apps/worker/tests/test_multimodal_golden_execution.py'."
+FAILED apps/api/tests/test_multimodal_execution.py::test_m402_frozen_worker_artifact_accepted_via_provenance_contract - ai_pdf_api.services.multimodal_quality.QualityDataError: M402 test source hash drifted: 'apps/worker/tests/test_multimodal_golden_execution.py'.
+FAILED apps/api/tests/test_multimodal_execution.py::test_m402_frozen_real_model_artifact_accepted_via_provenance_contract - ai_pdf_api.services.multimodal_quality.QualityDataError: M402 test source hash drifted: 'apps/worker/tests/test_multimodal_golden_execution.py'.
+FAILED apps/api/tests/test_multimodal_execution.py::test_m402_current_generated_real_model_payload_uses_live_source_hash - ai_pdf_api.services.multimodal_quality.QualityDataError: M402 test source hash drifted: 'apps/worker/tests/test_multimodal_golden_execution.py'.
+FAILED apps/api/tests/test_multimodal_execution.py::test_m402_report_rejects_screenshot_path_colliding_with_execution_artifact - AssertionError: Regex pattern did not match.
+  Expected regex: 'duplicate artifact path|artifact path collision'
+  Actual message: "M402 test source hash drifted: 'apps/worker/tests/test_multimodal_golden_execution.py'."
+FAILED apps/api/tests/test_multimodal_execution.py::test_m402_report_binds_execution_artifact_to_first_parsed_bytes - ai_pdf_api.services.multimodal_quality.QualityDataError: M402 test source hash drifted: 'apps/worker/tests/test_multimodal_golden_execution.py'.
+FAILED apps/api/tests/test_multimodal_execution.py::test_m402_copied_frozen_artifact_path_rejected - AssertionError: assert '4eec7df5d843...87030c08a6444' == '10f59a464ba2...1341d7dbb58a6'
+  
+  - 10f59a464ba216e959cefa067295ba13f1346b13023f62aa7951341d7dbb58a6
+  + 4eec7df5d8430b516c4b7941e47893cfd67eed71fd4717e256e87030c08a6444
+FAILED apps/api/tests/test_r100_research_eval.py::test_r100_fixture_scorer_and_quick_baseline_are_replayable - ai_pdf_api.services.r100_evaluation.R100DataError: Reference failure taxonomy hash mismatch
+FAILED apps/api/tests/test_r100_research_eval.py::test_r100_refusal_case_rejects_forbidden_claim_text - ai_pdf_api.services.r100_evaluation.R100DataError: Reference failure taxonomy hash mismatch
+FAILED apps/api/tests/test_research_policy_sse.py::test_automatic_plan_production_event_consumed_by_web - AssertionError: node:internal/modules/package_json_reader:301
+    throw new ERR_MODULE_NOT_FOUND(packageName, fileURLToPath(base), null);
+          ^
+  
+  Error [ERR_MODULE_NOT_FOUND]: Cannot find package 'tsx' imported from D:\Code\citeframe-lanes\issue42-management\apps\web\
+      at Object.getPackageJSONURL (node:internal/modules/package_json_reader:301:9)
+      at packageResolve (node:internal/modules/esm/resolve:768:81)
+      at moduleResolve (node:internal/modules/esm/resolve:859:18)
+      at defaultResolve (node:internal/modules/esm/resolve:992:11)
+      at #cachedDefaultResolve (node:internal/modules/esm/loader:701:20)
+      at #resolveAndMaybeBlockOnLoaderThread (node:internal/modules/esm/loader:721:38)
+      at ModuleLoader.resolveSync (node:internal/modules/esm/loader:759:56)
+      at #resolve (node:internal/modules/esm/loader:683:17)
+      at ModuleLoader.getOrCreateModuleJob (node:internal/modules/esm/loader:603:35)
+      at node:internal/modules/esm/loader:632:32 {
+    code: 'ERR_MODULE_NOT_FOUND'
+  }
+  
+  Node.js v24.19.0
+  
+assert 1 == 0
+ +  where 1 = CompletedProcess(args=['C:\\Program Files\\nodejs\\node.EXE', '--import', 'tsx', 'scripts/check-research-sse.mjs', 'D:...er:603:35)\n    at node:internal/modules/esm/loader:632:32 {\n  code: 'ERR_MODULE_NOT_FOUND'\n}\n\nNode.js v24.19.0\n").returncode
+FAILED apps/api/tests/test_research_policy_sse.py::test_automatic_conflict_production_event_consumed_by_web - AssertionError: node:internal/modules/package_json_reader:301
+    throw new ERR_MODULE_NOT_FOUND(packageName, fileURLToPath(base), null);
+          ^
+  
+  Error [ERR_MODULE_NOT_FOUND]: Cannot find package 'tsx' imported from D:\Code\citeframe-lanes\issue42-management\apps\web\
+      at Object.getPackageJSONURL (node:internal/modules/package_json_reader:301:9)
+      at packageResolve (node:internal/modules/esm/resolve:768:81)
+      at moduleResolve (node:internal/modules/esm/resolve:859:18)
+      at defaultResolve (node:internal/modules/esm/resolve:992:11)
+      at #cachedDefaultResolve (node:internal/modules/esm/loader:701:20)
+      at #resolveAndMaybeBlockOnLoaderThread (node:internal/modules/esm/loader:721:38)
+      at ModuleLoader.resolveSync (node:internal/modules/esm/loader:759:56)
+      at #resolve (node:internal/modules/esm/loader:683:17)
+      at ModuleLoader.getOrCreateModuleJob (node:internal/modules/esm/loader:603:35)
+      at node:internal/modules/esm/loader:632:32 {
+    code: 'ERR_MODULE_NOT_FOUND'
+  }
+  
+  Node.js v24.19.0
+  
+assert 1 == 0
+ +  where 1 = CompletedProcess(args=['C:\\Program Files\\nodejs\\node.EXE', '--import', 'tsx', 'scripts/check-research-sse.mjs', 'D:...er:603:35)\n    at node:internal/modules/esm/loader:632:32 {\n  code: 'ERR_MODULE_NOT_FOUND'\n}\n\nNode.js v24.19.0\n").returncode
+29 failed, 1011 passed, 9 skipped, 1 warning in 986.97s (0:16:26)
