@@ -1,0 +1,7 @@
+# Chat runtime ownership and fixed integration baseline
+
+Worktree D:/Code/citeframe-lanes/issue44-provider, branch work/issue44-chat-runtime, fixed HEADb0e30fb24d3c119573ea7a5d1a7b1607da2fc602 combines PR49accepted812ebb1 and exact unmerged PR47candidate1b9e1168. Original PR49branch stays812ebb1. Both original agents were completed and tree clean before controller branch transition; no old/historical/canonical workspace changed.
+
+Sole developer agt_1a6e6798 astra medium; independent reviewer agt_1b9ce005 astra high. Hegel authorized isolated routers/chat.py narrow integration conditional on exact lease registration; services/chat.py is not #40-owned. Router permission dependency/validation priority/workspace resource checks and mode1 contracts stay unchanged. No deps or other #40files authoring. #43 retains all atomic checkpoint/journal/source/DTO/model/migration ownership. Any cross-owner ABI amendment must be exact and independently reviewed first.
+
+Runtime design must align actual accepted #43 gate/authorize_send/receipt/profile/policy interfaces, lawful whole-reader source retrieval and legacy multimodal input/counting; no private inputs or inferred long-term candidates. No current generic engine/placeholder/dummy authority or activation grant. The already accepted terminal helper remains a nonpublishing prerequisite only. Final merge requires actual PR47/48/49 merge lineage and revalidation, never treating this candidate as main.
