@@ -6,6 +6,7 @@
 - `system-architecture.md`：系统架构、服务边界、模型/provider 与关键链路
 - `upload-queue.md`：多文件上传队列、工作空间归属与本地生命周期
 - `worker-layout.md`：Worker 职责目录、离线评测边界与路径迁移入口
+- `workspace-access.md`：FastAPI Workspace typed access、校验顺序、请求缓存与资源隔离边界
 - `project-collaboration.md`：协作约定、开发边界与验证要求
 
 当前主动路线与任务入口：

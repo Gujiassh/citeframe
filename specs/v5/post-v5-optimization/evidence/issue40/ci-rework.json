@@ -1,0 +1,75 @@
+{
+  "candidate": "635bb2b8703ae6c77fee5cb28d08d852bd67b7ae",
+  "baselineSource": {
+    "base": "8812fda4d69b7f0e654e749c357fa05b5e8da72f",
+    "sha256": {
+      "apps/api/src/ai_pdf_api/routers/deps.py": "49deb3802d879924fd2c705655225f68292aa3b34a6109139cc8c7ebfaa0736b",
+      "apps/api/src/ai_pdf_api/routers/jobs.py": "afe392ee9ab9ffc7db0ee49cc260ad2140f76600b6becdc59c846cdb1c0fe40c",
+      "apps/api/src/ai_pdf_api/routers/model_settings.py": "394243db02ca06135eb4abb58b7d03a3d38eb01cd0acf638672aef586230ba85",
+      "apps/api/src/ai_pdf_api/routers/workspaces.py": "6ab4b8f1c9cc7fa2ff7054232322b4e6f22fab526a8fecf008b5ddbfa3cbfc1b",
+      "apps/api/src/ai_pdf_api/routers/assets.py": "70bdb8efc4f9911d072af57c78ac1309d89ccaa1d5269214ff79cff4b382c8a7",
+      "apps/api/src/ai_pdf_api/routers/chat.py": "9c9c2cbcfae8948c653c1dc39cc9e9989dd0b7ea5e8c90d95b24dde205c760a9",
+      "apps/api/src/ai_pdf_api/routers/notes.py": "7bb30b5745ca5a83ed49aa3d49693d14ef15999910d7a93da7eb22ad0315e6f2",
+      "apps/api/src/ai_pdf_api/routers/research.py": "a6349b6f13e8676feb38e7a46558a87977b0222d76cc759ce06318abe205c7b7",
+      "apps/api/src/ai_pdf_api/routers/evaluation.py": "55b116930ecb54b5a9eb5a634da5bed4ac8760ebf67383c5b9de424c06fc9a20"
+    }
+  },
+  "diagnosis": {
+    "oracle": "SQLite discarded fixed fixture timezone metadata; DTO astimezone(UTC) interpreted naive values in host timezone. Fixture now restores only its exact known UTC timestamps on ORM load/refresh. Product timestamp conversion and response normalization unchanged.",
+    "worker": "Direct delete_asset caller passed user ID in the new WorkspaceAccess argument. Test now invokes require_delete_asset_access before the existing handler and retains all lifecycle assertions."
+  },
+  "oracle": {
+    "baselineCases": 378,
+    "candidateCases": 378,
+    "exactMatch": true,
+    "changedPriorEvidenceCaseIndices": [
+      18,
+      19
+    ],
+    "onlyPriorEvidenceChange": "Fixture createdAt/updatedAt: 2026-09-27T16:00:00+00:00 -> 2026-09-28T00:00:00+00:00"
+  },
+  "commands": [
+    {
+      "command": "apps/api/.venv/Scripts/python.exe specs/v5/post-v5-optimization/evidence/issue40/http_oracle.py specs/v5/post-v5-optimization/evidence/issue40/http-baseline.json .local-runtime/artifacts/issue40-dev/ci-baseline-source",
+      "exit": 0,
+      "log": ".local-runtime/artifacts/issue40-dev/oracle-baseline-ci.log"
+    },
+    {
+      "command": "apps/api/.venv/Scripts/python.exe specs/v5/post-v5-optimization/evidence/issue40/http_oracle.py specs/v5/post-v5-optimization/evidence/issue40/http-after.json",
+      "exit": 0,
+      "log": ".local-runtime/artifacts/issue40-dev/oracle-candidate-ci.log"
+    },
+    {
+      "command": "apps/api/.venv/Scripts/python.exe -m pytest -c pytest.ini apps/api/tests/test_workspace_access_dependencies.py apps/api/tests/test_workspace_permission_precedence.py -q -p no:cacheprovider --basetemp=.local-runtime/artifacts/issue40-dev/api-ci-rework-02",
+      "exit": 0,
+      "passed": 11,
+      "skipped": 2,
+      "seconds": 22.41,
+      "log": ".local-runtime/artifacts/issue40-dev/api-ci-rework-02.log",
+      "skipReason": "UTC0/CST-8 process timezone switch requires POSIX time.tzset; native Windows UTC+8 case passed. Both switch cases run on Linux."
+    },
+    {
+      "command": "apps/worker/.venv/Scripts/python.exe -m pytest -c pytest.ini --strict-markers -m acceptance apps/worker/tests -q -p no:cacheprovider --basetemp=.local-runtime/artifacts/issue40-dev/worker-ci-rework-01",
+      "exit": 0,
+      "passed": 58,
+      "deselected": 411,
+      "seconds": 200.78,
+      "log": ".local-runtime/artifacts/issue40-dev/worker-ci-rework-01.log"
+    }
+  ],
+  "audit": {
+    "paths": [
+      "apps/worker",
+      "tools",
+      "infra"
+    ],
+    "result": "Only stale changed-router handler caller was delete_asset in test_v5b_mixed_workspace.py. Other imports are non-handler helpers build_ingest_job/to_citation and research router mounted by infra/testing/research_service_support.py. No top-level scripts directory exists."
+  },
+  "browser": "Controller recorded model revision4 save/reload and report save/new-tab persistence/two-tab conflict/draft recovery passed in .local-runtime/artifacts/issue40-controller-browser.md.",
+  "remaining": [
+    "CI rerun and independent final review",
+    "Pinned quay MinIO unauthorized in conflict-services/research-services; workflow/image source unchanged; controller coordination required",
+    "Controller merge/total delivery"
+  ],
+  "note": "Initial local focused test invocation used an incorrect precedence-test filename and collected no tests; corrected command above passed. Full API suite was not rerun in this bounded slice. Candidate Linux CI otherwise recorded 992 passed/6 skipped; prior five Windows environment failures passed there."
+}

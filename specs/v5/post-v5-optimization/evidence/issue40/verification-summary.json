@@ -1,0 +1,71 @@
+{
+  "base": "8812fda4d69b7f0e654e749c357fa05b5e8da72f",
+  "api": {
+    "command": "PGCONNECT_TIMEOUT=2 apps/api/.venv/Scripts/python.exe -u -m pytest -c pytest.ini apps/api/tests -q -p no:cacheprovider --basetemp=.local-runtime/artifacts/issue40-dev/api-final-02",
+    "passed": 983,
+    "failed": 5,
+    "skipped": 11,
+    "seconds": 708.74,
+    "failures": [
+      "apps/api/tests/test_a2a_differential.py::test_a2a_historical_invariants_and_explicit_r2_delta",
+      "apps/api/tests/test_a2a_differential.py::test_candidate_api_facade_composition_mutation_fails_closed",
+      "apps/api/tests/test_a2a_differential.py::test_exact_worker_sync_removes_real_pytest_plugin_pollution",
+      "apps/api/tests/test_research_policy_sse.py::test_automatic_plan_production_event_consumed_by_web",
+      "apps/api/tests/test_research_policy_sse.py::test_automatic_conflict_production_event_consumed_by_web"
+    ],
+    "skips": [
+      "apps/api/tests/test_a2a_differential_probe.py::test_generate_executable_differential_report",
+      "apps/api/tests/test_asset_migration.py::test_image_enable_migration_round_trip",
+      "apps/api/tests/test_asset_migration.py::test_postgres_asset_migration_preserves_legacy_evidence_contract",
+      "apps/api/tests/test_asset_migration.py::test_embedding_scope_migration_rejects_cross_workspace_backfill",
+      "apps/api/tests/test_asset_migration.py::test_document_modality_migration_round_trip",
+      "apps/api/tests/test_multimodal_retrieval.py::test_postgresql_mixed_retrieval_matches_sqlite_oracle",
+      "apps/api/tests/test_research_publication_intent_migration.py::test_publication_intent_migration_upgrades_and_downgrades_real_postgresql",
+      "apps/api/tests/test_workspace_models_postgres.py::test_atomic_pair_read_interleaved_with_committed_pair_save",
+      "apps/api/tests/test_workspace_models_postgres.py::test_concurrent_revision_write_blocks_then_conflicts",
+      "apps/api/tests/test_workspace_models_postgres.py::test_save_before_reservation_blocks_then_drift_sends_nothing",
+      "apps/api/tests/test_workspace_models_postgres.py::test_reserved_call_survives_save_before_mark_sent_using_captured_credentials"
+    ],
+    "log": ".local-runtime/artifacts/issue40-dev/api-final-02.log"
+  },
+  "baseline_environment_replay": {
+    "failed": 5,
+    "same_test_failures": true,
+    "log": ".local-runtime/artifacts/issue40-dev/baseline-environment-01.log"
+  },
+  "worker_runtime": {
+    "passed": 35,
+    "seconds": 110.26,
+    "log": ".local-runtime/artifacts/issue40-dev/worker-03.log"
+  },
+  "research_recovery_report_revocation": {
+    "passed": 47
+  },
+  "isolated_http_oracle_and_access_tests": {
+    "passed": 10,
+    "seconds": 21.45
+  },
+  "live_api": {
+    "checks": 35,
+    "db_object_snapshot_unchanged_on_rejections": true,
+    "final_source_restart_verified": true,
+    "log": ".local-runtime/artifacts/issue40-dev/runtime/api-final.out.log"
+  },
+  "pdf_runtime": {
+    "checks": 4,
+    "content_hashes_match": true
+  },
+  "openapi": {
+    "operations": 64,
+    "matched": true
+  },
+  "browser_walkthrough": "controller-owned; open",
+  "git_commit": "blocked creating .git/index.lock: Permission denied; none created",
+  "synthetic_provenance_repair": {
+    "full_domain_validator": "pass",
+    "successful_live_reads": 6,
+    "product_validator_unchanged": true,
+    "evidence": "provenance-repair.json"
+  },
+  "reviewed_product_digest_unchanged": "4dd71da985aa47bb8ea6f3be8ae0ade44978e4efcd1b16bbeb28f3ede02e3349"
+}

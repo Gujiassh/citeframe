@@ -1,0 +1,485 @@
+{
+  "fixture": "isolated synthetic issue40 PostgreSQL and MinIO; no model calls",
+  "rejectedWriteSnapshot": "all database rows and object names/etags/sizes unchanged",
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/v1/workspaces/8d9936f0-e1ca-41b6-8015-16d48bdb794c",
+      "actor": "owner",
+      "status": 200,
+      "response": {
+        "workspace": {
+          "id": "8d9936f0-e1ca-41b6-8015-16d48bdb794c",
+          "name": "Synthetic Issue40 Workspace A",
+          "description": "Isolated permission acceptance fixture; no model calls.",
+          "systemPrompt": "Synthetic Issue40 browser acceptance. Answer only from supplied evidence.",
+          "retrievalTopK": 6,
+          "chunkSize": 1200,
+          "embeddingProvider": "ollama",
+          "embeddingModel": "text-embedding-3-small",
+          "embeddingDimensions": 1024,
+          "embeddingVersion": "embedding-v1",
+          "generationProvider": "openai",
+          "generationModel": "gpt-5.5",
+          "role": "owner",
+          "assetCount": 1,
+          "noteCount": 1,
+          "threadCount": 1,
+          "createdAt": "2026-09-28T08:37:51.871045+00:00",
+          "updatedAt": "2026-09-28T08:51:39.821516+00:00"
+        }
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/v1/workspaces/8d9936f0-e1ca-41b6-8015-16d48bdb794c/jobs/7b609ee0-2f77-4276-9446-7c130f3055cb",
+      "actor": "owner",
+      "status": 200,
+      "response": {
+        "job": {
+          "id": "7b609ee0-2f77-4276-9446-7c130f3055cb",
+          "workspaceId": "8d9936f0-e1ca-41b6-8015-16d48bdb794c",
+          "assetId": "c6074ef8-8851-455b-87f9-609d8408159d",
+          "jobType": "ingest",
+          "status": "completed",
+          "attemptCount": 1,
+          "queuedAt": "2026-09-28T08:37:52.085030+00:00",
+          "startedAt": null,
+          "finishedAt": "2026-09-28T08:37:52.084023+00:00",
+          "errorCode": null,
+          "errorMessage": null
+        }
+      }
+    },
+    {
+      "method": "PATCH",
+      "path": "/v1/workspaces/8d9936f0-e1ca-41b6-8015-16d48bdb794c/notes/e10ca0a1-4045-4797-9a34-13c74b35dcec",
+      "actor": "owner",
+      "status": 200,
+      "response": {
+        "note": {
+          "id": "e10ca0a1-4045-4797-9a34-13c74b35dcec",
+          "workspaceId": "8d9936f0-e1ca-41b6-8015-16d48bdb794c",
+          "title": "Synthetic Issue40 A note",
+          "bodyMd": "# Synthetic Issue40 A\nSaved through the live permission dependency.",
+          "isPinned": false,
+          "createdAt": "2026-09-28T08:37:52.043690+00:00",
+          "updatedAt": "2026-09-28T09:12:54.678912+00:00",
+          "sources": [],
+          "tagIds": [],
+          "tags": []
+        }
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/v1/workspaces/8d9936f0-e1ca-41b6-8015-16d48bdb794c/notes/e10ca0a1-4045-4797-9a34-13c74b35dcec",
+      "actor": "owner",
+      "status": 200,
+      "response": {
+        "note": {
+          "id": "e10ca0a1-4045-4797-9a34-13c74b35dcec",
+          "workspaceId": "8d9936f0-e1ca-41b6-8015-16d48bdb794c",
+          "title": "Synthetic Issue40 A note",
+          "bodyMd": "# Synthetic Issue40 A\nSaved through the live permission dependency.",
+          "isPinned": false,
+          "createdAt": "2026-09-28T08:37:52.043690+00:00",
+          "updatedAt": "2026-09-28T09:12:54.678912+00:00",
+          "sources": [],
+          "tagIds": [],
+          "tags": []
+        }
+      }
+    },
+    {
+      "method": "PATCH",
+      "path": "/v1/workspaces/8d9936f0-e1ca-41b6-8015-16d48bdb794c/model-settings",
+      "actor": "owner",
+      "status": 200,
+      "response": {
+        "encryptionReady": true,
+        "generation": {
+          "source": "server",
+          "revision": 2,
+          "protocol": "openai_responses",
+          "baseUrl": "",
+          "model": "gpt-5.5",
+          "apiKeyConfigured": false,
+          "status": "unconfigured",
+          "errorCode": null
+        },
+        "embedding": {
+          "source": "server",
+          "revision": 0,
+          "protocol": "ollama",
+          "baseUrl": "",
+          "model": "text-embedding-3-small",
+          "apiKeyConfigured": false,
+          "status": "configured",
+          "errorCode": null,
+          "dimensions": 1024,
+          "reindexRequired": false,
+          "reindexAssetIds": []
+        }
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/v1/workspaces/8d9936f0-e1ca-41b6-8015-16d48bdb794c/model-settings",
+      "actor": "owner",
+      "status": 200,
+      "response": {
+        "encryptionReady": true,
+        "generation": {
+          "source": "server",
+          "revision": 2,
+          "protocol": "openai_responses",
+          "baseUrl": "",
+          "model": "gpt-5.5",
+          "apiKeyConfigured": false,
+          "status": "unconfigured",
+          "errorCode": null
+        },
+        "embedding": {
+          "source": "server",
+          "revision": 0,
+          "protocol": "ollama",
+          "baseUrl": "",
+          "model": "text-embedding-3-small",
+          "apiKeyConfigured": false,
+          "status": "configured",
+          "errorCode": null,
+          "dimensions": 1024,
+          "reindexRequired": false,
+          "reindexAssetIds": []
+        }
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/v1/workspaces/8d9936f0-e1ca-41b6-8015-16d48bdb794c/research-runs/49e63037-ebc8-47b7-af12-ef90754a372e/report-edit",
+      "actor": "member",
+      "status": 200,
+      "response": {
+        "originalArtifactId": "16ccd81f-386a-4109-a5a2-0ac6a9652276",
+        "originalSha256": "fe6708aabac6908404e6e60f6c9d66e0460f7223c0da184795c1f2e85d102f6f",
+        "version": 2,
+        "markdown": "# Synthetic Issue40 saved report\nLive API acceptance edit.",
+        "actorUserId": "131dce45-7d41-4c4b-aeb4-3fff18ca7266",
+        "updatedAt": "2026-09-28T09:12:54.831109Z",
+        "verificationStatus": "unverified"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/v1/workspaces/8d9936f0-e1ca-41b6-8015-16d48bdb794c/research-runs/49e63037-ebc8-47b7-af12-ef90754a372e/report-edit",
+      "actor": "owner",
+      "status": 200,
+      "response": {
+        "originalArtifactId": "16ccd81f-386a-4109-a5a2-0ac6a9652276",
+        "originalSha256": "fe6708aabac6908404e6e60f6c9d66e0460f7223c0da184795c1f2e85d102f6f",
+        "version": 2,
+        "markdown": "# Synthetic Issue40 saved report\nLive API acceptance edit.",
+        "actorUserId": "131dce45-7d41-4c4b-aeb4-3fff18ca7266",
+        "updatedAt": "2026-09-28T17:12:54.831109+08:00",
+        "verificationStatus": "unverified"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/v1/workspaces/8d9936f0-e1ca-41b6-8015-16d48bdb794c",
+      "actor": "owner",
+      "status": 401,
+      "response": {
+        "detail": "Internal API authentication required."
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/v1/workspaces/8d9936f0-e1ca-41b6-8015-16d48bdb794c",
+      "actor": "owner",
+      "status": 401,
+      "response": {
+        "detail": "Internal API authentication required."
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/v1/workspaces/8d9936f0-e1ca-41b6-8015-16d48bdb794c",
+      "actor": "owner",
+      "status": 401,
+      "response": {
+        "detail": "Internal API authentication required."
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/v1/workspaces/8d9936f0-e1ca-41b6-8015-16d48bdb794c",
+      "actor": "owner",
+      "status": 401,
+      "response": {
+        "detail": "Authentication required."
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/v1/workspaces/8d9936f0-e1ca-41b6-8015-16d48bdb794c",
+      "actor": "unknown-user",
+      "status": 401,
+      "response": {
+        "detail": "Authenticated user not found."
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/v1/workspaces/8d9936f0-e1ca-41b6-8015-16d48bdb794c/jobs/7b609ee0-2f77-4276-9446-7c130f3055cb",
+      "actor": "unknown-user",
+      "status": 404,
+      "response": {
+        "detail": "Workspace not found."
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/v1/workspaces/e030a366-d036-4b54-94b1-d5b164dc6e0e",
+      "actor": "member",
+      "status": 404,
+      "response": {
+        "detail": "Workspace not found."
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/v1/workspaces/8d9936f0-e1ca-41b6-8015-16d48bdb794c",
+      "actor": "other",
+      "status": 404,
+      "response": {
+        "detail": "Workspace not found."
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/v1/workspaces/8d9936f0-e1ca-41b6-8015-16d48bdb794c/assets/8d7e5f33-27ba-4d59-b7ed-50ddec9d9b1c",
+      "actor": "owner",
+      "status": 404,
+      "response": {
+        "detail": "Asset not found."
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/v1/workspaces/8d9936f0-e1ca-41b6-8015-16d48bdb794c/jobs/e69a7578-373a-4509-a5d0-b80b7ef55524",
+      "actor": "owner",
+      "status": 404,
+      "response": {
+        "detail": "Job not found."
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/v1/workspaces/8d9936f0-e1ca-41b6-8015-16d48bdb794c/notes/067d95fd-3522-41ab-90be-d82fc600ec92",
+      "actor": "owner",
+      "status": 404,
+      "response": {
+        "detail": "Note not found."
+      }
+    },
+    {
+      "method": "PATCH",
+      "path": "/v1/workspaces/8d9936f0-e1ca-41b6-8015-16d48bdb794c/notes/067d95fd-3522-41ab-90be-d82fc600ec92",
+      "actor": "owner",
+      "status": 404,
+      "response": {
+        "detail": "Note not found."
+      }
+    },
+    {
+      "method": "DELETE",
+      "path": "/v1/workspaces/8d9936f0-e1ca-41b6-8015-16d48bdb794c/assets/8d7e5f33-27ba-4d59-b7ed-50ddec9d9b1c",
+      "actor": "owner",
+      "status": 404,
+      "response": {
+        "detail": "Asset not found."
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/v1/workspaces/8d9936f0-e1ca-41b6-8015-16d48bdb794c/model-settings",
+      "actor": "member",
+      "status": 403,
+      "response": {
+        "detail": "Only workspace owners can manage model settings."
+      }
+    },
+    {
+      "method": "PATCH",
+      "path": "/v1/workspaces/8d9936f0-e1ca-41b6-8015-16d48bdb794c/model-settings",
+      "actor": "member",
+      "status": 403,
+      "response": {
+        "detail": "Only workspace owners can manage model settings."
+      }
+    },
+    {
+      "method": "PATCH",
+      "path": "/v1/workspaces/8d9936f0-e1ca-41b6-8015-16d48bdb794c/model-settings",
+      "actor": "member",
+      "status": 422,
+      "response": {
+        "detail": {
+          "code": "model_settings_invalid",
+          "message": "Invalid model settings."
+        }
+      }
+    },
+    {
+      "method": "PATCH",
+      "path": "/v1/workspaces/8d9936f0-e1ca-41b6-8015-16d48bdb794c/model-settings",
+      "actor": "other",
+      "status": 422,
+      "response": {
+        "detail": {
+          "code": "model_settings_invalid",
+          "message": "Invalid model settings."
+        }
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/v1/workspaces/8d9936f0-e1ca-41b6-8015-16d48bdb794c/evaluations",
+      "actor": "member",
+      "status": 403,
+      "response": {
+        "detail": "Workspace owner access required."
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/v1/workspaces/8d9936f0-e1ca-41b6-8015-16d48bdb794c/evaluations?limit=0",
+      "actor": "member",
+      "status": 422,
+      "response": {
+        "detail": [
+          {
+            "type": "greater_than_equal",
+            "loc": [
+              "query",
+              "limit"
+            ],
+            "msg": "Input should be greater than or equal to 1",
+            "input": "0",
+            "ctx": {
+              "ge": 1
+            }
+          }
+        ]
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/v1/workspaces/8d9936f0-e1ca-41b6-8015-16d48bdb794c/evaluations?limit=0",
+      "actor": "other",
+      "status": 422,
+      "response": {
+        "detail": [
+          {
+            "type": "greater_than_equal",
+            "loc": [
+              "query",
+              "limit"
+            ],
+            "msg": "Input should be greater than or equal to 1",
+            "input": "0",
+            "ctx": {
+              "ge": 1
+            }
+          }
+        ]
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/v1/workspaces/8d9936f0-e1ca-41b6-8015-16d48bdb794c/research-runs/49e63037-ebc8-47b7-af12-ef90754a372e/report-edit",
+      "actor": "owner",
+      "status": 403,
+      "response": {
+        "error": {
+          "code": "research_permission_denied",
+          "message": "Only the run creator can edit this report.",
+          "requestId": "21bb4f64-d762-425b-8671-00758878e75a",
+          "retryable": false
+        }
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/v1/workspaces/8d9936f0-e1ca-41b6-8015-16d48bdb794c/research-runs/49e63037-ebc8-47b7-af12-ef90754a372e/report-edit",
+      "actor": "member",
+      "status": 409,
+      "response": {
+        "error": {
+          "code": "report_edit_version_conflict",
+          "message": "The report was edited in another session.",
+          "requestId": "fb5e79df-8162-42db-9ec1-39be4fce3763",
+          "retryable": false,
+          "details": {
+            "currentVersion": 2
+          }
+        }
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/v1/workspaces/8d9936f0-e1ca-41b6-8015-16d48bdb794c/research-runs/49e63037-ebc8-47b7-af12-ef90754a372e/events",
+      "actor": "other",
+      "status": 406,
+      "response": {
+        "error": {
+          "code": "invalid_research_request",
+          "message": "Accept must allow text/event-stream.",
+          "requestId": "c4285811-06ba-47bc-b937-7fed7ecebb6b",
+          "retryable": false
+        }
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/v1/workspaces/8d9936f0-e1ca-41b6-8015-16d48bdb794c/research-runs/49e63037-ebc8-47b7-af12-ef90754a372e/events",
+      "actor": "other",
+      "status": 400,
+      "response": {
+        "error": {
+          "code": "invalid_event_cursor",
+          "message": "Last-Event-ID must be a non-negative decimal integer.",
+          "requestId": "42975870-1f88-4045-aaae-c5217d393791",
+          "retryable": false
+        }
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/v1/workspaces/8d9936f0-e1ca-41b6-8015-16d48bdb794c/research-runs/49e63037-ebc8-47b7-af12-ef90754a372e/events",
+      "actor": "owner",
+      "status": 200,
+      "response": "id: 1\nevent: run_created\ndata: {\"data\":{\"createdByUserId\":\"131dce45-7d41-4c4b-aeb4-3fff18ca7266\",\"runStateVersion\":1,\"status\":\"planning\"},\"eventId\":\"1e2940e6-df22-4927-967e-418abf682956\",\"occurredAt\":\"2026-09-28T08:37:52.762439+00:00\",\"runId\":\"49e63037-ebc8-47b7-af12-ef90754a372e\",\"schemaVersion\":1,\"seq\":1,\"type\":\"run_created\"}\n\nid: 2\nevent: step_queued\ndata: {\"data\":{\"attemptNumber\":0,\"branchKey\":null,\"runStateVersion\":2,\"stepId\":\"e7f08348-f12e-4741-889d-1be732022f3e\",\"stepKind\":\"planner\",\"stepStateVersion\":1},\"eventId\":\"044a6b4a-a225-4062-a7a0-b225d6bcdc53\",\"occurredAt\":\"2026-09-28T08:37:52.762439+00:00\",\"runId\":\"49e63037-ebc8-47b7-af12-ef90754a372e\",\"schemaVersion\":1,\"seq\":2,\"type\":\"step_queued\"}\n\nid: 3\nevent: decision_submitted\ndata: {\"data\":{\"action\":\"approve\",\"actorUserId\":\"131dce45-7d41-4c4b-aeb4-3fff18ca7266\",\"decisionId\":\"b5598914-efa5-472b-aa98-6874497448a9\",\"decisionOrigin\":\"human\",\"decisionStateVersion\":2,\"decisionType\":\"plan_approval\",\"inputArtifactId\":\"d5c9c2d9-a881-45ea-88f7-8c5a62801a39\",\"inputArtifactSha256\":\"94894b020b6fbdcd8672bce591bd27d3e227051650298f628d424348967a7c3d\",\"policyId\":null,\"runStateVersion\":4},\"eventId\":\"e06c3492-4e7c-4870-87f5-3e09571e9827\",\"occurredAt\":\"2026-09-28T08:37:52.897025+00:00\",\"runId\":\"49e63037-ebc8-47b7-af12-ef90754a372e\",\"schemaVersion\":2,\"seq\":3,\"type\":\"decision_submitted\"}\n\nid: 4\nevent: run_status_changed\ndata: {\"data\":{\"previousStatus\":\"awaiting_plan_approval\",\"reasonCode\":null,\"runStateVersion\":5,\"status\":\"queued\"},\"eventId\":\"09f9eca6-b655-401d-9eac-d79b01d9e3e3\",\"occurredAt\":\"2026-09-28T08:37:52.897025+00:00\",\"runId\":\"49e63037-ebc8-47b7-af12-ef90754a372e\",\"schemaVersion\":1,\"seq\":4,\"type\":\"run_status_changed\"}\n\n"
+    },
+    {
+      "method": "GET",
+      "path": "/v1/workspaces/8d9936f0-e1ca-41b6-8015-16d48bdb794c",
+      "actor": "member",
+      "status": 404,
+      "response": {
+        "detail": "Workspace not found."
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/v1/workspaces/e030a366-d036-4b54-94b1-d5b164dc6e0e",
+      "actor": "owner",
+      "status": 404,
+      "response": {
+        "detail": "Workspace not found."
+      }
+    }
+  ]
+}
