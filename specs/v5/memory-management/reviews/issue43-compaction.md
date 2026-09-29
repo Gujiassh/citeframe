@@ -991,3 +991,185 @@ For each of the four real column declarations, tested missing, duplicate, wrong 
 Both reviewed hashes remained exact after execution. All **45 approved core files** match both the manifest and original review's accepted hash inventory: **0 differences**. The approved instruction fixture remains `E6A33A6461785F3AFB371B647C0DCF28776DEA46310A76C7FB06C975ED5D2AED`, and its report remains `35BF79917315FCDA0766E281BF70651B0814E0BF208D5A4A9F42D1D65B878C49`. Scoped diff-check passed.
 
 The report's developer20 and developer-root35 results retain their developer executor labels; this review contributes its own separate20-case run and inline probes. The previous two boundary-test failures are resolved for this pinned correction. No full CI, hosted run, actual Chat/Research/UI or whole-Issue completion is inferred. Only this original review artifact was appended; no product/test/schema/Git writes or model calls. Durable write-back is this review entry, without duplicating it into private/global memory. Review complete; no ongoing verification process.
+
+
+## CI follow-up: A2a historical comparator integration — F43-CI1 OPEN
+
+**Finding F43-CI1 — High / integration gate: the approved #43 additive Attempt columns have no exact historical-differential adapter.** This is a reproducible #43 integration gap at `acefd922d235798bbf1b29212dc6e6c04304d6e1`; the full API gate must remain failing until an owner-reviewed, field-complete delta is implemented and verified. No product permission/publication regression is established by this finding. No baseline relaxation or repair implementation is approved here.
+
+### Evidence identity and limitations
+
+Controller identifies PR54 run `36464632683`, job `109071502682`. Own `gh run view ... --job ... --log-failed` was refused by local socket permissions; no bypass was attempted. Subsequently read the controller-landed `.local-runtime/controller-ci/pr54-api-failed.txt`, SHA-256 **`9FC9CEEC7A8FFBC2EADD0C3080E4C4FD9A1DEE4A6FBF63747705A83A86FA0A94`**. This is independently inspected controller-supplied hosted output, not a reviewer rerun or independently authenticated download.
+
+The log ends with **2 failed, 989 passed, 6 skipped** and names the two requested tests. Both reach `a2a_differential status=fail`, exit **1**, baseline `d1b5945e977445e4db6bf56ef54cf61607ead2e2`, candidate **`80cebefdec4b3f6b1efd0ed06322e96cc0052971`**, coverage=7, dirty=false. Both semantic/repair fingerprints are the empty-diff SHA. First baseline fetch succeeds in the recorded hosted run. This is a completed comparison rejection, not a reported network/bootstrap exception (`status=error`, exit2).
+
+The runner obtains candidateHead using `git rev-parse HEAD`; its fingerprints hash worktree differences, not the candidate tree itself. Therefore empty fingerprints prove no sampled dirty delta, not equality of 80cebef and acefd92. The controller identifies 80cebef as a temporary index snapshot; that object is unavailable in this reviewer's local Git object database. Preserve that provenance distinction and obtain the snapshot tree/parent manifest when closing the hosted gate. Dedicated508 hosted success remains controller-reported and does not accept these separate API oracles.
+
+| Inspected current source | SHA-256 |
+| --- | --- |
+| `apps/api/tests/test_a2a_differential.py` | `CCC738C3ED2EABE6043AF7C1880B0EE46DA13D2C5CF84668655275B35EA28012` |
+| `apps/api/tests/test_a2a_differential_probe.py` | `F027E16BE43D60C70D623539B9F7C2EA6EFC767146CEE9F92CA39CC87B248887` |
+| `infra/scripts/run-a2a-differential.py` | `A6A6FB8601A1C05D19F06D982562AD241B67352CF61E3042450D39837B55822F` |
+| `infra/scripts/a2a_r2_delta.py` | `CAF14C4B91B16A8DB2FE02D8A024F6AD26D2A954064A032CE285F9389D83EF6F` |
+| `infra/scripts/a2a_r2_publication_oracle.py` | `E5A349D0E59250E81F327FC63D212D1B2366A2248D949810CE32D639D9660C0F` |
+| `infra/scripts/a2a_feature_history_oracle.py` | `E525E7A00720397AA673EDCE1403C5030D764AE1AC45D8869019ED1E21E43B37` |
+| `infra/scripts/a2a_conflict_feature_oracle.py` | `903ECABA3A78ABE2A7ABADB6448F223FCAF6DC159F1A5AEAB4C984E9DF9199C1` |
+| `infra/scripts/a2a_retry_step_oracle.py` | `8FEDF3B204BB609361BCEBAAAD58D31EC26BF7E55FEAFF486C42474E8F3B3B1A` |
+| `packages/backend-persistence/src/citeframe_persistence/models/research_execution.py` | `CF53DC4694FF7EA99D64E20E4E03455BD5960E21DB6DC66FC88EBFA92A29726D` |
+
+### Causal attribution: new fields versus existing historical differences
+
+1. `test_a2a_differential_probe.py:667–681` introspects real SQLite schema columns and SELECTs every field of each research_/human_decision table; the probe creates current ORM metadata. #43's `d4a0c12` adds `ResearchStepAttempt.memory_context_version` (server default0) and `memory_checkpoint_id` (nullable). They are absent at main8812fda, present at PR49-integrated b4e773a and unchanged at acefd92. The first hosted raw diff shows **16 occurrences each** of version0 and checkpoint null across attempts. No model call, checkpoint adoption or native writer change is required to produce these additive fields.
+2. F2/F1 historical projections do not validate/project those two additions. `a2a_r2_delta.py:93` then requires exact historical schema equality after removing the existing R2 intent table. The Attempt column list cannot match. Independently, `a2a_retry_step_oracle.py:28–31` requires the complete raw Attempt history to equal baseline, so the two additions also fail `retryStepErrorDelta.immutable attempt history`. Fixing only schema names is insufficient. The unchanged comparator also includes these fields in unknown row differences.
+3. Publication raw changes are not automatically additional failures: `run-a2a-differential.py:472–488` prints a diff of **unprojected baseline/candidate semantics**, separately from the accepted-delta comparison. Thus it prints existing R2/F1/F2 differences even when their projections are valid. The recorded publication-intent row, generation-owned `/publication/1/final.md` key, three terminal event IDs, human-origin/version fields and empty feature tables match categories already specified in the pre-#43 R2/F1/F2 contracts. Retry Step error clearing is also handled by the existing retry oracle. Their presence in stdout alone does not establish a new publication regression or an unhandled old debt.
+4. Read-only Git comparison from **8812fda to b4e773a** is empty for the differential tests/probe/history helper/runner, R2/F1/F2 oracles, `packages/research-persistence` and `apps/worker/src/ai_pdf_worker/research`; b4e773a to acefd92 likewise leaves the affected model and comparator unchanged. The two Attempt additions are explicitly introduced by d4a0c12. This establishes new #43 historical-oracle integration responsibility, rather than classifying the two API failures as external infrastructure.
+5. The landed log contains the raw diff, not the generated report's `r2ValidationErrors`, `retryStepErrorValidationErrors`, F1/F2 errors and stored-replay comparison. The missing two-field handling is independently sufficient to reject the current comparison. Whether another earlier publication/lifecycle validation error coexists requires that full report or a controlled executable rerun; this review does not invent a main-baseline PASS or assert all other hidden errors are absent.
+
+### The plugin-named failure is not evidence of an independent plugin-removal regression
+
+The second traceback points to `test_a2a_differential.py:313`, `assert completed.returncode == 0`, with the same runner exit1. Initial exact sync, wheel installation/discovery and the deliberate plugin-loaded smoke already passed to reach this line. The final sentinel-absence check at315 and distribution-absence check are downstream and were not reached. Consequently the current hosted evidence establishes the same semantic-comparison blocker in both tests; it does not establish a remaining plugin or independently prove successful removal. Retain and rerun the real contamination test unchanged after the historical delta repair.
+
+### Own bounded reproducer, without changing files or execution environments
+
+Executed an inline Python diagnostic using the existing API interpreter, `PYTHONDONTWRITEBYTECODE=1`, lane package/API/infra-script paths, no uv sync/fetch or provider calls. Created only an in-memory SQLite database using actual current `Base.metadata`, inserted a native Attempt without specifying the new fields, and read it through the actual probe `_database_rows(..., _RawNormalizer())`. Compared its column names against a diagnostic historical-shape copy and passed a minimal historical retry pair with those actual Attempt row images to the unchanged retry validator. Results:
+
+```text
+ACTUAL_NATIVE_DEFAULTS 0 None
+SCHEMA_STRICT_GUARD schema.unknown table/field
+ACTUAL_RETRY_VALIDATOR_REPRODUCER retryStepErrorDelta.immutable attempt history
+REF_ATTEMPT_ADDITIONS 8812fda []
+REF_ATTEMPT_ADDITIONS b4e773a ['memory_checkpoint_id', 'memory_context_version']
+REF_ATTEMPT_ADDITIONS acefd92 ['memory_checkpoint_id', 'memory_context_version']
+```
+
+The historical-shape copy is diagnostic scratch, not a generated/updated baseline or an acceptance projection. This reproduces the new structural rejection; it is not the complete A/B/AStored/C workload, a real-PG run or publication-safety proof. Full tests were not invoked because their runner manages Worker environments and may fetch Git, outside this read-only diagnosis. Read-only attribution commands included `git diff --quiet 8812fda b4e773a -- <listed oracle/native paths>`, `git diff --quiet b4e773a acefd92 -- <model/runner/comparator>`, `git show d4a0c12 -- .../research_execution.py`, and per-ref AST inspection of ResearchStepAttempt.
+
+### Exact repair ownership recommendation and preserved oracles
+
+Assign this to an **explicit A2a historical-oracle integration owner**, in a separate bounded lane or a later serialized task. Do not interrupt the current native-chat developer or transfer native product/schema/publication ownership to this diagnostic lane. Suggested minimal file grant, subject to controller confirmation:
+
+- New `infra/scripts/a2a_compaction_history_oracle.py`: an issue43-specific validation/projection layer before the existing F2/F1/R2/retry comparisons, avoiding new memory semantics inside the R2/publication validators.
+- Existing `infra/scripts/run-a2a-differential.py`: narrow integration of that layer and, if needed, executor-neutral structured failure diagnostics/report retention.
+- New `apps/api/tests/a2a_compaction_negative_controls.py` (or a dedicated collected test module), plus narrowly owned invocation in `apps/api/tests/test_a2a_differential.py`. Existing pollution/environment/composition assertions stay intact.
+
+**Required contract before coding:** candidate historical executions must have exactly the two authorized new Attempt fields, exact integer0 (not bool/null/string/nonzero) and explicit null checkpoint on every captured Attempt in both phases, raw/normalized collections, publication maintenance before/after and all lifecycle snapshots. Validate schema presence/cardinality and every value before projecting only these two fields from a deep copy. Preserve untouched original reports/hashes. Missing fields, nondefault values, inconsistent raw/normalized images or any extra field must fail. A future historical workload genuinely using compaction needs separate authority; this default-only adapter must fail it closed.
+
+Do not change d1b5945 or the frozen SQL/response/event/prompt/workflow fixtures; do not hide fields at capture time, use broad `memory_*` filtering, weaken unknown differences, bypass immutable Attempt/event comparison, regenerate expected output, or alter publication/ledger/native writers to satisfy the test. Preserve the full existing R2 lifecycle, owner/lease/authorization, exact payload/event bytes, three-event bijection, storage object ownership, scheduler/maintenance no-business-work, retry provenance, F1/F2 historical replay and no-resend oracles. Existing raw row validation must remain meaningful on original evidence before narrowly validated projection.
+
+Repair acceptance requires the two original failing tests plus facade negative control; all original R2/F1/F2/retry mutations; new missing/extra/type/nondefault/checkpoint/raw-only/normalized-only/lifecycle-only/maintenance-only mutation cases; exact baseline/source and untouched-report identity evidence. Retain complete comparison JSON (including stored replay) and the hosted candidate snapshot-to-tree mapping. Dedicated compaction508 cannot substitute for these checks.
+
+**Disposition:** F43-CI1 remains OPEN pending owner-approved narrow repair and evidence. Prior neutral-core, fixture and persistence-boundary approvals retain their exact scope; full API/CI completion remains unaccepted. Only this original review was appended. No product/test/baseline/Git/environment writes, paid models or native-chat interruption.
+
+
+## Native Chat exact-delta design review — PARTIAL APPROVE / lifecycle amendment required
+
+Candidate: `specs/v5/memory-management/lanes/issue43-native-chat-delta.md`, SHA-256 **`F57C9B1C34EC9CDBF867172303DA56DD20BC7C3404E8D1E67A6B55F1A0F176C6`**, base/current inspected HEAD `acefd922d235798bbf1b29212dc6e6c04304d6e1`. Hash rechecked unchanged at closeout. **No blanket approval for the proposed lifecycle/schema is issued.** The independent policy/issuer/failed-projection portions identified below are design-approved for bounded implementation; two concrete lifecycle authority details require a narrow contract amendment before their affected implementation. Do not reopen R1–R16 or the accepted interval mechanism.
+
+### F43-NC1 — High: settled accounting does not specify final-answer authority
+
+Affected contract §§2–4: `finish_chat(... main_receipt, result_sha256, apply_native_terminal)` and the deferred terminal predicate require an owned settled main and nonblank native content/hash, but never specify the authoritative binding proving this main produced a **terminal answer**, rather than an intermediate tool-call turn or an older main in the same execution.
+
+Actual base evidence:
+
+- `AccountingReceipt` contains call/workspace/owner/request hash and optional native accounting IDs; it has no response digest, terminal reason or final eligibility.
+- `CallJournal.settle` intentionally persists only accounting state/usage/reservation settlement and remains callable after revocation. Its succeeded main does not acquire a response result manifest/hash. `save_summary` applies to summary authority, not main output.
+- `chat_loop/turns.py::CollectedTurn` distinguishes answer from tool_calls, but is a pure collector explicitly owning no journal/publication authority. Each provider turn can settle successfully, including a tool-call turn.
+
+Consequently the proposed exact SQL predicate, as described, cannot distinguish a current final answer from a nonblank tool-turn text/older main supplied with its valid accounting receipt. A caller-supplied hash checked only against callback-written content does not add that missing relationship. This is a missing normative API/persistence meaning, not a claim that the trusted future #44 implementation already publishes such content.
+
+**Required narrow amendment:** specify how the trusted #44 collected terminal turn is bound to the exact #43 main call/request/capture and admitted final frontier, and which persisted fields the atomic terminal transaction checks. A success must be answer-only, contain no pending tool continuation, match the exact owned main and result bytes, and reject an older main where later main/tool work is unresolved or incompatible. Explicitly distinguish permitted completed history groups from pending/unknown later groups. Reuse the existing call/result journal and sole terminal receipt; no second final-result authority/table is requested. Pin any additional JSON keys or private callback/DTO meaning before schema coding. Define crash after succeeded accounting but before durable final adoption: recover a verifiable saved final result or stop explicitly; never regenerate/reclassify a tool turn merely because accounting succeeded. Exact terminal replay must compare the complete immutable terminal binding, including mainCallId/errorCode where applicable, without republishing.
+
+**Required negatives:** succeeded tool-call receipt plus nonblank preamble; earlier successful main after a later sent/unknown main; unresolved tool group; mismatched response hash/native body; blank answer; late revoke/cancel; lost final-commit ACK; settlement-success/final-save crash. Positive: two same-execution interval episodes and terminal answer from the actual final continuation publish exactly once. Existing content-free settlement is unchanged and never becomes content authority.
+
+### F43-NC2 — High: waiting_context resume condition and dispatch eligibility are underspecified
+
+Affected §§2–4: `control_chat` accepts optional `condition_fingerprint`, but the exact schema adds no stored wait-condition record, and `finish_chat(... outcome='waiting_context')` has no declared condition/framing input. The contract requires a changed actionable condition without defining where the original trusted condition is recorded, how the new condition is recomputed, or how caller input is prevented from asserting change.
+
+Actual base `NativeGuard._chat` and SQL `compaction_chat_ancestry` admit **prepared/running/waiting_context**; `prepare_main_dispatch`, reserve and mark_sent use that guard. Thus the proposed lifecycle transition table alone does not make waiting_context a no-dispatch state. Read/checkpoint inspection authority and fresh-send authority must be distinguished explicitly for new lifecycle-enabled rows.
+
+**Required narrow amendment:** pin a durable, bounded waiting reason/basis and its trusted derivation (reuse exact existing no-progress/profile/request evidence where sufficient; name the relation, do not infer it). Define the meaning of the supplied fingerprint as an expected value or remove it as authority; recompute actionable change server-side using current trusted inputs. Specify admission predicates for prepared/running/waiting/cancel_requested across claim, history execution, main/summary reserve, mark_sent and adoption, in both Python and the affected SQL predicates. Waiting may retain metadata/readback access but cannot silently redispatch through the legacy permissive guard. Resume must keep root budget/deadline/cancellation and call identities, require an actual actionable change and no incompatible outstanding work. Specify how unresolved-call discovery becomes an allowed stop state from each possible lifecycle state. Keep legacy-u5 behavior scoped separately.
+
+**Required negatives:** arbitrary different fingerprint with identical conditions; absent/malformed wait basis; repeated unchanged resume; direct gate/mark_sent while waiting; unknown call discovered during reclaim; cancel/revoke/deadline during resume; concurrent resume with same/stale versions. Positive: a real supported capacity/condition change resumes the same execution with the original question/checkpoint/budget and no resent successful turn.
+
+### Approved bounded design portions and Stage A file boundary
+
+**APPROVE the following semantics for implementation after the accepted #42 package is imported at its pinned identity; this does not activate an incomplete native loop:**
+
+1. Exact v1-preserving/full-v2 policy validation and workspace-audience policy. The #42 `history.py` hash independently matches **A771D0CAF41AC0DA307E1BB723DA039AA2411F9CC35DD86E4C2EE460CF9D3C02**; its runtime parser is explicitly shape-only, so #43 retaining all scalar/deadline validation is correct. The source contract hash matches **2BEFEA01C88FF5FC7D3F8F54C23C9F22B9BB850DD5619DBF819D1091DCF3C042**. Reuse its existing package/ranges/search and SourceReference; do not copy DTOs or create the conflicting history.py module. Current tree has no imported history package yet.
+2. Private transaction-local issuer and completed-current-ancestry read authority, source allocator reuse, metadata-before-body admission, workspace readers including future admitted members, no private-table query for search_memory exclusion. The issuer is not a caller-constructible authorization DTO. Unknown adapters/scopes stay closed; no guessed note/index/Research authority.
+3. Trusted complete current-branch read/exclusion group design, direct tool edges even with no source leaves, exact excluded response and per-member result hash, unchanged ordinary native archive rules. True zero_hits stays disabled until actual complete corpus/index generations, SQL predicate and retirement integration arrive under #42 ownership. This safe temporary bound remains a delivery dependency, not completion of history search.
+4. Failed ancestor structural projection: actual native `_get_message_lineage` traverses failed ancestors but emits completed rows only. Keeping failed identity/parent/ordinal with zero model messages and a protected interval barrier preserves that behavior without silently injecting native error prose. DB-side digest/stamp witness, no failed-body Python hydration, direct-SQL interval exclusion, immutable native content and last-good checkpoint preservation are appropriate. Existing limits and current-question exactly-once remain mandatory.
+5. The **start-side transaction design** is acceptable: authenticated request lookup before live-pair validation/creation; canonical manifest/key conflict rules; one Session for native pair and execution; exact actual active anchor plus selected parent prelocks; postcommit-only meta. The proposed start request envelope/additive fields may be prepared, but do not ship the shared v6 migration until the two lifecycle amendments fix its complete operative schema/predicates. Non-none asset/evidence preparation and explicit retry activation retain their separate #44 exact grants; Stage A none/text must not erase existing mode1 behavior.
+
+**Files allowed for unaffected implementation under §8 ownership:** new `compaction/history_guard.py`, `history_results.py`; named scopes of `repository.py` (policy/accessor/registration extraction/allocator), `sources.py`, `guards.py` (issuer support without prematurely activating unresolved lifecycle authority), `archive.py`, `journal.py`, `rendering.py`, `gate.py`, `units.py`, `packing.py`; new issuer/history-results/failed-ancestor tests. New `chat_lifecycle.py`/`chat_execution.py` may implement/test the start-only seam and pure DTO validation, keeping terminal/resume activation explicitly unavailable pending NC1/NC2. Schema-dependent history integration can be prepared/test-specified but must not be activated against a missing/incomplete successor.
+
+**Held affected files/scope:** the operative lifecycle/terminal/resume parts of `chat_lifecycle.py` and `chat_execution.py`, related `memory_context.py` fields/constraints, and complete `v6d7e8f9a0b1_native_chat_history.py` schema/predicates require the amended exact contract first. Do not invent extra fields while implementing. Reserve u5 as the single predecessor with controller; no u5/t4 edit, parallel migration head or native-model expansion. No global wait is imposed on unaffected work or CI repair.
+
+#43 remains the sole checkpoint/coverage/use/pointer atomic owner and ChatLifecycle transaction owner. #44 owns native pair/finalize/failure DML callbacks and API composition, with no callback commit or separate checkpoint transaction. The actual prepare/finalize/fail functions commit (fail first rolls back), so unchanged callbacks are unusable. Reuse/extend the existing journal `invoke` before_commit protection and transaction identity checks: rejection must occur **before** a callback can commit partial native state; an after-the-fact identity check is insufficient. Rollback/close/replacement must abort the combined attempt. This is an implementation oracle for the stated prohibition, not authorization for a second owner or a broad callback framework.
+
+### Required retained evidence and disposition
+
+Keep all nine contract oracle groups, especially actual native callbacks in one PG Session, both native DELETE/SET NULL lock orders, deferred/immediate SQL source/history/terminal checks, callback precommit rejection, exact replay without callback/provider work, source-free exclusion with zero private reads, failed-body sentinel absence across main/summary/tool/request archives, fresh-process reconstruction and two post-question episodes in the real #44 dispatch loop. Success/failure head and citation behavior must be checked against actual finalize_chat/fail_chat, including terminal cleanup after source loss without restoring revoked content authority. Zero history hits and blank provider answers are distinct; blank final answers remain failure with settled accounting.
+
+This is a source-grounded **design** review; no proposed-product tests/PG implementation were run or claimed. Audited base raw hashes: journal `A338C0CCFAB594ADE8D704DB4002776FFEBD8BB38E992F4B8D0E8275B14CBF37`; guards `969C91CBD30429D5FF89F850B1CFB5D35986C4AEDC35E14192094323A8AEE7D2`; turn helper `EBFE72AC945A854866494DB0AC52B1F09EED23BAE84815463260A9A7639A664B`; native chat service `DD6D28F8629C1655ACA238B817ACE9BE81C4DFB33C4198027B8FE9F966973C91`; compaction DTO `D77617A25ECF5CD9C0B808537F6C884B7EE67E2A2250BB0D955E99597DDB5E2B`. A concurrent edit to the A2a runner belongs to the developer's prioritized F43-CI1 repair and was not assessed or modified in this review.
+
+**Disposition: NC1/NC2 require targeted amendment, not a whole-design restart.** CI repair keeps its priority. Original developer may then implement the approved unaffected Stage A scopes and submit the narrow lifecycle correction for this same reviewer. Same-run automatic continuation, Stage B zero-hit/workspace history, actual native routing/UI and whole #43 remain unaccepted until their direct evidence exists. Only this original review artifact was appended; no product/test/schema/Git/private-memory/model writes.
+
+
+## F43-CI1 exact implementation review — APPROVE candidate for authorized CI
+
+**Disposition: APPROVE this exact four-code-file correction and its evidence report for controller commit/submission to authorized hosted CI. No actionable implementation defect found.** This is acceptance of the bounded default-only historical adapter, not a claim that the original frozen-exact/plugin tests have passed. F43-CI1's code defect is addressed; final integration-gate closure remains pending those actual executions and exact hosted snapshot identity. Base/observed HEAD: `acefd922d235798bbf1b29212dc6e6c04304d6e1`.
+
+| Exact candidate | SHA-256 |
+| --- | --- |
+| NEW `infra/scripts/a2a_compaction_history_oracle.py` | `77A9962CD96797839E24AA1A83FAC06B4C90F834C01DE8632146A94CE9DB1636` |
+| `infra/scripts/run-a2a-differential.py` | `127809EBCB562F85A99A6A302006019EE65E7E4A99F1248209BD1D9F1AE1786C` |
+| NEW `apps/api/tests/test_a2a_compaction_history_oracle.py` | `DE6735E33DED0D938C9AC1D6C8DBE1BA32F0FCCC62D487F93505BFAB3DA26905` |
+| `apps/api/tests/test_a2a_differential.py` | `5A45E565ABA030E04CF39536DBC7DBCA45207050CB406085C5F5CD8D069D70E9` |
+| Developer report `specs/v5/memory-management/evidence/issue43/a2a-compaction-integration.md` | `F3E2F817F1132EB790C4F5DB4E1A53861DFB3B36F9F23B8A7D121035B1FAFB85` |
+
+### Independent semantic assessment
+
+**Strict adapter: pass.** Historical Attempt schema must be a unique string list with neither new field. Candidate Attempt schema must equal exactly its sorted union with the two fields, rejecting missing/duplicate/extra schema entries. All rows in all **11 snapshot positions** are checked: raw transitions/processOne, normalized transitions/processOne, maintenance before/after, and five publication lifecycle snapshots. Each position requires a nonempty Attempt list; every row must have precisely the declared schema, `type(memory_context_version) is int` and value0, and an explicitly present `memory_checkpoint_id is None`. Empty captures and later-row violations cannot become vacuous success.
+
+**Evidence preservation/order: pass.** The original `validate_raw_rows(candidate)` runs after field validation but **before either field is removed**, against the untouched original evidence. Only then is a deep copy made. The only removed values are those two keys in the eleven Attempt collections and their exact schema entries. The original baseline/candidate reports, payload bytes, events, publication graph, other schema columns and unrelated same-named values remain unchanged. Reordering or ignoring arbitrary memory-prefixed fields is not introduced.
+
+**Existing invariants: pass.** The wrapper delegates the validated copy to the unchanged F2 -> F1 -> R2/retry chain and preserves its result, including `accepted=False`, errors and unknown differences. The runner changes only the comparator import. Its captured raw reports and hashes still describe original reports. The original test applies the new live-report negative controls before preparing an explicitly projected copy for the old negative controls; it does not change the primary report's raw hash identities. Original baseline-ref, workflow, exact-environment, composition, scheduler, row/event and plugin assertions remain intact. Read-only comparison to acefd92 confirms eleven original probe/history-helper/oracle/negative-control files unchanged, including publication and retry checks. No baseline or fixture regeneration, capture-time field hiding, new skip or fallback was added.
+
+### This reviewer's executions
+
+Used `D:/Code/citeframe/apps/api/.venv/Scripts/python.exe`, bytecode disabled, lane package/API/Worker/infra-script/test source paths. No uv sync, network, Git write, provider or environment installation.
+
+```text
+python -m pytest apps/api/tests/test_a2a_compaction_history_oracle.py apps/api/tests/test_persistence_boundary.py apps/api/tests/test_research_persistence_boundary.py -q --tb=short -p no:cacheprovider --basetemp=$env:TEMP/issue43-review-a2a-ci1
+156 passed, 1 warning in 1.72s; zero skips
+```
+
+The sole warning is the existing Starlette/httpx deprecation. The monkeypatched downstream unit test is only delegation verification; acceptance also includes real unchanged downstream comparator executions below.
+
+**Own comparison/mutation execution on developer-produced actual reports:** independently loaded the five retained `.tmp/a2a-ci1/{baseline,candidate,stored,current,v3}.json` files and verified their exact report hashes against the evidence. Their generation remains developer evidence; this reviewer did not rerun or relabel those baseline/A/AStored/B/C probes. Re-executed actual old/new comparator functions and original control functions locally:
+
+```text
+A old: accepted=False
+  r2ValidationErrors=['schema.unknown table/field']
+  retryStepErrorValidationErrors=['retryStepErrorDelta.immutable attempt history']
+A new: accepted=True, unknownDifferences=[]
+AStored old: same two named errors; accepted=False
+AStored new: accepted=True, unknownDifferences=[]
+176 actual-report compaction mutation controls: PASS
+Original R2 controls and nested retry controls: PASS
+Original F1 controls: PASS
+Original F2 controls: 10, PASS
+```
+
+Additionally ran **132 own strict-type mutations** against the last Attempt row of every one of the eleven snapshots in both A/AStored: version0.0/True/-1 and checkpointFalse/0/empty-string. Every case returned both `accepted=False` and `compactionHistoricalDeltaValid=False`. Independently constructed the exact expected copy and confirmed the real adapter changes only the two approved fields/schema entries. Canonical original payload and all five report file byte hashes remained unchanged after all runs. These inline mutations are separate from the156 pytest count.
+
+Input report identities (developer-generated, reviewer-read/compared): baseline `E035C6A8BDD040B645CCC88C0F3089018C261854301C31670BD3E4DAED86A8B2`; A `BC8782EBD8A1A8CF431AE21648317B6569CE68354D1C51AE852138D096F3C038`; AStored `EC950AC03808FA080BBC8EE21E69AE50352224D6F2AC3A21242D181416C08618`; B `3CA872C81CF26A2A415C8205BBC66FA2E6DC05774C34399CEF9D6E267958667D`; C `DBD9BAAAA412F35A2EEE4C5F7790297094B96563770C3B24F0520E111F6DC12D`.
+
+### Submission permission and remaining CI gate
+
+The exact candidate is safe to submit to the already authorized CI path; there is no need to alter the baseline or wait for native-chat product work. Preserve the four file hashes through commit/tree reconciliation. Required closure evidence remains the actual original historical/frozen-exact test, real plugin pollution/removal test and runner facade negative control, with full comparison report and exact hosted candidate/snapshot mapping. These were **not executed through uv/frozen-exact locally by this reviewer**. Supplemental probe/comparator success does not prove environment isolation, Web parser execution or plugin removal. No hosted or whole API PASS is claimed.
+
+All five candidate hashes were unchanged after own executions. All **45 approved core files** match the current manifest and original review inventory, zero differences. Approved fixture remains E6A33A64/full prior hash and boundary remains5FC30A4E/full prior hash. Scoped tracked diff-check passed. Concurrent NC1/NC2 document work is separate; this decision neither accepts a revised NativeChat contract nor authorizes its held lifecycle/schema pieces.
+
+Only this original review was appended. No product/test/baseline/schema/Git/private-memory writes or model calls. Durable result is this scoped approval, with F43-CI1 integration closure explicitly awaiting authorized CI evidence.

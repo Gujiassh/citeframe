@@ -15,7 +15,7 @@ import tempfile
 from pathlib import Path
 
 from a2a_r2_delta import compare
-from a2a_conflict_feature_oracle import compare_conflict_history as compare_historical_feature
+from a2a_compaction_history_oracle import compare_compaction_history as compare_historical_feature
 
 BASELINE_REF = "d1b5945e977445e4db6bf56ef54cf61607ead2e2"
 BASELINE_ARCHIVE_PATHS = (
