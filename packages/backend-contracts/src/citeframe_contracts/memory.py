@@ -1,6 +1,10 @@
 """Application-independent memory and provider contracts (P1a)."""
 from __future__ import annotations
 
+import base64
+import binascii
+from zlib import crc32
+
 from collections.abc import Iterator, Mapping
 from contextlib import AbstractContextManager
 from dataclasses import dataclass, field
@@ -79,6 +83,79 @@ class ToolCall:
     call_id: str
     name: str
     arguments_json: str
+
+
+GENERATION_IMAGE_STRUCTURE_VERSION = "generation-image-structure-v1"
+GENERATION_IMAGE_MAX_DECODED_BYTES = 4_194_304
+GENERATION_IMAGE_MAX_ENCODED_CHARS = 5_592_408
+GENERATION_MESSAGE_MAX_IMAGES = 8
+GENERATION_IMAGE_MAX_DIMENSION = 2_147_483_647
+_IMAGE_BASE64_ALPHABET = frozenset(
+    "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/"
+)
+_PNG_SIGNATURE = b"\x89PNG\r\n\x1a\n"
+_PNG_DEPTHS = {0: (1, 2, 4, 8, 16), 2: (8, 16), 3: (1, 2, 4, 8),
+               4: (8, 16), 6: (8, 16)}
+
+
+def _image_ascii(value: str) -> bytes:
+    return value.encode("ascii")
+
+
+def _validate_generation_image(image: GenerationImage) -> None:
+    code = "generation_input_unsupported"
+    if (type(image.media_type) is not str or type(image.data_base64) is not str
+            or type(image.detail) is not str
+            or type(image.width) is not int or type(image.height) is not int):
+        raise ProtocolError(code)
+    if (image.media_type != "image/png" or image.detail != "high"
+            or not 1 <= image.width <= GENERATION_IMAGE_MAX_DIMENSION
+            or not 1 <= image.height <= GENERATION_IMAGE_MAX_DIMENSION):
+        raise ProtocolError(code)
+    value = image.data_base64
+    size = len(value)
+    if not 44 <= size <= GENERATION_IMAGE_MAX_ENCODED_CHARS or size % 4:
+        raise ProtocolError(code)
+    padding = int(value[-1] == "=") + int(value[-2] == "=")
+    decoded_size = 3 * (size // 4) - padding
+    if not 33 <= decoded_size <= GENERATION_IMAGE_MAX_DECODED_BYTES:
+        raise ProtocolError(code)
+    boundary = size - padding
+    for index, char in enumerate(value):
+        if (index < boundary and char not in _IMAGE_BASE64_ALPHABET
+                or index >= boundary and char != "="):
+            raise ProtocolError(code)
+    try:
+        encoded = _image_ascii(value)
+        raw = base64.b64decode(encoded, validate=True)
+        if len(raw) != decoded_size or base64.b64encode(raw) != encoded:
+            raise ProtocolError(code)
+    except (ValueError, binascii.Error):
+        raise ProtocolError(code) from None
+    # Only the fixed IHDR is inspected; native admission owns complete PNG validity.
+    header = raw[:33]
+    if (header[:8] != _PNG_SIGNATURE or header[8:12] != b"\x00\x00\x00\x0d"
+            or header[12:16] != b"IHDR"
+            or int.from_bytes(header[16:20], "big") != image.width
+            or int.from_bytes(header[20:24], "big") != image.height
+            or header[24] not in _PNG_DEPTHS.get(header[25], ())
+            or header[26] != 0 or header[27] != 0 or header[28] not in (0, 1)
+            or crc32(header[12:29]) != int.from_bytes(header[29:33], "big")):
+        raise ProtocolError(code)
+
+
+@dataclass(frozen=True)
+class GenerationImage:
+    """Bounded PNG structure value; source authority and native decoding are external."""
+
+    media_type: Literal["image/png"]
+    data_base64: str = field(repr=False)
+    width: int
+    height: int
+    detail: Literal["high"] = "high"
+
+    def __post_init__(self) -> None:
+        _validate_generation_image(self)
 
 
 @dataclass(frozen=True)
@@ -258,7 +335,7 @@ class InstructionSourceView:
 __all__ = [
     "MemoryConditions", "MemoryStatement", "MemoryRequest", "MemoryView", "MemoryReceipt", "InstructionSourceView",
     "AccessContext", "AccessDenied", "AccessPort", "Clock", "EmbeddingPort",
-    "GenerationEvent", "GenerationMessage", "GenerationObserver", "GenerationPort",
+    "GenerationImage", "GenerationEvent", "GenerationMessage", "GenerationObserver", "GenerationPort",
     "GenerationRequest", "HTTPResponse", "HTTPTransport", "IdempotencyConflict",
     "MemoryError", "ModelConnectionSnapshot", "ObjectStorePort", "ProtocolError",
     "SourceUnavailable", "TextDelta", "TokenCount", "TokenCounter", "ToolCall",

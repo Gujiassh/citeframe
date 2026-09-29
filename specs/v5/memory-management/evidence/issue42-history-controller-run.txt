@@ -1,0 +1,18 @@
+checkout-import=citeframe_contracts.memory:packages/backend-contracts/src/citeframe_contracts/memory.py
+checkout-import=citeframe_contracts.compaction:packages/backend-contracts/src/citeframe_contracts/compaction.py
+checkout-import=citeframe_contracts.history:packages/backend-contracts/src/citeframe_contracts/history.py
+checkout-import=citeframe_memory.compaction:packages/memory-service/src/citeframe_memory/compaction/__init__.py
+checkout-import=citeframe_memory.compaction.policy:packages/memory-service/src/citeframe_memory/compaction/policy.py
+checkout-import=citeframe_memory.history.ranges:packages/memory-service/src/citeframe_memory/history/ranges.py
+checkout-import=citeframe_memory.history.search:packages/memory-service/src/citeframe_memory/history/search.py
+........................................................................ [ 71%]
+.............................                                            [100%]
+101 passed in 6.86s
+checkout-import=citeframe_contracts.memory:packages/backend-contracts/src/citeframe_contracts/memory.py
+checkout-import=citeframe_contracts.compaction:packages/backend-contracts/src/citeframe_contracts/compaction.py
+checkout-import=citeframe_contracts.history:packages/backend-contracts/src/citeframe_contracts/history.py
+checkout-import=citeframe_memory.compaction:packages/memory-service/src/citeframe_memory/compaction/__init__.py
+checkout-import=citeframe_memory.compaction.policy:packages/memory-service/src/citeframe_memory/compaction/policy.py
+checkout-import=citeframe_memory.history.ranges:packages/memory-service/src/citeframe_memory/history/ranges.py
+checkout-import=citeframe_memory.history.search:packages/memory-service/src/citeframe_memory/history/search.py
+pure-contracts-executed=101; history=42; generation-image=59; skipped=0; xfailed=0

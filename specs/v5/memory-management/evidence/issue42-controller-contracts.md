@@ -1,0 +1,11 @@
+# Controller checkout-local history / image verification
+
+Controller executed the exact inline Python body of .github/workflows/memory-history-contracts.yml at workflow hash f62da08e231908e699158aee4c9e7a9dc34285d6576f2d9d8b7f4ffd97abc318, extracted without semantic edits into the existing API Python. Only lane-local package src paths were supplied. The temporary sibling environment variable and pytest option overrides were absent.
+
+Actual result:101 passed in6.86s, exit0;42 history and59 image contract cases; all seven import paths checked before/after in this checkout. Raw stdout:issue42-history-controller-run.txt. This is controller local-run evidence, not a fresh frozen dependency install, Ubuntu/container or hosted result. The denied uv executable was not invoked or replaced.
+
+Original43 dependencies were copied from accepted commit b4e773a8fed882cd8cd8c6164c2b8814299eab56 after clean-filter Git blob verification. policy.py raw F992B4D5E0D512A6CAE7756CAB3ED0E33DEF8F178A4948C05A919DC9B2796B44; init raw2026CC0CD44D5F3475F58B0ABEE0A8F6531328D3E24FFB992150202CEC5BDD0A; existing compaction DTO D77617A25ECF5CD9C0B808537F6C884B7EE67E2A2250BB0D955E99597DDB5E2B. These remain original43-owned definitions, with no duplicate policy implementation.
+
+Historical-difference limit: original test_history_sources.py hash22ec11d67fe74a221b38dbed6a0a3d39fda538d5e1f7f09c66dd661f7883b944 was recorded and reviewed before the CI cleanup but its full original bytes were not retained or committed. Developer confirmed no recoverable copy. Limited reconstruction attempts did not match, and no reconstruction was presented as the original. The earlier assertion of proven loader-only/body-unchanged editing is withdrawn. This is not evidence that the test body changed. Current737a5a85b8aa46331790b4cfe83c9e0302c72894e8352bc5b73788f7f5f6daee now receives a fresh complete source-semantic review against the approved pure contract, rather than an unavailable historical byte-diff claim.
+
+Pure helper/type acceptance does not activate native history/source authorization, storage/index/hybrid, images on GenerationMessage, visual model dispatch or UI. Full41 remains open. Controller owns subsequent branch/PR grouping and hosted evidence.
