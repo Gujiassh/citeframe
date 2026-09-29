@@ -15,3 +15,13 @@ The migration is additive over `s3a4b5c6d7e8`, installing six tables and narrowl
 Contract/scaffold: commit `eac4de4`, owned solely by #42. Provider #44 consumes `citeframe_contracts.memory` and owns only neutral adapters and their tests. Persistence candidate and evidence are recorded in `specs/v5/memory-management/lane42-report.md`. Independent acceptance is owned by `reviews/issue42-implementation.md`; test counts alone do not accept later runtime/UI/model stages.
 
 Automatic shared-task compaction remains a later required delivery under the full specification. P1a does not activate it or complete issues #42/#41.
+
+## Frozen neutral-core acceptance — 2026-09-29
+
+Original independent reviewer accepted exact45-file manifest A9C9385497F7092DC958ABFA218C3AEA13D089C97EBF621E92D46A24334375FB. F43-I3/I4 closed through pre-write historical interval authentication and absent/valid-only summary persistence under existing call locks; no schema expansion in that correction. Current independent22+176 targeted cases passed;508 collected only. Earlier486 independently executed cases apply to old44-file identity. Controller independently reran current66 cases in131.65s with zero manifest changes, ownPG stopped. Exact evidence and limits remain in reviews/issue43-compaction.md and evidence/issue43/controller-i3i4-verification.md.
+
+Controller may commit this reviewed neutral core and integrate accepted PR49 dependency. No actual Chat/Research route, whole-source/index, semantic-model or visible-UI acceptance is claimed. CI and exact dependency integration remain required. A1choice2 and same-run automatic continuation requirements remain unchanged. All parent/child issues stay open.
+
+## CI integration repair accepted — 2026-09-29
+
+Original reviewer accepted fixture E6A33A64 with106real-PG cases and boundary5FC30A4E with20cases plus27DDL/12FK mutation probes. Controller independently ran both boundary modules at the same hash:20passed1.57s, zero skip, existing Starlette warning. This is compiled metadata/import evidence, not an additional PostgreSQL run. Historical fixture uses fullt4; current runtime uses fullu5. Frozen source snapshot itself contains81tables/97indexes; approved prior deltas produce85native tables/97indexes. The unchanged45core identity remains accepted. Prior local0315a735 corrects migration head assertions. Push these reviewed integration fixes for fresh complete CI; actualChat/Research/UI remain unaccepted.

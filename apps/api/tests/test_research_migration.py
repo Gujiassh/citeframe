@@ -216,7 +216,8 @@ def test_prompt_v2_migration_refuses_downgrade_for_every_business_reference(
 def test_alembic_has_one_evolvable_head_after_autonomy() -> None:
     config = Config(str(Path(__file__).parents[1] / "alembic.ini"))
     script = ScriptDirectory.from_config(config)
-    assert script.get_heads() == ["t4b5c6d7e8f9"]
+    assert script.get_heads() == ["u5c6d7e8f9a0"]
+    assert script.get_revision("u5c6d7e8f9a0").down_revision == "t4b5c6d7e8f9"
     assert script.get_revision("t4b5c6d7e8f9").down_revision == "s3a4b5c6d7e8"
     assert script.get_revision("s3a4b5c6d7e8").down_revision == "r2f3a4b5c6d7"
 

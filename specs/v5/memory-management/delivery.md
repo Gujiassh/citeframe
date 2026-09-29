@@ -101,3 +101,17 @@ Shared contract commits: #42 `eac4de417e8610e43fb34b702fbe02c9a4143163` and `9ad
 - PR attachment tool invoked for48/49 but returned Transport closed; attachments are NOT confirmed. GitHub PRs exist, linked above. Retry app attachment only after transport recovery.
 
 Final A1choice2 remains accepted: private owner management only; no private data reuse in shared output paths, no new private native mode/audience. End-to-end automatic compaction, actual source/tool/API/Research/UI integration and semantic acceptance remain required before41completion.
+
+## Frozen neutral-core acceptance — 2026-09-29
+
+Original independent reviewer accepted exact45-file manifest A9C9385497F7092DC958ABFA218C3AEA13D089C97EBF621E92D46A24334375FB. F43-I3/I4 closed through pre-write historical interval authentication and absent/valid-only summary persistence under existing call locks; no schema expansion in that correction. Current independent22+176 targeted cases passed;508 collected only. Earlier486 independently executed cases apply to old44-file identity. Controller independently reran current66 cases in131.65s with zero manifest changes, ownPG stopped. Exact evidence and limits remain in reviews/issue43-compaction.md and evidence/issue43/controller-i3i4-verification.md.
+
+Controller may commit this reviewed neutral core and integrate accepted PR49 dependency. No actual Chat/Research route, whole-source/index, semantic-model or visible-UI acceptance is claimed. CI and exact dependency integration remain required. A1choice2 and same-run automatic continuation requirements remain unchanged. All parent/child issues stay open.
+
+## CI integration repair accepted — 2026-09-29
+
+Original reviewer accepted fixture E6A33A64 with106real-PG cases and boundary5FC30A4E with20cases plus27DDL/12FK mutation probes. Controller independently ran both boundary modules at the same hash:20passed1.57s, zero skip, existing Starlette warning. This is compiled metadata/import evidence, not an additional PostgreSQL run. Historical fixture uses fullt4; current runtime uses fullu5. Frozen source snapshot itself contains81tables/97indexes; approved prior deltas produce85native tables/97indexes. The unchanged45core identity remains accepted. Prior local0315a735 corrects migration head assertions. Push these reviewed integration fixes for fresh complete CI; actualChat/Research/UI remain unaccepted.
+
+## CI1 candidate approved for hosted verification — 2026-09-29
+
+Base acefd922, repair branch work/issue43-inloop-compaction, PR54. The two full-API failures arose from newly additive Attempt memory_context_version=0 and memory_checkpoint_id=null entering the frozen historical comparison. Exact four-file correction validates every original schema/row/value and raw/normalized consistency before deep-copy projection of only these fields; original baselines, reports and R2/F1/F2/retry/publication controls remain unchanged. Original Critical reviewer approved the pinned candidate for hosted CI; controller independently reran156 tests (1.74s), no skips. Scope: infra/scripts/a2a_compaction_history_oracle.py, run-a2a-differential.py and two exact API test files. Review/evidence are versioned with this slice. Full original frozen-exact/plugin tests remain hosted gates; no full API or runtime completion claim. NativeChat NC1/NC2 candidate, untracked temporary files and native product work are excluded. Downstream56/44 integration follows exact accepted repair identity; no duplicate implementation.
