@@ -151,3 +151,92 @@
 - frozen install、hosted job仍待实际成功；本机runner不能代替。类型三份已接受hash、history产品hash、原authority/reviews均保持；未扩成source/DB/UI/model视觉可用。
 
 本轮仅更新本CI review。未继续寻找/制造旧文件，未修改产品/tests/workflow/CI/evidence或旧两份review，未进行Git写入、模型/paid调用。durable write-back仅本评审。
+
+## 9. HC02 — PR56 全 API import-boundary guard 的有限白名单过时（2026-09-29）
+
+**结论：需要原 owner 定向修正测试；当前失败没有发现 forbidden 跨包依赖。原 pure-history/type/专用 CI 的 bounded ACCEPT 保留；全 API gate 尚未关闭。**
+
+### 9.1 目标、候选与精确失败点
+
+本轮只判断第三项 contracts import-boundary 失败的根因和最小修复面；另外两项 #43 a2a differential 失败由 #43 负责，未审查。当前 index 两文件施工不属于本轮。
+
+PR56 候选：`a3c9a3ccd68190377fc9e236b14e352e98d424ea`。独立比对 `git show a3c9a3cc:<path>` 与工作文件（只消除 Git/checkout 换行差异），下面两份内容相同，无本地 diff：
+
+| 文件 | 本树 SHA-256 |
+|---|---|
+| apps/api/tests/test_deploy_dependencies.py | 95d147b8434f94adb59b099891b2bcbfc3b0e466ac1286548659dc6e59952729 |
+| packages/backend-contracts/src/citeframe_contracts/history.py | a771d0caf41ac0da307e1bb723da039aa2411f9cc35dd86e4c2ee460cf9d3c02 |
+
+精确函数：`apps/api/tests/test_deploy_dependencies.py:74`，`test_contracts_source_is_pure_and_imports_with_only_its_source_path()`。
+
+失败断言在 **:83–85**：每一个相对 `ast.ImportFrom` 都必须等于唯一三元组 `("citeframe_contracts/__init__.py", 1, "memory")`。实际扫描到 **contracts/history.py:7** 的 `from .compaction import SourceReference`，三元组为 `("citeframe_contracts/history.py", 1, "compaction")`，因此失败。即使仅放行这一行，**:8** 的 `from .memory import MemoryError` 仍会被同一旧断言拒绝。
+
+这里的 `.compaction` 解析为 **citeframe_contracts.compaction** canonical DTO；`.memory` 解析为 **citeframe_contracts.memory**。它们均为同包纯合同依赖，不是 `citeframe_memory.compaction` 服务实现，也没有导入 application/persistence。保持这两条引用可保留 canonical 类型/错误身份，无需复制定义或修改冻结产品。
+
+### 9.2 独立复现与边界证据
+
+原失败测试实跑（cwd 为本工作树）：
+
+```powershell
+$env:PYTHONDONTWRITEBYTECODE='1'
+& D:/Code/citeframe/apps/api/.venv/Scripts/python.exe -B -m pytest apps/api/tests/test_deploy_dependencies.py::test_contracts_source_is_pure_and_imports_with_only_its_source_path -q -p no:cacheprovider
+```
+
+结果：**1 failed，exit 1，0.16s**；错误指向 test **:83**、history **:7**，与 controller 提供的 hosted 症状相符。测试在 AST 断言阶段终止，尚未到原函数的 subprocess smoke。
+
+额外只读探针：
+
+- AST 扫描当前 contracts 的全部5个 `.py` 文件；相对导入实际仅有3种三元组：root `__init__.py → .memory`（:423、:460 两处），`history.py → .compaction`（:7），`history.py → .memory`（:8）。
+- 所有绝对 import roots 为 `__future__, base64, binascii, collections, contextlib, dataclasses, datetime, typing, uuid, zlib`；全部属于 stdlib。manifest 的 `project.dependencies == []` 保持。
+- 用现有 Python 启动 **`-I -S -B -c <probe> <contracts-src>`**；禁用 site 初始化、忽略 PYTHONPATH，只显式插入本树 contracts source，实际导入 root/history/compaction/memory。四个 `__file__` 均精确匹配本 checkout；`history.SourceReference is compaction.SourceReference` 与 `history.MemoryError is memory.MemoryError` 均成立；未加载 citeframe_memory/citeframe_persistence/app/sqlalchemy/pydantic/fastapi。exit 0。
+- 在内存中验证下面建议的有限谓词：3种批准三元组通过，9项 forbidden absolute root / 相对 depth / module / origin 控制拒绝。包括 sqlalchemy、fastapi、citeframe_memory、citeframe_persistence、`..memory`、`.unknown`、`from . import memory`、未批准 origin 的 `.memory`，以及原 guard 不允许的 absolute self-package import。此为建议谓词的 reviewer 控制，**未修改或声称修复后的真实测试已经通过**。
+
+### 9.3 最小修复建议及复验条件
+
+由原测试 owner 在 controller 授予的窄范围内修改 `apps/api/tests/test_deploy_dependencies.py`：将单一相对导入等式改成以下**显式有限集合**的 membership 检查：
+
+```python
+{
+    ("citeframe_contracts/__init__.py", 1, "memory"),
+    ("citeframe_contracts/history.py", 1, "compaction"),
+    ("citeframe_contracts/history.py", 1, "memory"),
+}
+```
+
+保留 `dependencies == []`、现有 stdlib-only absolute root 检查和 `(path, lineno)` 失败定位；不要采用“所有相对导入直接 continue”、self-package 通配或允许 `..` 越界。原 local-package/export/lock/Docker finite maps 不需改变。
+
+原 source-path smoke 只 import root package，没有显式加载 history；建议在同一个隔离 smoke 中显式 import history/compaction/memory，核对精确 source 路径及 canonical 类型身份。保留旧 forbidden-import 保证，并为新增 allowlist 附加 finite negative controls（错误 origin、module、depth、第三方/application/persistence/service roots）；不可删除 guard、改变 baseline 以忽略整个 history 文件。
+
+修复后的验收需实际原测试/相关 deploy 测试通过且负例继续拒绝。该定向修正无需改 history 产品、DTO、lock、workflow 或中断 index 施工。本轮只提交 finding/建议，没有实施修复，HC02 尚待 owner 候选与复验关闭。
+
+### 9.4 hosted 更新与范围保持
+
+controller 报告 PR56 `a3c9a3cc` 专用 frozen101 hosted 已通过；全 API 在 run **36464968435** / job **109072636943** 有上述第三项及两项 #43 a2a 失败。本轮未重新下载 hosted log，因此 hosted 状态明确归因于 controller；本 reviewer 独立证据是同候选内容的本地精确失败复现和隔离 import/AST 检查。§7/§8 的 hosted 未运行描述保留为当时的证据状态，以本段补充后续进展；本机 uv 启动受限的既有事实未改变。
+
+未将专用101通过扩大为 full API/PR/source/DB/UI/model image runtime 接受；既有 P1a、admission、pure-history、第一阶段 image 接受范围保持。仅追加本 review，未改产品、测试、workflow、其它 review、Git 或正在施工的 index 文件；没有 paid/model 调用。write-back 检查：可复用的已验证根因与证据保存在本项目评审，不重复写 private/global memory。
+## 10. HC02 exact fix — CLOSED / bounded ACCEPT（2026-09-29）
+
+接受精确 `apps/api/tests/test_deploy_dependencies.py` SHA-256 **1d17c3ada08dc31f58c1c875ce830f9099c92d47132de9eb7d29a1bf9b19532f**。HC02 所指第三项 import-boundary 失败在该本地候选上关闭；不据此声称 controller 尚未推送的 hosted 全 API 已通过。
+
+### 10.1 实物与旧边界保持
+
+- 原 AST scanner 抽为 `_assert_contract_imports`，仍遍历整个 contracts source tree。相对导入只批准 `(origin, level, module)` 的3个精确三元组：root→.memory、history→.compaction、history→.memory。不是全包/所有relative放行。
+- 空 dependencies、stdlib-only absolute roots、AST 全树扫描与带 path/lineno 的错误保持。旧 local distributions/source/lock/export/Docker 期望没有改动。独立以 `git show a3c9a3cc:<test-path>` 作 AST 比较，除目标函数外原有8个 functions/helpers 完全同 AST；原 top-level assignments 全部保持。
+- 3项 positive 参数用例另断言 allowlist 精确等于该集合；16项 negative 均调用同一实际 helper 并要求 AssertionError 与 origin/line 定位。覆盖错误 origin、二/三级相对深度、未知module、空relative module、absolute self-package、third-party/API/Worker/persistence/research-persistence/memory-service，以及同一 import 中混合 stdlib+forbidden root。没有删除旧 guard 或放宽既有 package baseline。
+- 隔离 smoke 实际使用 `-I -S -B`，只插入本 checkout contracts source；显式导入 root/history/compaction/memory，四份 `__file__` 精确等于期待路径；SourceReference、MemoryError canonical identity 有真实断言，并拒绝已加载 forbidden module roots。smoke 随原测试实际执行成功。
+
+### 10.2 本 reviewer 独立运行
+
+Interpreter 为 `D:/Code/citeframe/apps/api/.venv/Scripts/python.exe`；cwd为本工作树，`PYTHONDONTWRITEBYTECODE=1`，`-B`、`-p no:cacheprovider`。
+
+1. API：`python -B -m pytest apps/api/tests/test_deploy_dependencies.py -q -p no:cacheprovider --basetemp=<本树.local-runtime下新唯一hc02-review目录>` → **25 passed，0.28s，exit0**。包含原6项、3项精确positive、16项negative。保留一条现有 Starlette/httpx deprecation warning。
+2. Worker：独立进程 `python -B -m pytest apps/worker/tests/test_deploy_dependencies.py -q -p no:cacheprovider` → **2 passed，0.05s，exit0**。未混合两个同名测试模块。
+3. 同一 workflow 原 heredoc正文再次独立执行（仅去 YAML 10空格缩进），body SHA-256仍为 `aeeff0148ccb739e95fb2000b249eec1e30c2561b36e359985a268c79191de13`；禁用第三方 plugin autoload，PYTHONPATH仅本树 contracts/memory-service/backend-persistence。→ **101 passed，6.09s，exit0**；七个 checkout imports 前后验证成功，最终 exact42+59、skipped0/xfailed0。
+
+首次 API 命令未指定 basetemp 时出现 **24 passed / 1 setup error**：既有 Docker parser 用例的 tmp_path 无法扫描系统 `pytest-of-baiao` 临时目录（WinError5），未执行该用例正文。保留此失败记录；随后只将测试临时输出定向到获准可写的本树新唯一目录，未删除共享临时目录、修改测试或绕过产品 guard，得到上述25项全过。
+
+### 10.3 接受边界
+
+接受本次 test-only 修复及其有限 boundary controls；保持先前 pure-history/type/CI 接受。开发提供的25+2+101结果已由本 reviewer 独立复验，仍是本地现有 interpreter 结果；未重新执行 uv frozen install 或 hosted job。另两项 #43 a2a 失败不在本轮，也未改 baseline；本轮不混入 index 设计/实现、PG或新 native authority 认可。
+
+本阶段只追加此 review；测试临时 fixture 输出在本树独立目录。没有产品/test/workflow/Git写入、付费调用。精确候选通过后再串行进行独立 IC01 文档复审。
