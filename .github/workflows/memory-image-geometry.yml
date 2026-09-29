@@ -1,0 +1,120 @@
+name: Memory image geometry
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - apps/api/src/ai_pdf_api/modalities/native_image_geometry.py
+      - apps/api/tests/test_native_image_geometry.py
+      - apps/api/src/ai_pdf_api/modalities/image_evidence_targets.py
+      - apps/api/src/ai_pdf_api/modalities/pdf_evidence_targets.py
+      - apps/api/pyproject.toml
+      - apps/api/uv.lock
+      - packages/backend-contracts/pyproject.toml
+      - packages/backend-persistence/pyproject.toml
+      - packages/research-persistence/pyproject.toml
+      - packages/memory-service/pyproject.toml
+      - .github/workflows/memory-image-geometry.yml
+  pull_request:
+    paths:
+      - apps/api/src/ai_pdf_api/modalities/native_image_geometry.py
+      - apps/api/tests/test_native_image_geometry.py
+      - apps/api/src/ai_pdf_api/modalities/image_evidence_targets.py
+      - apps/api/src/ai_pdf_api/modalities/pdf_evidence_targets.py
+      - apps/api/pyproject.toml
+      - apps/api/uv.lock
+      - packages/backend-contracts/pyproject.toml
+      - packages/backend-persistence/pyproject.toml
+      - packages/research-persistence/pyproject.toml
+      - packages/memory-service/pyproject.toml
+      - .github/workflows/memory-image-geometry.yml
+
+permissions:
+  contents: read
+
+jobs:
+  native-image-geometry:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      PYTHONDONTWRITEBYTECODE: "1"
+      PYTEST_DISABLE_PLUGIN_AUTOLOAD: "1"
+      UV_PYTHON: "3.12"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+          cache-dependency-glob: apps/api/uv.lock
+      - run: uv sync --project apps/api --frozen --extra dev
+      - name: Test isolated geometry against actual old crop oracles
+        run: |
+          uv run --project apps/api --frozen --no-sync python - <<'PY'
+          import importlib.abc
+          import pathlib
+          import socket
+          import sys
+
+          assert sys.version_info[:2] == (3, 12)
+
+          forbidden_roots = {"ai_pdf_api", "ai_pdf_worker", "citeframe_contracts"}
+
+          class NoApplications(importlib.abc.MetaPathFinder):
+              def find_spec(self, fullname, path=None, target=None):
+                  if fullname.split(".", 1)[0] in forbidden_roots:
+                      raise AssertionError("application import forbidden: " + fullname)
+
+          def deny_network(*args, **kwargs):
+              raise AssertionError("geometry tests forbid sockets and DNS")
+
+          sys.meta_path.insert(0, NoApplications())
+          socket.socket = deny_network
+          socket.socketpair = deny_network
+          socket.create_connection = deny_network
+          for name in ("getaddrinfo", "gethostbyname", "gethostbyname_ex", "gethostbyaddr", "getnameinfo"):
+              setattr(socket, name, deny_network)
+
+          import pytest
+
+          test_path = "apps/api/tests/test_native_image_geometry.py"
+          if not pathlib.Path(test_path).is_file():
+              raise SystemExit("required native image geometry test file is missing")
+
+          class RequireExecutedTests:
+              def __init__(self):
+                  self.skipped = False
+                  self.deselected = False
+                  self.xfailed = False
+                  self.passed_calls = 0
+
+              def pytest_collectreport(self, report):
+                  self.skipped |= report.skipped
+
+              def pytest_runtest_logreport(self, report):
+                  self.skipped |= report.skipped
+                  self.xfailed |= hasattr(report, "wasxfail")
+                  if report.when == "call" and report.passed:
+                      self.passed_calls += 1
+
+              def pytest_deselected(self, items):
+                  self.deselected |= bool(items)
+
+              def pytest_sessionfinish(self, session, exitstatus):
+                  if (self.skipped or self.deselected or self.xfailed
+                          or session.testscollected != 119 or self.passed_calls != 119):
+                      session.exitstatus = 1
+
+          status = pytest.main([
+              "--noconftest", "--strict-markers", "-p", "no:cacheprovider",
+              "-o", "pythonpath=", "-o", "xfail_strict=true", "-q",
+              test_path,
+          ], plugins=[RequireExecutedTests()])
+          geometry_module = sys.modules["geometry_under_test"]
+          expected = pathlib.Path("apps/api/src/ai_pdf_api/modalities/native_image_geometry.py").resolve()
+          assert pathlib.Path(geometry_module.__file__).resolve() == expected
+          assert not any(name.split(".", 1)[0] in forbidden_roots for name in sys.modules)
+          raise SystemExit(status)
+          PY

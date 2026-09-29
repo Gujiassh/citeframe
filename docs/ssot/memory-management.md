@@ -15,3 +15,7 @@ The migration is additive over `s3a4b5c6d7e8`, installing six tables and narrowl
 Contract/scaffold: commit `eac4de4`, owned solely by #42. Provider #44 consumes `citeframe_contracts.memory` and owns only neutral adapters and their tests. Persistence candidate and evidence are recorded in `specs/v5/memory-management/lane42-report.md`. Independent acceptance is owned by `reviews/issue42-implementation.md`; test counts alone do not accept later runtime/UI/model stages.
 
 Automatic shared-task compaction remains a later required delivery under the full specification. P1a does not activate it or complete issues #42/#41.
+
+## Geometry bounded delivery
+
+At base7d6be8a, original developer delivered geometry-only implementation and dedicated frozen Linux workflow. Independent original reviewBC5B2A72 accepted exact product62B89093/test538AB2C3/workflow82600A9C; reviewer119plus96PDF/512Decimal/14type controls. Controller1191.45s and exactworkflow1192.88s, actionlint0. No native source/decoder activation, Linux outcome pending, launcher/build still outside authorization. This follow-up branch preserves PR52 head. Actual Chat/Research same-run runtime and UI remain required.

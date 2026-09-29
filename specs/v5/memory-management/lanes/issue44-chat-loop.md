@@ -689,6 +689,8 @@ Complete known usage with provider source=estimated stays estimated; it never be
 
 ## 21. F44-R5 — native source-read/decode/render bounds before image activation
 
+Implementation-before-review contract and native source evidence: [issue44-native-image-bounds.md](issue44-native-image-bounds.md). No product activation is granted by this link.
+
 Actual native behavior inspected: storage.download_bytes calls response.read() without explicit cap; image evidence target downloads full object and calls image.load() before crop geometry checks; PDF target downloads source, then renders150dpi pixmap before checking1280 edge and re-rendering. visual_enrichment image count does not cap explicit+retrieved source bytes or intermediate decode/render allocations. Earlier “existing bounded loader” assertion is withdrawn.
 
 Required original native storage/image/PDF owner amendment (proposal only, no files changed): one immutable per-admission image budget with strictly validated configured limits `maxSourceBytesPerObject,maxSourceBytesTotal,maxDecodePixelsPerObject,maxDecodedBytesPerObject,maxDecodedBytesTotal,maxRenderPixelsPerOperation,maxRenderBytesPerOperation,maxRenderBytesTotal,maxImages,maxPngBytesPerImage,maxPngBytesTotal,maxDecodeRenderOperations,deadline`. Real values need resource measurements and owner review; this contract creates no production defaults or capabilities.

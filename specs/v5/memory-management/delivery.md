@@ -101,3 +101,7 @@ Shared contract commits: #42 `eac4de417e8610e43fb34b702fbe02c9a4143163` and `9ad
 - PR attachment tool invoked for48/49 but returned Transport closed; attachments are NOT confirmed. GitHub PRs exist, linked above. Retry app attachment only after transport recovery.
 
 Final A1choice2 remains accepted: private owner management only; no private data reuse in shared output paths, no new private native mode/audience. End-to-end automatic compaction, actual source/tool/API/Research/UI integration and semantic acceptance remain required before41completion.
+
+## Geometry bounded delivery
+
+At base7d6be8a, original developer delivered geometry-only implementation and dedicated frozen Linux workflow. Independent original reviewBC5B2A72 accepted exact product62B89093/test538AB2C3/workflow82600A9C; reviewer119plus96PDF/512Decimal/14type controls. Controller1191.45s and exactworkflow1192.88s, actionlint0. No native source/decoder activation, Linux outcome pending, launcher/build still outside authorization. This follow-up branch preserves PR52 head. Actual Chat/Research same-run runtime and UI remain required.
