@@ -15,6 +15,7 @@ This bounded contract explicitly supports READ COMMITTED index writers. Stronger
 - Original model plus new delete/pending REPEATABLE READ tests: **2 failed**, both `DID NOT RAISE DBAPIError`, 154 deselected, 2.85s. This is recorded negative-control evidence.
 - Repaired complete storage suite: **156 passed**, zero skips, 8.64s.
 - Exact dedicated workflow Python body executed locally: **156 passed**, zero skips/xfails, 8.24s; checkout-local import checks passed.
+- Retained shared-history/image suite: **101 passed**, 6.19s.
 - Added 18 cases: six two-connection stale-snapshot cases across READ COMMITTED / REPEATABLE READ / SERIALIZABLE, and twelve direct INSERT/UPDATE/DELETE admission cases across both unsupported levels and both tables. Fresh connections inspect committed state after rollback.
 - Test database: a new controller-owned PostgreSQL17.11 cluster under the current task directory, loopback port56493, exact database `citeframe_history42_index_test`. No original lane database was resumed or modified.
 - Dependencies come from the existing API Python environment; pytest's project pythonpath loads the candidate checkout. The dedicated hosted workflow separately verifies checkout-local model imports before and after all156 cases, freezes dependency installation and rejects skips/xfails/partial execution.
@@ -32,6 +33,12 @@ $env:CITEFRAME_HISTORY42_INDEX_POSTGRES_URL='postgresql+psycopg://index42_test@1
 Historical review/evidence and the approved IC01/storage/activation contracts are retained without rewriting their historical verdicts. Fresh independent product/CI review and hosted results must be recorded separately. The new workflow adds a storage gate; it does not weaken existing checks.
 
 Original reviewer `agt_a74ed9c2` was queried through the official DevSpace CLI and a bounded continuation was requested. Execution failed with `PROVIDER_UNAVAILABLE: Codex executable was not found`; no successful original-reviewer approval is claimed. A fresh independent review is required and identified separately.
+
+Fresh independent Critical review approved the bounded first candidate (see `reviews/issue42-index-is01-critical-review.md`):156 cases passed8.66s and exact workflow156 passed8.14s. Additional direct SQL probes confirmed unsupported writes reject before workspace locks and manifest DELETE holds the workspace barrier. This initial verdict is hash-scoped; follow-up changes need separate review.
+
+First hosted storage run `37104290402/job111149693995` at `b415e15`:155 passed/1 failed8.72s. The retained lexical test assumed C-locale CJK trigram exclusion. Hosted PostgreSQL17.11 uses en_US.utf8 and returned the valid two-channel score2/61, while Windows C-locale returned the one-channel score1/61. The follow-up oracle uses independent PostgreSQL alphanumeric classification, verifies exactly five CJK trigrams or zero as appropriate, asserts exact FTS/trigram ordinal hit sets, and checks the corresponding exact RRF contribution. It preserves English exact/substring and inactive-corpus assertions; no profile, threshold, product query, locale or CI gate changed.
+
+Locale-only follow-up: controller156 passed8.57s; independent156 passed8.69s and scoped APPROVE. The database catalog was C-locale, with actual CJK classification false/trigram count0. Test SHA-256 `a66d35f30a574fd7d072fcfc029a57a16f939d87015b69d77a2c0f4a83f0185f`; model/workflow hashes remain the originally reviewed identities. Real hosted Linux result remains a separate gate.
 
 Only explicit model import creates these two tables. There is no production export, successor migration, source authority issuer, native lifecycle hook, index activation/search endpoint, embedding evaluation or UI change. ORM schema evidence is distinct from real migration and native runtime acceptance. No paid calls or deployment.
 

@@ -295,9 +295,21 @@ def test_real_simple_fts_trigram_unicode_rrf_sql(db):
     """)
     rows = db.execute(query,{"wid":workspace,"sid":source,"q":"历史证据"}).all()
     assert len(rows)==1 and rows[0][:2]==(source,0)
-    assert float(rows[0][2])==pytest.approx(1/61)
-    # This disposable cluster's C locale indexes the CJK FTS token, but no CJK trigrams.
-    assert db.execute(text("SELECT show_trgm('历史证据')")).scalar_one()==[]
+    # pg_trgm word classification follows the database locale; simple FTS does not.
+    cjk_word = db.execute(text("SELECT :q ~ '^[[:alnum:]]+$'"),{"q":"历史证据"}).scalar_one()
+    trigrams = db.execute(text("SELECT cardinality(show_trgm(:q))"),{"q":"历史证据"}).scalar_one()
+    assert trigrams == (5 if cjk_word else 0)
+    fts_hits = db.execute(text(
+        "SELECT chunk_ordinal FROM memory_index_entries WHERE manifest_id=:id "
+        "AND search_vector @@ plainto_tsquery('simple',:q) ORDER BY chunk_ordinal"
+    ),{"id":manifest["id"],"q":"历史证据"}).scalars().all()
+    trgm_hits = db.execute(text(
+        "SELECT chunk_ordinal FROM memory_index_entries WHERE manifest_id=:id "
+        "AND :q <% text_content ORDER BY chunk_ordinal"
+    ),{"id":manifest["id"],"q":"历史证据"}).scalars().all()
+    assert fts_hits == [0,1,2]
+    assert trgm_hits == ([0,1,2] if cjk_word else [])
+    assert float(rows[0][2])==pytest.approx((2 if cjk_word else 1)/61)
     rows = db.execute(query,{"wid":workspace,"sid":source,"q":"exact"}).all()
     assert len(rows)==1 and float(rows[0][2])==pytest.approx(2/61)
     rows = db.execute(query,{"wid":workspace,"sid":source,"q":"lex"}).all()
