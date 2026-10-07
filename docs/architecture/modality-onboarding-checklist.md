@@ -13,7 +13,7 @@ Use this when adding a production `asset_kind`. Shared Chat / retrieval fusion /
 7. **Web production-registry** — upload accept, renderer binding, locator summary.
 8. **Evidence targets / visual enrichers** (optional) — register resolvers or `VisualEvidenceEnricher` implementations; do not special-case inside `services/chat.py`.
 9. **Tests** — upload/MIME, parse, codec, retrieval scope, citation clone, viewer parse, delete/restore as applicable.
-10. **S0 enable** — catalog `enabled=true` only with code module; readiness fails on drift.
+10. **Enable catalog** — catalog `enabled=true` only with code module; readiness fails on drift.
 
 ## Forbidden in shared layers
 
@@ -24,4 +24,4 @@ Use this when adding a production `asset_kind`. Shared Chat / retrieval fusion /
 ## References
 
 - [`modality-extension-contract.md`](modality-extension-contract.md)
-- [`specs/v5/architecture-hardening/`](../../specs/v5/architecture-hardening/)
+- [Evidence](evidence.md)

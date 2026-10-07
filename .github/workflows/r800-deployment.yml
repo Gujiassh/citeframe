@@ -1,4 +1,4 @@
-name: R800 deployment script smoke
+name: Deployment validation
 
 on:
   pull_request:

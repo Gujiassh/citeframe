@@ -1,343 +1,53 @@
-# Research Workflow Runtime And Runbook
+# Research execution and recovery
 
-## Status
+Research is a versioned bounded workflow with frozen asset scope, prompts, provider bindings, and budgets. PostgreSQL holds durable execution state; object storage holds immutable artifacts. Quick Answer has a separate request/stream path.
 
-- Implemented baseline: V4 R200-R800 engineering scope
-- Canonical engineering evidence: [`../evals/artifacts/r800-v1/deployment-20260728-v4/`](../evals/artifacts/r800-v1/deployment-20260728-v4/)
-- First provider-backed evidence: [`../evals/artifacts/r803-v1/`](../evals/artifacts/r803-v1/)
-- Latest strict provider-backed diagnostic evidence: [`../evals/artifacts/r803-v4/`](../evals/artifacts/r803-v4/)
-- Frozen formal campaign contracts: [`../evals/r803-v5-campaign-threshold.md`](../evals/r803-v5-campaign-threshold.md)
-- First formal campaign attempt: [`../evals/artifacts/r803-campaign-20260730-v1/`](../evals/artifacts/r803-campaign-20260730-v1/) (`failed`, 0/5 completed rounds; immutable)
-- Engineering gate: deterministic R800 baseline `pass`; R803 formal campaign v1 `fail`
-- Research boundary status: A2a/R0 are delivered at `origin/main@8674d4d`. R1 is independently `ACCEPTED (High=0, Medium=0, Low=0)` on 2026-08-25 across start `8674d4d`, historical initial `f4a1d1d(REWORK)`, runtime `473213d`, ledger `652cfd4`, docs `559997d`, delivery truth `80d395d`, review `5a55489`; PR #22 delivered the complete chain to `origin/main@a616eea1350b095c6f229890d2c47e5010902330` with `6/6` CI. R2 is the only next separately gated module; W1/admission/downstream blocked. [`R1 review`](../../specs/v5/post-v5-optimization/reviews/r1-single-attempt-dispatcher-critical-review-2026-08-24.md).
-- Latest interpretable paired diagnostic gates (v4): Quick `pass`; Research `fail` with 5/6 completed cases
-- Model-quality gate: `not_evaluable` because formal v1 interrupted before any round completed
-- User-value gate: `not_evaluable` until M404 contains qualified target-user evidence
-- Product stage: `internal_preview`
+## Workflow versions
 
-## Runtime Boundaries
+Roles include Planner, bounded Researcher branches, join, Verifier, Critic, conflict handling, Synthesizer, and publication. Workflow/Agent I/O versions select strict schemas, validators, prompt bindings, and historical readers.
 
-The Research workflow is a separate, explicit mode. Quick Chat, Chat SSE, Citation,
-NoteSource, Asset scope, and Note save semantics remain unchanged.
+Older runs retain their original approval path. Newer policies can materialize validated plans automatically, perform bounded supplemental retrieval, and report unresolved conflicts. Current conflict investigation is stored separately from original claims; insufficient evidence or exhausted bounds leaves unresolved originals/gaps visible. Models do not create arbitrary graph nodes/tools.
 
-The production path is split by ownership:
+Report edits create independent Markdown editions, preserving original evidence, claims, and verification status. Concurrent saves require displayed original artifact identity/hash and expected version.
 
-- Web selects Quick or Research, renders persisted Run/Step/Event state, and submits
-  creator-only plan/conflict decisions through BFF routes.
-- API owns HTTP/auth/Alembic/schema governance for persistent Research contracts. In the
-  repair worktree, neutral `citeframe_persistence` owns mappings/metadata and
-  `citeframe_research_persistence` owns DB-only Research transitions; API retains public
-  routes, compatibility facades, and external-adapter composition.
-- **Delivered A2a/R1 boundary fact:** Worker owns typed
-  orchestration/provider/tool execution and uses the neutral Research persistence service,
-  UoW, and repository for DB-only transitions. API owns HTTP/auth/Alembic/schema governance
-  and compatibility/external-adapter composition; ingestion retains its shared Session/ORM
-  boundary.
-- **Accepted and delivered R1 state:** the Worker continues to own orchestration and
-  the repaired default composition uses the neutral Worker-side Research UoW as runtime commit-process owner; API owns HTTP/auth,
-  Alembic execution, and schema governance. Package staging is A1 pure
-  `citeframe_contracts`, A1b/A2-foundation neutral `citeframe_persistence` mappings, then
-  A2a `citeframe_research_persistence` Research behavior. Each stage adds only its package
-  to manifests, source-copy paths, PYTHONPATH, and import smoke; A2a is the first stage
-  where the third package may exist. `citeframe_persistence` owns all mappings and the
-  unique Base/metadata; `citeframe_research_persistence` owns Research repositories/UoW/
-  commands/locks and must not import `ai_pdf_api` or non-DB service implementations.
-  API Alembic remains the executor and loads `citeframe_persistence.models` after A1b.
-- PostgreSQL is the Research business truth source. MinIO stores immutable plan,
-  checkpoint, conflict, and final Artifact bytes. Redis is not a correctness source.
+## Ownership and dispatch
 
-The A2a transition slice must preserve the current behavior in which one `process_one` call
-can drive multiple steps through the fixed LangGraph StateGraph. After A2a is accepted,
-R0 first normalizes lock acquisition; the later R1 slice then changes runtime execution to
-one claimed Attempt per handler in a bounded pool of independent dispatcher loops and
-removes LangGraph from runtime step execution. Accepted R1 runtime `473213d` implements at least two independent loops and real overlap. Human-owned Step polling is zero-mutation and causal ingestion/dispatcher
-errors are preserved. Per-Run admission remains unauthorized. A2a/R0 are delivered at
-`origin/main@8674d4d`; R1 review `5a55489` is final ACCEPT. R2 is the only next gated module; W1/downstream remain blocked, and no schema/API/save/replay/permission change is authorized.
+Web renders persisted Run/Step/Event state and submits authorized controls. API owns HTTP/authentication and migrations. `citeframe_persistence` owns neutral mappings; `citeframe_research_persistence` owns DB-only transitions and UoW/repositories. Worker composes orchestration, persistence, and provider/tool execution.
 
-## Orchestration Decision
+The production dispatcher claims one eligible Step, creates one leased Attempt, invokes its handler, commits its outcome/newly ready dependents, and returns to the loop. Independent loops support branch overlap. Default handlers do not load LangGraph or carry a cross-step in-memory checkpoint authority.
 
-## Topology freeze (2026-08-15)
+Handlers validate persisted dependencies, snapshot identity/hash, and artifact/claim/evidence provenance. PostgreSQL owns readiness, joins, event sequences, retry/cancel/reclaim, and budgets.
 
-**FREEZE**: The production Research topology and role set are closed for ordinary product work:
-
-`Planner -> plan approval -> bounded Researcher fan-out -> join -> Verifier -> Critic -> optional conflict decision -> Synthesizer -> publisher`
-
-- Do **not** add graph nodes, roles, or tool kinds without a new open decision (OD) and budget impact note.
-- Prefer reliability, evidence coverage, observability, and contract tests over graph expansion.
-- This is **not** a general agent platform; dynamic DAG / plugins remain rejected.
-- Module ownership map: [`research-module-map.md`](research-module-map.md).
-
-
-The implemented topology is fixed and closed:
-
-```text
-Planner -> plan approval -> bounded Researcher fan-out -> join -> Verifier
-        -> Critic -> optional conflict decision -> Synthesizer -> publisher
-```
-
-**Current fact:** `research_executor_engine.py` constructs and invokes a fixed LangGraph
-`StateGraph(ResearchState)` inside the Worker process. PostgreSQL state and immutable
-artifacts are the persistence/checkpoint/business truth; LangGraph is not the persisted
-checkpoint authority and is not allowed to replace the Research ledger.
-**Accepted R1 fact:** PostgreSQL remains the persistence and business authority. Runtime `473213d` implements one claimed Attempt per handler; final review `5a55489` is ACCEPT.
-R1 removes LangGraph from runtime step execution or retains it only as a plan-approval
-topology validator. The target is a one-claimed-attempt dispatcher: claim one eligible
-queued Step, create one new Attempt lease, run one step-kind handler, atomically complete
-its Attempt/Step/Event and newly-ready dependents, then return to the claim loop. Handlers rebuild and validate existing StepDependency/upstream persisted status, execution
-snapshot identity/hash, and artifact/claim/evidence provenance/hash from PostgreSQL; they
-carry no cross-step in-memory `ResearchState`. Existing `ResearchStep.input_sha256` keeps
-its current meaning and is not reinterpreted as a canonical handler-input hash. Defining
-such a hash requires a separate A-DATA design.
-
-The current bounded executor rationale remains valid for the current checkout:
-
-- the graph is versioned and cannot be edited at runtime;
-- PostgreSQL state and immutable checkpoints already provide restart semantics;
-- provider/tool calls are explicit ports with frozen schemas and budgets;
-- adding a second checkpoint authority would create reconciliation ambiguity.
-
-This decision does not authorize a general workflow engine, dynamic plugins,
-arbitrary tools, or model-authored graph changes. Reconsidering an external graph
-engine requires a separate architecture review and must preserve PostgreSQL as the
-only business truth source.
-
-## V5-C Production Contract Rules
-
-V5-C keeps the fixed topology but upgrades Agent I/O to a versioned production
-registry. A registry entry binds the strict role schema, prompt/template hash,
-validator, runtime adapter, cross-role provenance checks, API/Web mapping and
-historical recovery reader. `agentResultSchemaVersion`, `contextPolicyVersion`
-and `compactPolicyVersion` are frozen on each planning/execution snapshot.
-Historical rows are mapped to a named legacy entry; new Runs never fall back to
-an old or loose contract.
-
-`maxInputTokens` and `maxOutputTokens` are per-provider-call gates. Before send,
-the worker performs deterministic typed packing, soft compact or batching, and
-rejects mandatory overflow with `research_context_limit_exceeded`. The provider
-request receives the exact output cap; truncated or incomplete output fails with
-`research_provider_output_incomplete`. Cumulative input/output totals are
-telemetry only. Provider/tool/time/parallelism/attempt limits remain the hard
-Run limits.
-
-Pricing is optional metadata. Missing pricing never blocks Research, unknown
-pricing remains null/unavailable, and V5-C usage DTOs do not expose money.
-
-## Concurrency And Locking
-
-**Accepted current fact:** A2a historically mixed `Attempt -> Step -> Run`, `Step -> Run`,
-and `Run -> Step`, including a claim-versus-cancel reverse-order ring. Accepted R0 production
-`39766c37` now normalizes every multi-row mutation to the aggregate-root order:
+## Locks, leases, and admission
 
 ```text
 ResearchRun -> ResearchStep -> ResearchStepAttempt -> provider/tool Call -> ResearchBudgetLedger
 ```
 
-Attempt/Call id paths first read parent ids without locks only to locate the aggregate.
-They make no decisions from those reads. They then lock and refresh the full chain in
-Run -> Step -> Attempt -> Call -> Ledger order, revalidating scope, status, token, and
-expiry; any changed locator or status fails closed. Claim selects candidate Runs with
-queued work using `FOR UPDATE SKIP LOCKED`, ordered by the minimum eligible Step tuple `(queued_at, created_at, step_id)`, then
-Run id, locks Run first, rechecks status/cap, then locks one eligible Step using that exact existing
-`queued_at`, `created_at`, then Step ID ordering, and creates Attempt. Cancel also locks Run first, then affected Steps in stable
-Step id order. Heartbeat, complete, reclaim, retry, decision, join, provider/tool, and
-publication follow the same order. R0 changes lock acquisition only and preserves save,
-API, replay, permission, and payload semantics.
+ID lookups locate parents without making decisions, then lock/refresh and revalidate scope/state/lease/expiry in this order. Claim uses `FOR UPDATE SKIP LOCKED`, stable work ordering, and locked per-run admission. Cap-full candidates roll back without Step/Attempt/event mutation, exclude that Run locally, and scan other eligible work.
 
-R0 was implemented separately and independently accepted at review `9d4297f8`. PostgreSQL 17.10 `pg_locks`/blocking evidence passes all seven scenarios with deadlocks `0 -> 0` and no `40P01`/`55P03`. No deadlock retry or admission behavior was added.
+Heartbeat extends only the current running Attempt. Expiry abandons the old Attempt; retry creates a new one. Expired Attempts are never revived. Prior successful evidence is reusable only under the same Step/frozen input/execution binding.
 
-Lease lifecycle remains exact: normal claim creates a new Attempt for a queued Step;
-heartbeat extends only that running Attempt; expiry reclaim marks the old Attempt
-`abandoned`, synchronizes Step through its existing retry or cancellation path, and a
-later retry creates a new Attempt. An expired Attempt is never refreshed or revived.
-Provider/tool outcome-unknown and object-publication commit-unknown compensation remain
-unchanged. Do not use deadlock retry to hide a lock-order regression.
+## Calls and recovery
 
-Per-Run `maxParallelResearchers` admission remains unimplemented and unauthorized. If separately gated later, it uses the accepted Run lock root. A candidate cap-full Run causes rollback of the whole claim transaction, releases
-Run locks, records local `excluded_run_ids`, and continues in a new transaction. No Step
-is locked and no Attempt, status, or Event mutation occurs for that Run. Only after the
-Run passes the cap check does the transaction lock an eligible Step and create Attempt.
-Query filtering is an efficiency prefilter, never correctness; another eligible Run must
-remain claimable without starvation.
+Calls have explicit reservation, input binding, outcome, and usage ledger. Deterministic packing and provider output caps enforce per-call limits; incomplete structured output fails. Run limits bound provider/tool calls, time, parallelism, and attempts. Cumulative tokens are usage observations; pricing is optional metadata.
 
-Required R0/R2 evidence includes cap=1 and cap=N, lease expiry/late completion, cancel and
-provider races, join/recovery, and the real-PostgreSQL lock matrix above. SQLite-only or
-in-memory evidence is insufficient.
+Adaptive turns persist request/result hashes under bounded step/turn keys. Recovery replays committed decisions and successful tools. Unknown call outcomes are reconciled rather than blindly resent. A Workspace model edit may allow a previously authorized call to finish with its captured connection; later reservations fail on drift.
 
-The Research Event oracle is byte/row equal for A2a current-runtime snapshots. R1/R2
-require per-Run `seq` starting at 1, contiguous and unique within the Run, atomically allocated
-across Workers; per-Step `queued < started < terminal`, legal
-Attempt/lease event order, dependencies succeeded before dependent queued, Run terminal
-last, dedupe/unique terminal, and equal payload schema/error meaning. Independent
-Researcher event interleaving may vary.
+## Publication and authorization
 
-New code that touches more than one of these records must document and test its lock
-order before entering the runtime path.
+Publication intents coordinate database state and immutable bytes. Reconciliation handles ambiguous commit outcomes and compensation. Final adoption rechecks creator membership inside its commit transaction; revocation prevents final publication.
 
-## Research SSE target (W1, approved direction; not implemented)
+Conflict journals retain immutable operation identities/hashes. Replay validates originating/current Attempt ownership, Step input/order/snapshot/terminal state. Corrected conclusions remain distinct from originals and are exposed separately in report/API.
 
-Research SSE remains independent from Quick Chat SSE. The client applies an event only
-when explicit schema-approved fields prove the transition, and discards a response whose
-`currentEventSeq` is below the locally applied sequence. A switched Run aborts or discards
-old requests. One active request per Run uses a dirty rerun and bounded coalescing window;
-terminal events flush immediately. Artifact lists refresh only for artifact/decision/terminal
-events or explicit gap recovery, and artifact content is cached by `(artifactId, sha256)`.
+## Events and client recovery
 
-History gaps/cursor conflicts trigger a full authoritative read. `LISTEN/NOTIFY` is only a
-post-commit wakeup; persisted events and periodic replay remain authoritative when notify
-is lost or duplicated. W1 is an independent slice and does not change the Research API,
-save, or event contract.
+Per-Run event sequences are contiguous/unique and allocated with persistence. SSE replays with `Last-Event-ID`. Run switching aborts/discards stale requests; refreshes respect applied sequence. Terminal events flush pending refreshes. Gaps/cursor conflicts trigger authoritative reload. Artifact content is keyed by identity/hash.
 
-## Verification Runbook
+Membership validation uses short-lived sessions. Notification is a wakeup optimization; persisted events/replay remain authoritative.
 
-### Fast checks
+## Verification scope
 
-Run focused API and Worker coverage after changing Research state, tools, provider,
-or executor code:
+Deterministic providers validate state, concurrency, leases, authorization, and recovery. Model-quality and target-user evaluation remain pending for Preview. [Evaluation](../development/evaluation.md) describes reproducibility/negative controls.
 
-```bash
-cd apps/api
-.venv/bin/python -m pytest \
-  tests/test_research_worker_lease_plan.py \
-  tests/test_research_worker_budget_recovery.py \
-  tests/test_research_worker_evidence_publication.py -q
-
-cd ../worker
-.venv/bin/python -m pytest \
-  tests/test_research_executor.py \
-  tests/test_research_runtime.py \
-  tests/test_research_runtime_integration.py -q
-```
-
-Run full regressions before delivery:
-
-```bash
-cd apps/api && .venv/bin/python -m pytest -q
-cd ../worker && .venv/bin/python -m pytest -q
-```
-
-### Isolated R800 acceptance
-
-Use a new output directory and Compose project for every run:
-
-```bash
-bash infra/scripts/run-r800-acceptance.sh \
-  --output-dir docs/evals/artifacts/r800-v1/deployment-YYYYMMDD-vN \
-  --project citeframe-r800-deployment-vN
-```
-
-The command must finish with all of these true:
-
-```bash
-jq '{engineeringGate,releaseGatePassed,engineeringChecks,cleanup}' \
-  docs/evals/artifacts/r800-v1/deployment-YYYYMMDD-vN/report.json
-jq '.checks' \
-  docs/evals/artifacts/r800-v1/deployment-YYYYMMDD-vN/scenarios.json
-jq '.verification' \
-  docs/evals/artifacts/r800-v1/deployment-YYYYMMDD-vN/verification.json
-```
-
-Required R800 scenario checks are `mainCompleted`, `parallelFanout`,
-`unsupportedWithheld`, `conflictResume`, `transientRetry`, `leaseReclaim`,
-`sseReplay`, `cancelNoFinal`, `membershipRemoval`, and `uniqueFinal`.
-
-
-### Provider-backed R803 five-round campaign (v5)
-
-Formal model-quality evidence requires the frozen five-round campaign, not a
-single paired directory. Package v5 binds threshold v1 and scorer `r100-v2`.
-
-```bash
-uv run --project tools/evaluation python -m citeframe_evaluation.cli.campaign \
-  --package docs/evals/r803-evaluation-package-v5.json \
-  --campaign-dir docs/evals/artifacts/r803-campaign-YYYYMMDD-vN
-```
-
-The first formal attempt, `r803-campaign-20260730-v1`, is immutable failed evidence. It froze before round-01 completed with `engineering=fail`, `modelQuality=not_evaluable`, and 0 completed case executions. Its safe interruption detail retained only `R803EvaluationError`, so the exact evaluator-integrity root cause is unknown. Do not overwrite, delete, resume, or infer a model result from this directory. A future v2 requires a runner that records an allowlisted internal error code plus a new owner-approved directory.
-
-Interpret campaign results in this order:
-
-1. `campaign-plan.json` package/threshold/scorer/plan hashes must match the frozen v5 contracts.
-2. All five rounds are required for success; failed/completed rounds are immutable and never replaced.
-3. Model-successful local semantic violations are quality failures and remain in the denominator.
-4. Provider/evaluator integrity failures freeze engineering fail and leave model quality `not_evaluable`.
-5. R803 still cannot set M404 user value or move the product beyond `internal_preview`.
-6. Historical `r803-v1`..`r803-v4` directories remain diagnostic only.
-
-### Provider-backed R803 paired evaluation
-
-The package validates every fixture/source hash and the effective provider/model/
-endpoint before sending a request. Supply the API key only through the existing
-Worker settings; never add it to the package, command, log, or report. Use a new
-output directory for every execution:
-
-```bash
-uv run --project tools/evaluation python -m citeframe_evaluation.cli.paired \
-  --package docs/evals/r803-evaluation-package-v4.json \
-  --output-dir docs/evals/artifacts/r803-YYYYMMDD-vN
-
-(cd docs/evals/artifacts/r803-YYYYMMDD-vN && sha256sum -c SHA256SUMS)
-```
-
-Interpret the result in this order:
-
-1. `comparisonKeysMatch` must be true; otherwise no Quick/Research comparison is valid.
-2. Quick and Research engineering gates report execution completeness, not release quality.
-3. Any case output that is not one strict JSON object fails closed. Do not extract a later JSON fragment.
-4. One execution per case/mode remains observational evidence; formal model quality requires the five-round v5 campaign.
-5. R803 cannot set M404 user value or move the product beyond `internal_preview`.
-6. Never overwrite a failed run directory; defects and retries require a new immutable directory.
-
-Package v4 uses evaluator-only Responses strict JSON Schema. It does not change the
-production provider or Research V2 prompt contract. The provider schema and complete
-local semantic schema are hashed separately; local validation remains authoritative.
-Transport retries are limited to connection failures, 429/5xx, incomplete responses,
-and responses without final text. The frozen policy makes three attempts with 5/15
-second backoff and records every attempt plus any final usage returned by the provider.
-Local JSON/schema/Evidence failures are never retried.
-
-### Cleanup oracle
-
-The script owns its disposable project and removes containers, volumes, networks,
-and the generated secret environment file through its exit trap. Verify zero
-residue after both success and failure:
-
-```bash
-jq . docs/evals/artifacts/r800-v1/deployment-YYYYMMDD-vN/cleanup.json
-docker ps -a --filter label=com.docker.compose.project=citeframe-r800-deployment-vN
-docker volume ls --filter label=com.docker.compose.project=citeframe-r800-deployment-vN
-docker network ls --filter label=com.docker.compose.project=citeframe-r800-deployment-vN
-```
-
-Do not delete a failed artifact directory. Failed runs are regression evidence.
-
-## Failure Triage
-
-1. Read `scenarios.json` before logs; it identifies the failed semantic oracle.
-2. Search `api.log`, `worker.log`, and final logs for flat error lines and
-   `DeadlockDetected`, `research_state_conflict`, or an executor reason code.
-3. Compare `provider-timeline.json` with provider/tool ledger rows in `before.json`.
-4. Treat a matching before/after restore SHA as restore evidence only. It does not
-   turn a failed scenario gate into a pass.
-5. Fix the root cause and run a new deployment directory. Never rewrite an old
-   report from fail to pass.
-
-## Evidence Interpretation
-
-R800 v4 proves deterministic engineering behavior on PostgreSQL, MinIO, the real
-API/Worker/Web images, and a scripted provider. It proves persistence, concurrency,
-recovery, provenance, isolation, and cleanup oracles. It does not evaluate a real
-model's research quality and does not replace M404 user-value evidence.
-
-R803 v1 adds one real `openai / gpt-5.5` observation under matching frozen keys.
-Quick completed 6/6, while Research completed 4/6 and failed both refusal cases at
-strict Researcher JSON parsing. This is a valid failed baseline, not a model-quality
-release result. See
-[`../evals/r803-real-model-first-run.md`](../evals/r803-real-model-first-run.md).
-
-R803 v4 retains the same comparison keys and adds the versioned strict transport.
-Quick completed 6/6 and Research completed 5/6; the remaining
-`r100-refuse-customer` Researcher output failed the complete local schema. Diagnostic
-v2 and provider-outage v3 runs remain immutable and are not substituted for v4.
-R803 is still open and no repeated same-package run may be selected merely to obtain
-a green sample. See
-[`../evals/r803-strict-structured-output-follow-up.md`](../evals/r803-strict-structured-output-follow-up.md).
+PostgreSQL locks, multiple consumers, publication, and restart need service-backed tests. UI coverage additionally verifies replay, edits, and citation navigation. See [development commands](../development/README.md).

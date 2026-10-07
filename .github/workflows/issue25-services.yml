@@ -1,4 +1,4 @@
-name: Issue 25 service recovery
+name: Conflict recovery
 
 on:
   workflow_dispatch:
