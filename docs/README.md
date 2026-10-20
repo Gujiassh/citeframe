@@ -24,6 +24,7 @@
 - [Workspace access](architecture/workspace-access.md)
 - [Private instruction persistence](architecture/private-instructions.md)
 - [Private instruction management API](architecture/private-instruction-api.md)
+- [Private instruction management in Settings](architecture/private-instruction-settings.md)
 - [Provider adapters and turn helpers](architecture/provider-foundation.md)
 - [Compaction foundation](architecture/compaction-foundation.md)
 - [History foundation](architecture/history-foundation.md)
