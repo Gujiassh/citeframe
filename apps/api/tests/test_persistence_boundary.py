@@ -9,8 +9,9 @@ import sys
 from pathlib import Path
 
 import tomllib
+import pytest
 from sqlalchemy.dialects import postgresql
-from sqlalchemy.schema import CreateIndex, CreateTable
+from sqlalchemy.schema import AddConstraint, CreateIndex, CreateTable
 
 API_ROOT = Path(__file__).resolve().parents[1]
 REPOSITORY_ROOT = API_ROOT.parents[1]
@@ -36,6 +37,33 @@ MEMORY_MODELS = {
     "MemoryUse": "memory_uses",
     "MemoryOperation": "memory_operations",
 }
+COMPACTION_MODELS = {
+    "ChatMemoryExecution": "chat_memory_executions",
+    "MemoryCall": "memory_calls",
+    "TaskMemorySnapshot": "task_memory_snapshots",
+    "TaskMemoryCoverage": "task_memory_coverage",
+}
+COMPACTION_NATIVE_COLUMNS = {
+    "chat_messages": ("\tcompaction_revision BIGINT DEFAULT 1 NOT NULL CONSTRAINT ck_chatmessage_compaction_revision CHECK (compaction_revision > 0), \n",),
+    "chat_threads": ("\tcompaction_revision BIGINT DEFAULT 1 NOT NULL CONSTRAINT ck_chatthread_compaction_revision CHECK (compaction_revision > 0), \n",),
+    "research_step_attempts": (
+        "\tmemory_context_version BIGINT DEFAULT 0 NOT NULL CONSTRAINT ck_research_attempt_memory_version CHECK (memory_context_version >= 0), \n",
+        "\tmemory_checkpoint_id VARCHAR(36), \n",
+    ),
+}
+
+
+def _project_pre_compaction_native(tables):
+    projected = {name: dict(table) for name, table in tables.items()}
+    for name, columns in COMPACTION_NATIVE_COLUMNS.items():
+        ddl = projected[name]["create_table"]
+        for column in columns:
+            assert ddl.count(column) == 1, (name, column)
+            ddl = ddl.replace(column, "", 1)
+        projected[name]["create_table"] = ddl
+    return projected
+
+
 FORBIDDEN_RESEARCH_PERSISTENCE_NAMES = (
     "citeframe_research_persistence",
     "citeframe-research-persistence",
@@ -101,8 +129,8 @@ def test_legacy_and_neutral_persistence_exports_are_same_objects() -> None:
 
     assert legacy_base_module.Base is citeframe_persistence.Base is neutral_base_module.Base
     assert legacy_base_module.Base.metadata is citeframe_persistence.Base.metadata
-    assert set(neutral_models.__all__) - set(legacy_models.__all__) == set(MEMORY_MODELS)
-    assert legacy_models.__all__ == [name for name in neutral_models.__all__ if name not in MEMORY_MODELS]
+    assert set(neutral_models.__all__) - set(legacy_models.__all__) == set(MEMORY_MODELS) | set(COMPACTION_MODELS)
+    assert legacy_models.__all__ == [name for name in neutral_models.__all__ if name not in MEMORY_MODELS and name not in COMPACTION_MODELS]
 
     for name in legacy_models.__all__:
         assert getattr(legacy_models, name) is getattr(neutral_models, name)
@@ -133,6 +161,62 @@ def test_memory_models_are_exactly_six_neutral_only_additions() -> None:
         assert not hasattr(legacy_models, model_name)
 
 
+def test_compaction_models_are_exactly_four_neutral_only_additions() -> None:
+    import ai_pdf_api.models as legacy_models
+    import citeframe_persistence
+    import citeframe_persistence.models as neutral_models
+
+    assert len(COMPACTION_MODELS) == 4
+    assert not set(COMPACTION_MODELS) & set(MEMORY_MODELS)
+    for model_name, table_name in COMPACTION_MODELS.items():
+        model = getattr(neutral_models, model_name)
+        assert model.__module__ == "citeframe_persistence.models.memory_context"
+        assert model.__table__.name == table_name
+        assert model.__table__ is citeframe_persistence.Base.metadata.tables[table_name]
+        assert getattr(citeframe_persistence, model_name) is model
+        assert not hasattr(legacy_models, model_name)
+
+    attempt = neutral_models.ResearchStepAttempt.__table__
+    foreign_keys = {constraint.name: constraint for constraint in attempt.foreign_key_constraints if constraint.use_alter}
+    expected_foreign_keys = {
+        "fk_research_attempt_checkpoint_artifact": ("checkpoint_artifact_id", "research_artifacts"),
+        "fk_research_attempt_memory_checkpoint": ("memory_checkpoint_id", "task_memory_snapshots"),
+    }
+    assert set(foreign_keys) == set(expected_foreign_keys)
+    for name, (column, target) in expected_foreign_keys.items():
+        foreign_key = foreign_keys[name]
+        assert foreign_key.ondelete is None and foreign_key.onupdate is None
+        assert foreign_key.deferrable is None and foreign_key.initially is None
+        assert [(element.parent.name, element.target_fullname) for element in foreign_key.elements] == [(column, target + ".id")]
+        assert str(AddConstraint(foreign_key).compile(dialect=postgresql.dialect())) == (
+            f"ALTER TABLE research_step_attempts ADD CONSTRAINT {name} "
+            f"FOREIGN KEY({column}) REFERENCES {target} (id)"
+        )
+
+
+
+@pytest.mark.parametrize("fault", ["missing", "duplicate", "type", "default", "nullable", "extra"])
+def test_native_projection_rejects_unapproved_changes(fault) -> None:
+    baseline = json.loads(SNAPSHOT_PATH.read_bytes())["tables"]
+    candidate = {name: dict(table) for name, table in baseline.items()}
+    for name, columns in COMPACTION_NATIVE_COLUMNS.items():
+        marker = f"CREATE TABLE {name} (\n"
+        candidate[name]["create_table"] = candidate[name]["create_table"].replace(marker, marker + "".join(columns), 1)
+    assert _project_pre_compaction_native(candidate) == baseline
+    column = COMPACTION_NATIVE_COLUMNS["chat_messages"][0]
+    replacements = {"missing": "", "duplicate": column * 2,
+                    "type": column.replace("BIGINT", "INTEGER"),
+                    "default": column.replace("DEFAULT 1", "DEFAULT 2"),
+                    "nullable": column.replace("NOT NULL ", ""),
+                    "extra": column + "\tunapproved_field TEXT, \n"}
+    candidate["chat_messages"]["create_table"] = candidate["chat_messages"]["create_table"].replace(column, replacements[fault], 1)
+    if fault == "extra":
+        assert _project_pre_compaction_native(candidate) != baseline
+    else:
+        with pytest.raises(AssertionError):
+            _project_pre_compaction_native(candidate)
+
+
 def test_persistence_models_share_one_metadata_object_and_match_snapshot() -> None:
     import ai_pdf_api.db.base as legacy_base_module
     import ai_pdf_api.models as legacy_models
@@ -156,9 +240,9 @@ def test_persistence_models_share_one_metadata_object_and_match_snapshot() -> No
     assert model_metadata == {metadata}
 
     complete = _compiled_postgresql_metadata_snapshot(metadata)
-    memory_tables = set(MEMORY_MODELS.values())
+    memory_tables = set(MEMORY_MODELS.values()) | set(COMPACTION_MODELS.values())
     assert memory_tables <= complete["tables"].keys()
-    assert len(complete["tables"]) == 91
+    assert len(complete["tables"]) == 95
     actual = {"tables": {name: table for name, table in complete["tables"].items()
                          if name not in memory_tables}}
     assert len(actual["tables"]) == 85
@@ -184,6 +268,7 @@ def test_persistence_models_share_one_metadata_object_and_match_snapshot() -> No
     assert set(model_settings) == {"workspace_model_configs"}
     expected["tables"].update(model_settings)
     assert set(complete["tables"]) == set(expected["tables"]) | memory_tables
+    actual["tables"] = _project_pre_compaction_native(actual["tables"])
     assert actual == expected
 
 
@@ -217,16 +302,16 @@ package_file = Path(citeframe_persistence.__file__).resolve()
 assert package_file.is_relative_to(persistence_src), package_file
 memory_tables = set(json.loads(sys.argv[4]))
 all_tables = set(citeframe_persistence.Base.metadata.tables)
-assert len(memory_tables) == 6
+assert len(memory_tables) == 10
 assert memory_tables <= all_tables
-assert len(all_tables) == 91
+assert len(all_tables) == 95
 assert len(all_tables - memory_tables) == 85
 assert not any(name == "ai_pdf_api" or name.startswith("ai_pdf_api.") for name in sys.modules)
 assert not any(name == "ai_pdf_worker" or name.startswith("ai_pdf_worker.") for name in sys.modules)
 """
     subprocess.run(
         [sys.executable, "-I", "-c", code, str(PERSISTENCE_SRC), str(API_SRC), str(WORKER_SRC),
-         json.dumps(sorted(MEMORY_MODELS.values()))],
+         json.dumps(sorted([*MEMORY_MODELS.values(), *COMPACTION_MODELS.values()]))],
         check=True,
     )
 

@@ -1,4 +1,4 @@
-name: Issue 25 service recovery
+name: Conflict recovery
 
 on:
   workflow_dispatch:
@@ -44,12 +44,14 @@ jobs:
           fetch-depth: 0
       - uses: astral-sh/setup-uv@v6
       - run: uv sync --project apps/worker --frozen --dev
+      - name: Assemble fixed-version official MinIO binaries for CI
+        run: python3 infra/testing/ci_minio.py --output "$RUNNER_TEMP/minio-assembly"
       - name: Start isolated S3-compatible storage
         run: |
           docker run -d --name issue25-s3 -p 127.0.0.1:9000:9000 \
             -e MINIO_ROOT_USER="$AI_PDF_MINIO_ACCESS_KEY" \
             -e MINIO_ROOT_PASSWORD="$AI_PDF_MINIO_SECRET_KEY" \
-            quay.io/minio/minio:RELEASE.2025-09-07T16-13-09Z@sha256:14cea493d9a34af32f524e538b8346cf79f3321eff8e708c1e2960462bd8936e server /data
+            "$(cat "$RUNNER_TEMP/minio-assembly/server.iid")" server /data
           for i in $(seq 1 60); do
             if curl -fsS http://127.0.0.1:9000/minio/health/live >/dev/null; then exit 0; fi
             sleep 1
@@ -65,6 +67,13 @@ jobs:
         if: always()
         with:
           name: issue25-service-evidence
-          path: .local-issue25/ci-services
+          path: |
+            .local-issue25/ci-services
+            ${{ runner.temp }}/minio-assembly/Dockerfile
+            ${{ runner.temp }}/minio-assembly/LICENSE.*
+            ${{ runner.temp }}/minio-assembly/NOTICE
+            ${{ runner.temp }}/minio-assembly/*.json
+            ${{ runner.temp }}/minio-assembly/*.out
+            ${{ runner.temp }}/minio-assembly/*.err
           retention-days: 7
           include-hidden-files: true

@@ -1,7 +1,7 @@
 from datetime import UTC, datetime
 from uuid import uuid4
 
-from sqlalchemy import DateTime, ForeignKey, Index, String
+from sqlalchemy import BigInteger, CheckConstraint, text, DateTime, ForeignKey, Index, String
 from sqlalchemy.orm import Mapped, mapped_column
 
 from citeframe_persistence.base import Base
@@ -10,6 +10,8 @@ from citeframe_persistence.base import Base
 class ChatThread(Base):
     __tablename__ = "chat_threads"
     __table_args__ = (Index("ix_chat_threads_workspace_last_message", "workspace_id", "last_message_at"),)
+
+    compaction_revision: Mapped[int] = mapped_column(BigInteger, CheckConstraint("compaction_revision > 0", name="ck_chatthread_compaction_revision"), server_default=text("1"))
 
     id: Mapped[str] = mapped_column(String(36), primary_key=True, default=lambda: str(uuid4()))
     workspace_id: Mapped[str] = mapped_column(String(36), ForeignKey("workspaces.id"), index=True)
