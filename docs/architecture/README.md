@@ -15,6 +15,7 @@
 - [Evidence locations and saved citations](evidence.md)
 - [Research execution and recovery](research-workflow-runtime.md)
 - [Research transcript projection](research-transcript-projection.md)
+- [Research tool settlement](research-tool-settlement.md)
 - [Modality extension contract](modality-extension-contract.md)
 - [New modality checklist](modality-onboarding-checklist.md)
 

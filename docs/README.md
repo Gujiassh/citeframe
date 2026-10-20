@@ -22,6 +22,7 @@
 - [Evidence and historical citations](architecture/evidence.md)
 - [Research execution and recovery](architecture/research-workflow-runtime.md)
 - [Research transcript projection](architecture/research-transcript-projection.md)
+- [Research tool settlement](architecture/research-tool-settlement.md)
 - [Workspace access](architecture/workspace-access.md)
 - [Private instruction persistence](architecture/private-instructions.md)
 - [Private instruction management API](architecture/private-instruction-api.md)
