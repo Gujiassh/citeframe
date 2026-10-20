@@ -432,6 +432,7 @@ from .memory import (
     AccessPort,
     Clock,
     EmbeddingPort,
+    GenerationImage,
     GenerationEvent,
     GenerationMessage,
     GenerationObserver,

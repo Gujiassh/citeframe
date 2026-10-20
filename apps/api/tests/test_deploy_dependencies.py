@@ -6,6 +6,8 @@ import tomllib
 from dataclasses import asdict
 from pathlib import Path
 
+import pytest
+
 
 API_ROOT = Path(__file__).resolve().parents[1]
 REPOSITORY_ROOT = API_ROOT.parents[1]
@@ -70,33 +72,99 @@ def test_persistence_manifest_and_lock_use_only_the_a2a_local_sources() -> None:
     }
 
 
+APPROVED_CONTRACT_RELATIVE_IMPORTS = {
+    ("citeframe_contracts/__init__.py", 1, "memory"),
+    ("citeframe_contracts/history.py", 1, "compaction"),
+    ("citeframe_contracts/history.py", 1, "memory"),
+}
+
+
+def _assert_contract_imports(path: Path, source: str) -> None:
+    tree = ast.parse(source, filename=str(path))
+    for node in ast.walk(tree):
+        if isinstance(node, ast.Import):
+            imported_roots = [alias.name.split(".", 1)[0] for alias in node.names]
+        elif isinstance(node, ast.ImportFrom):
+            if node.level:
+                assert (path.relative_to(CONTRACTS_SRC).as_posix(), node.level, node.module) in (
+                    APPROVED_CONTRACT_RELATIVE_IMPORTS
+                ), (path, node.lineno)
+                continue
+            imported_roots = [(node.module or "").split(".", 1)[0]]
+        else:
+            continue
+        assert all(root in STDLIB_IMPORT_ROOTS for root in imported_roots), (path, node.lineno, imported_roots)
+
+
 def test_contracts_source_is_pure_and_imports_with_only_its_source_path() -> None:
     package_manifest = tomllib.loads((CONTRACTS_ROOT / "pyproject.toml").read_text(encoding="utf-8"))
     assert package_manifest["project"]["dependencies"] == []
     for path in CONTRACTS_SRC.rglob("*.py"):
-        tree = ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
-        for node in ast.walk(tree):
-            if isinstance(node, ast.Import):
-                imported_roots = [alias.name.split(".", 1)[0] for alias in node.names]
-            elif isinstance(node, ast.ImportFrom):
-                if node.level:
-                    assert (path.relative_to(CONTRACTS_SRC).as_posix(), node.level, node.module) == (
-                        "citeframe_contracts/__init__.py", 1, "memory"
-                    ), (path, node.lineno)
-                    continue
-                imported_roots = [(node.module or "").split(".", 1)[0]]
-            else:
-                continue
-            assert all(root in STDLIB_IMPORT_ROOTS for root in imported_roots), (path, imported_roots)
+        _assert_contract_imports(path, path.read_text(encoding="utf-8"))
 
     code = """
 import sys
 from pathlib import Path
-sys.path.insert(0, sys.argv[1])
+root = Path(sys.argv[1]).resolve()
+sys.path.insert(0, str(root))
 import citeframe_contracts
-assert Path(citeframe_contracts.__file__).resolve().is_relative_to(Path(sys.argv[1]).resolve())
+import citeframe_contracts.history as history
+import citeframe_contracts.compaction as compaction
+import citeframe_contracts.memory as memory
+for module, relative in (
+    (citeframe_contracts, "citeframe_contracts/__init__.py"),
+    (history, "citeframe_contracts/history.py"),
+    (compaction, "citeframe_contracts/compaction.py"),
+    (memory, "citeframe_contracts/memory.py"),
+):
+    assert Path(module.__file__).resolve() == root / relative
+assert history.SourceReference is compaction.SourceReference
+assert history.MemoryError is memory.MemoryError
+forbidden = {"citeframe_memory", "citeframe_persistence", "citeframe_research_persistence",
+             "ai_pdf_api", "ai_pdf_worker", "sqlalchemy", "pydantic", "fastapi"}
+assert not forbidden.intersection(name.split(".", 1)[0] for name in sys.modules)
 """
-    subprocess.run([sys.executable, "-I", "-c", code, str(CONTRACTS_SRC)], check=True)
+    subprocess.run([sys.executable, "-I", "-S", "-B", "-c", code, str(CONTRACTS_SRC)], check=True)
+
+
+@pytest.mark.parametrize("origin,source", [
+    ("__init__.py", "from .memory import MemoryError"),
+    ("history.py", "from .compaction import SourceReference"),
+    ("history.py", "from .memory import MemoryError"),
+])
+def test_contract_relative_import_exact_allowlist(origin: str, source: str) -> None:
+    assert APPROVED_CONTRACT_RELATIVE_IMPORTS == {
+        ("citeframe_contracts/__init__.py", 1, "memory"),
+        ("citeframe_contracts/history.py", 1, "compaction"),
+        ("citeframe_contracts/history.py", 1, "memory"),
+    }
+    _assert_contract_imports(CONTRACTS_SRC / "citeframe_contracts" / origin, source)
+
+
+@pytest.mark.parametrize("origin,source", [
+    ("memory.py", "from .memory import MemoryError"),
+    ("__init__.py", "from .compaction import SourceReference"),
+    ("history.py", "from ..memory import MemoryError"),
+    ("history.py", "from ...memory import MemoryError"),
+    ("history.py", "from .unknown import value"),
+    ("history.py", "from . import memory"),
+    ("history.py", "import citeframe_contracts.memory"),
+    ("history.py", "from citeframe_contracts.memory import MemoryError"),
+    ("history.py", "import sqlalchemy"),
+    ("history.py", "from fastapi import FastAPI"),
+    ("history.py", "from ai_pdf_api import models"),
+    ("history.py", "import ai_pdf_worker"),
+    ("history.py", "import citeframe_persistence"),
+    ("history.py", "from citeframe_research_persistence import models"),
+    ("history.py", "from citeframe_memory import history"),
+    ("history.py", "import json, sqlalchemy"),
+])
+def test_contract_import_boundary_rejects_unapproved_edges(origin: str, source: str) -> None:
+    path = CONTRACTS_SRC / "citeframe_contracts" / origin
+    with pytest.raises(AssertionError) as caught:
+        _assert_contract_imports(path, source)
+    assert path.name in str(caught.value)
+    assert ", 1" in str(caught.value)
 
 
 def test_contracts_dataclass_defaults_and_serialization_are_representative() -> None:

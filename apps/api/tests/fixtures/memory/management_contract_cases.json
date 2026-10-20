@@ -1,0 +1,364 @@
+{
+  "status": "prepared_not_executed",
+  "requestId": "42000000-0000-4000-8000-000000000001",
+  "baseBody": {
+    "requestId": "42000000-0000-4000-8000-000000000001",
+    "kind": "constraint",
+    "content": "Use 37.5 ms only for batch=8; never production.",
+    "conditions": {
+      "subject": "M42_C3_SYNTHETIC",
+      "applicability": "Disposable fixture only.",
+      "effectiveFrom": null
+    },
+    "scope": {
+      "kind": "workspace"
+    },
+    "pinned": true,
+    "validUntil": null,
+    "sourceRefs": []
+  },
+  "errorCases": [
+    {
+      "id": "syntax_before_auth",
+      "auth": "missing",
+      "payload": "invalid_json",
+      "race": null,
+      "expected": {
+        "status": 422,
+        "code": "invalid_request",
+        "retryable": false,
+        "requestId": null,
+        "currentVersionAbsent": true
+      }
+    },
+    {
+      "id": "missing_auth_before_missing_key",
+      "auth": "missing",
+      "payload": "valid_body_missing_key",
+      "race": null,
+      "expected": {
+        "status": 401,
+        "code": "authentication_required",
+        "retryable": false,
+        "requestId": null,
+        "currentVersionAbsent": true
+      }
+    },
+    {
+      "id": "bad_token_before_invalid_body",
+      "auth": "invalid_token",
+      "payload": "invalid_schema",
+      "race": null,
+      "expected": {
+        "status": 401,
+        "code": "authentication_required",
+        "retryable": false,
+        "requestId": null,
+        "currentVersionAbsent": true
+      }
+    },
+    {
+      "id": "outsider_before_missing_key",
+      "auth": "nonmember",
+      "payload": "valid_body_missing_key",
+      "race": null,
+      "expected": {
+        "status": 404,
+        "code": "workspace_not_found",
+        "retryable": false,
+        "requestId": null,
+        "currentVersionAbsent": true
+      }
+    },
+    {
+      "id": "unknown_user_before_invalid_body",
+      "auth": "unknown_user",
+      "payload": "invalid_schema",
+      "race": null,
+      "expected": {
+        "status": 404,
+        "code": "workspace_not_found",
+        "retryable": false,
+        "requestId": null,
+        "currentVersionAbsent": true
+      }
+    },
+    {
+      "id": "archive_before_invalid_body",
+      "auth": "archived",
+      "payload": "invalid_schema",
+      "race": null,
+      "expected": {
+        "status": 404,
+        "code": "workspace_not_found",
+        "retryable": false,
+        "requestId": null,
+        "currentVersionAbsent": true
+      }
+    },
+    {
+      "id": "member_invalid_key",
+      "auth": "member",
+      "payload": "valid_body_missing_key",
+      "race": null,
+      "expected": {
+        "status": 422,
+        "code": "invalid_request",
+        "retryable": false,
+        "requestId": "42000000-0000-4000-8000-000000000001",
+        "currentVersionAbsent": true
+      }
+    },
+    {
+      "id": "unknown_role_valid_body",
+      "auth": "unknown_role",
+      "payload": "valid",
+      "race": null,
+      "expected": {
+        "status": 404,
+        "code": "workspace_not_found",
+        "retryable": false,
+        "requestId": "42000000-0000-4000-8000-000000000001",
+        "currentVersionAbsent": true
+      }
+    },
+    {
+      "id": "unknown_role_invalid_body",
+      "auth": "unknown_role",
+      "payload": "invalid_schema",
+      "race": null,
+      "expected": {
+        "status": 422,
+        "code": "invalid_request",
+        "retryable": false,
+        "requestId": "42000000-0000-4000-8000-000000000001",
+        "currentVersionAbsent": true
+      }
+    },
+    {
+      "id": "revoke_after_dependency",
+      "auth": "member",
+      "payload": "valid",
+      "race": "remove_member_after_dependency",
+      "expected": {
+        "status": 404,
+        "code": "workspace_not_found",
+        "retryable": false,
+        "requestId": "42000000-0000-4000-8000-000000000001",
+        "currentVersionAbsent": true
+      }
+    },
+    {
+      "id": "role_after_dependency",
+      "auth": "member",
+      "payload": "valid",
+      "race": "set_unknown_role_after_dependency",
+      "expected": {
+        "status": 404,
+        "code": "workspace_not_found",
+        "retryable": false,
+        "requestId": "42000000-0000-4000-8000-000000000001",
+        "currentVersionAbsent": true
+      }
+    },
+    {
+      "id": "archive_after_dependency",
+      "auth": "member",
+      "payload": "valid",
+      "race": "archive_after_dependency",
+      "expected": {
+        "status": 404,
+        "code": "workspace_not_found",
+        "retryable": false,
+        "requestId": "42000000-0000-4000-8000-000000000001",
+        "currentVersionAbsent": true
+      }
+    },
+    {
+      "id": "revoke_during_conflict_projection",
+      "auth": "member",
+      "payload": "stale_version",
+      "race": "remove_member_before_conflict_metadata",
+      "expected": {
+        "status": 404,
+        "code": "workspace_not_found",
+        "retryable": false,
+        "requestId": "42000000-0000-4000-8000-000000000001",
+        "currentVersionAbsent": true
+      }
+    },
+    {
+      "id": "unknown_role_during_conflict_projection",
+      "auth": "member",
+      "payload": "stale_version",
+      "race": "set_unknown_role_before_conflict_metadata",
+      "expected": {
+        "status": 404,
+        "code": "workspace_not_found",
+        "retryable": false,
+        "requestId": "42000000-0000-4000-8000-000000000001",
+        "currentVersionAbsent": true
+      }
+    },
+    {
+      "id": "foreign_version_hidden",
+      "auth": "workspace_owner",
+      "payload": "foreign_memory_stale_version",
+      "race": null,
+      "expected": {
+        "status": 404,
+        "code": "memory_not_found",
+        "retryable": false,
+        "requestId": "42000000-0000-4000-8000-000000000001",
+        "currentVersionAbsent": true
+      }
+    },
+    {
+      "id": "lost_commit_ack",
+      "auth": "member",
+      "payload": "valid",
+      "race": "after_commit_ack_loss",
+      "expected": {
+        "status": 503,
+        "code": "outcome_unknown",
+        "retryable": true,
+        "requestId": "42000000-0000-4000-8000-000000000001",
+        "currentVersionAbsent": true
+      }
+    },
+    {
+      "id": "admission_content",
+      "auth": "member",
+      "payload": "core_approved_rejection_in_content",
+      "race": null,
+      "expected": {
+        "status": 422,
+        "code": "sensitive_content_unsupported",
+        "retryable": false,
+        "requestId": "42000000-0000-4000-8000-000000000001",
+        "currentVersionAbsent": true
+      }
+    },
+    {
+      "id": "admission_subject",
+      "auth": "member",
+      "payload": "core_approved_rejection_in_conditions_subject",
+      "race": null,
+      "expected": {
+        "status": 422,
+        "code": "sensitive_content_unsupported",
+        "retryable": false,
+        "requestId": "42000000-0000-4000-8000-000000000001",
+        "currentVersionAbsent": true
+      }
+    },
+    {
+      "id": "admission_applicability",
+      "auth": "member",
+      "payload": "core_approved_rejection_in_conditions_applicability",
+      "race": null,
+      "expected": {
+        "status": 422,
+        "code": "sensitive_content_unsupported",
+        "retryable": false,
+        "requestId": "42000000-0000-4000-8000-000000000001",
+        "currentVersionAbsent": true
+      }
+    }
+  ],
+  "readabilitySequence": {
+    "setup": [
+      "remember => v1 active/valid",
+      "deactivate expectedVersion1 => v2 inactive/valid",
+      "invalidate_instruction using existing lifecycle => v3 inactive/invalidated"
+    ],
+    "persistedOracle": [
+      [
+        1,
+        "active",
+        "valid"
+      ],
+      [
+        2,
+        "inactive",
+        "valid"
+      ],
+      [
+        3,
+        "inactive",
+        "invalidated"
+      ]
+    ],
+    "historyExpected": [
+      {
+        "version": 1,
+        "intent": "active",
+        "validity": "valid",
+        "displayStatus": "invalidated",
+        "contentAvailable": false,
+        "reason": "source_unavailable"
+      },
+      {
+        "version": 2,
+        "intent": "inactive",
+        "validity": "valid",
+        "displayStatus": "inactive",
+        "contentAvailable": false,
+        "reason": "source_unavailable"
+      },
+      {
+        "version": 3,
+        "intent": "inactive",
+        "validity": "invalidated",
+        "displayStatus": "inactive",
+        "contentAvailable": false,
+        "reason": "source_unavailable"
+      }
+    ],
+    "currentVersion": 3,
+    "listIncludedStatus": [
+      "inactive",
+      "all"
+    ],
+    "listExcludedStatus": [
+      "active",
+      "invalidated",
+      "expired",
+      "superseded",
+      "deleted"
+    ],
+    "pollAllPriorRequests": {
+      "currentVersion": 3,
+      "intent": "inactive",
+      "contentAvailable": false
+    },
+    "forbiddenResponseKeys": [
+      "content",
+      "conditions",
+      "sourceRefs",
+      "contentSha256"
+    ],
+    "deleteExpectedVersion": 3,
+    "afterDelete": {
+      "currentStatus": 410,
+      "historyStatus": 410,
+      "foreignCurrentStatus": 404,
+      "pollContentAvailable": false,
+      "listDisplayStatus": "deleted"
+    }
+  },
+  "additionalReadabilityCases": [
+    "Two legitimate supports: invalidate one only; surviving support must not expose old revision body.",
+    "Correct then invalidate predecessor source: superseded historical validity remains stored valid, body unavailable; successor source/record remain independently readable.",
+    "Stored-invalidated revision with readable supports remains body-unavailable; do not add recompute/reactivation product code.",
+    "Owned unavailable exact source returns410; foreign same source ID returns404; zero/boolean sourceVersion and uppercase/non64hex hash return422."
+  ],
+  "admissionFixtureDependency": "Use exact synthetic positive/negative corpus from independently accepted core admission inventory after integration; do not define a second detector or treat placeholders here as an approved rule.",
+  "executionRequirements": [
+    "Actual disposable PostgreSQL test run",
+    "Separate mounted-application live socket HTTP run with original headers and unchanged dependencies",
+    "Race barriers through test instrumentation only; no production race/test routes",
+    "After each denial verify no mutation and a usable fresh session",
+    "No payload or auth header values in ordinary logs/evidence"
+  ]
+}
