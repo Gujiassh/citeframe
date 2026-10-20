@@ -23,6 +23,7 @@
 - [Research execution and recovery](architecture/research-workflow-runtime.md)
 - [Workspace access](architecture/workspace-access.md)
 - [Private instruction persistence](architecture/private-instructions.md)
+- [Private instruction management API](architecture/private-instruction-api.md)
 - [Provider adapters and turn helpers](architecture/provider-foundation.md)
 - [Compaction foundation](architecture/compaction-foundation.md)
 - [History foundation](architecture/history-foundation.md)

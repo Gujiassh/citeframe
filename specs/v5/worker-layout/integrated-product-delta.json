@@ -27,7 +27,9 @@
     "4fd450c5fc433153be2bb92f302208c2cec0d1c8",
     "52056b4ca208ef9758e715daea2f01af8763df15",
     "7f41584aaa87554c5158d93129e25e8aecf7eca7",
-    "432051b8ea3e38eb4764d60d819fb9b32c0e1603"
+    "432051b8ea3e38eb4764d60d819fb9b32c0e1603",
+    "6ccd8d8a1de7afeb2c8edb0f3f07d0b9cf0a38e8",
+    "693205599d837dbb6590f02536110c2418da4b55"
   ],
   "scope": "PR30 issue25 v4 conflict investigation plus normal architecture/prerequisite merges; exact owner-prepared blobs/provenance, new integration and v4 oracle pending independent Hubble review; exact PR37 upload and PR39 workspace-model/recovery/lock/oracle deltas, retaining unchanged entries and inherited provenance; exact PR47 Issue40 workspace-access dependency and test blobs pinned at 5903d60b7103d32d7d8a0c173691250407460b13, retaining prior admissions/provenance; manifest admission pending independent review",
   "functionalOracle": [
@@ -66,7 +68,11 @@
     "PR58 explicitly imported memory_index model adds only workspace/shared manifest and entry tables with no model export registration, Alembic activation, native corpus issuer, index builder, search API or embedding call. The strict product delta includes both memory_index.py and its dedicated package test, exactly sourced from432051b.",
     "PR58 finite canonical source sets/profiles, exact workspace/source/version/hash/generation and entry-profile coherence, bounded codepoint chunk geometry, readiness/complete declared counts and activated identity immutability are storage gates. Every manifest/entry INSERT/UPDATE/DELETE requires READ COMMITTED before workspace/manifest/source NOWAIT lock/read barriers (IS01). Private instruction sources remain excluded; native truth/currentness hooks, authorization and derived erasure remain future activation work.",
     "PR58 actual simple FTS/trigram/K60 RRF and synthetic1024-vector controls establish storage/query plumbing, not provider quality or a native search interface. Unicode lexical oracle retains actual locale-dependent word classification, trigram cardinality, exact channel ordinals and1/61 or2/61 score assertions; hosted actual-locale execution remains required.",
-    "PR58 controller original432 frozen-source PostgreSQL evidence:179 cases(original156+independent23),8.72s,0skip,43 module origins,211 source hashes,PG17.11/vector0.8.6/pg_trgm1.6,C locale,disposable DB removed. Early15ce actual56candidate2c8d integration retains latest49/54 fixes; metadata-independent review,current actual-canonical PG179,actual56/main ancestry sync and exact final-head frozen hosted CI remain pending. Parent42 is not completed by this storage slice."
+    "PR58 controller original432 frozen-source PostgreSQL evidence:179 cases(original156+independent23),8.72s,0skip,43 module origins,211 source hashes,PG17.11/vector0.8.6/pg_trgm1.6,C locale,disposable DB removed. Early15ce actual56candidate2c8d integration retains latest49/54 fixes; metadata-independent review,current actual-canonical PG179,actual56/main ancestry sync and exact final-head frozen hosted CI remain pending. Parent42 is not completed by this storage slice.",
+    "PR50 mounted manual owner-private instruction management preserves strict request shape, authentication/workspace/schema error ordering and nondisclosing resource/source/operation scope. Owner success/error JSON bytes render inside fresh authorization transactions; post-mutation conflict/terminal readback re-guards after rollback. M42-I1 locks end before ASGI network delivery.",
+    "PR50 CAS, original request/key payload replay, successor identity, content-free operation/request recovery, current authorized readback and synchronous all-revision erasure remain native command semantics. Uncertain commit acknowledgements/readback failures remain generic outcome_unknown; fixed HTTP errors suppress submitted bodies, raw SQL and underlying diagnostics.",
+    "PR50 F50-R1 strict content, conditions.subject and conditions.applicability reject U+0000 through existing422 invalid_request/retryable:false validation before command DML. Ordinary Unicode/newline bytes, identity reuse after invalid input, auth/workspace precedence, finite credential admission and original CAS/erasure/render-through-transaction tests remain unchanged. Schema/test exact repair693; five other own paths exact original6ccd; operational contract JSON fixture retained.",
+    "PR50 independently accepted repaired snapshot evidence is85 pure/boundary cases and controller78 actual PG/API cases(original56+22),0skip; source-specific evidence does not establish fresh canonical ec085 socket/browser/BFF/UI or hosted acceptance. Actual58/main ancestry sync, canonical metadata independent review, fresh canonical PG/live-socket and final immutable-head CI remain separate gates. No full issue42 completion, shared private instruction use, generic search/index/image or native Chat/Research activation follows."
   ],
   "files": [
     {
@@ -189,11 +195,31 @@
     },
     {
       "path": "apps/api/src/ai_pdf_api/main.py",
-      "integratedBlob": "6ff317c77575f086ad05c0850e0a5666b72bad2d",
-      "reviewedSourceHead": "5c2954af42d71eaed52e069b3a4312c995d51d40",
+      "integratedBlob": "419ba24a48050243e330d58cb3d7b6bdc1bc1ab8",
+      "reviewedSourceHead": "6ccd8d8a1de7afeb2c8edb0f3f07d0b9cf0a38e8",
       "reviewedSourcePath": "apps/api/src/ai_pdf_api/main.py",
-      "reviewedSourceBlob": "6ff317c77575f086ad05c0850e0a5666b72bad2d",
-      "transformation": "identical-reviewed-issue36-backend-bytes"
+      "reviewedSourceBlob": "419ba24a48050243e330d58cb3d7b6bdc1bc1ab8",
+      "sourceLF_SHA256": "86dd4b44bda75bf6b5b0cfd677581e8500aa1b3305b3692565db34f2c44c366d",
+      "reviewArtifact": ".local-runtime/artifacts/pr50-pre-review-20261020/review.md",
+      "reviewArtifactSHA256": "5e8d843cfff47c597ad3e0437d443bb7db36c28b170d5695d662a5535ed99a47",
+      "repairReviewArtifact": ".local-runtime/artifacts/pr50-rework-20261020/independent-final/review.md",
+      "repairReviewArtifactSHA256": "9096b8eff6bbcc22bfa350bfc1542b2c2ca3fc59d842ea68522cf9cb98b90717",
+      "controllerRepairDeliveryArtifact": ".local-runtime/artifacts/pr50-rework-20261020/controller-git-delivery.json",
+      "controllerRepairDeliveryArtifactSHA256": "c188053ca410b58098d49eb3a2603fc8a5684a6f86d568548b4284bc63569514",
+      "controllerRepairedSnapshotPostgresArtifact": ".local-runtime/artifacts/pr50-rework-20261020/controller-postgres-result.json",
+      "controllerRepairedSnapshotPostgresArtifactSHA256": "426002d880b2a816af272c907b1d7080ad6a253d59b549538e619eeb6bd1d7d3",
+      "reviewStatus": "bounded-original50-source-plus-F50-R1-repair-ACCEPT; repaired-snapshot-controller78PG-and-independent85; canonical-metadata-independent-review-fresh-canonical-PG-live-socket-actual58main-sync-hosted-pending",
+      "transformation": "identical-reviewed-original6ccd-Git-bytes",
+      "inheritedProvenance": [
+        {
+          "path": "apps/api/src/ai_pdf_api/main.py",
+          "integratedBlob": "6ff317c77575f086ad05c0850e0a5666b72bad2d",
+          "reviewedSourceHead": "5c2954af42d71eaed52e069b3a4312c995d51d40",
+          "reviewedSourcePath": "apps/api/src/ai_pdf_api/main.py",
+          "reviewedSourceBlob": "6ff317c77575f086ad05c0850e0a5666b72bad2d",
+          "transformation": "identical-reviewed-issue36-backend-bytes"
+        }
+      ]
     },
     {
       "path": "apps/api/src/ai_pdf_api/models/__init__.py",
@@ -3743,6 +3769,114 @@
       "controllerOriginalPostgresArtifactSHA256": "0b86d037c88f0a06959e88126ac7a93997ddbbdc6c2324175dbd96ca0bf5a746",
       "reviewStatus": "bounded-original58-storage-source-ACCEPT; controller-original432-PG179-pass; early15ce-metadata-candidate-independent-review-current-PG-hosted-and-actual56main-sync-pending",
       "transformation": "identical-reviewed-original432-git-bytes"
+    },
+    {
+      "path": "apps/api/src/ai_pdf_api/routers/memories.py",
+      "integratedBlob": "e1af75678aca272c23cf7440e048eb0a2bae12f1",
+      "reviewedSourceHead": "6ccd8d8a1de7afeb2c8edb0f3f07d0b9cf0a38e8",
+      "reviewedSourcePath": "apps/api/src/ai_pdf_api/routers/memories.py",
+      "reviewedSourceBlob": "e1af75678aca272c23cf7440e048eb0a2bae12f1",
+      "sourceLF_SHA256": "b8beb737d1d961bd059ed9fc010df67ecf8f90df2bf26ea162315b9968abe271",
+      "reviewArtifact": ".local-runtime/artifacts/pr50-pre-review-20261020/review.md",
+      "reviewArtifactSHA256": "5e8d843cfff47c597ad3e0437d443bb7db36c28b170d5695d662a5535ed99a47",
+      "repairReviewArtifact": ".local-runtime/artifacts/pr50-rework-20261020/independent-final/review.md",
+      "repairReviewArtifactSHA256": "9096b8eff6bbcc22bfa350bfc1542b2c2ca3fc59d842ea68522cf9cb98b90717",
+      "controllerRepairDeliveryArtifact": ".local-runtime/artifacts/pr50-rework-20261020/controller-git-delivery.json",
+      "controllerRepairDeliveryArtifactSHA256": "c188053ca410b58098d49eb3a2603fc8a5684a6f86d568548b4284bc63569514",
+      "controllerRepairedSnapshotPostgresArtifact": ".local-runtime/artifacts/pr50-rework-20261020/controller-postgres-result.json",
+      "controllerRepairedSnapshotPostgresArtifactSHA256": "426002d880b2a816af272c907b1d7080ad6a253d59b549538e619eeb6bd1d7d3",
+      "reviewStatus": "bounded-original50-source-plus-F50-R1-repair-ACCEPT; repaired-snapshot-controller78PG-and-independent85; canonical-metadata-independent-review-fresh-canonical-PG-live-socket-actual58main-sync-hosted-pending",
+      "transformation": "identical-reviewed-original6ccd-Git-bytes"
+    },
+    {
+      "path": "apps/api/src/ai_pdf_api/schemas/memory.py",
+      "integratedBlob": "53e00fec3e521698249fa012ea8eb997b1b15a62",
+      "reviewedSourceHead": "693205599d837dbb6590f02536110c2418da4b55",
+      "reviewedSourcePath": "apps/api/src/ai_pdf_api/schemas/memory.py",
+      "reviewedSourceBlob": "53e00fec3e521698249fa012ea8eb997b1b15a62",
+      "sourceLF_SHA256": "aebdc5de91e59444a0bce38d4d367913989efdee3fad9de14fa906a653ca4fad",
+      "reviewArtifact": ".local-runtime/artifacts/pr50-rework-20261020/independent-final/review.md",
+      "reviewArtifactSHA256": "9096b8eff6bbcc22bfa350bfc1542b2c2ca3fc59d842ea68522cf9cb98b90717",
+      "repairReviewArtifact": ".local-runtime/artifacts/pr50-rework-20261020/independent-final/review.md",
+      "repairReviewArtifactSHA256": "9096b8eff6bbcc22bfa350bfc1542b2c2ca3fc59d842ea68522cf9cb98b90717",
+      "controllerRepairDeliveryArtifact": ".local-runtime/artifacts/pr50-rework-20261020/controller-git-delivery.json",
+      "controllerRepairDeliveryArtifactSHA256": "c188053ca410b58098d49eb3a2603fc8a5684a6f86d568548b4284bc63569514",
+      "controllerRepairedSnapshotPostgresArtifact": ".local-runtime/artifacts/pr50-rework-20261020/controller-postgres-result.json",
+      "controllerRepairedSnapshotPostgresArtifactSHA256": "426002d880b2a816af272c907b1d7080ad6a253d59b549538e619eeb6bd1d7d3",
+      "reviewStatus": "bounded-original50-source-plus-F50-R1-repair-ACCEPT; repaired-snapshot-controller78PG-and-independent85; canonical-metadata-independent-review-fresh-canonical-PG-live-socket-actual58main-sync-hosted-pending",
+      "transformation": "identical-reviewed-repair693-Git-bytes"
+    },
+    {
+      "path": "apps/api/src/ai_pdf_api/services/memory_management.py",
+      "integratedBlob": "0f1f491cb54ecec721ea284fddc5d3731675039d",
+      "reviewedSourceHead": "6ccd8d8a1de7afeb2c8edb0f3f07d0b9cf0a38e8",
+      "reviewedSourcePath": "apps/api/src/ai_pdf_api/services/memory_management.py",
+      "reviewedSourceBlob": "0f1f491cb54ecec721ea284fddc5d3731675039d",
+      "sourceLF_SHA256": "2291249e77d0c0609219e55098653228e3cbb6a413af1e204806a09535db23da",
+      "reviewArtifact": ".local-runtime/artifacts/pr50-pre-review-20261020/review.md",
+      "reviewArtifactSHA256": "5e8d843cfff47c597ad3e0437d443bb7db36c28b170d5695d662a5535ed99a47",
+      "repairReviewArtifact": ".local-runtime/artifacts/pr50-rework-20261020/independent-final/review.md",
+      "repairReviewArtifactSHA256": "9096b8eff6bbcc22bfa350bfc1542b2c2ca3fc59d842ea68522cf9cb98b90717",
+      "controllerRepairDeliveryArtifact": ".local-runtime/artifacts/pr50-rework-20261020/controller-git-delivery.json",
+      "controllerRepairDeliveryArtifactSHA256": "c188053ca410b58098d49eb3a2603fc8a5684a6f86d568548b4284bc63569514",
+      "controllerRepairedSnapshotPostgresArtifact": ".local-runtime/artifacts/pr50-rework-20261020/controller-postgres-result.json",
+      "controllerRepairedSnapshotPostgresArtifactSHA256": "426002d880b2a816af272c907b1d7080ad6a253d59b549538e619eeb6bd1d7d3",
+      "reviewStatus": "bounded-original50-source-plus-F50-R1-repair-ACCEPT; repaired-snapshot-controller78PG-and-independent85; canonical-metadata-independent-review-fresh-canonical-PG-live-socket-actual58main-sync-hosted-pending",
+      "transformation": "identical-reviewed-original6ccd-Git-bytes"
+    },
+    {
+      "path": "apps/api/tests/fixtures/memory/management_contract_cases.json",
+      "integratedBlob": "d1012440dc0b7927397b93c4b0e9dd19a05bf52a",
+      "reviewedSourceHead": "6ccd8d8a1de7afeb2c8edb0f3f07d0b9cf0a38e8",
+      "reviewedSourcePath": "apps/api/tests/fixtures/memory/management_contract_cases.json",
+      "reviewedSourceBlob": "d1012440dc0b7927397b93c4b0e9dd19a05bf52a",
+      "sourceLF_SHA256": "2c948ab78a0385139010913125b90a14f7af4e10d52fc9deb76cd7bb3b662eab",
+      "reviewArtifact": ".local-runtime/artifacts/pr50-pre-review-20261020/review.md",
+      "reviewArtifactSHA256": "5e8d843cfff47c597ad3e0437d443bb7db36c28b170d5695d662a5535ed99a47",
+      "repairReviewArtifact": ".local-runtime/artifacts/pr50-rework-20261020/independent-final/review.md",
+      "repairReviewArtifactSHA256": "9096b8eff6bbcc22bfa350bfc1542b2c2ca3fc59d842ea68522cf9cb98b90717",
+      "controllerRepairDeliveryArtifact": ".local-runtime/artifacts/pr50-rework-20261020/controller-git-delivery.json",
+      "controllerRepairDeliveryArtifactSHA256": "c188053ca410b58098d49eb3a2603fc8a5684a6f86d568548b4284bc63569514",
+      "controllerRepairedSnapshotPostgresArtifact": ".local-runtime/artifacts/pr50-rework-20261020/controller-postgres-result.json",
+      "controllerRepairedSnapshotPostgresArtifactSHA256": "426002d880b2a816af272c907b1d7080ad6a253d59b549538e619eeb6bd1d7d3",
+      "reviewStatus": "bounded-original50-source-plus-F50-R1-repair-ACCEPT; repaired-snapshot-controller78PG-and-independent85; canonical-metadata-independent-review-fresh-canonical-PG-live-socket-actual58main-sync-hosted-pending",
+      "transformation": "identical-reviewed-original6ccd-Git-bytes"
+    },
+    {
+      "path": "apps/api/tests/test_memory_management.py",
+      "integratedBlob": "51996fe87798d07e5e568f9b121a7f070def4950",
+      "reviewedSourceHead": "693205599d837dbb6590f02536110c2418da4b55",
+      "reviewedSourcePath": "apps/api/tests/test_memory_management.py",
+      "reviewedSourceBlob": "51996fe87798d07e5e568f9b121a7f070def4950",
+      "sourceLF_SHA256": "cd4cfacc2cd07f5dc56d417f6956017075c774f4a5994dbfe13a38fe31b65f1f",
+      "reviewArtifact": ".local-runtime/artifacts/pr50-rework-20261020/independent-final/review.md",
+      "reviewArtifactSHA256": "9096b8eff6bbcc22bfa350bfc1542b2c2ca3fc59d842ea68522cf9cb98b90717",
+      "repairReviewArtifact": ".local-runtime/artifacts/pr50-rework-20261020/independent-final/review.md",
+      "repairReviewArtifactSHA256": "9096b8eff6bbcc22bfa350bfc1542b2c2ca3fc59d842ea68522cf9cb98b90717",
+      "controllerRepairDeliveryArtifact": ".local-runtime/artifacts/pr50-rework-20261020/controller-git-delivery.json",
+      "controllerRepairDeliveryArtifactSHA256": "c188053ca410b58098d49eb3a2603fc8a5684a6f86d568548b4284bc63569514",
+      "controllerRepairedSnapshotPostgresArtifact": ".local-runtime/artifacts/pr50-rework-20261020/controller-postgres-result.json",
+      "controllerRepairedSnapshotPostgresArtifactSHA256": "426002d880b2a816af272c907b1d7080ad6a253d59b549538e619eeb6bd1d7d3",
+      "reviewStatus": "bounded-original50-source-plus-F50-R1-repair-ACCEPT; repaired-snapshot-controller78PG-and-independent85; canonical-metadata-independent-review-fresh-canonical-PG-live-socket-actual58main-sync-hosted-pending",
+      "transformation": "identical-reviewed-repair693-Git-bytes"
+    },
+    {
+      "path": "packages/memory-service/src/citeframe_memory/management_queries.py",
+      "integratedBlob": "3dbd20863c4321f6e3701399d8a96b41e65a2bfe",
+      "reviewedSourceHead": "6ccd8d8a1de7afeb2c8edb0f3f07d0b9cf0a38e8",
+      "reviewedSourcePath": "packages/memory-service/src/citeframe_memory/management_queries.py",
+      "reviewedSourceBlob": "3dbd20863c4321f6e3701399d8a96b41e65a2bfe",
+      "sourceLF_SHA256": "13de2befe1d1cbd30ce080b88f09609ac83260df9c902efece96c061f234d6de",
+      "reviewArtifact": ".local-runtime/artifacts/pr50-pre-review-20261020/review.md",
+      "reviewArtifactSHA256": "5e8d843cfff47c597ad3e0437d443bb7db36c28b170d5695d662a5535ed99a47",
+      "repairReviewArtifact": ".local-runtime/artifacts/pr50-rework-20261020/independent-final/review.md",
+      "repairReviewArtifactSHA256": "9096b8eff6bbcc22bfa350bfc1542b2c2ca3fc59d842ea68522cf9cb98b90717",
+      "controllerRepairDeliveryArtifact": ".local-runtime/artifacts/pr50-rework-20261020/controller-git-delivery.json",
+      "controllerRepairDeliveryArtifactSHA256": "c188053ca410b58098d49eb3a2603fc8a5684a6f86d568548b4284bc63569514",
+      "controllerRepairedSnapshotPostgresArtifact": ".local-runtime/artifacts/pr50-rework-20261020/controller-postgres-result.json",
+      "controllerRepairedSnapshotPostgresArtifactSHA256": "426002d880b2a816af272c907b1d7080ad6a253d59b549538e619eeb6bd1d7d3",
+      "reviewStatus": "bounded-original50-source-plus-F50-R1-repair-ACCEPT; repaired-snapshot-controller78PG-and-independent85; canonical-metadata-independent-review-fresh-canonical-PG-live-socket-actual58main-sync-hosted-pending",
+      "transformation": "identical-reviewed-original6ccd-Git-bytes"
     }
   ]
 }
