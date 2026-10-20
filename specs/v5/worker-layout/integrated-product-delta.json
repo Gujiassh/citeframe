@@ -32,7 +32,8 @@
     "693205599d837dbb6590f02536110c2418da4b55",
     "be2394f171a8d6b8e37024a39de0a18307d66ed6",
     "22931cbec19ddd78def72396319ca6360858ce64",
-    "6043a087c33840c66476a3402708a6d371988421"
+    "6043a087c33840c66476a3402708a6d371988421",
+    "e7b3e86ae4de70764c4d17bcbe272686c1c8063a"
   ],
   "scope": "PR30 issue25 v4 conflict investigation plus normal architecture/prerequisite merges; exact owner-prepared blobs/provenance, new integration and v4 oracle pending independent Hubble review; exact PR37 upload and PR39 workspace-model/recovery/lock/oracle deltas, retaining unchanged entries and inherited provenance; exact PR47 Issue40 workspace-access dependency and test blobs pinned at 5903d60b7103d32d7d8a0c173691250407460b13, retaining prior admissions/provenance; manifest admission pending independent review",
   "functionalOracle": [
@@ -81,7 +82,9 @@
     "PR53 fixed41 product paths use39 exact originalbe239 blobs plus2 durable229 proxy repair blobs. The bounded reader enforces65536 incoming raw UTF8 bytes while reading, cancels overflow/incomplete consumption and releases the reader, preserving valid Request decoding and fixed error/session ordering. It adds no below-cap deadline, producer queue/allocation limit or broad HTTP-server resource guarantee.",
     "PR53 original40 helper tests and repaired60 plus30 independent stream probes/strict TypeScript are source/helper evidence only. Legacy live E2E remains opt-in and references undelivered ignored runtime helpers plus historical public output paths; unchanged product bytes are retained without treating skips or historic screenshots as visible acceptance. Root must run fresh ignored-output browser/service verification and exact final-head CI; full46/42 remain open.",
     "PR53 F53-R2 binds only apps/web/src/lib/memory/proxy.ts and apps/web/src/lib/memory/proxy.test.ts to immutable6043a087c33840c66476a3402708a6d371988421, retaining complete prior22931 records as nested provenance. Authenticated non-GET Origin comparison uses validated incoming Host plus framework URL scheme, ignores Forwarded/X-Forwarded-Host/X-Forwarded-Proto, retains one terminal DNS root dot and rejects dotted/undotted DNS mismatches, wrong schemes/ports and malformed authorities. Existing byte-reader, authentication/error ordering, API authority, no-store and retry contracts remain unchanged.",
-    "PR53 F53-R2 accepted source evidence is134 full helper cases (120 retained plus14 root-dot cases),16 unchanged independent NextRequest cases,44 unchanged adversarial cases and6 fresh independent root-dot NextRequest cases, all passing without skips; strict TypeScript0 diagnostics. Independent network/listener/import negative controls are separate support evidence. These source-boundary tests do not establish integrated signed-visible-UI Save, actual wrong-origin/no-write behavior, late-response/revocation or unknown-ack recovery races. Integrated browser and exact-final-head hosted acceptance remain pending; full46/42 remain open."
+    "PR53 F53-R2 accepted source evidence is134 full helper cases (120 retained plus14 root-dot cases),16 unchanged independent NextRequest cases,44 unchanged adversarial cases and6 fresh independent root-dot NextRequest cases, all passing without skips; strict TypeScript0 diagnostics. Independent network/listener/import negative controls are separate support evidence. These source-boundary tests do not establish integrated signed-visible-UI Save, actual wrong-origin/no-write behavior, late-response/revocation or unknown-ack recovery races. Integrated browser and exact-final-head hosted acceptance remain pending; full46/42 remain open.",
+    "PR51 adds unregistered Research transcript projection with exact protected current input, caller chronology, composite journal locators, consumer/producer attribution, native body/hash and unloaded-state checks, and explicit not_stored/not_recorded availability. Caller lawful shared-data/private-exclusion, lease/provenance authority and finite aggregate-budget obligations remain required. No current native caller, provider send, DB query, source registration, checkpoint adoption, compaction or full issue45 activation is supplied by these two exact originale7b files. Final-parent source tests and hosted CI remain required.",
+    "PR51 historical bounded source evidence is42 cases (36 original plus6 retained independent reverse cases) and a separate overlapping41-pass API-denied run with one explicit verifier compatibility deselection. Actual-current-parent guarded full46 and API-denied45 controls are separately root-owned and not claimed here. The current365 metadata candidate retains every363 parent object/order/header and nested provenance, adds only two literal reviewed e7b sources, and requires original strict exact-target provenance plus changed/missing/unknown reverse controls. Native dispatch, aggregate provider/resource envelope, runtime activation and full issue45 completion remain outside this unregistered projection slice; actual53main synchronization and final-head hosted CI remain pending."
   ],
   "files": [
     {
@@ -4582,6 +4585,30 @@
       "controllerDeliveryArtifactSHA256": "bf5cf1e29d6774db0dcc947a93ea39f9655123ca2d9fafed9c8df419d7d78fe8",
       "reviewStatus": "bounded-source-with-F53-R1-patch-ACCEPT; early28779-metadata-candidate; full-signed-visible-UI-unknown-outcome-races-current-integration-CI-and-actual50main-sync-pending",
       "transformation": "identical-originalbe239-Git-bytes"
+    },
+    {
+      "path": "apps/worker/src/ai_pdf_worker/research/memory_context.py",
+      "integratedBlob": "3ef8fbce81f6787a3135e6586d4552dff527a5c2",
+      "reviewedSourceHead": "e7b3e86ae4de70764c4d17bcbe272686c1c8063a",
+      "reviewedSourcePath": "apps/worker/src/ai_pdf_worker/research/memory_context.py",
+      "reviewedSourceBlob": "3ef8fbce81f6787a3135e6586d4552dff527a5c2",
+      "sourceLF_SHA256": "c7e197abc9a9f0cfdf4f6af517d2e5245260ea1c97624388c16db9aece417cc1",
+      "reviewArtifact": ".local-runtime/artifacts/pr51-pre-review-20261020/review.md",
+      "reviewArtifactSHA256": "b75270108906f02d58739a7cfb16510bc9ae3d3523c58f50f06c58564a729018",
+      "reviewStatus": "bounded-original51-unregistered-pure-source-ACCEPT; actual-final-parent-integration-and-hosted-CI-pending",
+      "transformation": "identical-reviewed-e7b-Git-bytes"
+    },
+    {
+      "path": "apps/worker/tests/test_research_memory_context.py",
+      "integratedBlob": "c41a505a219cf92472cab13b8fe4e1e90086d877",
+      "reviewedSourceHead": "e7b3e86ae4de70764c4d17bcbe272686c1c8063a",
+      "reviewedSourcePath": "apps/worker/tests/test_research_memory_context.py",
+      "reviewedSourceBlob": "c41a505a219cf92472cab13b8fe4e1e90086d877",
+      "sourceLF_SHA256": "a638475566c4ea9b3247424fbad03e5018f457945a65fd0045a90c987b2f3123",
+      "reviewArtifact": ".local-runtime/artifacts/pr51-pre-review-20261020/review.md",
+      "reviewArtifactSHA256": "b75270108906f02d58739a7cfb16510bc9ae3d3523c58f50f06c58564a729018",
+      "reviewStatus": "bounded-original51-unregistered-pure-source-ACCEPT; actual-final-parent-integration-and-hosted-CI-pending",
+      "transformation": "identical-reviewed-e7b-Git-bytes"
     }
   ]
 }
