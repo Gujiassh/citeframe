@@ -51,12 +51,15 @@ def test_a2a_historical_invariants_and_explicit_r2_delta(tmp_path: Path) -> None
     assert payload["workflowScenarios"]["B"]["workflowVersion"] == 4
     assert payload["workflowScenarios"]["C"]["workflowVersion"] == 3
     assert len(payload["productionConsumerEvidence"]) == 5
+    from test_a2a_compaction_history_oracle import legacy_controls_payload, verify_compaction_negative_controls
+    assert verify_compaction_negative_controls(payload) == 176
+    controls_payload = legacy_controls_payload(payload)
     from a2a_r2_negative_controls import verify_negative_controls
-    verify_negative_controls(payload)
+    verify_negative_controls(controls_payload)
     from a2a_feature_negative_controls import verify_feature_negative_controls
-    verify_feature_negative_controls(payload)
+    verify_feature_negative_controls(controls_payload)
     from a2a_conflict_negative_controls import verify_conflict_negative_controls
-    assert verify_conflict_negative_controls(payload) == 10
+    assert verify_conflict_negative_controls(controls_payload) == 10
     assert payload["baselineRef"] == "d1b5945e977445e4db6bf56ef54cf61607ead2e2"
     assert len(payload["candidateSemanticWorktreeSha256"]) == 64
     assert len(payload["repairSnapshotSha256"]) == 64

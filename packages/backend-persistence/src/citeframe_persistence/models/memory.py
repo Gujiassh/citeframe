@@ -50,25 +50,21 @@ instructions = Table(
 
 sources = Table(
     "memory_sources", Base.metadata, identity(), workspace(),
-    col("kind", String(32)), col("native_id", String(36)), col("instruction_id", String(36)),
+    col("kind", String(32)), col("native_id", String(36)), col("instruction_id", String(36), nullable=True),
     col("source_version", BigInteger), col("native_version", JSONB().with_variant(JSON(), "sqlite")),
-    col("content_sha256", String(64), nullable=True), user("actor_user_id"),
-    col("audience", String(16)), user("owner_user_id"), col("state", String(16)),
+    col("content_sha256", String(64), nullable=True), Column("actor_user_id", String(36), ForeignKey("users.id", ondelete="RESTRICT"), nullable=True),
+    col("audience", String(16)), Column("owner_user_id", String(36), ForeignKey("users.id", ondelete="RESTRICT"), nullable=True), col("state", String(16)),
     timestamp(), timestamp("invalidated_at", True),
     UniqueConstraint("workspace_id", "id"),
     UniqueConstraint("workspace_id", "owner_user_id", "id"),
     UniqueConstraint("workspace_id", "kind", "native_id", "source_version"),
     ForeignKeyConstraint(["workspace_id", "actor_user_id", "instruction_id"],
                          ["memory_instructions.workspace_id", "memory_instructions.actor_user_id", "memory_instructions.id"]),
-    CheckConstraint("kind = 'memory_instruction' AND native_id = instruction_id AND source_version >= 1 "
-                    "AND audience = 'private' AND owner_user_id = actor_user_id", name="ck_source_identity"),
+    CheckConstraint("source_version >= 1 AND ((kind = 'memory_instruction' AND instruction_id IS NOT NULL AND native_id = instruction_id AND actor_user_id IS NOT NULL AND owner_user_id IS NOT NULL AND owner_user_id = actor_user_id AND audience = 'private') OR (kind IN ('chat_message','research_evidence') AND instruction_id IS NULL AND actor_user_id IS NULL AND owner_user_id IS NULL AND audience = 'workspace'))", name="ck_source_identity"),
     CheckConstraint("state IN ('current','stale','deleted','unavailable') AND "
                     "((state <> 'deleted' AND content_sha256 IS NOT NULL AND content_sha256 ~ '^[0-9a-f]{64}$') "
                     "OR (state = 'deleted' AND content_sha256 IS NULL))", name="ck_source_state").ddl_if(dialect="postgresql"),
-    CheckConstraint("jsonb_typeof(native_version) = 'object' AND native_version ?& ARRAY['instructionId','requestId'] "
-                    "AND (native_version - ARRAY['instructionId','requestId']) = '{}'::jsonb "
-                    "AND native_version->>'instructionId' = instruction_id "
-                    "AND jsonb_typeof(native_version->'requestId') = 'string'", name="ck_source_native_version").ddl_if(dialect="postgresql"),
+    CheckConstraint("(jsonb_typeof(native_version) = 'object' AND (\n(kind = 'memory_instruction' AND native_version ?& ARRAY['instructionId','requestId'] AND (native_version - ARRAY['instructionId','requestId']) = '{}'::jsonb AND native_version->>'instructionId' = instruction_id AND jsonb_typeof(native_version->'requestId') = 'string') OR\n(kind = 'chat_message' AND native_version ?& ARRAY['messageId','parentMessageId','role','status','contentSha256','compactionRevision'] AND (native_version - ARRAY['messageId','parentMessageId','role','status','contentSha256','compactionRevision']) = '{}'::jsonb AND native_version->>'messageId' = native_id AND (native_version->'parentMessageId' = 'null'::jsonb OR jsonb_typeof(native_version->'parentMessageId') = 'string') AND native_version->>'role' IN ('user','assistant') AND native_version->>'status' IN ('completed','failed') AND native_version->>'contentSha256' = content_sha256 AND jsonb_typeof(native_version->'compactionRevision') = 'number' AND (native_version->>'compactionRevision') ~ '^[1-9][0-9]*$') OR\n(kind = 'research_evidence' AND native_version ?& ARRAY['runId','executionSnapshotId','evidenceSnapshotId','evidenceHandleId','sourceFingerprintSha256'] AND (native_version - ARRAY['runId','executionSnapshotId','evidenceSnapshotId','evidenceHandleId','sourceFingerprintSha256']) = '{}'::jsonb AND native_version->>'evidenceHandleId' = native_id AND jsonb_typeof(native_version->'runId') = 'string' AND jsonb_typeof(native_version->'executionSnapshotId') = 'string' AND jsonb_typeof(native_version->'evidenceSnapshotId') = 'string' AND native_version->>'sourceFingerprintSha256' ~ '^[0-9a-f]{64}$')\n)) IS TRUE", name="ck_source_native_version").ddl_if(dialect="postgresql"),
 )
 Index("uq_memory_source_current", sources.c.workspace_id, sources.c.kind, sources.c.native_id,
       unique=True, postgresql_where=text("state = 'current'"))
@@ -123,16 +119,31 @@ revisions = Table(
 
 uses = Table(
     "memory_uses", Base.metadata, identity(), workspace(),
-    col("consumer_revision_id", String(36)), col("source_id", String(36)),
+    col("consumer_revision_id", String(36), nullable=True), col("source_id", String(36), nullable=True),
+    col("consumer_snapshot_id", String(36), nullable=True), col("consumer_call_id", String(36), nullable=True),
+    col("consumer_call_part", String(8), nullable=True), col("used_snapshot_id", String(36), nullable=True),
+    col("used_tool_call_id", String(36), nullable=True),
     col("use_mode", String(16)), col("atom_key", String(128)), col("support_group", String(128)),
     col("relation", String(16)),
     ForeignKeyConstraint(["workspace_id", "consumer_revision_id"], ["memory_revisions.workspace_id", "memory_revisions.revision_id"]),
     ForeignKeyConstraint(["workspace_id", "source_id"], ["memory_sources.workspace_id", "memory_sources.id"]),
+    *[ForeignKeyConstraint(["workspace_id", field], [target + ".workspace_id", target + ".id"])
+      for field, target in (("consumer_snapshot_id", "task_memory_snapshots"), ("consumer_call_id", "memory_calls"),
+                            ("used_snapshot_id", "task_memory_snapshots"), ("used_tool_call_id", "memory_calls"))],
     UniqueConstraint("consumer_revision_id", "source_id", "atom_key", "support_group"),
-    CheckConstraint("use_mode = 'support' AND relation IN ('supports','confirmation') "
-                    "AND length(atom_key) > 0 AND length(support_group) > 0", name="ck_memory_use"),
+    CheckConstraint("(CASE WHEN consumer_revision_id IS NULL THEN 0 ELSE 1 END + CASE WHEN consumer_snapshot_id IS NULL THEN 0 ELSE 1 END + CASE WHEN consumer_call_id IS NULL THEN 0 ELSE 1 END) = 1 AND (CASE WHEN source_id IS NULL THEN 0 ELSE 1 END + CASE WHEN used_snapshot_id IS NULL THEN 0 ELSE 1 END + CASE WHEN used_tool_call_id IS NULL THEN 0 ELSE 1 END) = 1", name="ck_memory_use_targets"),
+    CheckConstraint("((consumer_call_id IS NULL AND consumer_call_part IS NULL) OR (consumer_call_id IS NOT NULL AND consumer_call_part IN ('input','result'))) AND ((consumer_revision_id IS NOT NULL AND source_id IS NOT NULL AND use_mode = 'support' AND relation IN ('supports','confirmation')) OR (consumer_revision_id IS NULL AND use_mode IN ('support','context') AND relation IN ('supports','confirmation','context','contradicts'))) AND length(atom_key) > 0 AND length(support_group) > 0", name="ck_memory_use"),
 )
 Index("ix_memory_use_source", uses.c.source_id)
+for field in ("consumer_snapshot_id", "consumer_call_id", "used_snapshot_id", "used_tool_call_id"):
+    Index("ix_memory_use_" + field, uses.c[field])
+for consumer in ("consumer_snapshot_id", "consumer_call_id"):
+    for dependency in ("source_id", "used_snapshot_id", "used_tool_call_id"):
+        Index("uq_use_" + consumer.replace("consumer_", "") + "_" + dependency,
+              uses.c[consumer], uses.c[dependency], uses.c.atom_key, uses.c.support_group,
+              *( [uses.c.consumer_call_part] if consumer == "consumer_call_id" else [] ), unique=True,
+              postgresql_where=text(consumer + " IS NOT NULL AND " + dependency + " IS NOT NULL"))
+
 
 operations = Table(
     "memory_operations", Base.metadata, identity(), workspace(), user("actor_user_id"),
