@@ -24,6 +24,7 @@ from ai_pdf_api.modalities.catalog import validate_database_catalog
 from ai_pdf_api.modalities.registry import build_production_registry
 from ai_pdf_api.routers.assets import router as assets_router
 from ai_pdf_api.routers.auth import router as auth_router
+from ai_pdf_api.routers.memories import router as memories_router
 from ai_pdf_api.routers.chat import router as chat_router
 from ai_pdf_api.routers.evaluation import router as evaluation_router
 from ai_pdf_api.routers.jobs import router as jobs_router
@@ -92,6 +93,7 @@ class HttpMetricsMiddleware:
 
 app = FastAPI(title="Citeframe API")
 app.include_router(auth_router)
+app.include_router(memories_router)
 app.include_router(workspaces_router)
 app.include_router(model_settings_router)
 app.include_router(assets_router)

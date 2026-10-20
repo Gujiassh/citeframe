@@ -5,6 +5,7 @@
 - [API contracts](api-contracts.md)
 - [Workspace authorization](workspace-access.md)
 - [Private instruction persistence](private-instructions.md)
+- [Private instruction management API](private-instruction-api.md)
 - [Provider adapters and turn helpers](provider-foundation.md)
 - [Compaction foundation](compaction-foundation.md)
 - [History foundation](history-foundation.md)
