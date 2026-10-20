@@ -79,6 +79,13 @@ def pdf_render_plan(
     x, y, width, height = _region(region)
     try:
         import pymupdf as fitz
+        native_error = fitz.mupdf.FzErrorBase
+        if (not isinstance(native_error, type) or native_error is Exception
+                or not issubclass(native_error, Exception)
+                or any(not isinstance(error, type) or not issubclass(error, native_error) for error in (
+                    fitz.mupdf.FzErrorGeneric, fitz.mupdf.FzErrorArgument, fitz.mupdf.FzErrorSystem,
+                ))):
+            raise ValueError(_ENGINE)
         if fitz.VersionBind != "1.28.2" or any(not callable(symbol) for symbol in (
             fitz.Rect, fitz.Matrix, fitz.JM_rect_from_py, fitz.JM_matrix_from_py,
             fitz.mupdf.FzRect, fitz.mupdf.fz_intersect_rect,
@@ -124,5 +131,5 @@ def pdf_render_plan(
         if str(error) in (_INVALID, _EMPTY):
             raise
         raise ValueError(_INVALID) from None
-    except (OverflowError, TypeError, RuntimeError):
+    except (native_error, OverflowError, TypeError, RuntimeError):
         raise ValueError(_INVALID) from None

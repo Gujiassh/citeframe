@@ -338,3 +338,72 @@ def test_unsafe_native_intermediates_use_safe_invalid_code(engines,monkeypatch,f
         monkeypatch.setattr(fitz.mupdf,"fz_round_rect",lambda *args:SimpleNamespace(x0=0,y0=0,x1=2**31,y1=1))
     with pytest.raises(ValueError,match="^native_image_geometry_invalid$"):
         geometry.pdf_render_plan(cropbox=(0,0,10,10),display_list_bounds=(0,0,10,10),region=(0,0,1,1))
+
+
+@pytest.mark.parametrize("exception_name", ["FzErrorBase", "FzErrorGeneric", "FzErrorArgument", "FzErrorSystem"])
+@pytest.mark.parametrize("primitive", ["fz_intersect_rect", "fz_transform_rect", "fz_round_rect"])
+def test_actual_native_error_family_is_redacted(engines,monkeypatch,exception_name,primitive):
+    import traceback
+    fitz,_=engines
+    marker="synthetic-native-diagnostic-not-for-output"
+    exception=getattr(fitz.mupdf,exception_name)
+    native=exception(fitz.mupdf.FZ_ERROR_GENERIC,marker) if exception_name=="FzErrorBase" else exception(marker)
+    def fail(*args):raise native
+    monkeypatch.setattr(fitz.mupdf,primitive,fail)
+    with pytest.raises(ValueError) as caught:
+        geometry.pdf_render_plan(cropbox=(0,0,100,100),display_list_bounds=(0,0,100,100),region=(0,0,1,1))
+    assert caught.value.args==("native_image_geometry_invalid",)
+    assert caught.value.__cause__ is None and caught.value.__suppress_context__
+    assert marker not in "".join(traceback.format_exception(caught.value))
+
+
+def test_native_error_during_final_rescale_is_invalid_not_engine_unavailable(engines,monkeypatch):
+    fitz,_=engines
+    original=fitz.mupdf.fz_transform_rect
+    calls=0
+    def transform(*args):
+        nonlocal calls
+        calls+=1
+        if calls==2:raise fitz.mupdf.FzErrorArgument("synthetic-native-rescale-diagnostic")
+        return original(*args)
+    monkeypatch.setattr(fitz.mupdf,"fz_transform_rect",transform)
+    with pytest.raises(ValueError,match="^native_image_geometry_invalid$") as caught:
+        geometry.pdf_render_plan(cropbox=(0,0,595,842),display_list_bounds=(0,0,595,842),region=(0,0,1,1))
+    assert calls==2 and caught.value.__suppress_context__
+
+
+@pytest.mark.parametrize("signal", [KeyboardInterrupt(),SystemExit(7),GeneratorExit()])
+def test_native_control_flow_base_exceptions_propagate_unchanged(engines,monkeypatch,signal):
+    fitz,_=engines
+    def stop(*args):raise signal
+    monkeypatch.setattr(fitz.mupdf,"fz_transform_rect",stop)
+    with pytest.raises(type(signal)) as caught:
+        geometry.pdf_render_plan(cropbox=(0,0,100,100),display_list_bounds=(0,0,100,100),region=(0,0,1,1))
+    assert caught.value is signal
+
+
+@pytest.mark.parametrize("symbol", ["FzErrorBase","FzErrorGeneric","FzErrorArgument","FzErrorSystem"])
+def test_missing_native_exception_symbols_fail_engine_capability_check(engines,monkeypatch,symbol):
+    fitz,_=engines
+    monkeypatch.delattr(fitz.mupdf,symbol)
+    def forbidden(*args):raise AssertionError("native primitive reached without exception capability")
+    monkeypatch.setattr(fitz.mupdf,"fz_transform_rect",forbidden)
+    with pytest.raises(ValueError,match="^native_image_geometry_engine_unsupported$") as caught:
+        geometry.pdf_render_plan(cropbox=(0,0,100,100),display_list_bounds=(0,0,100,100),region=(0,0,1,1))
+    assert caught.value.__suppress_context__
+    assert geometry.png_crop_bounds(width_pixels=1,height_pixels=1,region=(0,0,1,1))==(0,0,1,1)
+
+
+@pytest.mark.parametrize("symbol,replacement", [
+    ("FzErrorBase",None),("FzErrorBase",Exception),("FzErrorBase",BaseException),
+    ("FzErrorBase",ValueError),("FzErrorBase",object),("FzErrorGeneric",None),
+    ("FzErrorArgument",int),("FzErrorSystem",KeyboardInterrupt),
+])
+def test_unusable_native_exception_symbols_fail_engine_capability_check(engines,monkeypatch,symbol,replacement):
+    fitz,_=engines
+    monkeypatch.setattr(fitz.mupdf,symbol,replacement)
+    def forbidden(*args):raise AssertionError("native primitive reached without exception capability")
+    monkeypatch.setattr(fitz.mupdf,"fz_transform_rect",forbidden)
+    with pytest.raises(ValueError,match="^native_image_geometry_engine_unsupported$"):
+        geometry.pdf_render_plan(cropbox=(0,0,100,100),display_list_bounds=(0,0,100,100),region=(0,0,1,1))
+    assert geometry.png_crop_bounds(width_pixels=1,height_pixels=1,region=(0,0,1,1))==(0,0,1,1)

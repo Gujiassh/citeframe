@@ -104,7 +104,7 @@ jobs:
 
               def pytest_sessionfinish(self, session, exitstatus):
                   if (self.skipped or self.deselected or self.xfailed
-                          or session.testscollected != 119 or self.passed_calls != 119):
+                          or session.testscollected != 147 or self.passed_calls != 147):
                       session.exitstatus = 1
 
           status = pytest.main([
