@@ -14,6 +14,7 @@ import sys
 import time
 
 from r800_product_delta import verify_product_delta
+from ci_minio import assemble, ASSETS
 
 PRODUCT_PATHS = ["apps", "packages", "tools/evaluation", "infra/docker",
                  "infra/scripts/compose-common.sh", "infra/scripts/backup-deployment.sh",
@@ -60,6 +61,7 @@ def main() -> None:
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--historical-scenarios-only", action="store_true")
     parser.add_argument("--serial-negative-control", action="store_true")
+    parser.add_argument("--ci-minio-assembly", action="store_true")
     args = parser.parse_args()
     source, output = args.source.resolve(), args.output.resolve()
     harness = Path(__file__).resolve().parent
@@ -140,6 +142,8 @@ def main() -> None:
 
     success = False
     scenarios_passed = False
+    dependency_assembly = None
+    substituted = False
     try:
         target_head = run("source-head", ["git", "rev-parse", "HEAD"]).strip()
         harness_head = subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=harness, text=True).strip()
@@ -157,7 +161,26 @@ def main() -> None:
             "harnessHead": harness_head, "baselineHead": baseline, "project": project,
             "integratedDelta": integrated_delta,
             "harnessFiles": {p.name: sha256(p.read_bytes()).hexdigest()
-                             for p in (Path(__file__), harness / "r800_docker_probe.py", harness / "r800_provider_proofs.py", harness / "r800_product_delta.py")}}, indent=2))
+                             for p in (Path(__file__), harness / "r800_docker_probe.py", harness / "r800_provider_proofs.py", harness / "r800_product_delta.py", harness / "ci_minio.py")}}, indent=2))
+        if args.ci_minio_assembly:
+            deploy = (source / "infra/docker/compose.deploy.yml").read_text()
+            common = (source / "infra/scripts/compose-common.sh").read_text()
+            assert ASSETS["minio"]["release"] in deploy, "CI assembly must match product server version"
+            assert ASSETS["mc"]["release"] in default_mc_image(common), "CI assembly must match product client version"
+            dependency_assembly = assemble(output / "minio-assembly")
+            substituted = not dependency_assembly["originalImageIdentity"]
+            if substituted:
+                override = output / "compose.ci.yml"
+                override.write_text((source / "infra/docker/compose.r800.yml").read_text()
+                    + "\n  minio:\n    image: " + dependency_assembly["images"]["server"] + "\n")
+                env["COMPOSE_OVERRIDE_FILE"] = str(override)
+                env["MINIO_MC_IMAGE"] = dependency_assembly["images"]["client"]
+                compose[-1] = str(override)
+                (output / "dependency-substitution.json").write_text(json.dumps({
+                    "scope": "same-version official binary assembly; original image identity unverified",
+                    "historicalComparison": "dependency-substituted" if args.historical_scenarios_only else None,
+                    "assembly": dependency_assembly,
+                }, indent=2))
         if not args.historical_scenarios_only:
             original_common = run("baseline-common-script", ["git", "show",
                 baseline + ":infra/scripts/compose-common.sh"])
@@ -166,15 +189,16 @@ def main() -> None:
                 "MINIO_MC_IMAGE=${MINIO_MC_IMAGE:-minio/mc:",
                 "MINIO_MC_IMAGE=${MINIO_MC_IMAGE:-quay.io/minio/mc:")
             image = default_mc_image(current_common)
-            assert "MINIO_MC_IMAGE" not in env
-            (output / "mc-image-source.json").write_text(json.dumps({
-                "defaultImage": image, "environmentOverridePresent": False,
-                "reason": "Exercise the product default; keep tag/digest unchanged",
-            }, indent=2))
-            run("mc-pull", ["docker", "pull", image])
-            digests = json.loads(run("mc-digests", ["docker", "image", "inspect", "--format",
-                "{{json .RepoDigests}}", image]))
-            assert "quay.io/minio/mc@" + image.split("@", 1)[1] in digests
+            if not substituted:
+                assert "MINIO_MC_IMAGE" not in env
+                (output / "mc-image-source.json").write_text(json.dumps({
+                    "defaultImage": image, "environmentOverridePresent": False,
+                    "reason": "Exercise the product default; keep tag/digest unchanged",
+                }, indent=2))
+                run("mc-pull", ["docker", "pull", image])
+                digests = json.loads(run("mc-digests", ["docker", "image", "inspect", "--format",
+                    "{{json .RepoDigests}}", image]))
+                assert "quay.io/minio/mc@" + image.split("@", 1)[1] in digests
         run("compose-redacted", compose + ["config"])
         targets = ["api", "worker"] if args.historical_scenarios_only else ["api", "worker", "web"]
         run("build", compose + ["build", *targets], timeout=1200)
@@ -250,7 +274,9 @@ def main() -> None:
         report = {"mode": ("serial-negative-control" if args.serial_negative_control else
                            "historical-scenario-attribution" if args.historical_scenarios_only else "deployment"),
                   "passed": success and cleanup_ok and scenarios_passed,
-                  "deploymentGatePassed": success, "defaultRegistryPassed": success, "scenarioGatePassed": scenarios_passed, "cleanupPassed": cleanup_ok, "modelQuality": "not_evaluated", "project": project}
+                  "deploymentGatePassed": success, "defaultRegistryPassed": success and not substituted,
+                  "dependencySubstitution": substituted,
+                  "dependencyAssemblyPassed": substituted and dependency_assembly is not None, "scenarioGatePassed": scenarios_passed, "cleanupPassed": cleanup_ok, "modelQuality": "not_evaluated", "project": project}
         (output / "result.json").write_text(json.dumps(report, indent=2))
         for path in output.rglob("*"):
             if path.is_file() and path.suffix in {".out", ".err", ".json", ".txt", ".env"}:

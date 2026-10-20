@@ -31,13 +31,23 @@ class EvidenceContractTests(unittest.TestCase):
             with self.subTest(script=invalid), self.assertRaises(ValueError):
                 default_mc_image(invalid)
 
-    def test_harness_cannot_inject_minio_client_override(self):
+    def test_harness_only_injects_client_for_explicit_ci_assembly(self):
         tree = ast.parse(Path(__file__).with_name("r800_docker_smoke.py").read_text())
         injected = [node for node in ast.walk(tree) if isinstance(node, ast.Subscript)
                     and isinstance(node.ctx, ast.Store)
                     and isinstance(node.slice, ast.Constant)
                     and node.slice.value == "MINIO_MC_IMAGE"]
-        self.assertEqual(injected, [])
+        self.assertEqual(len(injected), 1)
+        guards = [node for node in ast.walk(tree) if isinstance(node, ast.If)
+                  and ast.unparse(node.test) == "args.ci_minio_assembly"]
+        self.assertEqual(len(guards), 1)
+        self.assertIn(injected[0], list(ast.walk(guards[0])))
+        assignment = next(node for node in ast.walk(guards[0]) if isinstance(node, ast.Assign)
+                          and injected[0] in node.targets)
+        self.assertEqual(ast.unparse(assignment.value), "dependency_assembly['images']['client']")
+        self.assertTrue(any(isinstance(node, ast.Assert)
+                            and ast.unparse(node.test) == "'MINIO_MC_IMAGE' not in env"
+                            for node in ast.walk(tree)))
         removals = [node for node in ast.walk(tree) if isinstance(node, ast.Call)
                     and isinstance(node.func, ast.Attribute) and node.func.attr == "pop"
                     and node.args and isinstance(node.args[0], ast.Constant)
