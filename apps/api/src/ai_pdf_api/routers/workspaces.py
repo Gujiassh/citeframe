@@ -7,8 +7,16 @@ from sqlalchemy.orm import Session
 from ai_pdf_api.core.settings import settings
 from ai_pdf_api.services.workspace_models import configuration_row, server_connection
 from ai_pdf_api.db.session import get_db
-from ai_pdf_api.models import ChatThread, Asset, Note, User, Workspace, WorkspaceMembership
-from ai_pdf_api.routers.deps import base_workspace_query_for_user, get_accessible_workspace, require_user_id
+from ai_pdf_api.models import Asset, ChatThread, Note, User, Workspace, WorkspaceMembership
+from ai_pdf_api.routers.deps import (
+    WorkspaceAccess,
+    WorkspaceOwnerDependency,
+    WorkspaceRequest,
+    base_workspace_query_for_user,
+    require_user_id,
+    require_workspace_member,
+    require_workspace_member_existing_user,
+)
 from ai_pdf_api.schemas.workspace import (
     CreateWorkspaceRequest,
     CreateWorkspaceResponse,
@@ -165,11 +173,11 @@ def create_workspace(
 @router.get("/{workspace_id}", response_model=WorkspaceDetailResponse)
 def get_workspace(
     workspace_id: str,
-    user_id: str = Depends(require_user_id),
+    access: WorkspaceAccess = Depends(require_workspace_member_existing_user),
     db: Session = Depends(get_db),
 ) -> WorkspaceDetailResponse:
-    require_existing_user(user_id, db)
-    workspace, role = get_accessible_workspace(db, user_id, workspace_id)
+    role = access.role
+    workspace = access.workspace
     asset_count = count_assets_for_workspaces(db, [workspace.id]).get(workspace.id, 0)
     note_count = count_notes_for_workspaces(db, [workspace.id]).get(workspace.id, 0)
     thread_count = count_threads_for_workspaces(db, [workspace.id]).get(workspace.id, 0)
@@ -178,19 +186,29 @@ def get_workspace(
     )
 
 
-@router.patch("/{workspace_id}/settings", response_model=WorkspaceSettingsResponse)
-def update_workspace_settings(
+update_workspace_settings_owner = WorkspaceOwnerDependency('Only workspace owners can update workspace settings.')
+
+
+def require_update_workspace_settings_access(
     workspace_id: str,
     payload: UpdateWorkspaceSettingsRequest,
     user_id: str = Depends(require_user_id),
     db: Session = Depends(get_db),
+) -> WorkspaceRequest[UpdateWorkspaceSettingsRequest]:
+    access = require_workspace_member(workspace_id, user_id, db)
+    access = update_workspace_settings_owner.check(access)
+    return WorkspaceRequest(access, payload)
+
+
+@router.patch("/{workspace_id}/settings", response_model=WorkspaceSettingsResponse)
+def update_workspace_settings(
+    workspace_id: str,
+    workspace_request: WorkspaceRequest[UpdateWorkspaceSettingsRequest] = Depends(require_update_workspace_settings_access),
+    db: Session = Depends(get_db),
 ) -> WorkspaceSettingsResponse:
-    _workspace, role = get_accessible_workspace(db, user_id, workspace_id)
-    if role != "owner":
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Only workspace owners can update workspace settings.",
-        )
+    access = workspace_request.access
+    payload = workspace_request.payload
+    role = access.role
 
     workspace = db.get(Workspace, workspace_id)
     if workspace is None:
@@ -213,19 +231,27 @@ def update_workspace_settings(
     )
 
 
-@router.delete("/{workspace_id}", status_code=status.HTTP_204_NO_CONTENT)
-def archive_workspace(
+archive_workspace_owner = WorkspaceOwnerDependency('Only workspace owners can archive this workspace.')
+
+
+def require_archive_workspace_access(
     workspace_id: str,
     user_id: str = Depends(require_user_id),
     db: Session = Depends(get_db),
-) -> Response:
+) -> WorkspaceAccess:
     require_existing_user(user_id, db)
-    workspace, role = get_accessible_workspace(db, user_id, workspace_id)
-    if role != "owner":
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Only workspace owners can archive this workspace.",
-        )
+    access = require_workspace_member(workspace_id, user_id, db)
+    access = archive_workspace_owner.check(access)
+    return access
+
+
+@router.delete("/{workspace_id}", status_code=status.HTTP_204_NO_CONTENT)
+def archive_workspace(
+    workspace_id: str,
+    access: WorkspaceAccess = Depends(require_archive_workspace_access),
+    db: Session = Depends(get_db),
+) -> Response:
+    workspace = access.workspace
 
     now = datetime.now(UTC)
     workspace.archived_at = now
