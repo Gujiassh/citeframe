@@ -68,7 +68,7 @@ jobs:
           chmod +x "$RUNNER_TEMP/r800-bin/docker-compose"
           echo "$RUNNER_TEMP/r800-bin" >> "$GITHUB_PATH"
       - name: Historical scenarios with the same CI dependency assembly
-        run: python3 harness/infra/testing/r800_docker_smoke.py --ci-minio-assembly --source baseline --output "$RUNNER_TEMP/r800-baseline" --historical-scenarios-only
+        run: python3 harness/infra/testing/r800_docker_smoke.py --ci-minio-assembly --ci-redis-origin-alias --source baseline --output "$RUNNER_TEMP/r800-baseline" --historical-scenarios-only
       - name: Exact PR SHA with recorded baseline product delta
         if: ${{ !cancelled() }}
         run: |

@@ -15,6 +15,8 @@ import time
 
 from r800_product_delta import verify_product_delta
 from ci_minio import assemble, ASSETS
+from r800_docker_registry import (OFFICIAL_REDIS_IMAGE, configure_ci_override,
+                                  historical_redis_source, redis_alias_provenance)
 
 PRODUCT_PATHS = ["apps", "packages", "tools/evaluation", "infra/docker",
                  "infra/scripts/compose-common.sh", "infra/scripts/backup-deployment.sh",
@@ -62,7 +64,10 @@ def main() -> None:
     parser.add_argument("--historical-scenarios-only", action="store_true")
     parser.add_argument("--serial-negative-control", action="store_true")
     parser.add_argument("--ci-minio-assembly", action="store_true")
+    parser.add_argument("--ci-redis-origin-alias", action="store_true")
     args = parser.parse_args()
+    if args.ci_redis_origin_alias and not args.historical_scenarios_only:
+        parser.error("--ci-redis-origin-alias requires --historical-scenarios-only")
     source, output = args.source.resolve(), args.output.resolve()
     harness = Path(__file__).resolve().parent
     output.mkdir(parents=True, exist_ok=False)
@@ -161,7 +166,14 @@ def main() -> None:
             "harnessHead": harness_head, "baselineHead": baseline, "project": project,
             "integratedDelta": integrated_delta,
             "harnessFiles": {p.name: sha256(p.read_bytes()).hexdigest()
-                             for p in (Path(__file__), harness / "r800_docker_probe.py", harness / "r800_provider_proofs.py", harness / "r800_product_delta.py", harness / "ci_minio.py")}}, indent=2))
+                             for p in (Path(__file__), harness / "r800_docker_probe.py", harness / "r800_provider_proofs.py", harness / "r800_product_delta.py", harness / "ci_minio.py", harness / "r800_docker_registry.py")}}, indent=2))
+        if args.ci_redis_origin_alias:
+            redis_source = historical_redis_source((source / "infra/docker/compose.deploy.yml").read_text())
+            run("redis-origin-pull", ["docker", "pull", OFFICIAL_REDIS_IMAGE], timeout=120)
+            inspection = json.loads(run("redis-origin-inspect", ["docker", "image", "inspect",
+                "--format", "{{json .}}", OFFICIAL_REDIS_IMAGE]))
+            (output / "redis-origin-alias.json").write_text(json.dumps(
+                redis_alias_provenance(redis_source, inspection), indent=2))
         if args.ci_minio_assembly:
             deploy = (source / "infra/docker/compose.deploy.yml").read_text()
             common = (source / "infra/scripts/compose-common.sh").read_text()
@@ -170,17 +182,15 @@ def main() -> None:
             dependency_assembly = assemble(output / "minio-assembly")
             substituted = not dependency_assembly["originalImageIdentity"]
             if substituted:
-                override = output / "compose.ci.yml"
-                override.write_text((source / "infra/docker/compose.r800.yml").read_text()
-                    + "\n  minio:\n    image: " + dependency_assembly["images"]["server"] + "\n")
-                env["COMPOSE_OVERRIDE_FILE"] = str(override)
                 env["MINIO_MC_IMAGE"] = dependency_assembly["images"]["client"]
-                compose[-1] = str(override)
                 (output / "dependency-substitution.json").write_text(json.dumps({
                     "scope": "same-version official binary assembly; original image identity unverified",
                     "historicalComparison": "dependency-substituted" if args.historical_scenarios_only else None,
                     "assembly": dependency_assembly,
                 }, indent=2))
+        configure_ci_override(source / "infra/docker/compose.r800.yml", output, compose, env,
+            redis_origin_alias=args.ci_redis_origin_alias,
+            minio_image=dependency_assembly["images"]["server"] if substituted else None)
         if not args.historical_scenarios_only:
             original_common = run("baseline-common-script", ["git", "show",
                 baseline + ":infra/scripts/compose-common.sh"])

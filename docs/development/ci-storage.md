@@ -7,6 +7,25 @@ MinIO and mc digest-pinned images. Successful pulls retain those image identitie
 If either pull fails or exceeds its 120-second timeout, it records that image as unavailable
 and assembles local Linux amd64 images from fixed official binaries.
 
+## Deployment registry origins
+
+The Web Dockerfile uses official `docker.io/library/node:22-bookworm-slim` for both
+stages, pinned to `sha256:f86be15afa9a8277608e141ce2a8aa55d3d9c40845921b8511f4fb7897be2554`.
+Deployment Compose uses official `docker.io/library/redis:7.4.9`, pinned to
+`sha256:d3be87a1060455213a204d2b0a7f04d45d19a16a98e85b3c37b7c33b5f0c489e`.
+These manifests retain the digests previously addressed through the ECR mirror.
+Registry availability and Docker Hub rate limits can still fail pulls or builds.
+
+The immutable historical R800 checkout retains its ECR Redis reference. Only its
+CI invocation enables `--ci-redis-origin-alias`: the harness requires that exact
+historical tag/digest, pulls the official Docker Hub reference and verifies its
+RepoDigest and image ID. It writes `redis-origin-alias.json` and adds only the
+Redis image reference to the generated Compose override. The same override also
+carries the MinIO image when assembly is needed. Commands, volumes, healthchecks
+and source files retain their existing definitions. This does not demonstrate
+availability of the historical ECR origin. A failed pull or identity mismatch fails
+the run; there is no alternate tag or digest selection.
+
 ## Fixed artifacts
 
 | Binary | Release | SHA-256 |

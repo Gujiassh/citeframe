@@ -41,6 +41,8 @@ cp infra/docker/.env.deploy.example infra/docker/.env.deploy
 
 `AI_PDF_API_IMAGE`、`AI_PDF_WORKER_IMAGE` 和 `AI_PDF_WEB_IMAGE` 默认使用本机构建标签。CI/CD 推送镜像后，将它们改为带不可变版本或 digest 的镜像地址；migration 与 API 必须使用同一个 API 镜像。Dockerfile 基础镜像以及 Compose 的 Postgres、Redis、MinIO、Caddy 均固定到已验证 digest。
 
+Web 两个构建阶段的 Node 使用 `docker.io/library/node`，Redis 使用 `docker.io/library/redis`；版本和 digest 保持固定。生产 MinIO 仍使用原有 Quay 引用。镜像拉取仍可能受仓库限流或网络故障影响。
+
 `POSTGRES_DB`、`POSTGRES_USER`、`MINIO_ROOT_USER`、`MINIO_ROOT_PASSWORD` 和 `MINIO_BUCKET` 同时被 Compose 与备份脚本读取，必须使用不含空格、引号或 `#` 的单行值；`POSTGRES_PASSWORD` 还应使用 URL-safe 字符。环境文件已被仓库忽略，不要提交真实密钥。
 
 默认 embedding provider 是宿主机 Ollama。Linux Compose 通过 `host.docker.internal:host-gateway` 将容器请求转到宿主机；如果使用独立模型服务，修改 `AI_PDF_OLLAMA_BASE_URL`。
