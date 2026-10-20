@@ -34,4 +34,5 @@
 - [History index storage](architecture/history-index-storage.md)
 - [Worker and persistence boundaries](architecture/worker.md)
 - [Adding a modality](architecture/modality-extension-contract.md)
+- [Native image geometry](architecture/native-image-geometry.md)
 - [Evaluation tools and reproducibility](development/evaluation.md)

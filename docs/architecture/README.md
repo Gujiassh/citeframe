@@ -18,6 +18,7 @@
 - [Research transcript projection](research-transcript-projection.md)
 - [Research tool settlement](research-tool-settlement.md)
 - [Modality extension contract](modality-extension-contract.md)
+- [Native image geometry](native-image-geometry.md)
 - [New modality checklist](modality-onboarding-checklist.md)
 
 For setup and product usage, start with the [documentation index](../README.md).
