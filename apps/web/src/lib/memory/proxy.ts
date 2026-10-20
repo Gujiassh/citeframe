@@ -6,6 +6,27 @@ const noStore = { "Cache-Control": "private, no-store, max-age=0", "Vary": "Cook
 export type ProxyConfig = { endpoint: Endpoint; workspaceId: string; id?: string };
 export type ProxyDependencies = { session: () => Promise<{ userId: string } | null>; headers: (userId: string) => Record<string, string>; baseUrl: string; fetch: typeof fetch };
 const methods: Record<Endpoint, string> = { list: "GET", current: "GET", revisions: "GET", request: "GET", operation: "GET", create: "POST", correct: "POST", deactivate: "PATCH", delete: "DELETE", source: "POST" };
+async function readJsonBody(request: Request): Promise<unknown> {
+  const reader = request.body?.getReader();
+  if (!reader) throw new Error("invalid_request");
+  const decoder = new TextDecoder();
+  let bytes = 0, raw = "", complete = false;
+  try {
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) { complete = true; break; }
+      bytes += value.byteLength;
+      if (bytes > 65536) throw new Error("invalid_request");
+      raw += decoder.decode(value, { stream: true });
+    }
+    return JSON.parse(raw + decoder.decode());
+  } finally {
+    try {
+      // Cancel immediately; a stalled producer cleanup must not delay rejection.
+      if (!complete) void reader.cancel().catch(() => {});
+    } finally { reader.releaseLock(); }
+  }
+}
 export async function memoryProxy(request: Request, config: ProxyConfig, deps: ProxyDependencies): Promise<Response> {
   const { endpoint, workspaceId, id } = config;
   const method = methods[endpoint];
@@ -16,9 +37,7 @@ export async function memoryProxy(request: Request, config: ProxyConfig, deps: P
   let body: unknown;
   if (method !== "GET") {
     try {
-      const raw = await request.text();
-      if (new TextEncoder().encode(raw).length > 65536) return fail("invalid_request");
-      body = JSON.parse(raw);
+      body = await readJsonBody(request);
     } catch { return fail("invalid_request"); }
   }
   const session = await deps.session();

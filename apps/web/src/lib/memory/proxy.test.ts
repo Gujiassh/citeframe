@@ -93,3 +93,136 @@ test("R3 wrong deletion/poll targets fail safely without accepting unrelated ope
   const response = await memoryProxy(req("DELETE", { requestId, expectedVersion: 1 }), { workspaceId, id, endpoint: "delete" }, deps);
   assert.equal(response.status, 503); assert.equal((await response.json()).detail.code, "outcome_unknown");
 });
+
+
+function streamRequest(chunks: Uint8Array[], options: { headers?: Record<string, string>; highWaterMark?: number; stayOpen?: boolean; cancel?: () => void | Promise<void>; failAfter?: number } = {}) {
+  const stats = { pulls: 0, cancellations: 0 };
+  let index = 0;
+  const stream = new ReadableStream<Uint8Array>({
+    pull(controller) {
+      stats.pulls++;
+      if (index === options.failAfter) throw new Error("fixture-private-read-diagnostic");
+      if (index < chunks.length) controller.enqueue(chunks[index++]);
+      if (index === chunks.length && !options.stayOpen) controller.close();
+    },
+    cancel() { stats.cancellations++; return options.cancel?.(); },
+  }, { highWaterMark: options.highWaterMark ?? 0 });
+  const init: RequestInit & { duplex: "half" } = { method: "POST", headers: { "content-type": "application/json", "Idempotency-Key": "original-key", ...options.headers }, body: stream, duplex: "half" };
+  const request = new Request(`http://app.invalid/api/workspaces/${workspaceId}/memories`, init);
+  request.text = async () => { throw new Error("whole_body_text_forbidden"); };
+  request.arrayBuffer = async () => { throw new Error("whole_body_array_buffer_forbidden"); };
+  return { request, stats };
+}
+const encodeBody = (text: string) => new TextEncoder().encode(text);
+async function invalidStream(request: Request) {
+  const { deps, calls } = harness();
+  let sessions = 0;
+  deps.session = async () => { sessions++; return null; };
+  const response = await memoryProxy(request, { workspaceId, endpoint: "create" }, deps);
+  assert.equal(response.status, 422);
+  assert.deepEqual(await response.json(), { detail: { code: "invalid_request", message: errors.invalid_request[1], retryable: false, requestId: null } });
+  assert.match(response.headers.get("cache-control")!, /private, no-store/);
+  assert.equal(response.headers.get("vary"), "Cookie");
+  assert.equal(sessions, 0); assert.equal(calls.length, 0);
+  assert.equal(request.body?.locked ?? false, false);
+}
+const createBody = { requestId, kind: "fact", content: "中文😀", conditions: { subject: "Fixture", applicability: "Tests" }, scope: { kind: "workspace" } };
+const createReceipt = { requestId, operationId: requestId, resultVersion: 1, memory: { id: requestId, version: 1, intent: "active", validity: "invalidated", displayStatus: "invalidated", contentAvailable: false, reason: "source_unavailable" }, indexState: "not_enabled" };
+
+const transferHeaders: Record<string, string>[] = [{}, { "content-length": "1" }, { "content-length": "1048576" }, { "transfer-encoding": "chunked" }];
+for (const headers of transferHeaders) {
+  test(`stream overflow stops at first excess chunk regardless of ${JSON.stringify(headers)}`, { timeout: 1000 }, async () => {
+    const { request, stats } = streamRequest([new Uint8Array(32768), new Uint8Array(32768), new Uint8Array(1)], { headers, stayOpen: true });
+    await invalidStream(request);
+    assert.equal(stats.pulls, 3); assert.equal(stats.cancellations, 1);
+  });
+}
+
+test("default backpressure permits at most one prefetched chunk and cancels before full payload", async () => {
+  const chunks = Array.from({ length: 256 }, () => new Uint8Array(4096));
+  const { request, stats } = streamRequest(chunks, { highWaterMark: 1 });
+  await invalidStream(request);
+  assert.ok(stats.pulls >= 17 && stats.pulls <= 18);
+  assert.equal(stats.cancellations, 1);
+});
+
+for (const cleanup of ["throws", "rejects", "pending"] as const) {
+  test(`overflow remains fixed422 and releases lock when producer cancellation ${cleanup}`, { timeout: 1000 }, async () => {
+    const { request, stats } = streamRequest([new Uint8Array(65537)], {
+      stayOpen: true,
+      cancel: () => {
+        if (cleanup === "throws") throw new Error("fixture-private-cleanup-diagnostic");
+        if (cleanup === "rejects") return Promise.reject(new Error("fixture-private-cleanup-diagnostic"));
+        return new Promise<void>(() => {});
+      },
+    });
+    await invalidStream(request);
+    assert.equal(stats.pulls, 1); assert.equal(stats.cancellations, 1);
+  });
+}
+
+for (const failAfter of [0, 1]) {
+  test(`read failure after ${failAfter} chunks stays sanitized and releases reader`, async () => {
+    const { request } = streamRequest([encodeBody('{"content":"'), encodeBody('unfinished')], { failAfter, stayOpen: true });
+    await invalidStream(request);
+  });
+}
+
+for (const malformed of ["", "{", '{"content":"unterminated', "{}{}"] ) {
+  test(`malformed JSON case length${malformed.length} precedes authentication`, async () => {
+    const { request, stats } = streamRequest([encodeBody(malformed)]);
+    await invalidStream(request);
+    assert.equal(stats.cancellations, 0);
+  });
+}
+
+test("absent body preserves invalid JSON precedence without session/upstream access", async () => {
+  await invalidStream(new Request("http://app.invalid", { method: "POST" }));
+});
+
+for (const length of [65535, 65536]) {
+  test(`valid JSON at ${length} raw bytes authenticates and forwards unchanged command`, async () => {
+    const json = JSON.stringify(createBody);
+    const bytes = encodeBody(json + " ".repeat(length - encodeBody(json).length));
+    const { request, stats } = streamRequest([bytes.slice(0, 31), bytes.slice(31, 32768), bytes.slice(32768)]);
+    const { deps, calls } = harness(Response.json(createReceipt, { status: 201 }));
+    const session = deps.session; let sessions = 0;
+    deps.session = async () => { sessions++; return session(); };
+    const response = await memoryProxy(request, { workspaceId, endpoint: "create" }, deps);
+    assert.equal(response.status, 201); assert.deepEqual(await response.json(), createReceipt);
+    assert.equal(sessions, 1); assert.equal(calls.length, 1);
+    assert.equal(calls[0].init?.body, json);
+    assert.equal(new Headers(calls[0].init?.headers).get("Idempotency-Key"), "original-key");
+    assert.equal(calls[0].init?.cache, "no-store"); assert.equal(calls[0].init?.redirect, "error");
+    assert.equal(stats.cancellations, 0); assert.equal(request.body?.locked, false);
+  });
+}
+
+test("cross-chunk UTF8 including BOM and malformed sequences matches standard Request text decoding", async () => {
+  const prefix = encodeBody(JSON.stringify({ ...createBody, content: "MARKER" }));
+  const marker = encodeBody("MARKER"), at = prefix.findIndex((_, index) => marker.every((value, offset) => prefix[index + offset] === value));
+  const content = new Uint8Array([0xe4, 0xb8, 0xad, 0xf0, 0x9f, 0x98, 0x80, 0xc3, 0x28, 0xe2]);
+  const bytes = new Uint8Array([0xef, 0xbb, 0xbf, ...prefix.slice(0, at), ...content, ...prefix.slice(at + marker.length)]);
+  const standard = JSON.parse(await new Request("http://app.invalid", { method: "POST", body: bytes }).text());
+  const { request } = streamRequest(Array.from(bytes, byte => new Uint8Array([byte])));
+  const { deps, calls } = harness(Response.json(createReceipt, { status: 201 }));
+  assert.equal((await memoryProxy(request, { workspaceId, endpoint: "create" }, deps)).status, 201);
+  assert.equal(calls[0].init?.body, JSON.stringify(standard));
+  assert.equal(request.body?.locked, false);
+});
+
+test("raw-byte cap counts UTF8 bytes rather than decoded characters", async () => {
+  const bytes = encodeBody(JSON.stringify({ ...createBody, content: "😀".repeat(17000) }));
+  assert.ok(bytes.length > 65536);
+  const { request, stats } = streamRequest([bytes.slice(0, 65536), bytes.slice(65536)], { stayOpen: true });
+  await invalidStream(request);
+  assert.equal(stats.pulls, 2); assert.equal(stats.cancellations, 1);
+});
+
+test("bounded syntactically valid body still reaches missing-session401", async () => {
+  const { request } = streamRequest([encodeBody(JSON.stringify(createBody))]);
+  const { deps, calls } = harness(); deps.session = async () => null;
+  const response = await memoryProxy(request, { workspaceId, endpoint: "create" }, deps);
+  assert.equal(response.status, 401); assert.equal((await response.json()).detail.requestId, null);
+  assert.equal(calls.length, 0); assert.equal(request.body?.locked, false);
+});
