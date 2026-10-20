@@ -26,7 +26,8 @@
     "7c86a862854d34c6889099aeee82393be8808b80",
     "4fd450c5fc433153be2bb92f302208c2cec0d1c8",
     "52056b4ca208ef9758e715daea2f01af8763df15",
-    "7f41584aaa87554c5158d93129e25e8aecf7eca7"
+    "7f41584aaa87554c5158d93129e25e8aecf7eca7",
+    "432051b8ea3e38eb4764d60d819fb9b32c0e1603"
   ],
   "scope": "PR30 issue25 v4 conflict investigation plus normal architecture/prerequisite merges; exact owner-prepared blobs/provenance, new integration and v4 oracle pending independent Hubble review; exact PR37 upload and PR39 workspace-model/recovery/lock/oracle deltas, retaining unchanged entries and inherited provenance; exact PR47 Issue40 workspace-access dependency and test blobs pinned at 5903d60b7103d32d7d8a0c173691250407460b13, retaining prior admissions/provenance; manifest admission pending independent review",
   "functionalOracle": [
@@ -61,7 +62,11 @@
     "PR56 unactivated typed history source selections reuse canonical SourceReference/MemoryError; strict source/span/query/policy shapes and set/kind projection confer no native read, search, index, ranking or issuance authority; all-owner private instruction exclusion remains unchanged.",
     "PR56 exact original-body UTF-8 hash/length and code-point windows preserve BOM/CRLF/combining/astral text; bounded canonical HMAC cursors bind original source/window/offset/binding/expiry, not current call/profile, and require fresh native authorization. Complete target assistant/tool framing and full candidate/empty-content baseline counting bind current request/profile; bounded halving gives at most14 sizes/28 counts, with no dispatch/adoption.",
     "PR56 isolated frozen GenerationImage validates finite canonical base64 and33-byte PNG signature/IHDR structure only; header-only/unparsed data can pass, no pixel/decompression/native-source/model-readiness claim. GenerationMessage/GenerationRequest remain text-only; no adapter/counter/archive/native image activation.",
-    "PR56 exact9 reviewed original7f source blobs retain source ACCEPT with independent141 helper/image plus20 import-boundary cases; controller actual pending7f+main54(6be21a5) reports478 passing in4.98s,0skip/network with origin gates. Evidence sets overlap and do not establish final metadata/committed-head hosted/image or native/full42 acceptance. Latest54 A2A oracle and49provider/54stream fixes remain exact parent bytes."
+    "PR56 exact9 reviewed original7f source blobs retain source ACCEPT with independent141 helper/image plus20 import-boundary cases; controller actual pending7f+main54(6be21a5) reports478 passing in4.98s,0skip/network with origin gates. Evidence sets overlap and do not establish final metadata/committed-head hosted/image or native/full42 acceptance. Latest54 A2A oracle and49provider/54stream fixes remain exact parent bytes.",
+    "PR58 explicitly imported memory_index model adds only workspace/shared manifest and entry tables with no model export registration, Alembic activation, native corpus issuer, index builder, search API or embedding call. The strict product delta includes both memory_index.py and its dedicated package test, exactly sourced from432051b.",
+    "PR58 finite canonical source sets/profiles, exact workspace/source/version/hash/generation and entry-profile coherence, bounded codepoint chunk geometry, readiness/complete declared counts and activated identity immutability are storage gates. Every manifest/entry INSERT/UPDATE/DELETE requires READ COMMITTED before workspace/manifest/source NOWAIT lock/read barriers (IS01). Private instruction sources remain excluded; native truth/currentness hooks, authorization and derived erasure remain future activation work.",
+    "PR58 actual simple FTS/trigram/K60 RRF and synthetic1024-vector controls establish storage/query plumbing, not provider quality or a native search interface. Unicode lexical oracle retains actual locale-dependent word classification, trigram cardinality, exact channel ordinals and1/61 or2/61 score assertions; hosted actual-locale execution remains required.",
+    "PR58 controller original432 frozen-source PostgreSQL evidence:179 cases(original156+independent23),8.72s,0skip,43 module origins,211 source hashes,PG17.11/vector0.8.6/pg_trgm1.6,C locale,disposable DB removed. Early15ce actual56candidate2c8d integration retains latest49/54 fixes; metadata-independent review,current actual-canonical PG179,actual56/main ancestry sync and exact final-head frozen hosted CI remain pending. Parent42 is not completed by this storage slice."
   ],
   "files": [
     {
@@ -3706,6 +3711,38 @@
       "reviewArtifactSHA256": "ea99b85b5e664c89b95d0d5f8fdc34f87c36817e720f0c1317f2e6650ef99a46",
       "reviewStatus": "bounded-original56-source-ACCEPT; actual-pending-main54-integration-controller478-pass; current-metadata-final-head-CI-review-pending",
       "transformation": "identical-reviewed-original56-git-bytes"
+    },
+    {
+      "path": "packages/backend-persistence/src/citeframe_persistence/models/memory_index.py",
+      "integratedBlob": "64802fac7f4978e4149a2ac668473ea6430b10e4",
+      "reviewedSourceHead": "432051b8ea3e38eb4764d60d819fb9b32c0e1603",
+      "reviewedSourcePath": "packages/backend-persistence/src/citeframe_persistence/models/memory_index.py",
+      "reviewedSourceBlob": "64802fac7f4978e4149a2ac668473ea6430b10e4",
+      "sourceLF_SHA256": "c3fd3b31eeaab589a2c1b60941a8e9e1fb5a4061d751da44afd04368552cdc28",
+      "reviewArtifact": ".local-runtime/artifacts/pr58-pre-review-20261020/review.md",
+      "reviewArtifactSHA256": "91f79c96a99b45ac0b7c5c2a1a3c875b17a93d9285c9739ea76917e0271ba14b",
+      "reviewScopeCorrectionArtifact": ".local-runtime/artifacts/pr58-pre-review-20261020/controller-product-scope-correction.json",
+      "reviewScopeCorrectionArtifactSHA256": "885a71e11672d86aecf76401f5cde83bc18d7ba9b9fc278bb772ccd994391e82",
+      "controllerOriginalPostgresArtifact": ".local-runtime/artifacts/pr58-pre-review-20261020/controller-postgres-result.json",
+      "controllerOriginalPostgresArtifactSHA256": "0b86d037c88f0a06959e88126ac7a93997ddbbdc6c2324175dbd96ca0bf5a746",
+      "reviewStatus": "bounded-original58-storage-source-ACCEPT; controller-original432-PG179-pass; early15ce-metadata-candidate-independent-review-current-PG-hosted-and-actual56main-sync-pending",
+      "transformation": "identical-reviewed-original432-git-bytes"
+    },
+    {
+      "path": "packages/memory-service/tests/test_history_index_postgres.py",
+      "integratedBlob": "677ad050d9ad73a6bd0fe3b1082fc4f655364cd7",
+      "reviewedSourceHead": "432051b8ea3e38eb4764d60d819fb9b32c0e1603",
+      "reviewedSourcePath": "packages/memory-service/tests/test_history_index_postgres.py",
+      "reviewedSourceBlob": "677ad050d9ad73a6bd0fe3b1082fc4f655364cd7",
+      "sourceLF_SHA256": "45ad960f62df0bdd31938018d47bba8ae85ab5ffcc3e0fa1babdaf59a3738a4d",
+      "reviewArtifact": ".local-runtime/artifacts/pr58-pre-review-20261020/review.md",
+      "reviewArtifactSHA256": "91f79c96a99b45ac0b7c5c2a1a3c875b17a93d9285c9739ea76917e0271ba14b",
+      "reviewScopeCorrectionArtifact": ".local-runtime/artifacts/pr58-pre-review-20261020/controller-product-scope-correction.json",
+      "reviewScopeCorrectionArtifactSHA256": "885a71e11672d86aecf76401f5cde83bc18d7ba9b9fc278bb772ccd994391e82",
+      "controllerOriginalPostgresArtifact": ".local-runtime/artifacts/pr58-pre-review-20261020/controller-postgres-result.json",
+      "controllerOriginalPostgresArtifactSHA256": "0b86d037c88f0a06959e88126ac7a93997ddbbdc6c2324175dbd96ca0bf5a746",
+      "reviewStatus": "bounded-original58-storage-source-ACCEPT; controller-original432-PG179-pass; early15ce-metadata-candidate-independent-review-current-PG-hosted-and-actual56main-sync-pending",
+      "transformation": "identical-reviewed-original432-git-bytes"
     }
   ]
 }
