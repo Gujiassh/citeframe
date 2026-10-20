@@ -27,6 +27,11 @@ async function readJsonBody(request: Request): Promise<unknown> {
     } finally { reader.releaseLock(); }
   }
 }
+function httpOrigin(protocol: string, authority: string | null): string | null {
+  if (!authority || !["http:", "https:"].includes(protocol)
+    || !/^(?:\[[0-9a-f:.]+\]|[a-z0-9](?:[a-z0-9.-]*[a-z0-9])?\.?)(?::[0-9]{1,5})?$/i.test(authority)) return null;
+  try { return new URL(`${protocol}//${authority}`).origin; } catch { return null; }
+}
 export async function memoryProxy(request: Request, config: ProxyConfig, deps: ProxyDependencies): Promise<Response> {
   const { endpoint, workspaceId, id } = config;
   const method = methods[endpoint];
@@ -45,7 +50,12 @@ export async function memoryProxy(request: Request, config: ProxyConfig, deps: P
   if (mutation && object(body) && uuid(body.requestId)) requestId = body.requestId;
   if (endpoint === "request" && uuid(id)) requestId = id;
   const url = new URL(request.url);
-  if (method !== "GET" && ((request.headers.get("origin") && request.headers.get("origin") !== url.origin) || request.headers.get("sec-fetch-site") === "cross-site")) return fail("invalid_request");
+  const host = request.headers.get("host"), origin = request.headers.get("origin");
+  const expectedOrigin = httpOrigin(url.protocol, host);
+  const suppliedOrigin = origin?.match(/^(https?:)\/\/(.+)$/);
+  if (method !== "GET" && ((host !== null && expectedOrigin === null)
+    || (origin !== null && (!suppliedOrigin || expectedOrigin === null || httpOrigin(suppliedOrigin[1], suppliedOrigin[2]) !== expectedOrigin))
+    || request.headers.get("sec-fetch-site") === "cross-site")) return fail("invalid_request");
   if (!uuid(workspaceId) || (!["list", "create", "source"].includes(endpoint) && !uuid(id)) || (id !== undefined && !uuid(id)) || !validQuery(endpoint, url.searchParams)) return fail("invalid_request");
   if (method !== "GET" && (!request.headers.get("content-type")?.startsWith("application/json") || !validBody(endpoint, body))) return fail("invalid_request");
   const key = request.headers.get("idempotency-key");
