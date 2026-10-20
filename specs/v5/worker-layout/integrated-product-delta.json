@@ -35,7 +35,8 @@
     "6043a087c33840c66476a3402708a6d371988421",
     "e7b3e86ae4de70764c4d17bcbe272686c1c8063a",
     "5f26f63268c2f64cb7ea7add3578d1411ba5dadf",
-    "7d6be8a236d48135460b0a5677b6ea01edd31b4f"
+    "7d6be8a236d48135460b0a5677b6ea01edd31b4f",
+    "f3d83c09600bd61cbac5db3407d7f86476cae5fd"
   ],
   "scope": "PR30 issue25 v4 conflict investigation plus normal architecture/prerequisite merges; exact owner-prepared blobs/provenance, new integration and v4 oracle pending independent Hubble review; exact PR37 upload and PR39 workspace-model/recovery/lock/oracle deltas, retaining unchanged entries and inherited provenance; exact PR47 Issue40 workspace-access dependency and test blobs pinned at 5903d60b7103d32d7d8a0c173691250407460b13, retaining prior admissions/provenance; manifest admission pending independent review",
   "functionalOracle": [
@@ -90,7 +91,9 @@
     "PR55 binds exactly the original55 tools.py and test_memory_tool_settlement.py blobs to5f26f63268c2f64cb7ea7add3578d1411ba5dadf. The validated tool-call-ID chain retains native lock order, scope/snapshot checks, terminal/precondition precedence, result/usage/budget accounting and final flush. Public precondition failures remain outside the rollback catch; ordinary public settlement/flush failures roll back. The private caller-transaction entry performs no commit/rollback and retains caller-owned recovery, lifecycle, lease and source authority prerequisites. No application memory caller, schema/API field or native activation is added; full issue45 remains open.",
     "PR55 historical bounded source ACCEPT includes13 focused controls and a distinct original55 real-PostgreSQL56-case run, with exact source/origin evidence. These historical results do not establish current-parent execution. The byte-identical dedicated workflow selects120 cases (56 settlement,22 API budget recovery,6 API persistence boundary,36 Worker projection) with all original collection/phase/origin/version/skip/xfail/deselection guards. Root owns the current f1f7+92aff PG120 run separately. Metadata adds one fixed test path and replaces tools.py while retaining its complete prior record, all other364 parent objects/order/header/source/oracle prefixes, and requires unchanged original strict366 and reverse controls. Independent final audit, actual51main ancestry synchronization and exact-final-head hosted acceptance remain pending.",
     "PR52 binds only the exact original7d6be8a236d48135460b0a5677b6ea01edd31b4f chat_runtime_profile.py and test_chat_runtime_profile.py additions. The text-only resolver validates all registry entries and exact connection/profile selectors, pins copied immutable policy and original connection, and supplies estimated character-count provenance. Runtime fingerprint identity excludes the per-call requested output reserve; resolved input limits require future every-send admission. Builder routes/endpoints and caller-owned secure transport/stream cleanup retain existing contracts. This unregistered seam adds no calibrated registry, native dispatch, image support, authority/source grant or full issue44 activation; all-owner private exclusion and surrounding budget/lifecycle/source authority remain caller obligations.",
-    "PR52 historical bounded source ACCEPT comprises183 pure-workflow,80 builder-workflow and9 independent reverse cases,272 distinct original-source checks with frozen source/origin evidence and synthetic transport controls. These results do not establish live model calibration or current-parent execution. The original dedicated workflow, selectors, source/import/network guards and complete-execution/skip/xfail/deselection checks remain byte-identical. Root owns current4b29 canonical183/80/9 batches separately. Metadata retains every366 full parent record/order/nested history/header/source/oracle prefix and appends only two literal reviewed sources, requiring unchanged original strict368 and reverse controls. Independent final audit, actual55main synchronization and exact-final-head hosted acceptance remain pending."
+    "PR52 historical bounded source ACCEPT comprises183 pure-workflow,80 builder-workflow and9 independent reverse cases,272 distinct original-source checks with frozen source/origin evidence and synthetic transport controls. These results do not establish live model calibration or current-parent execution. The original dedicated workflow, selectors, source/import/network guards and complete-execution/skip/xfail/deselection checks remain byte-identical. Root owns current4b29 canonical183/80/9 batches separately. Metadata retains every366 full parent record/order/nested history/header/source/oracle prefix and appends only two literal reviewed sources, requiring unchanged original strict368 and reverse controls. Independent final audit, actual55main synchronization and exact-final-head hosted acceptance remain pending.",
+    "PR57 binds only repaired-f3d83c09600bd61cbac5db3407d7f86476cae5fd native_image_geometry.py and test_native_image_geometry.py additions, retaining the original-e8 review/delivery chain without admitting its unrepaired blobs. The unregistered numeric PNG/PDF planner preserves strict finite built-in tuple inputs, private Decimal context, native rectangle intersection/transform/rounding,150-DPI first plan and rescale calculation. Validated native FzErrorBase-family failures become fixed invalid-geometry ValueError with suppressed displayed context; control-flow BaseException propagation remains intact. No object IO, decoder/render-resource enforcement, source authority, native image dispatch/activation or full issue44 completion is supplied.",
+    "PR57 isolated repaired-source ACCEPT records exact workflow147, retained53 and fresh61 independent probes as separate historical batches. The original119 full test-byte prefix and native-oracle hashes plus28 appended repair cases remain unchanged. The repaired workflow changes only its two119-to147 count checks and retains selectors/version/origin/import/network/skip/xfail/deselection/complete-execution gates. Root owns current3d4 canonical147 with real pinned PyMuPDF1.28.2/Pillow12.3.0 separately; historical probes do not establish that execution or native activation. Metadata preserves every368 full parent object/order/nested history/header/source/oracle prefix and appends only two static repaired sources, requiring original strict370 and reverse controls. Independent final audit, actual52main sync and exact-final-head hosted acceptance remain pending."
   ],
   "files": [
     {
@@ -4679,6 +4682,38 @@
       "integratedBlob": "0ba0665525486d529cf7273593db48550602bfa8",
       "transformation": "identical-reviewed-original52-Git-bytes",
       "reviewStatus": "bounded-unactivated-original52-source-ACCEPT; exact4b29-integration-metadata-candidate; current-root183-80-9-source-checks-independent-audit-actual55main-sync-final-head-CI-pending"
+    },
+    {
+      "path": "apps/api/src/ai_pdf_api/modalities/native_image_geometry.py",
+      "reviewedSourceHead": "f3d83c09600bd61cbac5db3407d7f86476cae5fd",
+      "reviewedSourcePath": "apps/api/src/ai_pdf_api/modalities/native_image_geometry.py",
+      "reviewedSourceBlob": "bdc80e6bb8d864ceb72e62a8bbb2e6bcbc570707",
+      "sourceLF_SHA256": "8672c680f40ffbfd17ac81d13c2d12dd404040cf3f703c262abaacdd83c7dce7",
+      "originalSourceHead": "e8b87a6e79b2560bf224a32036f6c9c19a50b67e",
+      "originalSourceBlob": "d7c960bda380fcc7256e1d80a7377d946c7e2c00",
+      "repairDeliveryArtifact": ".local-runtime/artifacts/pr57-rework-20261020/controller-git-delivery.json",
+      "repairDeliveryArtifactSHA256": "9e22106fcf48e208c2a7d901deb4825d3f70524ad014a8d1cfea04c2657e30ec",
+      "reviewArtifact": ".local-runtime/artifacts/pr57-rework-20261020/independent-final/review.md",
+      "reviewArtifactSHA256": "0aff0e3ac7234d9c99f5134a18f298b66c4ce9611cf191bd478350e8ecf8816b",
+      "integratedBlob": "bdc80e6bb8d864ceb72e62a8bbb2e6bcbc570707",
+      "transformation": "identical-reviewed-repaired57-f3d-Git-bytes",
+      "reviewStatus": "bounded-repaired57-numeric-planner-source-ACCEPT; exact3d4-integration-metadata-candidate; current-root-real-engine147-independent-audit-actual52main-sync-final-head-CI-pending"
+    },
+    {
+      "path": "apps/api/tests/test_native_image_geometry.py",
+      "reviewedSourceHead": "f3d83c09600bd61cbac5db3407d7f86476cae5fd",
+      "reviewedSourcePath": "apps/api/tests/test_native_image_geometry.py",
+      "reviewedSourceBlob": "44c9741957552cfc351247ad412fef8eeaf6973a",
+      "sourceLF_SHA256": "1b91e7e4e3aaca2eb12e788fcb75cf2a182653246aeeca0d27bb275160378465",
+      "originalSourceHead": "e8b87a6e79b2560bf224a32036f6c9c19a50b67e",
+      "originalSourceBlob": "348b8a05d06bf0ee410afced8c850a680d2ce089",
+      "repairDeliveryArtifact": ".local-runtime/artifacts/pr57-rework-20261020/controller-git-delivery.json",
+      "repairDeliveryArtifactSHA256": "9e22106fcf48e208c2a7d901deb4825d3f70524ad014a8d1cfea04c2657e30ec",
+      "reviewArtifact": ".local-runtime/artifacts/pr57-rework-20261020/independent-final/review.md",
+      "reviewArtifactSHA256": "0aff0e3ac7234d9c99f5134a18f298b66c4ce9611cf191bd478350e8ecf8816b",
+      "integratedBlob": "44c9741957552cfc351247ad412fef8eeaf6973a",
+      "transformation": "identical-reviewed-repaired57-f3d-Git-bytes",
+      "reviewStatus": "bounded-repaired57-numeric-planner-source-ACCEPT; exact3d4-integration-metadata-candidate; current-root-real-engine147-independent-audit-actual52main-sync-final-head-CI-pending"
     }
   ]
 }
