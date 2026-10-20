@@ -25,7 +25,8 @@
     "812ebb1ed9bdddf8ef3dc44f9aeb8387036607cd",
     "7c86a862854d34c6889099aeee82393be8808b80",
     "4fd450c5fc433153be2bb92f302208c2cec0d1c8",
-    "52056b4ca208ef9758e715daea2f01af8763df15"
+    "52056b4ca208ef9758e715daea2f01af8763df15",
+    "7f41584aaa87554c5158d93129e25e8aecf7eca7"
   ],
   "scope": "PR30 issue25 v4 conflict investigation plus normal architecture/prerequisite merges; exact owner-prepared blobs/provenance, new integration and v4 oracle pending independent Hubble review; exact PR37 upload and PR39 workspace-model/recovery/lock/oracle deltas, retaining unchanged entries and inherited provenance; exact PR47 Issue40 workspace-access dependency and test blobs pinned at 5903d60b7103d32d7d8a0c173691250407460b13, retaining prior admissions/provenance; manifest admission pending independent review",
   "functionalOracle": [
@@ -56,7 +57,11 @@
     "PR54 PostgreSQL READ COMMITTED guards, bounded NOWAIT/full-rollback retry, source/native revision/lease/cancel/deadline revalidation, and one transaction for checkpoint, ordered coverage, dependency uses and native pointer CAS; restart validates saved capture/profile/result/interval provenance before rendering.",
     "PR54 request reservation/archive-readback/mark-sent and native Research provider/budget binding retain original accounting and unknown-outcome no-resend; A1 excludes every owner private instruction from shared model/tool/summary/checkpoint/planning/output paths.",
     "PR54 u5c6d7e8f9a0 follows t4b5c6d7e8f9 with additive compaction records/native revision stamps and source/use guards; downgrade refuses retained compaction data; source-specific PostgreSQL evidence does not establish final integrated image/hosted acceptance.",
-    "PR54 F54-R1 closes retained summary iterators: ordinary cleanup failures preserve an active primary failure, ordinary cleanup-only failures are summary_cleanup_failed, and BaseException control flow propagates. Exact48 source4fd450c plus2 repaired source52056b4 retain bounded neutral-source review and independent70-case patch ACCEPT. Controller reports original4fd PostgreSQL508 passed828.74s with147 origins and canonical52056 integrated446 passed1.30s,0 skips/network. These overlapping source-specific evidence sets do not establish native Chat/Research activation, full43 completion, actual49/main ancestry, final metadata review or final-head hosted/image acceptance; F43-NC1/NC2 and registration-to-first-capture ABA limits remain."
+    "PR54 F54-R1 closes retained summary iterators: ordinary cleanup failures preserve an active primary failure, ordinary cleanup-only failures are summary_cleanup_failed, and BaseException control flow propagates. Exact48 source4fd450c plus2 repaired source52056b4 retain bounded neutral-source review and independent70-case patch ACCEPT. Controller reports original4fd PostgreSQL508 passed828.74s with147 origins and canonical52056 integrated446 passed1.30s,0 skips/network. These overlapping source-specific evidence sets do not establish native Chat/Research activation, full43 completion, actual49/main ancestry, final metadata review or final-head hosted/image acceptance; F43-NC1/NC2 and registration-to-first-capture ABA limits remain.",
+    "PR56 unactivated typed history source selections reuse canonical SourceReference/MemoryError; strict source/span/query/policy shapes and set/kind projection confer no native read, search, index, ranking or issuance authority; all-owner private instruction exclusion remains unchanged.",
+    "PR56 exact original-body UTF-8 hash/length and code-point windows preserve BOM/CRLF/combining/astral text; bounded canonical HMAC cursors bind original source/window/offset/binding/expiry, not current call/profile, and require fresh native authorization. Complete target assistant/tool framing and full candidate/empty-content baseline counting bind current request/profile; bounded halving gives at most14 sizes/28 counts, with no dispatch/adoption.",
+    "PR56 isolated frozen GenerationImage validates finite canonical base64 and33-byte PNG signature/IHDR structure only; header-only/unparsed data can pass, no pixel/decompression/native-source/model-readiness claim. GenerationMessage/GenerationRequest remain text-only; no adapter/counter/archive/native image activation.",
+    "PR56 exact9 reviewed original7f source blobs retain source ACCEPT with independent141 helper/image plus20 import-boundary cases; controller actual pending7f+main54(6be21a5) reports478 passing in4.98s,0skip/network with origin gates. Evidence sets overlap and do not establish final metadata/committed-head hosted/image or native/full42 acceptance. Latest54 A2A oracle and49provider/54stream fixes remain exact parent bytes."
   ],
   "files": [
     {
@@ -2115,21 +2120,33 @@
     },
     {
       "path": "packages/backend-contracts/src/citeframe_contracts/__init__.py",
-      "integratedBlob": "ad1689e568a54202e51fadc62fbe107ee4e7f51d",
-      "reviewedSourceHead": "2e9287638fee9567c6474b8356c3b3ba93fec16a",
+      "integratedBlob": "625c5527ffc3d8a5a04f45d18836d22d2ff4608d",
+      "reviewedSourceHead": "7f41584aaa87554c5158d93129e25e8aecf7eca7",
       "reviewedSourcePath": "packages/backend-contracts/src/citeframe_contracts/__init__.py",
-      "reviewedSourceBlob": "ad1689e568a54202e51fadc62fbe107ee4e7f51d",
-      "transformation": "identical-reviewed-PR48-git-bytes; git-clean-CRLF-to-LF",
-      "reviewArtifact": "reviews/issue42-implementation.md",
-      "reviewedCheckoutSHA256": "b2bbef417ab301ccd50b4a2e1528affc90c025bc374f9de273027060c98c196f",
-      "reviewStatus": "historical-bounded-ACCEPT; hosted-PG-S3-final-image-gates-separate",
+      "reviewedSourceBlob": "625c5527ffc3d8a5a04f45d18836d22d2ff4608d",
+      "sourceLF_SHA256": "90096c370eec9ab6452562b844dc0b5a55ce0435138fe6660f8efcfa4f828e25",
+      "reviewArtifact": ".local-runtime/artifacts/pr56-pre-review-20261020/review.md",
+      "reviewArtifactSHA256": "ea99b85b5e664c89b95d0d5f8fdc34f87c36817e720f0c1317f2e6650ef99a46",
+      "reviewStatus": "bounded-original56-source-ACCEPT; actual-pending-main54-integration-controller478-pass; current-metadata-final-head-CI-review-pending",
+      "transformation": "identical-reviewed-original56-git-bytes",
       "inheritedProvenance": {
         "path": "packages/backend-contracts/src/citeframe_contracts/__init__.py",
-        "integratedBlob": "d4e91f56407018d66bc92adbb5a89230401f698d",
-        "reviewedSourceHead": "b691406fdc7d38e3f93578b36aaddafe7dbf992f",
+        "integratedBlob": "ad1689e568a54202e51fadc62fbe107ee4e7f51d",
+        "reviewedSourceHead": "2e9287638fee9567c6474b8356c3b3ba93fec16a",
         "reviewedSourcePath": "packages/backend-contracts/src/citeframe_contracts/__init__.py",
-        "reviewedSourceBlob": "d4e91f56407018d66bc92adbb5a89230401f698d",
-        "transformation": "identical-reviewed-bytes"
+        "reviewedSourceBlob": "ad1689e568a54202e51fadc62fbe107ee4e7f51d",
+        "transformation": "identical-reviewed-PR48-git-bytes; git-clean-CRLF-to-LF",
+        "reviewArtifact": "reviews/issue42-implementation.md",
+        "reviewedCheckoutSHA256": "b2bbef417ab301ccd50b4a2e1528affc90c025bc374f9de273027060c98c196f",
+        "reviewStatus": "historical-bounded-ACCEPT; hosted-PG-S3-final-image-gates-separate",
+        "inheritedProvenance": {
+          "path": "packages/backend-contracts/src/citeframe_contracts/__init__.py",
+          "integratedBlob": "d4e91f56407018d66bc92adbb5a89230401f698d",
+          "reviewedSourceHead": "b691406fdc7d38e3f93578b36aaddafe7dbf992f",
+          "reviewedSourcePath": "packages/backend-contracts/src/citeframe_contracts/__init__.py",
+          "reviewedSourceBlob": "d4e91f56407018d66bc92adbb5a89230401f698d",
+          "transformation": "identical-reviewed-bytes"
+        }
       }
     },
     {
@@ -2652,14 +2669,26 @@
     },
     {
       "path": "apps/api/tests/test_deploy_dependencies.py",
-      "integratedBlob": "710f3503e02842eccb25b888092ff9a01712913c",
-      "reviewedSourceHead": "1d4f9e377785bda28c62029cd524c3cd6ba4c567",
+      "integratedBlob": "aeea8eb11d5f948d68e06e33c89c19c1a5522ab2",
+      "reviewedSourceHead": "7f41584aaa87554c5158d93129e25e8aecf7eca7",
       "reviewedSourcePath": "apps/api/tests/test_deploy_dependencies.py",
-      "reviewedSourceBlob": "710f3503e02842eccb25b888092ff9a01712913c",
-      "transformation": "identical-reviewed-PR48-git-bytes; git-clean-CRLF-to-LF",
-      "reviewArtifact": "reviews/issue42-implementation.md",
-      "reviewedCheckoutSHA256": "95d147b8434f94adb59b099891b2bcbfc3b0e466ac1286548659dc6e59952729",
-      "reviewStatus": "historical-bounded-ACCEPT; hosted-PG-S3-final-image-gates-separate"
+      "reviewedSourceBlob": "aeea8eb11d5f948d68e06e33c89c19c1a5522ab2",
+      "sourceLF_SHA256": "1d17c3ada08dc31f58c1c875ce830f9099c92d47132de9eb7d29a1bf9b19532f",
+      "reviewArtifact": ".local-runtime/artifacts/pr56-pre-review-20261020/review.md",
+      "reviewArtifactSHA256": "ea99b85b5e664c89b95d0d5f8fdc34f87c36817e720f0c1317f2e6650ef99a46",
+      "reviewStatus": "bounded-original56-source-ACCEPT; actual-pending-main54-integration-controller478-pass; current-metadata-final-head-CI-review-pending",
+      "transformation": "identical-reviewed-original56-git-bytes",
+      "inheritedProvenance": {
+        "path": "apps/api/tests/test_deploy_dependencies.py",
+        "integratedBlob": "710f3503e02842eccb25b888092ff9a01712913c",
+        "reviewedSourceHead": "1d4f9e377785bda28c62029cd524c3cd6ba4c567",
+        "reviewedSourcePath": "apps/api/tests/test_deploy_dependencies.py",
+        "reviewedSourceBlob": "710f3503e02842eccb25b888092ff9a01712913c",
+        "transformation": "identical-reviewed-PR48-git-bytes; git-clean-CRLF-to-LF",
+        "reviewArtifact": "reviews/issue42-implementation.md",
+        "reviewedCheckoutSHA256": "95d147b8434f94adb59b099891b2bcbfc3b0e466ac1286548659dc6e59952729",
+        "reviewStatus": "historical-bounded-ACCEPT; hosted-PG-S3-final-image-gates-separate"
+      }
     },
     {
       "path": "apps/worker/pyproject.toml",
@@ -2696,14 +2725,26 @@
     },
     {
       "path": "packages/backend-contracts/src/citeframe_contracts/memory.py",
-      "integratedBlob": "abcc24916faf0aa1ce9478d6f8bad97e2ecb2b73",
-      "reviewedSourceHead": "2e9287638fee9567c6474b8356c3b3ba93fec16a",
+      "integratedBlob": "7608846c7e20059be27d446fc7abf2a5b5ceb1ab",
+      "reviewedSourceHead": "7f41584aaa87554c5158d93129e25e8aecf7eca7",
       "reviewedSourcePath": "packages/backend-contracts/src/citeframe_contracts/memory.py",
-      "reviewedSourceBlob": "abcc24916faf0aa1ce9478d6f8bad97e2ecb2b73",
-      "transformation": "identical-reviewed-PR48-git-bytes; git-clean-CRLF-to-LF",
-      "reviewArtifact": "reviews/issue42-implementation.md",
-      "reviewedCheckoutSHA256": "b1a0d53b5d21bac31ac12609a5a798cceda5f9aab43eefaa4e178a3d9d5aae45",
-      "reviewStatus": "historical-bounded-ACCEPT; hosted-PG-S3-final-image-gates-separate"
+      "reviewedSourceBlob": "7608846c7e20059be27d446fc7abf2a5b5ceb1ab",
+      "sourceLF_SHA256": "f168652de5a5c103fe177f20f6f747b2db966218772fe650f9e38771b004163d",
+      "reviewArtifact": ".local-runtime/artifacts/pr56-pre-review-20261020/review.md",
+      "reviewArtifactSHA256": "ea99b85b5e664c89b95d0d5f8fdc34f87c36817e720f0c1317f2e6650ef99a46",
+      "reviewStatus": "bounded-original56-source-ACCEPT; actual-pending-main54-integration-controller478-pass; current-metadata-final-head-CI-review-pending",
+      "transformation": "identical-reviewed-original56-git-bytes",
+      "inheritedProvenance": {
+        "path": "packages/backend-contracts/src/citeframe_contracts/memory.py",
+        "integratedBlob": "abcc24916faf0aa1ce9478d6f8bad97e2ecb2b73",
+        "reviewedSourceHead": "2e9287638fee9567c6474b8356c3b3ba93fec16a",
+        "reviewedSourcePath": "packages/backend-contracts/src/citeframe_contracts/memory.py",
+        "reviewedSourceBlob": "abcc24916faf0aa1ce9478d6f8bad97e2ecb2b73",
+        "transformation": "identical-reviewed-PR48-git-bytes; git-clean-CRLF-to-LF",
+        "reviewArtifact": "reviews/issue42-implementation.md",
+        "reviewedCheckoutSHA256": "b1a0d53b5d21bac31ac12609a5a798cceda5f9aab43eefaa4e178a3d9d5aae45",
+        "reviewStatus": "historical-bounded-ACCEPT; hosted-PG-S3-final-image-gates-separate"
+      }
     },
     {
       "path": "packages/backend-persistence/src/citeframe_persistence/models/memory.py",
@@ -3593,6 +3634,78 @@
       "reviewArtifactSHA256": "ff17742c353f5c9128221ac401ec918a7f81ecf3dfd732e3ac6992789b7b1cfe",
       "reviewResolutionArtifact": ".local-runtime/artifacts/pr54-rework-20261020/independent-final/review.md",
       "reviewResolutionArtifactSHA256": "b8c2fad66c3bfc95b08ba24cf3601fc9f7c8819f37968c21f32c4c5c7eb5277e"
+    },
+    {
+      "path": "packages/backend-contracts/src/citeframe_contracts/history.py",
+      "integratedBlob": "7dbe77f1f94b86b3df5a06dd64862a8e37a492f8",
+      "reviewedSourceHead": "7f41584aaa87554c5158d93129e25e8aecf7eca7",
+      "reviewedSourcePath": "packages/backend-contracts/src/citeframe_contracts/history.py",
+      "reviewedSourceBlob": "7dbe77f1f94b86b3df5a06dd64862a8e37a492f8",
+      "sourceLF_SHA256": "a771d0caf41ac0da307e1bb723da039aa2411f9cc35dd86e4c2ee460cf9d3c02",
+      "reviewArtifact": ".local-runtime/artifacts/pr56-pre-review-20261020/review.md",
+      "reviewArtifactSHA256": "ea99b85b5e664c89b95d0d5f8fdc34f87c36817e720f0c1317f2e6650ef99a46",
+      "reviewStatus": "bounded-original56-source-ACCEPT; actual-pending-main54-integration-controller478-pass; current-metadata-final-head-CI-review-pending",
+      "transformation": "identical-reviewed-original56-git-bytes"
+    },
+    {
+      "path": "packages/memory-service/src/citeframe_memory/history/__init__.py",
+      "integratedBlob": "74ecaf30aafeaa2d8e9c2acab060724215fd51b3",
+      "reviewedSourceHead": "7f41584aaa87554c5158d93129e25e8aecf7eca7",
+      "reviewedSourcePath": "packages/memory-service/src/citeframe_memory/history/__init__.py",
+      "reviewedSourceBlob": "74ecaf30aafeaa2d8e9c2acab060724215fd51b3",
+      "sourceLF_SHA256": "467e53689a22f1d1e3e871dc586a4111d267d27fe82c4a7c2a85d698dd3b03db",
+      "reviewArtifact": ".local-runtime/artifacts/pr56-pre-review-20261020/review.md",
+      "reviewArtifactSHA256": "ea99b85b5e664c89b95d0d5f8fdc34f87c36817e720f0c1317f2e6650ef99a46",
+      "reviewStatus": "bounded-original56-source-ACCEPT; actual-pending-main54-integration-controller478-pass; current-metadata-final-head-CI-review-pending",
+      "transformation": "identical-reviewed-original56-git-bytes"
+    },
+    {
+      "path": "packages/memory-service/src/citeframe_memory/history/ranges.py",
+      "integratedBlob": "4b4cd0f71afd9f7cfc62127472c35d968000d240",
+      "reviewedSourceHead": "7f41584aaa87554c5158d93129e25e8aecf7eca7",
+      "reviewedSourcePath": "packages/memory-service/src/citeframe_memory/history/ranges.py",
+      "reviewedSourceBlob": "4b4cd0f71afd9f7cfc62127472c35d968000d240",
+      "sourceLF_SHA256": "65f068f1003692f0b30e4f7f0daa8c4ab3993b2f5fd44c6686163dca93669d08",
+      "reviewArtifact": ".local-runtime/artifacts/pr56-pre-review-20261020/review.md",
+      "reviewArtifactSHA256": "ea99b85b5e664c89b95d0d5f8fdc34f87c36817e720f0c1317f2e6650ef99a46",
+      "reviewStatus": "bounded-original56-source-ACCEPT; actual-pending-main54-integration-controller478-pass; current-metadata-final-head-CI-review-pending",
+      "transformation": "identical-reviewed-original56-git-bytes"
+    },
+    {
+      "path": "packages/memory-service/src/citeframe_memory/history/search.py",
+      "integratedBlob": "90808463ad9e712f80986d65cb20ffb6859cfc3b",
+      "reviewedSourceHead": "7f41584aaa87554c5158d93129e25e8aecf7eca7",
+      "reviewedSourcePath": "packages/memory-service/src/citeframe_memory/history/search.py",
+      "reviewedSourceBlob": "90808463ad9e712f80986d65cb20ffb6859cfc3b",
+      "sourceLF_SHA256": "db0b927f8f3e8dfb21711be898a2820015eac917bd747c5f1358687f66a1e1a1",
+      "reviewArtifact": ".local-runtime/artifacts/pr56-pre-review-20261020/review.md",
+      "reviewArtifactSHA256": "ea99b85b5e664c89b95d0d5f8fdc34f87c36817e720f0c1317f2e6650ef99a46",
+      "reviewStatus": "bounded-original56-source-ACCEPT; actual-pending-main54-integration-controller478-pass; current-metadata-final-head-CI-review-pending",
+      "transformation": "identical-reviewed-original56-git-bytes"
+    },
+    {
+      "path": "packages/memory-service/tests/test_generation_image_contract.py",
+      "integratedBlob": "a70d9c04dfcdcca324247f4d42d0fcb3eab67690",
+      "reviewedSourceHead": "7f41584aaa87554c5158d93129e25e8aecf7eca7",
+      "reviewedSourcePath": "packages/memory-service/tests/test_generation_image_contract.py",
+      "reviewedSourceBlob": "a70d9c04dfcdcca324247f4d42d0fcb3eab67690",
+      "sourceLF_SHA256": "06ed81d9ef1c90cf7ecec62086fa3930af2bc0575a77b5747164d851de9e7937",
+      "reviewArtifact": ".local-runtime/artifacts/pr56-pre-review-20261020/review.md",
+      "reviewArtifactSHA256": "ea99b85b5e664c89b95d0d5f8fdc34f87c36817e720f0c1317f2e6650ef99a46",
+      "reviewStatus": "bounded-original56-source-ACCEPT; actual-pending-main54-integration-controller478-pass; current-metadata-final-head-CI-review-pending",
+      "transformation": "identical-reviewed-original56-git-bytes"
+    },
+    {
+      "path": "packages/memory-service/tests/test_history_sources.py",
+      "integratedBlob": "0c9f5c7c413fb2802d5c2d1e5b75dc233f8edbb1",
+      "reviewedSourceHead": "7f41584aaa87554c5158d93129e25e8aecf7eca7",
+      "reviewedSourcePath": "packages/memory-service/tests/test_history_sources.py",
+      "reviewedSourceBlob": "0c9f5c7c413fb2802d5c2d1e5b75dc233f8edbb1",
+      "sourceLF_SHA256": "737a5a85b8aa46331790b4cfe83c9e0302c72894e8352bc5b73788f7f5f6daee",
+      "reviewArtifact": ".local-runtime/artifacts/pr56-pre-review-20261020/review.md",
+      "reviewArtifactSHA256": "ea99b85b5e664c89b95d0d5f8fdc34f87c36817e720f0c1317f2e6650ef99a46",
+      "reviewStatus": "bounded-original56-source-ACCEPT; actual-pending-main54-integration-controller478-pass; current-metadata-final-head-CI-review-pending",
+      "transformation": "identical-reviewed-original56-git-bytes"
     }
   ]
 }
