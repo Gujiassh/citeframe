@@ -22,6 +22,7 @@
 - [Evidence and historical citations](architecture/evidence.md)
 - [Research execution and recovery](architecture/research-workflow-runtime.md)
 - [Workspace access](architecture/workspace-access.md)
+- [Private instruction persistence](architecture/private-instructions.md)
 - [Worker and persistence boundaries](architecture/worker.md)
 - [Adding a modality](architecture/modality-extension-contract.md)
 - [Evaluation tools and reproducibility](development/evaluation.md)

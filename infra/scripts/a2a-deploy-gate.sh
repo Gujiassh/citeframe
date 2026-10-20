@@ -16,11 +16,13 @@ uv export --project apps/api --frozen --no-dev --format requirements.txt \
   --no-emit-project --no-emit-package citeframe-backend-contracts \
   --no-emit-package citeframe-backend-persistence \
   --no-emit-package citeframe-research-persistence \
+  --no-emit-package citeframe-memory-service \
   --output-file apps/api/requirements.deploy.txt >/dev/null
 uv export --project apps/worker --frozen --no-dev --format requirements.txt \
   --no-emit-project --no-emit-package citeframe-backend-contracts \
   --no-emit-package citeframe-backend-persistence \
   --no-emit-package citeframe-research-persistence \
+  --no-emit-package citeframe-memory-service \
   --no-emit-package ai-pdf-api \
   --output-file apps/worker/requirements.deploy.txt >/dev/null
 git diff --exit-code -- \
@@ -41,7 +43,9 @@ import ai_pdf_api
 import citeframe_contracts
 import citeframe_persistence
 import citeframe_research_persistence
+import citeframe_memory
 
+assert Path(citeframe_memory.__file__).resolve().is_relative_to(Path("/app/packages/memory-service/src"))
 assert os.getuid() == 10001, os.getuid()
 assert Path.cwd() == Path("/app/apps/api")
 assert Path(ai_pdf_api.__file__).resolve().is_relative_to(Path("/app/apps/api/src"))
@@ -66,7 +70,9 @@ assert importlib.util.find_spec("citeframe_evaluation") is None
 import citeframe_contracts
 import citeframe_persistence
 import citeframe_research_persistence
+import citeframe_memory
 
+assert Path(citeframe_memory.__file__).resolve().is_relative_to(Path("/app/packages/memory-service/src"))
 assert os.getuid() == 10001, os.getuid()
 assert Path.cwd() == Path("/app/apps/worker")
 assert Path(ai_pdf_api.__file__).resolve().is_relative_to(Path("/app/apps/api/src"))

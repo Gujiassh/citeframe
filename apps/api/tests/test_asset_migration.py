@@ -608,7 +608,7 @@ def test_postgres_asset_migration_preserves_legacy_evidence_contract() -> None:
         assert _payload_snapshot(source_url) == source_snapshot
         for database_url in (source_url, restored_url):
             with create_engine(database_url).connect() as connection:
-                assert connection.scalar(text("SELECT version_num FROM alembic_version")) == "s3a4b5c6d7e8"
+                assert connection.scalar(text("SELECT version_num FROM alembic_version")) == "t4b5c6d7e8f9"
                 assert connection.scalar(text("SELECT encrypted_api_key FROM workspace_model_configs")) == "opaque-test-ciphertext"
     finally:
         settings.database_url = original_url

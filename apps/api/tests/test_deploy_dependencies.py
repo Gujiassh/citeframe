@@ -13,7 +13,12 @@ CONTRACTS_ROOT = REPOSITORY_ROOT / "packages/backend-contracts"
 CONTRACTS_SRC = CONTRACTS_ROOT / "src"
 PERSISTENCE_ROOT = REPOSITORY_ROOT / "packages/backend-persistence"
 RESEARCH_PERSISTENCE_ROOT = REPOSITORY_ROOT / "packages/research-persistence"
-LOCAL_DISTRIBUTIONS = {"citeframe-backend-contracts", "citeframe-backend-persistence", "citeframe-research-persistence"}
+LOCAL_DISTRIBUTIONS = {
+    "citeframe-backend-contracts",
+    "citeframe-backend-persistence",
+    "citeframe-research-persistence",
+    "citeframe-memory-service",
+}
 STDLIB_IMPORT_ROOTS = set(sys.stdlib_module_names) | {"__future__"}
 
 
@@ -37,7 +42,7 @@ def test_deploy_requirements_include_third_party_runtime_dependencies_only() -> 
     }
     deploy_dependencies = _requirement_names(API_ROOT / "requirements.deploy.txt")
 
-    assert not (runtime_dependencies - LOCAL_DISTRIBUTIONS) - deploy_dependencies
+    assert runtime_dependencies - deploy_dependencies == LOCAL_DISTRIBUTIONS
     assert not LOCAL_DISTRIBUTIONS & deploy_dependencies
     requirement_text = (API_ROOT / "requirements.deploy.txt").read_text(encoding="utf-8")
     assert "-e " not in requirement_text
@@ -51,14 +56,18 @@ def test_persistence_manifest_and_lock_use_only_the_a2a_local_sources() -> None:
         "citeframe-backend-contracts": {"path": "../../packages/backend-contracts", "editable": True},
         "citeframe-backend-persistence": {"path": "../../packages/backend-persistence", "editable": True},
         "citeframe-research-persistence": {"path": "../../packages/research-persistence", "editable": True},
+        "citeframe-memory-service": {"path": "../../packages/memory-service", "editable": True},
     }
-    lock = (API_ROOT / "uv.lock").read_text(encoding="utf-8")
-    assert 'name = "citeframe-backend-contracts"' in lock
-    assert 'source = { editable = "../../packages/backend-contracts" }' in lock
-    assert 'name = "citeframe-backend-persistence"' in lock
-    assert 'source = { editable = "../../packages/backend-persistence" }' in lock
-    assert 'name = "citeframe-research-persistence"' in lock
-    assert 'source = { editable = "../../packages/research-persistence" }' in lock
+    lock = tomllib.loads((API_ROOT / "uv.lock").read_text(encoding="utf-8"))
+    local_lock_sources = {
+        package["name"]: package["source"]
+        for package in lock["package"]
+        if "editable" in package["source"] and package["name"] != manifest["project"]["name"]
+    }
+    assert local_lock_sources == {
+        name: {"editable": source["path"]}
+        for name, source in manifest["tool"]["uv"]["sources"].items()
+    }
 
 
 def test_contracts_source_is_pure_and_imports_with_only_its_source_path() -> None:
@@ -70,7 +79,11 @@ def test_contracts_source_is_pure_and_imports_with_only_its_source_path() -> Non
             if isinstance(node, ast.Import):
                 imported_roots = [alias.name.split(".", 1)[0] for alias in node.names]
             elif isinstance(node, ast.ImportFrom):
-                assert node.level == 0, (path, node.lineno)
+                if node.level:
+                    assert (path.relative_to(CONTRACTS_SRC).as_posix(), node.level, node.module) == (
+                        "citeframe_contracts/__init__.py", 1, "memory"
+                    ), (path, node.lineno)
+                    continue
                 imported_roots = [(node.module or "").split(".", 1)[0]]
             else:
                 continue
@@ -145,17 +158,19 @@ def test_a2a_docker_stages_copy_backend_packages_as_effective_instructions() -> 
         "COPY packages/backend-persistence/src /app/packages/backend-persistence/src",
         "COPY packages/research-persistence/pyproject.toml /app/packages/research-persistence/pyproject.toml",
         "COPY packages/research-persistence/src /app/packages/research-persistence/src",
+        "COPY packages/memory-service/pyproject.toml /app/packages/memory-service/pyproject.toml",
+        "COPY packages/memory-service/src /app/packages/memory-service/src",
     }
 
-    assert backend_copy_instructions <= set(stages["api"])
-    assert backend_copy_instructions <= set(stages["worker"])
+    for stage in ("api", "worker"):
+        assert {line for line in stages[stage] if line.startswith("COPY packages/")} == backend_copy_instructions
     assert (
         "ENV PYTHONPATH=/app/packages/backend-contracts/src:/app/packages/backend-persistence/src:"
-        "/app/packages/research-persistence/src:/app/apps/api/src"
+        "/app/packages/research-persistence/src:/app/packages/memory-service/src:/app/apps/api/src"
     ) in stages["api"]
     assert (
         "ENV PYTHONPATH=/app/packages/backend-contracts/src:/app/packages/backend-persistence/src:"
-        "/app/packages/research-persistence/src:/app/apps/api/src:/app/apps/worker/src"
+        "/app/packages/research-persistence/src:/app/packages/memory-service/src:/app/apps/api/src:/app/apps/worker/src"
     ) in stages["worker"]
     assert "COPY apps/worker /app/apps/worker" not in stages["api"]
     assert "COPY apps/api /app/apps/api" not in stages["worker"]

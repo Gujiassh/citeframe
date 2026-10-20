@@ -4,7 +4,13 @@ from pathlib import Path
 
 
 WORKER_ROOT = Path(__file__).resolve().parents[1]
-LOCAL_DISTRIBUTIONS = {"citeframe-backend-contracts", "citeframe-backend-persistence", "citeframe-research-persistence", "ai-pdf-api"}
+LOCAL_DISTRIBUTIONS = {
+    "citeframe-backend-contracts",
+    "citeframe-backend-persistence",
+    "citeframe-research-persistence",
+    "citeframe-memory-service",
+    "ai-pdf-api",
+}
 
 
 def _canonicalize_package_name(name: str) -> str:
@@ -24,7 +30,7 @@ def test_worker_deploy_requirements_omit_only_local_distributions() -> None:
         if (match := re.match(r"^([A-Za-z0-9][A-Za-z0-9_.-]*)==", line))
     }
 
-    assert not (runtime_dependencies - LOCAL_DISTRIBUTIONS) - deploy_dependencies
+    assert runtime_dependencies - deploy_dependencies == LOCAL_DISTRIBUTIONS
     assert not LOCAL_DISTRIBUTIONS & deploy_dependencies
     assert "-e " not in deploy_text
     assert "file:" not in deploy_text
@@ -41,10 +47,15 @@ def test_worker_persistence_manifest_and_lock_include_research_stage() -> None:
         },
         "citeframe-backend-persistence": {"path": "../../packages/backend-persistence", "editable": True},
         "citeframe-research-persistence": {"path": "../../packages/research-persistence", "editable": True},
+        "citeframe-memory-service": {"path": "../../packages/memory-service", "editable": True},
     }
-    lock = (WORKER_ROOT / "uv.lock").read_text(encoding="utf-8")
-    assert 'source = { editable = "../../packages/backend-contracts" }' in lock
-    assert 'name = "citeframe-backend-persistence"' in lock
-    assert 'source = { editable = "../../packages/backend-persistence" }' in lock
-    assert 'name = "citeframe-research-persistence"' in lock
-    assert 'source = { editable = "../../packages/research-persistence" }' in lock
+    lock = tomllib.loads((WORKER_ROOT / "uv.lock").read_text(encoding="utf-8"))
+    local_lock_sources = {
+        package["name"]: package["source"]
+        for package in lock["package"]
+        if "editable" in package["source"] and package["name"] != manifest["project"]["name"]
+    }
+    assert local_lock_sources == {
+        name: {"editable": source["path"]}
+        for name, source in manifest["tool"]["uv"]["sources"].items()
+    }

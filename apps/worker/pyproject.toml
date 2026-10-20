@@ -15,6 +15,7 @@ dependencies = [
   "citeframe-backend-contracts",
   "citeframe-backend-persistence",
   "citeframe-research-persistence",
+  "citeframe-memory-service",
 ]
 
 [tool.uv.sources]
@@ -22,6 +23,8 @@ ai-pdf-api = { path = "../api", editable = true }
 citeframe-backend-contracts = { path = "../../packages/backend-contracts", editable = true }
 citeframe-backend-persistence = { path = "../../packages/backend-persistence", editable = true }
 citeframe-research-persistence = { path = "../../packages/research-persistence", editable = true }
+
+citeframe-memory-service = { path = "../../packages/memory-service", editable = true }
 
 [build-system]
 requires = ["hatchling"]
