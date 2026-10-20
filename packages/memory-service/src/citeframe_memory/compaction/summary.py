@@ -89,20 +89,34 @@ def omission_findings(summary, *, quantities=(), conditions=(), negated_keys=(),
 def collect_summary(generation, request, *, cancelled=lambda: False, max_bytes=131072):
     if request.purpose not in ("compact_chunk", "compact_merge") or request.tools:
         raise CompactionError("nonrecursive_summary_required")
-    parts, length, complete, usage = [], 0, False, None
-    for event in generation.stream_turn(request):
-        if cancelled(): raise CompactionError("summary_cancelled")
-        if complete: raise CompactionError("summary_protocol_after_complete")
-        if isinstance(event, TextDelta):
-            length += len(event.text.encode())
-            if length > max_bytes: raise CompactionError("summary_output_limit")
-            parts.append(event.text)
-        elif isinstance(event, Usage): usage = event
-        elif isinstance(event, TurnComplete) and event.reason == "answer": complete = True
-        else: raise CompactionError("summary_protocol_invalid")
-    if not complete: raise CompactionError("summary_outcome_unknown")
+    stream = generation.stream_turn(request)
+    failed = False
     try:
-        result = json.loads("".join(parts))
-    except (ValueError, RecursionError):
-        raise CompactionError("invalid_summary_json") from None
-    return result, usage
+        parts, length, complete, usage = [], 0, False, None
+        for event in stream:
+            if cancelled(): raise CompactionError("summary_cancelled")
+            if complete: raise CompactionError("summary_protocol_after_complete")
+            if isinstance(event, TextDelta):
+                length += len(event.text.encode())
+                if length > max_bytes: raise CompactionError("summary_output_limit")
+                parts.append(event.text)
+            elif isinstance(event, Usage): usage = event
+            elif isinstance(event, TurnComplete) and event.reason == "answer": complete = True
+            else: raise CompactionError("summary_protocol_invalid")
+        if not complete: raise CompactionError("summary_outcome_unknown")
+        try:
+            result = json.loads("".join(parts))
+        except (ValueError, RecursionError):
+            raise CompactionError("invalid_summary_json") from None
+        return result, usage
+    except BaseException:
+        failed = True
+        raise
+    finally:
+        try:
+            close = getattr(stream, "close", None)
+            if close is not None:
+                close()
+        except Exception:
+            if not failed:
+                raise CompactionError("summary_cleanup_failed") from None

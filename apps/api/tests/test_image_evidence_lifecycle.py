@@ -1,3 +1,5 @@
+from ai_pdf_api.routers.deps import require_workspace_member
+
 import json
 import base64
 from datetime import UTC, datetime
@@ -810,7 +812,7 @@ def test_image_region_chat_persists_input_evidence_and_multimodal_payload() -> N
     refreshed = list_thread_messages(
         workspace.id,
         thread.id,
-        user_id=user.id,
+        access=require_workspace_member(workspace.id, user.id, session),
         db=session,
     )
     user_dto = next(message for message in refreshed.messages if message.id == completed.user_message.id)

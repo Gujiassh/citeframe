@@ -361,3 +361,125 @@ def test_protected_constraint_stays_between_older_history_and_selected_interval(
     candidate=replace_prefix(FRAME,selected,Message("assistant","interval summary"))
     assert candidate.messages==FRAME.messages+tuple(m for u in originals[:4] for m in u.messages)+(Message("assistant","interval summary"),)+batches[-1].messages
     assert selected.before+selected.compressible+selected.retained==originals
+
+
+class SummaryStream:
+    def __init__(self, events, cleanup_error=None):
+        self.events = iter(events)
+        self.cleanup_error = cleanup_error
+        self.order = []
+
+    def __iter__(self):
+        return self
+
+    def __next__(self):
+        self.order.append("next")
+        event = next(self.events)
+        if isinstance(event, BaseException):
+            raise event
+        return event
+
+    def close(self):
+        self.order.append("close")
+        if self.cleanup_error is not None:
+            raise self.cleanup_error
+
+    def stream_turn(self, request):
+        self.order.append("open")
+        return self
+
+
+def summary_events(text="{}"):
+    from citeframe_contracts.memory import TextDelta, TurnComplete
+    return [TextDelta(text), TurnComplete("answer")]
+
+
+@pytest.mark.parametrize("failure,code,next_count", [
+    ("cancelled", "summary_cancelled", 1),
+    ("limit", "summary_output_limit", 1),
+    ("protocol", "summary_protocol_invalid", 1),
+    ("after_complete", "summary_protocol_after_complete", 3),
+    ("missing_terminal", "summary_outcome_unknown", 2),
+    ("invalid_json", "invalid_summary_json", 3),
+])
+def test_summary_cleanup_preserves_rejection_and_stops_consumption(failure, code, next_count):
+    from citeframe_contracts.memory import TextDelta
+    from citeframe_memory.compaction.summary import collect_summary
+    events = summary_events()
+    if failure == "protocol": events = [object()]
+    if failure == "after_complete": events += [TextDelta("late")]
+    if failure == "missing_terminal": events = [TextDelta("{}")]
+    if failure == "invalid_json": events = summary_events("{")
+    stream = SummaryStream(events, RuntimeError("fixture-private-cleanup"))
+    with pytest.raises(CompactionError) as caught:
+        collect_summary(stream, Request((), 50, purpose="compact_chunk"),
+                        cancelled=lambda: failure == "cancelled", max_bytes=1 if failure == "limit" else 131072)
+    assert str(caught.value) == code
+    assert caught.value.__context__ is not stream.cleanup_error
+    assert stream.order == ["open"] + ["next"] * next_count + ["close"]
+
+
+@pytest.mark.parametrize("kind", ["compaction", "cancelled", "generator_exit", "keyboard", "system_exit"])
+@pytest.mark.parametrize("location", ["iteration", "cancel_check"])
+def test_summary_cleanup_preserves_primary_exception_identity(kind, location):
+    import asyncio
+    from citeframe_memory.compaction.summary import collect_summary
+    primary = {"compaction": CompactionError("fixture_primary"), "cancelled": asyncio.CancelledError(),
+               "generator_exit": GeneratorExit(), "keyboard": KeyboardInterrupt(), "system_exit": SystemExit(7)}[kind]
+    stream = SummaryStream([primary] if location == "iteration" else summary_events(),
+                           RuntimeError("fixture-private-cleanup"))
+    def cancelled():
+        if location == "cancel_check": raise primary
+        return False
+    with pytest.raises(type(primary)) as caught:
+        collect_summary(stream, Request((), 50, purpose="compact_merge"), cancelled=cancelled)
+    assert caught.value is primary
+    assert stream.order == ["open", "next", "close"]
+
+
+def test_summary_cleanup_only_failure_is_sanitized_and_prevents_success():
+    import traceback
+    from citeframe_memory.compaction.summary import collect_summary
+    diagnostic = "fixture-private-cleanup"
+    stream = SummaryStream(summary_events(), RuntimeError(diagnostic))
+    with pytest.raises(CompactionError) as caught:
+        collect_summary(stream, Request((), 50, purpose="compact_chunk"))
+    assert str(caught.value) == "summary_cleanup_failed"
+    assert caught.value.__cause__ is None and caught.value.__suppress_context__
+    assert diagnostic not in "".join(traceback.format_exception(caught.value))
+    assert stream.order == ["open", "next", "next", "next", "close"]
+
+
+@pytest.mark.parametrize("kind", ["cancelled", "generator_exit", "keyboard", "system_exit"])
+def test_summary_cleanup_control_flow_is_not_sanitized(kind):
+    import asyncio
+    from citeframe_memory.compaction.summary import collect_summary
+    primary = {"cancelled": asyncio.CancelledError(), "generator_exit": GeneratorExit(),
+               "keyboard": KeyboardInterrupt(), "system_exit": SystemExit(7)}[kind]
+    stream = SummaryStream(summary_events(), primary)
+    with pytest.raises(type(primary)) as caught:
+        collect_summary(stream, Request((), 50, purpose="compact_chunk"))
+    assert caught.value is primary
+    assert stream.order[-1] == "close" and stream.order.count("close") == 1
+
+
+def test_summary_success_explicitly_closes_once_after_exhaustion():
+    from citeframe_memory.compaction.summary import collect_summary
+    stream = SummaryStream(summary_events())
+    assert collect_summary(stream, Request((), 50, purpose="compact_chunk")) == ({}, None)
+    assert stream.order == ["open", "next", "next", "next", "close"]
+
+
+def test_summary_supports_iterator_without_close():
+    from citeframe_memory.compaction.summary import collect_summary
+    class Generation:
+        def stream_turn(self, request): return iter(summary_events())
+    assert collect_summary(Generation(), Request((), 50, purpose="compact_chunk")) == ({}, None)
+
+
+def test_summary_preflight_does_not_open_stream():
+    from citeframe_memory.compaction.summary import collect_summary
+    stream = SummaryStream(summary_events())
+    with pytest.raises(CompactionError, match="^nonrecursive_summary_required$"):
+        collect_summary(stream, Request((), 50))
+    assert stream.order == []

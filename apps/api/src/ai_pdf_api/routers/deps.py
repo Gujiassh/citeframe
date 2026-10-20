@@ -1,7 +1,8 @@
 from __future__ import annotations
 
 import secrets
-from typing import Annotated
+from dataclasses import dataclass
+from typing import Annotated, Generic, TypeVar
 
 from fastapi import Depends, Header, HTTPException, status
 
@@ -71,3 +72,57 @@ def get_accessible_workspace(db: Session, user_id: str, workspace_id: str) -> tu
         )
     workspace, role = row
     return workspace, role
+
+
+@dataclass(frozen=True)
+class WorkspaceAccess:
+    user_id: str
+    workspace_id: str
+    role: str
+    workspace: Workspace
+
+
+Payload = TypeVar("Payload")
+
+
+@dataclass(frozen=True)
+class WorkspaceRequest(Generic[Payload]):
+    # Returning validated inputs with access avoids validating them again in the endpoint,
+    # which would duplicate errors and change validation-versus-permission precedence.
+    access: WorkspaceAccess
+    payload: Payload
+
+
+def require_workspace_member(
+    workspace_id: str,
+    user_id: str = Depends(require_user_id),
+    db: Session = Depends(get_db),
+) -> WorkspaceAccess:
+    workspace, role = get_accessible_workspace(db, user_id, workspace_id)
+    return WorkspaceAccess(user_id, workspace_id, role, workspace)
+
+
+class WorkspaceOwnerDependency:
+    def __init__(self, detail: str = "Workspace owner access required.") -> None:
+        self.detail = detail
+
+    def check(self, access: WorkspaceAccess) -> WorkspaceAccess:
+        if access.role != "owner":
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=self.detail)
+        return access
+
+    def __call__(
+        self, access: WorkspaceAccess = Depends(require_workspace_member),
+    ) -> WorkspaceAccess:
+        return self.check(access)
+
+
+require_workspace_owner = WorkspaceOwnerDependency()
+
+
+def require_workspace_member_existing_user(
+    workspace_id: str,
+    user: User = Depends(require_existing_user),
+    db: Session = Depends(get_db),
+) -> WorkspaceAccess:
+    return require_workspace_member(workspace_id, user.id, db)

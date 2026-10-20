@@ -1,0 +1,221 @@
+{
+  "architectureBase": "5ed02c8b7b5f357f58d1c3fd270ead0718e7afbf",
+  "targetHead": "5903d60b7103d32d7d8a0c173691250407460b13",
+  "issue40Start": "8812fda4d69b7f0e654e749c357fa05b5e8da72f",
+  "priorEntryCount": 223,
+  "entryCount": 233,
+  "addedCount": 10,
+  "updatedCount": 6,
+  "removedCount": 0,
+  "unchangedEntriesPreserved": 217,
+  "previousProvenanceRetained": true,
+  "records": [
+    {
+      "change": "updated",
+      "path": "apps/api/src/ai_pdf_api/routers/assets.py",
+      "integratedBlob": "09028f89c0e0d192ac872dd6dbf51e67b64119ab",
+      "reviewedSourceHead": "5903d60b7103d32d7d8a0c173691250407460b13",
+      "reviewedSourcePath": "apps/api/src/ai_pdf_api/routers/assets.py",
+      "reviewedSourceBlob": "09028f89c0e0d192ac872dd6dbf51e67b64119ab",
+      "previousAdmission": {
+        "path": "apps/api/src/ai_pdf_api/routers/assets.py",
+        "integratedBlob": "eebc1201d187d314062154cfddefa1ee92a0b908",
+        "reviewedSourceHead": "5c2954af42d71eaed52e069b3a4312c995d51d40",
+        "reviewedSourcePath": "apps/api/src/ai_pdf_api/routers/assets.py",
+        "reviewedSourceBlob": "eebc1201d187d314062154cfddefa1ee92a0b908",
+        "transformation": "identical-reviewed-issue36-backend-bytes"
+      }
+    },
+    {
+      "change": "added",
+      "path": "apps/api/src/ai_pdf_api/routers/chat.py",
+      "integratedBlob": "c74cb92e33cd2a9a528496f3e4991437d00cc9d7",
+      "reviewedSourceHead": "5903d60b7103d32d7d8a0c173691250407460b13",
+      "reviewedSourcePath": "apps/api/src/ai_pdf_api/routers/chat.py",
+      "reviewedSourceBlob": "c74cb92e33cd2a9a528496f3e4991437d00cc9d7",
+      "previousAdmission": null
+    },
+    {
+      "change": "added",
+      "path": "apps/api/src/ai_pdf_api/routers/deps.py",
+      "integratedBlob": "716f999552417032736bc82bafe0a5743bb5d3b6",
+      "reviewedSourceHead": "5903d60b7103d32d7d8a0c173691250407460b13",
+      "reviewedSourcePath": "apps/api/src/ai_pdf_api/routers/deps.py",
+      "reviewedSourceBlob": "716f999552417032736bc82bafe0a5743bb5d3b6",
+      "previousAdmission": null
+    },
+    {
+      "change": "added",
+      "path": "apps/api/src/ai_pdf_api/routers/evaluation.py",
+      "integratedBlob": "f86fe5c3ed0081003cb174d0abb3502f289b929a",
+      "reviewedSourceHead": "5903d60b7103d32d7d8a0c173691250407460b13",
+      "reviewedSourcePath": "apps/api/src/ai_pdf_api/routers/evaluation.py",
+      "reviewedSourceBlob": "f86fe5c3ed0081003cb174d0abb3502f289b929a",
+      "previousAdmission": null
+    },
+    {
+      "change": "added",
+      "path": "apps/api/src/ai_pdf_api/routers/jobs.py",
+      "integratedBlob": "95fe7dec52569179960bd882d40f71c13df4aba9",
+      "reviewedSourceHead": "5903d60b7103d32d7d8a0c173691250407460b13",
+      "reviewedSourcePath": "apps/api/src/ai_pdf_api/routers/jobs.py",
+      "reviewedSourceBlob": "95fe7dec52569179960bd882d40f71c13df4aba9",
+      "previousAdmission": null
+    },
+    {
+      "change": "updated",
+      "path": "apps/api/src/ai_pdf_api/routers/model_settings.py",
+      "integratedBlob": "c6a91c93325d8f8a2c9f156a53d06b2dbdb9f806",
+      "reviewedSourceHead": "5903d60b7103d32d7d8a0c173691250407460b13",
+      "reviewedSourcePath": "apps/api/src/ai_pdf_api/routers/model_settings.py",
+      "reviewedSourceBlob": "c6a91c93325d8f8a2c9f156a53d06b2dbdb9f806",
+      "previousAdmission": {
+        "path": "apps/api/src/ai_pdf_api/routers/model_settings.py",
+        "integratedBlob": "969647b425c2bde0b100e62ca8a42cdb43206dec",
+        "reviewedSourceHead": "5c2954af42d71eaed52e069b3a4312c995d51d40",
+        "reviewedSourcePath": "apps/api/src/ai_pdf_api/routers/model_settings.py",
+        "reviewedSourceBlob": "969647b425c2bde0b100e62ca8a42cdb43206dec",
+        "transformation": "identical-reviewed-issue36-backend-bytes"
+      }
+    },
+    {
+      "change": "added",
+      "path": "apps/api/src/ai_pdf_api/routers/notes.py",
+      "integratedBlob": "f1ed74abfe159561160626486f45fb5c8a8e0f2b",
+      "reviewedSourceHead": "5903d60b7103d32d7d8a0c173691250407460b13",
+      "reviewedSourcePath": "apps/api/src/ai_pdf_api/routers/notes.py",
+      "reviewedSourceBlob": "f1ed74abfe159561160626486f45fb5c8a8e0f2b",
+      "previousAdmission": null
+    },
+    {
+      "change": "updated",
+      "path": "apps/api/src/ai_pdf_api/routers/research.py",
+      "integratedBlob": "c8f129e1b3dfdd844c5ca06057270298754748b9",
+      "reviewedSourceHead": "5903d60b7103d32d7d8a0c173691250407460b13",
+      "reviewedSourcePath": "apps/api/src/ai_pdf_api/routers/research.py",
+      "reviewedSourceBlob": "c8f129e1b3dfdd844c5ca06057270298754748b9",
+      "previousAdmission": {
+        "path": "apps/api/src/ai_pdf_api/routers/research.py",
+        "integratedBlob": "cc5c8b1374323f04ad9341ea35d53d0fdce8959f",
+        "reviewedSourceHead": "b691406fdc7d38e3f93578b36aaddafe7dbf992f",
+        "reviewedSourcePath": "apps/api/src/ai_pdf_api/routers/research.py",
+        "reviewedSourceBlob": "cc5c8b1374323f04ad9341ea35d53d0fdce8959f",
+        "transformation": "identical-reviewed-bytes"
+      }
+    },
+    {
+      "change": "updated",
+      "path": "apps/api/src/ai_pdf_api/routers/workspaces.py",
+      "integratedBlob": "d7191a2d42a17d97b6cd7ee806e5e7a85502edff",
+      "reviewedSourceHead": "5903d60b7103d32d7d8a0c173691250407460b13",
+      "reviewedSourcePath": "apps/api/src/ai_pdf_api/routers/workspaces.py",
+      "reviewedSourceBlob": "d7191a2d42a17d97b6cd7ee806e5e7a85502edff",
+      "previousAdmission": {
+        "path": "apps/api/src/ai_pdf_api/routers/workspaces.py",
+        "integratedBlob": "4d70dc90012b708f36c08ac730c097eb9a7f062c",
+        "reviewedSourceHead": "5c2954af42d71eaed52e069b3a4312c995d51d40",
+        "reviewedSourcePath": "apps/api/src/ai_pdf_api/routers/workspaces.py",
+        "reviewedSourceBlob": "4d70dc90012b708f36c08ac730c097eb9a7f062c",
+        "transformation": "identical-reviewed-issue36-backend-bytes"
+      }
+    },
+    {
+      "change": "added",
+      "path": "apps/api/tests/test_embedding_current_scope.py",
+      "integratedBlob": "4246324c92d2b39a8c39a385614bdd105188b3ef",
+      "reviewedSourceHead": "5903d60b7103d32d7d8a0c173691250407460b13",
+      "reviewedSourcePath": "apps/api/tests/test_embedding_current_scope.py",
+      "reviewedSourceBlob": "4246324c92d2b39a8c39a385614bdd105188b3ef",
+      "previousAdmission": null
+    },
+    {
+      "change": "updated",
+      "path": "apps/api/tests/test_embedding_index_contract.py",
+      "integratedBlob": "640f5dd6a30a032b70578c8a5bb28a70c5e2e647",
+      "reviewedSourceHead": "5903d60b7103d32d7d8a0c173691250407460b13",
+      "reviewedSourcePath": "apps/api/tests/test_embedding_index_contract.py",
+      "reviewedSourceBlob": "640f5dd6a30a032b70578c8a5bb28a70c5e2e647",
+      "previousAdmission": {
+        "path": "apps/api/tests/test_embedding_index_contract.py",
+        "integratedBlob": "9df48d13c957f38a64f8a191e32c80a092737bb3",
+        "reviewedSourceHead": "5c2954af42d71eaed52e069b3a4312c995d51d40",
+        "reviewedSourcePath": "apps/api/tests/test_embedding_index_contract.py",
+        "reviewedSourceBlob": "9df48d13c957f38a64f8a191e32c80a092737bb3",
+        "transformation": "identical-reviewed-issue36-backend-bytes"
+      }
+    },
+    {
+      "change": "added",
+      "path": "apps/api/tests/test_image_evidence_lifecycle.py",
+      "integratedBlob": "75c84c3dc915ff8af3db0f089fa82d95496e101a",
+      "reviewedSourceHead": "5903d60b7103d32d7d8a0c173691250407460b13",
+      "reviewedSourcePath": "apps/api/tests/test_image_evidence_lifecycle.py",
+      "reviewedSourceBlob": "75c84c3dc915ff8af3db0f089fa82d95496e101a",
+      "previousAdmission": null
+    },
+    {
+      "change": "added",
+      "path": "apps/api/tests/test_image_ingestion.py",
+      "integratedBlob": "0aaec90d3d95608dcc9da8f074378959fb9bcc5b",
+      "reviewedSourceHead": "5903d60b7103d32d7d8a0c173691250407460b13",
+      "reviewedSourcePath": "apps/api/tests/test_image_ingestion.py",
+      "reviewedSourceBlob": "0aaec90d3d95608dcc9da8f074378959fb9bcc5b",
+      "previousAdmission": null
+    },
+    {
+      "change": "added",
+      "path": "apps/api/tests/test_workspace_access_dependencies.py",
+      "integratedBlob": "6afe23443c5c361e0a0402f4f11967f37fabcdd4",
+      "reviewedSourceHead": "5903d60b7103d32d7d8a0c173691250407460b13",
+      "reviewedSourcePath": "apps/api/tests/test_workspace_access_dependencies.py",
+      "reviewedSourceBlob": "6afe23443c5c361e0a0402f4f11967f37fabcdd4",
+      "previousAdmission": null
+    },
+    {
+      "change": "added",
+      "path": "apps/api/tests/test_workspace_permission_precedence.py",
+      "integratedBlob": "899b726f6132221500b2b53c9c1e721b8d3e4642",
+      "reviewedSourceHead": "5903d60b7103d32d7d8a0c173691250407460b13",
+      "reviewedSourcePath": "apps/api/tests/test_workspace_permission_precedence.py",
+      "reviewedSourceBlob": "899b726f6132221500b2b53c9c1e721b8d3e4642",
+      "previousAdmission": null
+    },
+    {
+      "change": "updated",
+      "path": "apps/worker/tests/test_v5b_mixed_workspace.py",
+      "integratedBlob": "e0d15faa3af9d72d43e79ca906ff4dfc312a6fd3",
+      "reviewedSourceHead": "5903d60b7103d32d7d8a0c173691250407460b13",
+      "reviewedSourcePath": "apps/worker/tests/test_v5b_mixed_workspace.py",
+      "reviewedSourceBlob": "e0d15faa3af9d72d43e79ca906ff4dfc312a6fd3",
+      "previousAdmission": {
+        "path": "apps/worker/tests/test_v5b_mixed_workspace.py",
+        "integratedBlob": "8ba276a8347a1c020134040f9f968bb4672105a8",
+        "reviewedSourceHead": "5c2954af42d71eaed52e069b3a4312c995d51d40",
+        "reviewedSourcePath": "apps/worker/tests/test_v5b_mixed_workspace.py",
+        "reviewedSourceBlob": "8ba276a8347a1c020134040f9f968bb4672105a8",
+        "transformation": "identical-reviewed-issue36-backend-bytes"
+      }
+    }
+  ],
+  "acceptance": "Exact candidate blob admission only; independent review and runtime deployment acceptance remain open. Pinned MinIO 401 remains external; no validator/workflow/image changes.",
+  "verification": [
+    {
+      "command": "apps/api/.venv/Scripts/python.exe -m unittest discover -s infra/testing -p test_r800_product_delta.py",
+      "exit": 0,
+      "testsPassed": 6,
+      "log": ".local-runtime/artifacts/issue40-dev/r800-manifest-unit.log"
+    },
+    {
+      "command": "apps/api/.venv/Scripts/python.exe - (stdin script)",
+      "stdinSource": "import sys,subprocess\nfrom pathlib import Path\nsys.path.insert(0,'infra/testing')\nfrom r800_product_delta import verify_product_delta\nhead=subprocess.check_output(['git','rev-parse','HEAD'],text=True).strip()\nmanifest=verify_product_delta(Path.cwd(),head)\nprint(f'PASS verify_product_delta HEAD={head}: {len(manifest[\"files\"])} exact paths; all approved ancestors and source provenance blobs verified')",
+      "exit": 0,
+      "exactPathsVerified": 233,
+      "log": ".local-runtime/artifacts/issue40-dev/r800-manifest-verify.log"
+    }
+  ],
+  "derivationCommands": [
+    "git diff --name-only 5ed02c8b7b5f357f58d1c3fd270ead0718e7afbf 5903d60b7103d32d7d8a0c173691250407460b13 -- <unchanged PRODUCT_PATHS>",
+    "git diff --name-only 8812fda4d69b7f0e654e749c357fa05b5e8da72f 5903d60b7103d32d7d8a0c173691250407460b13 -- <unchanged PRODUCT_PATHS>",
+    "git rev-parse 5903d60b7103d32d7d8a0c173691250407460b13:<each path>"
+  ]
+}
