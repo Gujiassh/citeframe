@@ -5,7 +5,7 @@ import time
 from typing import Any, Literal
 from uuid import uuid4
 
-from fastapi import APIRouter, Depends, Header, HTTPException, Query, Request, Response
+from fastapi import APIRouter, Depends, HTTPException, Header, Query, Request, Response
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse, StreamingResponse
 from fastapi.routing import APIRoute
@@ -13,7 +13,13 @@ from sqlalchemy.orm import Session
 
 from ai_pdf_api.core.research_observability import observe_research_sse
 from ai_pdf_api.db.session import SessionLocal, get_db
-from ai_pdf_api.routers.deps import get_accessible_workspace, require_user_id
+from ai_pdf_api.routers.deps import (
+    WorkspaceAccess,
+    WorkspaceRequest,
+    get_accessible_workspace,
+    require_user_id,
+    require_workspace_member,
+)
 from ai_pdf_api.schemas.research import (
     CancelResearchRunRequest,
     CancelResearchRunResponse,
@@ -161,16 +167,27 @@ def iter_research_event_tail(
             yield ": keepalive\n\n"
 
 
+def require_create_run_access(
+    workspace_id: str,
+    payload: CreateResearchRunRequest,
+    user_id: str = Depends(require_user_id),
+    db: Session = Depends(get_db),
+) -> WorkspaceRequest[CreateResearchRunRequest]:
+    access = require_workspace_member(workspace_id, user_id, db)
+    return WorkspaceRequest(access, payload)
+
+
 @router.post("", response_model=CreateResearchRunResponse)
 def create_run(
     workspace_id: str,
-    payload: CreateResearchRunRequest,
     response: Response,
-    idempotency_key: str | None = Header(default=None, alias="Idempotency-Key"),
-    user_id: str = Depends(require_user_id),
+    idempotency_key: str | None = Header(default=None, alias='Idempotency-Key'),
+    workspace_request: WorkspaceRequest[CreateResearchRunRequest] = Depends(require_create_run_access),
     db: Session = Depends(get_db),
 ) -> dict[str, object]:
-    get_accessible_workspace(db, user_id, workspace_id)
+    access = workspace_request.access
+    payload = workspace_request.payload
+    user_id = access.user_id
     status_code, result, replayed = create_research_run(
         db,
         workspace_id=workspace_id,
@@ -185,17 +202,28 @@ def create_run(
     return result
 
 
-@router.get("", response_model=ResearchRunListResponse)
-def list_runs(
+def require_list_runs_access(
     workspace_id: str,
-    status_filter: str | None = Query(default=None, alias="status"),
-    created_by: Literal["me", "all"] = Query(default="all", alias="createdBy"),
+    status_filter: str | None = Query(default=None, alias='status'),
+    created_by: Literal['me', 'all'] = Query(default='all', alias='createdBy'),
     cursor: str | None = None,
     limit: int = Query(default=20, ge=1, le=50),
     user_id: str = Depends(require_user_id),
     db: Session = Depends(get_db),
+) -> WorkspaceRequest[tuple[str | None, Literal['me', 'all'], str | None, int]]:
+    access = require_workspace_member(workspace_id, user_id, db)
+    return WorkspaceRequest(access, (status_filter, created_by, cursor, limit))
+
+
+@router.get("", response_model=ResearchRunListResponse)
+def list_runs(
+    workspace_id: str,
+    workspace_request: WorkspaceRequest[tuple[str | None, Literal['me', 'all'], str | None, int]] = Depends(require_list_runs_access),
+    db: Session = Depends(get_db),
 ) -> dict[str, object]:
-    get_accessible_workspace(db, user_id, workspace_id)
+    access = workspace_request.access
+    status_filter, created_by, cursor, limit = workspace_request.payload
+    user_id = access.user_id
     return list_research_runs(
         db,
         workspace_id=workspace_id,
@@ -212,26 +240,37 @@ def read_run(
     workspace_id: str,
     run_id: str,
     response: Response,
-    user_id: str = Depends(require_user_id),
+    access: WorkspaceAccess = Depends(require_workspace_member),
     db: Session = Depends(get_db),
 ) -> dict[str, object]:
-    get_accessible_workspace(db, user_id, workspace_id)
     run = get_research_run(db, workspace_id, run_id)
     response.headers["ETag"] = f'"run-{run.id}-v{run.state_version}"'
     return {"run": run_detail(db, run)}
+
+
+def require_cancel_run_access(
+    workspace_id: str,
+    payload: CancelResearchRunRequest,
+    user_id: str = Depends(require_user_id),
+    db: Session = Depends(get_db),
+) -> WorkspaceRequest[CancelResearchRunRequest]:
+    access = require_workspace_member(workspace_id, user_id, db)
+    return WorkspaceRequest(access, payload)
 
 
 @router.post("/{run_id}/cancel", response_model=CancelResearchRunResponse)
 def cancel_run(
     workspace_id: str,
     run_id: str,
-    payload: CancelResearchRunRequest,
     response: Response,
-    idempotency_key: str | None = Header(default=None, alias="Idempotency-Key"),
-    user_id: str = Depends(require_user_id),
+    idempotency_key: str | None = Header(default=None, alias='Idempotency-Key'),
+    workspace_request: WorkspaceRequest[CancelResearchRunRequest] = Depends(require_cancel_run_access),
     db: Session = Depends(get_db),
 ) -> dict[str, object]:
-    _workspace, role = get_accessible_workspace(db, user_id, workspace_id)
+    access = workspace_request.access
+    payload = workspace_request.payload
+    user_id = access.user_id
+    role = access.role
     status_code, result, replayed = cancel_research_run(
         db,
         workspace_id=workspace_id,
@@ -248,18 +287,29 @@ def cancel_run(
     return result
 
 
+def require_submit_plan_decision_access(
+    workspace_id: str,
+    payload: PlanDecisionRequest,
+    user_id: str = Depends(require_user_id),
+    db: Session = Depends(get_db),
+) -> WorkspaceRequest[PlanDecisionRequest]:
+    access = require_workspace_member(workspace_id, user_id, db)
+    return WorkspaceRequest(access, payload)
+
+
 @router.post("/{run_id}/plan-decisions/{decision_id}", response_model=PlanDecisionResponse)
 def submit_plan_decision(
     workspace_id: str,
     run_id: str,
     decision_id: str,
-    payload: PlanDecisionRequest,
     response: Response,
-    idempotency_key: str | None = Header(default=None, alias="Idempotency-Key"),
-    user_id: str = Depends(require_user_id),
+    idempotency_key: str | None = Header(default=None, alias='Idempotency-Key'),
+    workspace_request: WorkspaceRequest[PlanDecisionRequest] = Depends(require_submit_plan_decision_access),
     db: Session = Depends(get_db),
 ) -> dict[str, object] | JSONResponse:
-    get_accessible_workspace(db, user_id, workspace_id)
+    access = workspace_request.access
+    payload = workspace_request.payload
+    user_id = access.user_id
     status_code, result, replayed = decide_plan(
         db,
         workspace_id=workspace_id,
@@ -280,18 +330,29 @@ def submit_plan_decision(
     return result
 
 
+def require_submit_conflict_decision_access(
+    workspace_id: str,
+    payload: ConflictDecisionRequest,
+    user_id: str = Depends(require_user_id),
+    db: Session = Depends(get_db),
+) -> WorkspaceRequest[ConflictDecisionRequest]:
+    access = require_workspace_member(workspace_id, user_id, db)
+    return WorkspaceRequest(access, payload)
+
+
 @router.post("/{run_id}/conflict-decisions/{decision_id}", response_model=ConflictDecisionResponse)
 def submit_conflict_decision(
     workspace_id: str,
     run_id: str,
     decision_id: str,
-    payload: ConflictDecisionRequest,
     response: Response,
-    idempotency_key: str | None = Header(default=None, alias="Idempotency-Key"),
-    user_id: str = Depends(require_user_id),
+    idempotency_key: str | None = Header(default=None, alias='Idempotency-Key'),
+    workspace_request: WorkspaceRequest[ConflictDecisionRequest] = Depends(require_submit_conflict_decision_access),
     db: Session = Depends(get_db),
 ) -> dict[str, object] | JSONResponse:
-    get_accessible_workspace(db, user_id, workspace_id)
+    access = workspace_request.access
+    payload = workspace_request.payload
+    user_id = access.user_id
     status_code, result, replayed = decide_conflict(
         db,
         workspace_id=workspace_id,
@@ -312,18 +373,29 @@ def submit_conflict_decision(
     return result
 
 
+def require_retry_step_access(
+    workspace_id: str,
+    payload: RetryResearchStepRequest,
+    user_id: str = Depends(require_user_id),
+    db: Session = Depends(get_db),
+) -> WorkspaceRequest[RetryResearchStepRequest]:
+    access = require_workspace_member(workspace_id, user_id, db)
+    return WorkspaceRequest(access, payload)
+
+
 @router.post("/{run_id}/steps/{step_id}/retry", response_model=RetryResearchStepResponse)
 def retry_step(
     workspace_id: str,
     run_id: str,
     step_id: str,
-    payload: RetryResearchStepRequest,
     response: Response,
-    idempotency_key: str | None = Header(default=None, alias="Idempotency-Key"),
-    user_id: str = Depends(require_user_id),
+    idempotency_key: str | None = Header(default=None, alias='Idempotency-Key'),
+    workspace_request: WorkspaceRequest[RetryResearchStepRequest] = Depends(require_retry_step_access),
     db: Session = Depends(get_db),
 ) -> dict[str, object]:
-    get_accessible_workspace(db, user_id, workspace_id)
+    access = workspace_request.access
+    payload = workspace_request.payload
+    user_id = access.user_id
     status_code, result, replayed = retry_research_step(
         db,
         workspace_id=workspace_id,
@@ -343,10 +415,9 @@ def retry_step(
 def read_artifacts(
     workspace_id: str,
     run_id: str,
-    user_id: str = Depends(require_user_id),
+    access: WorkspaceAccess = Depends(require_workspace_member),
     db: Session = Depends(get_db),
 ) -> dict[str, object]:
-    get_accessible_workspace(db, user_id, workspace_id)
     return list_artifacts(db, workspace_id, run_id)
 
 
@@ -355,10 +426,9 @@ def read_artifact(
     workspace_id: str,
     run_id: str,
     artifact_id: str,
-    user_id: str = Depends(require_user_id),
+    access: WorkspaceAccess = Depends(require_workspace_member),
     db: Session = Depends(get_db),
 ) -> dict[str, object]:
-    get_accessible_workspace(db, user_id, workspace_id)
     return get_artifact_detail(db, workspace_id, run_id, artifact_id)
 
 
@@ -367,10 +437,9 @@ def read_artifact_content(
     workspace_id: str,
     run_id: str,
     artifact_id: str,
-    user_id: str = Depends(require_user_id),
+    access: WorkspaceAccess = Depends(require_workspace_member),
     db: Session = Depends(get_db),
 ) -> Response:
-    get_accessible_workspace(db, user_id, workspace_id)
     artifact = get_artifact(db, workspace_id, run_id, artifact_id)
     try:
         content = verified_artifact_bytes(artifact)
@@ -392,36 +461,44 @@ def read_artifact_content(
 def read_final_report_edit(
     workspace_id: str,
     run_id: str,
-    user_id: str = Depends(require_user_id),
+    access: WorkspaceAccess = Depends(require_workspace_member),
     db: Session = Depends(get_db),
 ) -> dict[str, object]:
-    get_accessible_workspace(db, user_id, workspace_id)
     run = get_research_run(db, workspace_id, run_id)
     return read_report_edit(db, run)
+
+
+def require_save_final_report_edit_access(
+    workspace_id: str,
+    payload: SaveResearchReportEditRequest,
+    user_id: str = Depends(require_user_id),
+    db: Session = Depends(get_db),
+) -> WorkspaceRequest[SaveResearchReportEditRequest]:
+    access = require_workspace_member(workspace_id, user_id, db)
+    return WorkspaceRequest(access, payload)
 
 
 @router.put("/{run_id}/report-edit", response_model=ResearchReportEditResponse)
 def save_final_report_edit(
     workspace_id: str,
     run_id: str,
-    payload: SaveResearchReportEditRequest,
-    user_id: str = Depends(require_user_id),
+    workspace_request: WorkspaceRequest[SaveResearchReportEditRequest] = Depends(require_save_final_report_edit_access),
     db: Session = Depends(get_db),
 ) -> dict[str, object]:
-    get_accessible_workspace(db, user_id, workspace_id)
+    access = workspace_request.access
+    payload = workspace_request.payload
+    user_id = access.user_id
     return save_report_edit(
         db, workspace_id=workspace_id, run_id=run_id, user_id=user_id, payload=payload,
     )
 
 
-@router.get("/{run_id}/events")
-def stream_events(
+def require_research_event_access(
     workspace_id: str,
-    run_id: str,
     accept: str | None = Header(default=None, alias="Accept"),
     last_event_id: str | None = Header(default=None, alias="Last-Event-ID"),
     user_id: str = Depends(require_user_id),
-) -> StreamingResponse:
+) -> WorkspaceRequest[int]:
     if accept is not None and "text/event-stream" not in accept:
         raise ResearchError("invalid_research_request", "Accept must allow text/event-stream.", 406)
     if last_event_id is None:
@@ -433,8 +510,20 @@ def stream_events(
         if cursor > 9_223_372_036_854_775_807:
             raise ResearchError("invalid_event_cursor", "Last-Event-ID is outside the supported range.", 400)
         observe_research_sse("reconnect")
+    with RESEARCH_EVENT_SESSION_FACTORY() as db:
+        access = require_workspace_member(workspace_id, user_id, db)
+    return WorkspaceRequest(access, cursor)
+
+
+@router.get("/{run_id}/events")
+def stream_events(
+    workspace_id: str,
+    run_id: str,
+    workspace_request: WorkspaceRequest[int] = Depends(require_research_event_access),
+) -> StreamingResponse:
+    user_id = workspace_request.access.user_id
+    cursor = workspace_request.payload
     with RESEARCH_EVENT_SESSION_FACTORY() as initial_db:
-        get_accessible_workspace(initial_db, user_id, workspace_id)
         run = get_research_run(initial_db, workspace_id, run_id)
         try:
             events = list_events_after(initial_db, run, cursor)

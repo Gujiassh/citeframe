@@ -1,7 +1,6 @@
 # Windows local development
 
-This is the Windows entry point for the existing local-development contracts. It does not
-replace [`local-env-profiles.md`](local-env-profiles.md) or the component READMEs.
+Use this guide for native PowerShell setup. See [local profiles](../guides/local-environment.md) for model configuration.
 
 ## Required tools
 
@@ -9,7 +8,7 @@ replace [`local-env-profiles.md`](local-env-profiles.md) or the component README
 - Python 3.12+ and `uv`
 - Docker Desktop with Compose v2
 - Ollama with `qwen3-embedding:0.6b` for the normal `preview` embedding path
-- Git and GitHub CLI (`C:\Program Files\GitHub CLI\gh.exe` is a common install path)
+- Git; GitHub CLI is optional for repository operations
 - ffmpeg only for video keyframes and audio/video paths that require local media handling
 
 Verify that PowerShell resolves real executables rather than Microsoft Store aliases:
@@ -21,7 +20,7 @@ python --version
 uv --version
 docker compose version
 ollama --version
-& 'C:\Program Files\GitHub CLI\gh.exe' auth status
+git --version
 ```
 
 ## Install and start
@@ -78,33 +77,18 @@ Evidence, save a source-linked note, and verify the item survives a page reload.
 - `preview` uses real Ollama embeddings. A generation key is optional; generation, caption,
   and ASR fail closed when their capability is not configured.
 - `preview` must never point generation at the acceptance stub on port `18081`.
-- `accept` may use the deterministic stub for engineering gates, but its answers are not
+- `accept` may use the deterministic stub for automated checks, but its answers are not
   model-quality evidence.
 
-See [`local-env-profiles.md`](local-env-profiles.md) before switching profiles or reindexing
+See [local profiles](../guides/local-environment.md) before switching profiles or reindexing
 data created with another embedding fingerprint.
 
-## Gates
-
-```powershell
-pnpm --dir apps/web test
-pnpm --dir apps/web lint
-pnpm --dir apps/web exec tsc --noEmit
-pnpm --dir apps/web build
-powershell -NoProfile -File infra/scripts/check-r1-delivery-truth.ps1
-git diff --check
-```
-
-API, Worker, migration, and browser E2E gates additionally require the services above.
-SQLite or an in-memory fake cannot replace PostgreSQL for the R2 multi-Worker Critical gate.
-
-## Portable native stack (no administrator access)
+## Portable native stack
 
 When Docker Desktop cannot be installed, the host processes can use a user-owned native
-stack without changing application contracts. The verified Windows baseline on 2026-08-31
-is:
+stack without changing application contracts. The following components can be used for an isolated local stack:
 
-| Service | Verified build | Endpoint |
+| Service | Component build | Endpoint |
 | --- | --- | --- |
 | PostgreSQL | official EDB 17.11-1 x64 portable binaries | `127.0.0.1:5432` |
 | pgvector | 0.8.6, PG17 x64 community CI binary | PostgreSQL extension |
@@ -130,7 +114,7 @@ uv run --project apps/api alembic -c apps/api/alembic.ini upgrade head
 uv run --project apps/api alembic -c apps/api/alembic.ini current
 ```
 
-The expected head is `m7a8b9c0d1e2`. Start MinIO with `--address :9010
+Confirm the installed migration matches current source head with Alembic. Start MinIO with `--address :9010
 --console-address :9011`, load `infra/env/accept.env.example` into the Web, API, and Worker
 process environments, and start the accept provider separately. Redis is part of the
 deployment Compose baseline, but the current local business path uses PostgreSQL jobs and
@@ -141,20 +125,9 @@ The acceptance provider supports deterministic Quick Answer, embedding, caption,
 five fixed Research roles. Its structured Research output is plumbing evidence only and
 must never be reported as model quality.
 
-Verified native acceptance evidence on 2026-08-31:
+### Set up the portable services
 
-- API live and ready passed all database, catalog, object-storage, embedding, generation,
-  and image-caption checks.
-- Worker ingested the 12-page PDF fixture into PostgreSQL/MinIO.
-- Browser flow passed registration, login, workspace creation, settings persistence, PDF
-  rendering, Quick Answer with citations, citation navigation, and source-linked note save.
-- Fixed-DAG Research completed after plan approval with 4 deterministic model calls, 2 tool
-  calls, 6 Evidence items, and 2 Artifacts. This is engineering evidence, not quality evidence.
-
-### Reproduce the verified portable stack
-
-The evidence above was produced from worktree base
-`a616eea1350b095c6f229890d2c47e5010902330`. Download PostgreSQL from
+Download PostgreSQL from
 `https://get.enterprisedb.com/postgresql/postgresql-17.11-1-windows-x64-binaries.zip`,
 pgvector PG17 x64 from the `czkwg8/pgvector-windows-binary` 0.8.6 GitHub release, and
 MinIO from `https://dl.min.io/server/minio/release/windows-amd64/minio.exe`. Do not continue
@@ -196,15 +169,6 @@ Stop foreground processes with `Ctrl+C`, then stop PostgreSQL with:
 & $runtime/postgresql/pgsql/bin/pg_ctl.exe -D $runtime/data/postgres stop -m fast
 ```
 
-Re-run evidence with the commands in **Gates**, the authenticated Playwright command in the
-repository task ledger, and both offline and `-Online` R1 delivery-truth checks. The terminal
-pass summaries are the test artifacts; no screenshot or deterministic-stub output is a model
-quality artifact.
+## Tests
 
-For the Windows LF portability gate, the verified no-admin tool was Git for Windows
-`PortableGit-2.55.0.5-64-bit.7z.exe`, downloaded from
-`https://github.com/git-for-windows/git/releases/download/v2.55.0.windows.5/PortableGit-2.55.0.5-64-bit.7z.exe`
-with SHA-256 `5AA8A20F6E9ABB2C755F0E73C91C687701A46B309AD84A0CA6509380FA4AE290`.
-It was extracted below `.local-runtime/portable-git` and its `usr/bin/bash.exe` passed
-`bash -n` plus LF-only `file` assertions for the R0 and R1 gates. Nothing was installed
-system-wide.
+Use [development commands](../development/README.md). PostgreSQL locks, multiple Workers, and object recovery need real services. Deterministic provider output tests interface behavior, not model quality.

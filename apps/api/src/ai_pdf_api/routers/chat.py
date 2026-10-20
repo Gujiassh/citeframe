@@ -11,7 +11,7 @@ from sqlalchemy.orm import Session
 from ai_pdf_api.db.session import get_db
 from ai_pdf_api.modalities.evidence import serialize_evidence_locator
 from ai_pdf_api.models import Asset, ChatMessage, ChatThread, MessageCitation, MessageInputEvidence
-from ai_pdf_api.routers.deps import get_accessible_workspace, require_user_id
+from ai_pdf_api.routers.deps import WorkspaceAccess, WorkspaceRequest, require_user_id, require_workspace_member
 from ai_pdf_api.schemas.chat import (
     ChatStreamRequest,
     Citation,
@@ -134,10 +134,9 @@ def get_workspace_thread(db: Session, workspace_id: str, thread_id: str) -> Chat
 @router.get("/threads", response_model=ThreadListResponse)
 def list_threads(
     workspace_id: str,
-    user_id: str = Depends(require_user_id),
+    access: WorkspaceAccess = Depends(require_workspace_member),
     db: Session = Depends(get_db),
 ) -> ThreadListResponse:
-    get_accessible_workspace(db, user_id, workspace_id)
     threads = db.scalars(
         select(ChatThread)
         .where(ChatThread.workspace_id == workspace_id, ChatThread.archived_at.is_(None))
@@ -146,14 +145,25 @@ def list_threads(
     return ThreadListResponse(items=[to_thread_summary(thread) for thread in threads], nextCursor=None)
 
 
-@router.post("/threads", response_model=CreateThreadResponse, status_code=status.HTTP_201_CREATED)
-def create_thread(
+def require_create_thread_access(
     workspace_id: str,
     payload: CreateThreadRequest,
     user_id: str = Depends(require_user_id),
     db: Session = Depends(get_db),
+) -> WorkspaceRequest[CreateThreadRequest]:
+    access = require_workspace_member(workspace_id, user_id, db)
+    return WorkspaceRequest(access, payload)
+
+
+@router.post("/threads", response_model=CreateThreadResponse, status_code=status.HTTP_201_CREATED)
+def create_thread(
+    workspace_id: str,
+    workspace_request: WorkspaceRequest[CreateThreadRequest] = Depends(require_create_thread_access),
+    db: Session = Depends(get_db),
 ) -> CreateThreadResponse:
-    get_accessible_workspace(db, user_id, workspace_id)
+    access = workspace_request.access
+    payload = workspace_request.payload
+    user_id = access.user_id
     now = datetime.now(UTC)
     thread = ChatThread(
         workspace_id=workspace_id,
@@ -173,10 +183,11 @@ def create_thread(
 def archive_thread(
     workspace_id: str,
     thread_id: str,
-    user_id: str = Depends(require_user_id),
+    access: WorkspaceAccess = Depends(require_workspace_member),
     db: Session = Depends(get_db),
 ):
-    _workspace, role = get_accessible_workspace(db, user_id, workspace_id)
+    user_id = access.user_id
+    role = access.role
     thread = get_workspace_thread(db, workspace_id, thread_id)
     if role != "owner" and thread.created_by_user_id != user_id:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="You cannot archive this thread.")
@@ -190,10 +201,9 @@ def archive_thread(
 def list_thread_messages(
     workspace_id: str,
     thread_id: str,
-    user_id: str = Depends(require_user_id),
+    access: WorkspaceAccess = Depends(require_workspace_member),
     db: Session = Depends(get_db),
 ) -> ThreadMessagesResponse:
-    get_accessible_workspace(db, user_id, workspace_id)
     thread = get_workspace_thread(db, workspace_id, thread_id)
     messages = active_message_path(db, thread)
     citations = db.scalars(
@@ -226,14 +236,25 @@ def list_thread_messages(
     )
 
 
-@router.post("/chat/stream")
-def stream_chat(
+def require_stream_chat_access(
     workspace_id: str,
     payload: ChatStreamRequest,
     user_id: str = Depends(require_user_id),
     db: Session = Depends(get_db),
+) -> WorkspaceRequest[ChatStreamRequest]:
+    access = require_workspace_member(workspace_id, user_id, db)
+    return WorkspaceRequest(access, payload)
+
+
+@router.post("/chat/stream")
+def stream_chat(
+    workspace_id: str,
+    workspace_request: WorkspaceRequest[ChatStreamRequest] = Depends(require_stream_chat_access),
+    db: Session = Depends(get_db),
 ) -> StreamingResponse:
-    get_accessible_workspace(db, user_id, workspace_id)
+    access = workspace_request.access
+    payload = workspace_request.payload
+    user_id = access.user_id
     thread = get_workspace_thread(db, workspace_id, payload.threadId)
     try:
         parent_message_id = _resolve_parent_message_id(db, thread, payload)

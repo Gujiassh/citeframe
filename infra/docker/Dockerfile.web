@@ -1,6 +1,6 @@
 # syntax=docker/dockerfile:1
 
-FROM public.ecr.aws/docker/library/node:22-bookworm-slim@sha256:f86be15afa9a8277608e141ce2a8aa55d3d9c40845921b8511f4fb7897be2554 AS build
+FROM docker.io/library/node:22-bookworm-slim@sha256:f86be15afa9a8277608e141ce2a8aa55d3d9c40845921b8511f4fb7897be2554 AS build
 
 ENV PNPM_HOME=/pnpm
 ENV PATH="$PNPM_HOME:$PATH"
@@ -14,7 +14,7 @@ RUN pnpm install --frozen-lockfile
 COPY apps/web /app/apps/web
 RUN pnpm --dir apps/web build
 
-FROM public.ecr.aws/docker/library/node:22-bookworm-slim@sha256:f86be15afa9a8277608e141ce2a8aa55d3d9c40845921b8511f4fb7897be2554 AS runtime
+FROM docker.io/library/node:22-bookworm-slim@sha256:f86be15afa9a8277608e141ce2a8aa55d3d9c40845921b8511f4fb7897be2554 AS runtime
 
 ENV NODE_ENV=production \
     HOSTNAME=0.0.0.0 \
