@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { AlertCircle, BarChart3, Check, Cpu, Save, Settings2, Sliders } from "lucide-react";
 
+import { MemoryPanel } from "./memory/memory-panel";
 import { ModelSettingsPanel } from "./model-settings/model-settings-panel";
 import { ReindexAssets } from "./model-settings/reindex-assets";
 import { EvaluationDashboard } from "@/components/evaluation-dashboard";
@@ -173,34 +174,36 @@ function SettingsForm({ currentWorkspace, onSaveSettings, t }: SettingsFormProps
 export function SettingsPanel() {
   const { currentWorkspace, updateWorkspaceSettings } = useWorkspace();
   const { t } = useTranslation();
-  const [view, setView] = useState<"workspace" | "evaluation">("workspace");
+  const [view, setView] = useState<"workspace" | "evaluation" | "memory">("workspace");
 
   if (!currentWorkspace) {
     return null;
   }
   const isOwner = currentWorkspace.role === "owner";
-  const activeView = isOwner ? view : "workspace";
+  const activeView = !isOwner && view === "evaluation" ? "workspace" : view;
 
   return (
-    <div className="flex h-full flex-col bg-white dark:bg-zinc-950">
+    <div data-memory-settings className="flex h-full flex-col bg-white dark:bg-zinc-950">
       <header className="flex shrink-0 flex-col gap-3 border-b border-border px-4 py-3 sm:flex-row sm:items-center sm:justify-between sm:px-8">
         <div>
           <h3 className="text-sm font-bold text-zinc-900 dark:text-white">{t("settings.header")}</h3>
           <span className="mt-0.5 block text-[10px] font-semibold text-zinc-400 dark:text-zinc-500">{t("settings.subtitle")}</span>
         </div>
-        {isOwner ? (
+        {(
           <div role="tablist" aria-label={t("settings.viewTabs")} className="flex w-fit items-center border border-border bg-background p-1">
             <button type="button" role="tab" aria-selected={activeView === "workspace"} onClick={() => setView("workspace")} className={`flex h-8 items-center gap-1.5 px-3 text-xs font-semibold ${activeView === "workspace" ? "bg-zinc-950 text-white dark:bg-white dark:text-zinc-950" : "text-zinc-500 hover:text-zinc-950 dark:hover:text-white"}`}><Settings2 className="h-3.5 w-3.5" />{t("settings.workspaceTab")}</button>
-            <button type="button" role="tab" aria-selected={activeView === "evaluation"} onClick={() => setView("evaluation")} className={`flex h-8 items-center gap-1.5 px-3 text-xs font-semibold ${activeView === "evaluation" ? "bg-zinc-950 text-white dark:bg-white dark:text-zinc-950" : "text-zinc-500 hover:text-zinc-950 dark:hover:text-white"}`}><BarChart3 className="h-3.5 w-3.5" />{t("evaluation.title")}</button>
+            {isOwner && <button type="button" role="tab" aria-selected={activeView === "evaluation"} onClick={() => setView("evaluation")} className={`flex h-8 items-center gap-1.5 px-3 text-xs font-semibold ${activeView === "evaluation" ? "bg-zinc-950 text-white dark:bg-white dark:text-zinc-950" : "text-zinc-500 hover:text-zinc-950 dark:hover:text-white"}`}><BarChart3 className="h-3.5 w-3.5" />{t("evaluation.title")}</button>}
+            <button type="button" role="tab" aria-selected={activeView === "memory"} onClick={() => setView("memory")} className={`flex h-8 items-center gap-1.5 px-3 text-xs font-semibold ${activeView === "memory" ? "bg-zinc-950 text-white dark:bg-white dark:text-zinc-950" : "text-zinc-500 hover:text-zinc-950 dark:hover:text-white"}`}>{t("memory.title")}</button>
           </div>
-        ) : null}
+        )}
       </header>
       <div className="min-h-0 flex-1 overflow-hidden">
         {activeView === "workspace" ? (
           <SettingsForm key={currentWorkspace.id} currentWorkspace={currentWorkspace} onSaveSettings={updateWorkspaceSettings} t={t} />
-        ) : (
+        ) : activeView === "evaluation" ? (
           <div className="h-full overflow-y-auto"><EvaluationDashboard key={currentWorkspace.id} workspaceId={currentWorkspace.id} /></div>
-        )}
+        ) : null}
+        <div hidden={activeView !== "memory"} className="h-full"><MemoryPanel workspaceId={currentWorkspace.id} /></div>
       </div>
     </div>
   );

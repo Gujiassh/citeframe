@@ -6,6 +6,7 @@
 - [Workspace authorization](workspace-access.md)
 - [Private instruction persistence](private-instructions.md)
 - [Private instruction management API](private-instruction-api.md)
+- [Private instruction management in Settings](private-instruction-settings.md)
 - [Provider adapters and turn helpers](provider-foundation.md)
 - [Compaction foundation](compaction-foundation.md)
 - [History foundation](history-foundation.md)
