@@ -5,6 +5,7 @@
 - [API contracts](api-contracts.md)
 - [Workspace authorization](workspace-access.md)
 - [Private instruction persistence](private-instructions.md)
+- [Provider adapters and turn helpers](provider-foundation.md)
 - [Worker and shared persistence](worker.md)
 - [Evidence locations and saved citations](evidence.md)
 - [Research execution and recovery](research-workflow-runtime.md)
