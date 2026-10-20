@@ -28,6 +28,7 @@
 - [Private instruction management API](architecture/private-instruction-api.md)
 - [Private instruction management in Settings](architecture/private-instruction-settings.md)
 - [Provider adapters and turn helpers](architecture/provider-foundation.md)
+- [Chat runtime profiles](architecture/chat-runtime-profiles.md)
 - [Compaction foundation](architecture/compaction-foundation.md)
 - [History foundation](architecture/history-foundation.md)
 - [History index storage](architecture/history-index-storage.md)

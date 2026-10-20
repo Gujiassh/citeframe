@@ -8,6 +8,7 @@
 - [Private instruction management API](private-instruction-api.md)
 - [Private instruction management in Settings](private-instruction-settings.md)
 - [Provider adapters and turn helpers](provider-foundation.md)
+- [Chat runtime profiles](chat-runtime-profiles.md)
 - [Compaction foundation](compaction-foundation.md)
 - [History foundation](history-foundation.md)
 - [History index storage](history-index-storage.md)
