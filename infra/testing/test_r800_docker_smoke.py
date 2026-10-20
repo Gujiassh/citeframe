@@ -174,6 +174,35 @@ class RegistryOriginTests(unittest.TestCase):
         self.assertIn("--source baseline", alias_runs[0])
         self.assertIn("--historical-scenarios-only", alias_runs[0])
 
+    def test_alias_mode_combinations_reject_before_output_or_accept_historical_setup(self):
+        class OutputSetupReached(Exception):
+            pass
+
+        cases = (
+            ([], False),
+            (["--historical-scenarios-only", "--serial-negative-control"], False),
+            (["--historical-scenarios-only"], True),
+        )
+        with tempfile.TemporaryDirectory() as directory:
+            output = Path(directory) / "not-created"
+            for flags, valid in cases:
+                with self.subTest(flags=flags), \
+                        patch.object(sys, "argv", ["r800", "--source", ".", "--output", str(output),
+                                                  "--ci-redis-origin-alias", *flags]), \
+                        patch("r800_docker_smoke.Path.mkdir", side_effect=OutputSetupReached) as mkdir, \
+                        patch("r800_docker_smoke.subprocess.run") as run:
+                    if valid:
+                        with self.assertRaises(OutputSetupReached):
+                            main()
+                        mkdir.assert_called_once_with(parents=True, exist_ok=False)
+                    else:
+                        with self.assertRaises(SystemExit) as error:
+                            main()
+                        self.assertEqual(error.exception.code, 2)
+                        mkdir.assert_not_called()
+                    run.assert_not_called()
+                    self.assertFalse(output.exists())
+
     def test_product_uses_official_origins_with_unchanged_pins(self):
         root = Path(__file__).resolve().parents[2]
         web = (root / "infra/docker/Dockerfile.web").read_text().splitlines()

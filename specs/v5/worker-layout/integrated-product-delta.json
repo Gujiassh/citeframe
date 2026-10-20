@@ -17,7 +17,8 @@
     "ef585e61d1443df878ff82d680eb5b383370b5b0",
     "31cbb1f584123f0eb4b9fd4c13bc6cdde4c3d370",
     "8e65033cec6529ecda40f3401166dcd92bd95f46",
-    "5903d60b7103d32d7d8a0c173691250407460b13"
+    "5903d60b7103d32d7d8a0c173691250407460b13",
+    "552d8a4612b4f106529f4c34cfd615bc6c358a6a"
   ],
   "scope": "PR30 issue25 v4 conflict investigation plus normal architecture/prerequisite merges; exact owner-prepared blobs/provenance, new integration and v4 oracle pending independent Hubble review; exact PR37 upload and PR39 workspace-model/recovery/lock/oracle deltas, retaining unchanged entries and inherited provenance; exact PR47 Issue40 workspace-access dependency and test blobs pinned at 5903d60b7103d32d7d8a0c173691250407460b13, retaining prior admissions/provenance; manifest admission pending independent review",
   "functionalOracle": [
@@ -33,7 +34,8 @@
     "PR39 owner settings persist with write-only encrypted keys and two-workspace/capability isolation; Responses and Chat Completions Quick Answer and Research report/source-viewer workflows; specs/v5/post-v5-optimization/issue36-model-configuration.md",
     "PR39 explicit reindex preserves prior complete index on failure; rejected question survives settings/reindex/retry; restart reuses saved encrypted keys and frozen-run drift rejects without HTTP calls",
     "PR39 connected-IP/TLS/redirect/proxy/destination controls and real PostgreSQL save-reservation serialization; legacy investigation and new encrypted-config rollback guards independently preserve data; historical deployment oracles unchanged",
-    "PR47 Issue40 typed workspace member/owner dependencies preserve validation-first status/detail/body, resource scope and per-request membership caching; exact 378-case baseline/candidate oracle, Worker acceptance, bounded PostgreSQL revocation/CAS and controller browser evidence in specs/v5/post-v5-optimization/issue40-workspace-access-dependencies-20260928.md; external MinIO deployment gate remains separate"
+    "PR47 Issue40 typed workspace member/owner dependencies preserve validation-first status/detail/body, resource scope and per-request membership caching; exact 378-case baseline/candidate oracle, Worker acceptance, bounded PostgreSQL revocation/CAS and controller browser evidence in specs/v5/post-v5-optimization/issue40-workspace-access-dependencies-20260928.md; external MinIO deployment gate remains separate",
+    "PR47 registry-origin invariant: both Node22-bookworm-slim FROM references retain sha256:f86be15afa9a8277608e141ce2a8aa55d3d9c40845921b8511f4fb7897be2554; Redis7.4.9 retains sha256:d3be87a1060455213a204d2b0a7f04d45d19a16a98e85b3c37b7c33b5f0c489e; only ECR-to-official docker.io/library origins change. Controller official-image-identity.json records HTTP200 and exact manifest-body SHA256 equality; controller separately reports source inspection and 30 passing controls. Immutable50af historical Redis uses only the explicit CI override with required official pull/RepoDigest/image-ID proof; MinIO defaults and exact three-run identities remain required. Independent review2826 ACCEPT for bounded code and static metadata; fresh exact-head hosted runtime acceptance remains pending."
   ],
   "files": [
     {
@@ -1925,12 +1927,30 @@
       "transformation": "identical-reviewed-issue36-backend-bytes"
     },
     {
+      "path": "infra/docker/Dockerfile.web",
+      "integratedBlob": "451ff1b16eaed4e04696d3afefe4a8436e530f0c",
+      "reviewedSourceHead": "552d8a4612b4f106529f4c34cfd615bc6c358a6a",
+      "reviewedSourcePath": "infra/docker/Dockerfile.web",
+      "reviewedSourceBlob": "451ff1b16eaed4e04696d3afefe4a8436e530f0c",
+      "transformation": "exact ECR-to-official docker.io/library registry-origin replacement; tags, digests and all other source bytes unchanged",
+      "reviewStatus": "controller exact-source inspection complete; independent review 2826 ACCEPT for bounded code and static metadata; 31 controls passed; fresh exact-head hosted runtime pending"
+    },
+    {
       "path": "infra/docker/compose.deploy.yml",
-      "integratedBlob": "ca74d007ac9242808ff135dd19e65f5ef8301167",
-      "reviewedSourceHead": "5c2954af42d71eaed52e069b3a4312c995d51d40",
+      "integratedBlob": "1c11b1eb98370ea990cfd6836caea295f8c9f550",
+      "reviewedSourceHead": "552d8a4612b4f106529f4c34cfd615bc6c358a6a",
       "reviewedSourcePath": "infra/docker/compose.deploy.yml",
-      "reviewedSourceBlob": "ca74d007ac9242808ff135dd19e65f5ef8301167",
-      "transformation": "identical-reviewed-issue36-backend-bytes"
+      "reviewedSourceBlob": "1c11b1eb98370ea990cfd6836caea295f8c9f550",
+      "transformation": "exact ECR-to-official docker.io/library registry-origin replacement; tags, digests and all other source bytes unchanged",
+      "reviewStatus": "controller exact-source inspection complete; independent review 2826 ACCEPT for bounded code and static metadata; 31 controls passed; fresh exact-head hosted runtime pending",
+      "inheritedProvenance": {
+        "path": "infra/docker/compose.deploy.yml",
+        "integratedBlob": "ca74d007ac9242808ff135dd19e65f5ef8301167",
+        "reviewedSourceHead": "5c2954af42d71eaed52e069b3a4312c995d51d40",
+        "reviewedSourcePath": "infra/docker/compose.deploy.yml",
+        "reviewedSourceBlob": "ca74d007ac9242808ff135dd19e65f5ef8301167",
+        "transformation": "identical-reviewed-issue36-backend-bytes"
+      }
     },
     {
       "path": "packages/backend-contracts/src/citeframe_contracts/__init__.py",

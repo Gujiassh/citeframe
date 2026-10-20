@@ -66,8 +66,8 @@ def main() -> None:
     parser.add_argument("--ci-minio-assembly", action="store_true")
     parser.add_argument("--ci-redis-origin-alias", action="store_true")
     args = parser.parse_args()
-    if args.ci_redis_origin_alias and not args.historical_scenarios_only:
-        parser.error("--ci-redis-origin-alias requires --historical-scenarios-only")
+    if args.ci_redis_origin_alias and (not args.historical_scenarios_only or args.serial_negative_control):
+        parser.error("--ci-redis-origin-alias requires historical-only mode without --serial-negative-control")
     source, output = args.source.resolve(), args.output.resolve()
     harness = Path(__file__).resolve().parent
     output.mkdir(parents=True, exist_ok=False)

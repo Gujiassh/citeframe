@@ -14,7 +14,6 @@ stages, pinned to `sha256:f86be15afa9a8277608e141ce2a8aa55d3d9c40845921b8511f4fb
 Deployment Compose uses official `docker.io/library/redis:7.4.9`, pinned to
 `sha256:d3be87a1060455213a204d2b0a7f04d45d19a16a98e85b3c37b7c33b5f0c489e`.
 These manifests retain the digests previously addressed through the ECR mirror.
-Registry availability and Docker Hub rate limits can still fail pulls or builds.
 
 The immutable historical R800 checkout retains its ECR Redis reference. Only its
 CI invocation enables `--ci-redis-origin-alias`: the harness requires that exact
@@ -48,8 +47,8 @@ Images remain local to the runner.
 
 ## Runtime checks and provenance
 
-Before emitting a successful assembly manifest, the helper requires the production
-curl healthcheck and a non-root mc mirror backup/restore round trip with byte comparison.
+For substituted assemblies, the helper requires the production curl healthcheck and a
+non-root mc mirror backup/restore round trip with byte comparison before emitting a successful manifest.
 Checksum, build, version, health, and mc probe failures fail the command. Every helper
 container has an explicit client or server name. Cleanup attempts removal of both names
 and checks that neither remains; an unverified removal also fails assembly. Cleanup
