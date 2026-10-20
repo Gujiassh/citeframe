@@ -1,3 +1,6 @@
+from ai_pdf_api.routers.deps import require_workspace_member_existing_user
+from ai_pdf_api.routers.assets import require_upload_asset_binary_access, require_finalize_upload_access
+
 import asyncio
 from datetime import UTC, datetime
 from hashlib import sha256
@@ -348,9 +351,9 @@ def test_asset_work_cannot_supersede_queued_delete(operation: str) -> None:
 
         with pytest.raises(HTTPException, match="Asset deletion is already running") as error:
             if operation == "retry":
-                retry_asset(asset.workspace_id, asset.id, user, db)
+                retry_asset(asset.workspace_id, asset.id, db=db, access=require_workspace_member_existing_user(asset.workspace_id, user, db))
             else:
-                reindex_asset(asset.workspace_id, asset.id, user, db)
+                reindex_asset(asset.workspace_id, asset.id, db=db, access=require_workspace_member_existing_user(asset.workspace_id, user, db))
 
         assert error.value.status_code == 409
         db.expire_all()
@@ -441,9 +444,10 @@ def test_binary_upload_does_not_recreate_object_after_delete_is_queued(
                     asset.workspace_id,
                     asset.id,
                     _DeletingRequest(),
-                    asset.object_key,
-                    asset.created_by_user_id,
-                    db,
+                    db=db,
+                    workspace_request=require_upload_asset_binary_access(
+                        asset.workspace_id, asset.object_key, asset.created_by_user_id, db,
+                    ),
                 )
             )
 
@@ -496,9 +500,10 @@ def test_finalize_locks_pending_asset_before_creating_ingest_job(
         response = finalize_upload(
             asset.workspace_id,
             asset.id,
-            FinalizeUploadRequest(objectKey=asset.object_key),
-            user,
-            db,
+            db=db,
+            workspace_request=require_finalize_upload_access(
+                asset.workspace_id, FinalizeUploadRequest(objectKey=asset.object_key), user, db,
+            ),
         )
 
         assert refresh_calls[0] is True

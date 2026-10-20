@@ -1,0 +1,73 @@
+{
+  "database": "issue40_safety_1ab12e684a6c",
+  "dialect": "postgresql",
+  "checks": [
+    {
+      "case": "worker_claim_revoked",
+      "status": 403,
+      "code": "research_permission_denied",
+      "runStatus": "cancelled",
+      "attemptCount": 0
+    },
+    {
+      "case": "worker_heartbeat_revoked",
+      "status": 403,
+      "code": "research_permission_denied",
+      "runStatus": "cancel_requested",
+      "attemptCount": 1
+    },
+    {
+      "case": "publication_adoption_revoked_after_upload",
+      "intentStatus": "compensating",
+      "runStatus": "cancel_requested",
+      "finalArtifacts": 0,
+      "completionEvents": 0,
+      "objectInvariant": "Existing upload unchanged; compensation remains pending (no adoption side effect)"
+    },
+    {
+      "case": "report_expectedVersion_0",
+      "outcomes": [
+        {
+          "status": 200,
+          "version": 1
+        },
+        {
+          "status": 409,
+          "code": "report_edit_version_conflict"
+        }
+      ],
+      "persistedVersion": 1
+    },
+    {
+      "case": "report_expectedVersion_1",
+      "outcomes": [
+        {
+          "status": 200,
+          "version": 2
+        },
+        {
+          "status": 409,
+          "code": "report_edit_version_conflict"
+        }
+      ],
+      "persistedVersion": 2
+    },
+    {
+      "case": "report_revoked_after_precheck_before_locked_save",
+      "status": 403,
+      "code": "research_permission_denied",
+      "persistedVersion": 2,
+      "originalObjectHashUnchanged": true,
+      "editRowUnchanged": true,
+      "postgresLockWaitObserved": true
+    }
+  ],
+  "postgresVersion": "17.11",
+  "migration": "s3a4b5c6d7e8",
+  "limits": [
+    "Adoption finalizer only, with a seeded uploaded intent; no end-to-end publication preparation, compensation sweep, multi-Worker stress or crash/restart schedule.",
+    "Two concurrent report saves tested at first save and subsequent save; one coordinated revocation schedule.",
+    "Worker-facing persistence entrypoints invoked directly; no provider call or long-running Worker process.",
+    "Existing deterministic fixture builders seed state; report byte/hash check is real, not full report-view provenance acceptance."
+  ]
+}

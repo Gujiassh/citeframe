@@ -1,0 +1,15 @@
+{
+  "status": 200,
+  "generation": {
+    "source": "workspace",
+    "revision": 3,
+    "protocol": "openai_chat_completions",
+    "baseUrl": "http://127.0.0.1:18481/v1",
+    "model": "issue40-synthetic-generation-no-calls",
+    "apiKeyConfigured": true,
+    "status": "configured",
+    "errorCode": null
+  },
+  "scope": "Only isolated A generation override; embedding unchanged; no provider request",
+  "credential": "Explicit fake local key; previous A setting was inherited and unconfigured"
+}

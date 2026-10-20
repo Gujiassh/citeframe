@@ -10,16 +10,16 @@ Citeframe is a self-hosted multimodal AI knowledge workspace for organizing hete
 ## What it does
 
 - Organize assets in isolated workspaces with source-linked context.
-- Ingest nine production asset kinds: PDF, images (PNG/JPEG/WebP), Markdown documents, HTML, DOCX, XLSX, PPTX, audio, and video (depth varies; PDF/Image are deepest).
+- Ingest PDF, images (PNG/JPEG/WebP), Markdown documents, HTML, DOCX, XLSX, PPTX, audio, and video. PDF and image workflows offer the deepest visual evidence support; other formats support retrieval and citations with format-specific viewers.
 - Preserve typed evidence locations for pages, regions, and image areas.
 - Search across ready assets with PostgreSQL full-text search, pgvector, and reciprocal rank fusion.
 - Use Quick Answer for focused questions or bounded multi-agent Research for complex comparisons.
 - Save source-linked notes, tags, chat history, and research artifacts.
-- Use server-resolved provider profiles already shipped for generation (OpenAI Responses / DeepSeek Anthropic Messages), embedding (OpenAI / Ollama), vision/image-caption, and ASR capability checks; missing capability fails closed. Additional provider adapters or user-facing profile selectors remain future expansion, not unfinished core contracts.
-- Keep the same Asset/Evidence contracts when adding modalities; nine production kinds are already registered (depth still varies by kind).
+- Configure generation (OpenAI Responses / DeepSeek Anthropic Messages), embedding (OpenAI / Ollama), vision/image-caption, and ASR through server-resolved provider profiles. Requests report an explicit error when a required capability is unavailable.
+- Extend format support through modality adapters that share the Asset/Evidence model.
 - Run the complete stack on your own infrastructure.
 
-Product stage is **`internal_preview`**: engineering gates may pass without claiming model quality (R803) or user-value (M404). Roadmap and post-V5-F hardening: [`specs/v5/multimodal-agent-product/`](specs/v5/multimodal-agent-product/), [`specs/v5/architecture-hardening/`](specs/v5/architecture-hardening/).
+Citeframe is in **Preview**. Format support varies in depth, and answer quality depends on the configured models and source material. Model-quality evaluation and validation with target users are still pending.
 
 ## Getting Started
 
@@ -50,14 +50,14 @@ uv run --project apps/api alembic -c apps/api/alembic.ini upgrade head
 
 The development Compose file starts PostgreSQL, Redis, and MinIO. The Web, API, and Worker processes run on the host.
 
-### Local environment profiles (preview vs accept)
+### Local environment profiles
 
-Do **not** leave daily product Q&A pointed at the M403B acceptance stub (`:18081`).
+- **preview** — use this profile for product Q&A with your configured models. Embedding defaults to local Ollama; generation requires your own API key. The stack can start without a generation key, and requests that need it return an explicit configuration error.
+- **accept** — use deterministic test responses for automated checks. These responses do not measure model answer quality.
 
-- **preview** — real Ollama embedding by default; generation key is **optional** (fail-closed until you set your own). Templates ship **no secrets**.
-- **accept** — deterministic stub for engineering gates only
+Keep API keys in local environment files; the preview template includes no model API key.
 
-See [`docs/architecture/local-env-profiles.md`](docs/architecture/local-env-profiles.md) and:
+See [`docs/guides/local-environment.md`](docs/guides/local-environment.md) and:
 
 ```bash
 cp infra/env/preview.env.example infra/env/preview.local.env
@@ -76,7 +76,7 @@ cp apps/web/.env.example apps/web/.env.local
 
 Set a shared `AI_PDF_API_INTERNAL_TOKEN` for the Web BFF and API, then configure the generation and embedding providers for the API and Worker. The API and Worker must use the same embedding provider, model, and index version.
 
-See [API configuration](apps/api/README.md), [Worker configuration](apps/worker/README.md), and [Docker configuration](infra/docker/README.md) for the available environment variables.
+See [model configuration](docs/guides/model-configuration.md), [local profiles](docs/guides/local-environment.md), and [deployment configuration](docs/deployment/README.md) for environment variables and capability requirements.
 
 ### Run Citeframe
 
@@ -104,16 +104,17 @@ The deployment Compose file builds and runs the complete stack behind Caddy.
 cp infra/docker/.env.deploy.example infra/docker/.env.deploy
 ```
 
-Fill in the passwords, shared token, session secret, model configuration, and site address, then run:
+Fill in the passwords, shared token, session secret, model configuration, and site address. New deployments use the explicit Compose project `citeframe`; use the actual existing project name for an existing stack and for its backups/restores. Changing the project name selects different named volumes. Then run:
 
 ```bash
 docker compose \
+  --project-name citeframe \
   --env-file infra/docker/.env.deploy \
   -f infra/docker/compose.deploy.yml \
   up -d --build
 ```
 
-The [deployment guide](infra/docker/README.md) covers configuration, health checks, logs, metrics, backups, and restores.
+The [deployment guide](docs/deployment/README.md) covers configuration, health checks, logs, metrics, backups, and restores.
 
 ## Development
 
@@ -142,17 +143,16 @@ specs/          versioned feature specifications
 
 ## Documentation
 
-- [Product design](docs/ssot/product-design.md)
-- [System architecture](docs/ssot/system-architecture.md)
-- [Implementation roadmap](docs/architecture/implementation-roadmap.md)
-- [Implementation progress](docs/architecture/implementation-progress.md)
-- [V5 multimodal and agent plan](specs/v5/multimodal-agent-product/plan.md)
-- [Research workflow](docs/architecture/research-workflow-runtime.md)
-- [Web development](apps/web/README.md)
-- [Windows local development](docs/architecture/windows-local-development.md)
-- [API development](apps/api/README.md)
-- [Worker development](apps/worker/README.md)
-- [Deployment](infra/docker/README.md)
+- [Documentation index](docs/README.md)
+- [Workspace guide](docs/guides/workspaces.md)
+- [Supported formats and limitations](docs/guides/format-support.md)
+- [Model configuration](docs/guides/model-configuration.md)
+- [System architecture](docs/architecture/system.md)
+- [Research execution](docs/architecture/research-workflow-runtime.md)
+- [Deployment](docs/deployment/README.md)
+- [Development and tests](docs/development/README.md)
+- [Contributing](CONTRIBUTING.md)
+- [Security](SECURITY.md)
 
 ## License
 
