@@ -33,7 +33,8 @@
     "be2394f171a8d6b8e37024a39de0a18307d66ed6",
     "22931cbec19ddd78def72396319ca6360858ce64",
     "6043a087c33840c66476a3402708a6d371988421",
-    "e7b3e86ae4de70764c4d17bcbe272686c1c8063a"
+    "e7b3e86ae4de70764c4d17bcbe272686c1c8063a",
+    "5f26f63268c2f64cb7ea7add3578d1411ba5dadf"
   ],
   "scope": "PR30 issue25 v4 conflict investigation plus normal architecture/prerequisite merges; exact owner-prepared blobs/provenance, new integration and v4 oracle pending independent Hubble review; exact PR37 upload and PR39 workspace-model/recovery/lock/oracle deltas, retaining unchanged entries and inherited provenance; exact PR47 Issue40 workspace-access dependency and test blobs pinned at 5903d60b7103d32d7d8a0c173691250407460b13, retaining prior admissions/provenance; manifest admission pending independent review",
   "functionalOracle": [
@@ -84,7 +85,9 @@
     "PR53 F53-R2 binds only apps/web/src/lib/memory/proxy.ts and apps/web/src/lib/memory/proxy.test.ts to immutable6043a087c33840c66476a3402708a6d371988421, retaining complete prior22931 records as nested provenance. Authenticated non-GET Origin comparison uses validated incoming Host plus framework URL scheme, ignores Forwarded/X-Forwarded-Host/X-Forwarded-Proto, retains one terminal DNS root dot and rejects dotted/undotted DNS mismatches, wrong schemes/ports and malformed authorities. Existing byte-reader, authentication/error ordering, API authority, no-store and retry contracts remain unchanged.",
     "PR53 F53-R2 accepted source evidence is134 full helper cases (120 retained plus14 root-dot cases),16 unchanged independent NextRequest cases,44 unchanged adversarial cases and6 fresh independent root-dot NextRequest cases, all passing without skips; strict TypeScript0 diagnostics. Independent network/listener/import negative controls are separate support evidence. These source-boundary tests do not establish integrated signed-visible-UI Save, actual wrong-origin/no-write behavior, late-response/revocation or unknown-ack recovery races. Integrated browser and exact-final-head hosted acceptance remain pending; full46/42 remain open.",
     "PR51 adds unregistered Research transcript projection with exact protected current input, caller chronology, composite journal locators, consumer/producer attribution, native body/hash and unloaded-state checks, and explicit not_stored/not_recorded availability. Caller lawful shared-data/private-exclusion, lease/provenance authority and finite aggregate-budget obligations remain required. No current native caller, provider send, DB query, source registration, checkpoint adoption, compaction or full issue45 activation is supplied by these two exact originale7b files. Final-parent source tests and hosted CI remain required.",
-    "PR51 historical bounded source evidence is42 cases (36 original plus6 retained independent reverse cases) and a separate overlapping41-pass API-denied run with one explicit verifier compatibility deselection. Actual-current-parent guarded full46 and API-denied45 controls are separately root-owned and not claimed here. The current365 metadata candidate retains every363 parent object/order/header and nested provenance, adds only two literal reviewed e7b sources, and requires original strict exact-target provenance plus changed/missing/unknown reverse controls. Native dispatch, aggregate provider/resource envelope, runtime activation and full issue45 completion remain outside this unregistered projection slice; actual53main synchronization and final-head hosted CI remain pending."
+    "PR51 historical bounded source evidence is42 cases (36 original plus6 retained independent reverse cases) and a separate overlapping41-pass API-denied run with one explicit verifier compatibility deselection. Actual-current-parent guarded full46 and API-denied45 controls are separately root-owned and not claimed here. The current365 metadata candidate retains every363 parent object/order/header and nested provenance, adds only two literal reviewed e7b sources, and requires original strict exact-target provenance plus changed/missing/unknown reverse controls. Native dispatch, aggregate provider/resource envelope, runtime activation and full issue45 completion remain outside this unregistered projection slice; actual53main synchronization and final-head hosted CI remain pending.",
+    "PR55 binds exactly the original55 tools.py and test_memory_tool_settlement.py blobs to5f26f63268c2f64cb7ea7add3578d1411ba5dadf. The validated tool-call-ID chain retains native lock order, scope/snapshot checks, terminal/precondition precedence, result/usage/budget accounting and final flush. Public precondition failures remain outside the rollback catch; ordinary public settlement/flush failures roll back. The private caller-transaction entry performs no commit/rollback and retains caller-owned recovery, lifecycle, lease and source authority prerequisites. No application memory caller, schema/API field or native activation is added; full issue45 remains open.",
+    "PR55 historical bounded source ACCEPT includes13 focused controls and a distinct original55 real-PostgreSQL56-case run, with exact source/origin evidence. These historical results do not establish current-parent execution. The byte-identical dedicated workflow selects120 cases (56 settlement,22 API budget recovery,6 API persistence boundary,36 Worker projection) with all original collection/phase/origin/version/skip/xfail/deselection guards. Root owns the current f1f7+92aff PG120 run separately. Metadata adds one fixed test path and replaces tools.py while retaining its complete prior record, all other364 parent objects/order/header/source/oracle prefixes, and requires unchanged original strict366 and reverse controls. Independent final audit, actual51main ancestry synchronization and exact-final-head hosted acceptance remain pending."
   ],
   "files": [
     {
@@ -2582,11 +2585,27 @@
     },
     {
       "path": "packages/research-persistence/src/citeframe_research_persistence/tools.py",
-      "integratedBlob": "c940c38b1b043c5d286ca1a39c4b46878a224e8f",
-      "reviewedSourceHead": "a927682b32456db6fe7639e0855181f9ee0858c8",
+      "reviewedSourceHead": "5f26f63268c2f64cb7ea7add3578d1411ba5dadf",
       "reviewedSourcePath": "packages/research-persistence/src/citeframe_research_persistence/tools.py",
-      "reviewedSourceBlob": "c940c38b1b043c5d286ca1a39c4b46878a224e8f",
-      "transformation": "identical-reviewed-issue25-bytes"
+      "reviewedSourceBlob": "972aa29a4175a25e19da3c58a33850d674937cb2",
+      "sourceLF_SHA256": "f8e02eb6c9f93ded10bf59c9b136168130591fc49b4ded0041e6115530230a51",
+      "reviewArtifact": ".local-runtime/artifacts/pr55-pre-review-20261020/review.md",
+      "reviewArtifactSHA256": "565ed4934c27d43a8f6f03e154ca9ba045f27a70a4c7b627f9beec1dbd992d3d",
+      "controllerOriginalPGReview": "C:\\Users\\baiao\\Documents\\Codex\\2026-10-20\\citeframe-issue-agent-issue-x20\\work\\pr55-controller-review.md",
+      "controllerOriginalPGReviewSHA256": "25672cf4e1c521c6fd3748d0c309e0ddf49518797bc5e8816c736a69108db09f",
+      "integratedBlob": "972aa29a4175a25e19da3c58a33850d674937cb2",
+      "transformation": "identical-reviewed-original55-Git-bytes",
+      "reviewStatus": "bounded-original55-source-ACCEPT; exact-f1f7-integration-metadata-candidate; current-root-PG120-independent-audit-actual51main-sync-final-head-CI-pending",
+      "inheritedProvenance": [
+        {
+          "path": "packages/research-persistence/src/citeframe_research_persistence/tools.py",
+          "integratedBlob": "c940c38b1b043c5d286ca1a39c4b46878a224e8f",
+          "reviewedSourceHead": "a927682b32456db6fe7639e0855181f9ee0858c8",
+          "reviewedSourcePath": "packages/research-persistence/src/citeframe_research_persistence/tools.py",
+          "reviewedSourceBlob": "c940c38b1b043c5d286ca1a39c4b46878a224e8f",
+          "transformation": "identical-reviewed-issue25-bytes"
+        }
+      ]
     },
     {
       "path": "tools/evaluation/src/citeframe_evaluation/acceptance/conflicts.py",
@@ -4609,6 +4628,20 @@
       "reviewArtifactSHA256": "b75270108906f02d58739a7cfb16510bc9ae3d3523c58f50f06c58564a729018",
       "reviewStatus": "bounded-original51-unregistered-pure-source-ACCEPT; actual-final-parent-integration-and-hosted-CI-pending",
       "transformation": "identical-reviewed-e7b-Git-bytes"
+    },
+    {
+      "path": "packages/research-persistence/tests/test_memory_tool_settlement.py",
+      "reviewedSourceHead": "5f26f63268c2f64cb7ea7add3578d1411ba5dadf",
+      "reviewedSourcePath": "packages/research-persistence/tests/test_memory_tool_settlement.py",
+      "reviewedSourceBlob": "8cbb89b65372e3003f22b42e81944330e8a1ce52",
+      "sourceLF_SHA256": "787ed87a226f26d928c2f7505a444235f4eb658e9c252719956ffab5f9dc27e8",
+      "reviewArtifact": ".local-runtime/artifacts/pr55-pre-review-20261020/review.md",
+      "reviewArtifactSHA256": "565ed4934c27d43a8f6f03e154ca9ba045f27a70a4c7b627f9beec1dbd992d3d",
+      "controllerOriginalPGReview": "C:\\Users\\baiao\\Documents\\Codex\\2026-10-20\\citeframe-issue-agent-issue-x20\\work\\pr55-controller-review.md",
+      "controllerOriginalPGReviewSHA256": "25672cf4e1c521c6fd3748d0c309e0ddf49518797bc5e8816c736a69108db09f",
+      "integratedBlob": "8cbb89b65372e3003f22b42e81944330e8a1ce52",
+      "transformation": "identical-reviewed-original55-Git-bytes",
+      "reviewStatus": "bounded-original55-source-ACCEPT; exact-f1f7-integration-metadata-candidate; current-root-PG120-independent-audit-actual51main-sync-final-head-CI-pending"
     }
   ]
 }
