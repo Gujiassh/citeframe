@@ -21,7 +21,9 @@
     "552d8a4612b4f106529f4c34cfd615bc6c358a6a",
     "2e9287638fee9567c6474b8356c3b3ba93fec16a",
     "1d4f9e377785bda28c62029cd524c3cd6ba4c567",
-    "893de951672f1a374d552425dfb2b3e7c3e6a223"
+    "893de951672f1a374d552425dfb2b3e7c3e6a223",
+    "812ebb1ed9bdddf8ef3dc44f9aeb8387036607cd",
+    "7c86a862854d34c6889099aeee82393be8808b80"
   ],
   "scope": "PR30 issue25 v4 conflict investigation plus normal architecture/prerequisite merges; exact owner-prepared blobs/provenance, new integration and v4 oracle pending independent Hubble review; exact PR37 upload and PR39 workspace-model/recovery/lock/oracle deltas, retaining unchanged entries and inherited provenance; exact PR47 Issue40 workspace-access dependency and test blobs pinned at 5903d60b7103d32d7d8a0c173691250407460b13, retaining prior admissions/provenance; manifest admission pending independent review",
   "functionalOracle": [
@@ -43,7 +45,11 @@
     "PR48 immutable revisions, CAS/single-successor and idempotent/lost-ack receipts; synchronous all-revision SQL NULL erasure; terminal identity cannot resurrect in either SQL write order",
     "PR48 finite R1-R5 credential rejection before DML or instruction construction; exact original text/conditions/attribution; precedence, clean retry and historical replay retained; not a general secret/PII guarantee",
     "PR48 exact local package/export/lock/Docker source maps and literal migration lineage t4b5c6d7e8f9 -> s3a4b5c6d7e8 -> r2f3a4b5c6d7; static evidence does not satisfy real final-image PG/S3 gates",
-    "PR48 exact28-entry recovery retains original verifier and unknown/missing/altered/duplicate/baseline negatives; archived2026-10-05 fresh independent bounded source ACCEPT applies to893de951; parent47-integrated PostgreSQL, hosted PG/S3 and final-image acceptance remain separate pending gates"
+    "PR48 exact28-entry recovery retains original verifier and unknown/missing/altered/duplicate/baseline negatives; archived2026-10-05 fresh independent bounded source ACCEPT applies to893de951; parent47-integrated PostgreSQL, hosted PG/S3 and final-image acceptance remain separate pending gates",
+    "PR49 neutral Responses, Chat Completions and Anthropic streaming adapters preserve tool identity/order and strict supported schema/canonical UTF-8 byte bounds; every completed call validates before any completed-call batch output; transport cleanup precedes completion and terminal success.",
+    "PR49 ordinary started/completed observer errors are generation_observer_error; ordinary failed telemetry cannot replace the active error or GeneratorExit; BaseException control flow propagates; cancellation and cleanup errors cannot become successful terminal; terminal close remains monotonic.",
+    "PR49 full-payload counting keeps explicit model/protocol/config/counter provenance and exact-versus-estimated mode; pure terminal collection requires clean exhaustion; continuation pairs outcomes and returns gate_required without send, dispatch, source or authorization authority.",
+    "PR49 exact16 new records:14 unchanged source812ebb1 plus repaired generation/native-provider-test source7c86a86; independent-final bounded source ACCEPT and controller-reported271 canonical tests do not establish live-provider model quality, native application activation, final image or final-head hosted CI. A1 private exclusion and inherited MinIO qualification remain unchanged."
   ],
   "files": [
     {
@@ -2748,6 +2754,182 @@
       "reviewArtifact": "reviews/issue42-implementation.md",
       "reviewedCheckoutSHA256": "f4117dfbcb878cd26b799a8b0c5f9a0d9ec67964f1c6d882a09e3b97d774d3f1",
       "reviewStatus": "historical-bounded-ACCEPT; hosted-PG-S3-final-image-gates-separate"
+    },
+    {
+      "path": "packages/memory-service/src/citeframe_memory/adapters/__init__.py",
+      "integratedBlob": "b87fa1029ed467a2c0c5ea1532c8358c49af5f74",
+      "reviewedSourceHead": "812ebb1ed9bdddf8ef3dc44f9aeb8387036607cd",
+      "reviewedSourcePath": "packages/memory-service/src/citeframe_memory/adapters/__init__.py",
+      "reviewedSourceBlob": "b87fa1029ed467a2c0c5ea1532c8358c49af5f74",
+      "transformation": "identical-reviewed-PR49-git-bytes",
+      "reviewArtifact": ".local-runtime/artifacts/pr49-rework-20261020/independent-final/review.md",
+      "reviewArtifactSHA256": "cce5a7649a16ce16c1ec636b9a214ab17e8dc28b73629262eb157f36aeabd97b",
+      "reviewStatus": "bounded-neutral-foundation-ACCEPT; current-integration-metadata-final-head-CI-image-review-pending"
+    },
+    {
+      "path": "packages/memory-service/src/citeframe_memory/adapters/_generation.py",
+      "integratedBlob": "cdafaaad02d3a1fef5fd51b4ba1df6c62fcf70a0",
+      "reviewedSourceHead": "7c86a862854d34c6889099aeee82393be8808b80",
+      "reviewedSourcePath": "packages/memory-service/src/citeframe_memory/adapters/_generation.py",
+      "reviewedSourceBlob": "cdafaaad02d3a1fef5fd51b4ba1df6c62fcf70a0",
+      "transformation": "identical-reviewed-PR49-git-bytes",
+      "reviewArtifact": ".local-runtime/artifacts/pr49-rework-20261020/independent-final/review.md",
+      "reviewArtifactSHA256": "cce5a7649a16ce16c1ec636b9a214ab17e8dc28b73629262eb157f36aeabd97b",
+      "reviewStatus": "bounded-neutral-foundation-ACCEPT; current-integration-metadata-final-head-CI-image-review-pending"
+    },
+    {
+      "path": "packages/memory-service/src/citeframe_memory/adapters/_requests.py",
+      "integratedBlob": "2b03d5ff4a4d5aa2c3ac9d92493f3a3bd9d285f0",
+      "reviewedSourceHead": "812ebb1ed9bdddf8ef3dc44f9aeb8387036607cd",
+      "reviewedSourcePath": "packages/memory-service/src/citeframe_memory/adapters/_requests.py",
+      "reviewedSourceBlob": "2b03d5ff4a4d5aa2c3ac9d92493f3a3bd9d285f0",
+      "transformation": "identical-reviewed-PR49-git-bytes",
+      "reviewArtifact": ".local-runtime/artifacts/pr49-rework-20261020/independent-final/review.md",
+      "reviewArtifactSHA256": "cce5a7649a16ce16c1ec636b9a214ab17e8dc28b73629262eb157f36aeabd97b",
+      "reviewStatus": "bounded-neutral-foundation-ACCEPT; current-integration-metadata-final-head-CI-image-review-pending"
+    },
+    {
+      "path": "packages/memory-service/src/citeframe_memory/adapters/_schema.py",
+      "integratedBlob": "07115392695e0ee5d5ec6a260a573c55520864a3",
+      "reviewedSourceHead": "812ebb1ed9bdddf8ef3dc44f9aeb8387036607cd",
+      "reviewedSourcePath": "packages/memory-service/src/citeframe_memory/adapters/_schema.py",
+      "reviewedSourceBlob": "07115392695e0ee5d5ec6a260a573c55520864a3",
+      "transformation": "identical-reviewed-PR49-git-bytes",
+      "reviewArtifact": ".local-runtime/artifacts/pr49-rework-20261020/independent-final/review.md",
+      "reviewArtifactSHA256": "cce5a7649a16ce16c1ec636b9a214ab17e8dc28b73629262eb157f36aeabd97b",
+      "reviewStatus": "bounded-neutral-foundation-ACCEPT; current-integration-metadata-final-head-CI-image-review-pending"
+    },
+    {
+      "path": "packages/memory-service/src/citeframe_memory/adapters/_streams.py",
+      "integratedBlob": "8d1641ce3bfb2e749b8c3be37287bccb8abbbc92",
+      "reviewedSourceHead": "812ebb1ed9bdddf8ef3dc44f9aeb8387036607cd",
+      "reviewedSourcePath": "packages/memory-service/src/citeframe_memory/adapters/_streams.py",
+      "reviewedSourceBlob": "8d1641ce3bfb2e749b8c3be37287bccb8abbbc92",
+      "transformation": "identical-reviewed-PR49-git-bytes",
+      "reviewArtifact": ".local-runtime/artifacts/pr49-rework-20261020/independent-final/review.md",
+      "reviewArtifactSHA256": "cce5a7649a16ce16c1ec636b9a214ab17e8dc28b73629262eb157f36aeabd97b",
+      "reviewStatus": "bounded-neutral-foundation-ACCEPT; current-integration-metadata-final-head-CI-image-review-pending"
+    },
+    {
+      "path": "packages/memory-service/src/citeframe_memory/adapters/_wire.py",
+      "integratedBlob": "adac0a48977e8dd9129888b9fb8af456c9458f1f",
+      "reviewedSourceHead": "812ebb1ed9bdddf8ef3dc44f9aeb8387036607cd",
+      "reviewedSourcePath": "packages/memory-service/src/citeframe_memory/adapters/_wire.py",
+      "reviewedSourceBlob": "adac0a48977e8dd9129888b9fb8af456c9458f1f",
+      "transformation": "identical-reviewed-PR49-git-bytes",
+      "reviewArtifact": ".local-runtime/artifacts/pr49-rework-20261020/independent-final/review.md",
+      "reviewArtifactSHA256": "cce5a7649a16ce16c1ec636b9a214ab17e8dc28b73629262eb157f36aeabd97b",
+      "reviewStatus": "bounded-neutral-foundation-ACCEPT; current-integration-metadata-final-head-CI-image-review-pending"
+    },
+    {
+      "path": "packages/memory-service/src/citeframe_memory/adapters/anthropic.py",
+      "integratedBlob": "43127a5f363d0f0a35c859758d774639b9208257",
+      "reviewedSourceHead": "812ebb1ed9bdddf8ef3dc44f9aeb8387036607cd",
+      "reviewedSourcePath": "packages/memory-service/src/citeframe_memory/adapters/anthropic.py",
+      "reviewedSourceBlob": "43127a5f363d0f0a35c859758d774639b9208257",
+      "transformation": "identical-reviewed-PR49-git-bytes",
+      "reviewArtifact": ".local-runtime/artifacts/pr49-rework-20261020/independent-final/review.md",
+      "reviewArtifactSHA256": "cce5a7649a16ce16c1ec636b9a214ab17e8dc28b73629262eb157f36aeabd97b",
+      "reviewStatus": "bounded-neutral-foundation-ACCEPT; current-integration-metadata-final-head-CI-image-review-pending"
+    },
+    {
+      "path": "packages/memory-service/src/citeframe_memory/adapters/chat_completions.py",
+      "integratedBlob": "d318e76b437cc86b8ede8e8ab4faa1a7db4e8347",
+      "reviewedSourceHead": "812ebb1ed9bdddf8ef3dc44f9aeb8387036607cd",
+      "reviewedSourcePath": "packages/memory-service/src/citeframe_memory/adapters/chat_completions.py",
+      "reviewedSourceBlob": "d318e76b437cc86b8ede8e8ab4faa1a7db4e8347",
+      "transformation": "identical-reviewed-PR49-git-bytes",
+      "reviewArtifact": ".local-runtime/artifacts/pr49-rework-20261020/independent-final/review.md",
+      "reviewArtifactSHA256": "cce5a7649a16ce16c1ec636b9a214ab17e8dc28b73629262eb157f36aeabd97b",
+      "reviewStatus": "bounded-neutral-foundation-ACCEPT; current-integration-metadata-final-head-CI-image-review-pending"
+    },
+    {
+      "path": "packages/memory-service/src/citeframe_memory/adapters/counting.py",
+      "integratedBlob": "94e6bbf44901c02120aa2cac05f9d8889349f0a3",
+      "reviewedSourceHead": "812ebb1ed9bdddf8ef3dc44f9aeb8387036607cd",
+      "reviewedSourcePath": "packages/memory-service/src/citeframe_memory/adapters/counting.py",
+      "reviewedSourceBlob": "94e6bbf44901c02120aa2cac05f9d8889349f0a3",
+      "transformation": "identical-reviewed-PR49-git-bytes",
+      "reviewArtifact": ".local-runtime/artifacts/pr49-rework-20261020/independent-final/review.md",
+      "reviewArtifactSHA256": "cce5a7649a16ce16c1ec636b9a214ab17e8dc28b73629262eb157f36aeabd97b",
+      "reviewStatus": "bounded-neutral-foundation-ACCEPT; current-integration-metadata-final-head-CI-image-review-pending"
+    },
+    {
+      "path": "packages/memory-service/src/citeframe_memory/adapters/responses.py",
+      "integratedBlob": "ba4340a8585bad7bc1f299c6419f96933fbd652a",
+      "reviewedSourceHead": "812ebb1ed9bdddf8ef3dc44f9aeb8387036607cd",
+      "reviewedSourcePath": "packages/memory-service/src/citeframe_memory/adapters/responses.py",
+      "reviewedSourceBlob": "ba4340a8585bad7bc1f299c6419f96933fbd652a",
+      "transformation": "identical-reviewed-PR49-git-bytes",
+      "reviewArtifact": ".local-runtime/artifacts/pr49-rework-20261020/independent-final/review.md",
+      "reviewArtifactSHA256": "cce5a7649a16ce16c1ec636b9a214ab17e8dc28b73629262eb157f36aeabd97b",
+      "reviewStatus": "bounded-neutral-foundation-ACCEPT; current-integration-metadata-final-head-CI-image-review-pending"
+    },
+    {
+      "path": "packages/memory-service/src/citeframe_memory/chat_loop/__init__.py",
+      "integratedBlob": "808e21fdb910d91559a39482b3f87b419b375de6",
+      "reviewedSourceHead": "812ebb1ed9bdddf8ef3dc44f9aeb8387036607cd",
+      "reviewedSourcePath": "packages/memory-service/src/citeframe_memory/chat_loop/__init__.py",
+      "reviewedSourceBlob": "808e21fdb910d91559a39482b3f87b419b375de6",
+      "transformation": "identical-reviewed-PR49-git-bytes",
+      "reviewArtifact": ".local-runtime/artifacts/pr49-rework-20261020/independent-final/review.md",
+      "reviewArtifactSHA256": "cce5a7649a16ce16c1ec636b9a214ab17e8dc28b73629262eb157f36aeabd97b",
+      "reviewStatus": "bounded-neutral-foundation-ACCEPT; current-integration-metadata-final-head-CI-image-review-pending"
+    },
+    {
+      "path": "packages/memory-service/src/citeframe_memory/chat_loop/turns.py",
+      "integratedBlob": "c888406a61d7cd3b0e2e42af24a8caf0cf4db890",
+      "reviewedSourceHead": "812ebb1ed9bdddf8ef3dc44f9aeb8387036607cd",
+      "reviewedSourcePath": "packages/memory-service/src/citeframe_memory/chat_loop/turns.py",
+      "reviewedSourceBlob": "c888406a61d7cd3b0e2e42af24a8caf0cf4db890",
+      "transformation": "identical-reviewed-PR49-git-bytes",
+      "reviewArtifact": ".local-runtime/artifacts/pr49-rework-20261020/independent-final/review.md",
+      "reviewArtifactSHA256": "cce5a7649a16ce16c1ec636b9a214ab17e8dc28b73629262eb157f36aeabd97b",
+      "reviewStatus": "bounded-neutral-foundation-ACCEPT; current-integration-metadata-final-head-CI-image-review-pending"
+    },
+    {
+      "path": "packages/memory-service/tests/test_chat_loop_turns.py",
+      "integratedBlob": "281debe908399cb14999b1020abe0fff439e5190",
+      "reviewedSourceHead": "812ebb1ed9bdddf8ef3dc44f9aeb8387036607cd",
+      "reviewedSourcePath": "packages/memory-service/tests/test_chat_loop_turns.py",
+      "reviewedSourceBlob": "281debe908399cb14999b1020abe0fff439e5190",
+      "transformation": "identical-reviewed-PR49-git-bytes",
+      "reviewArtifact": ".local-runtime/artifacts/pr49-rework-20261020/independent-final/review.md",
+      "reviewArtifactSHA256": "cce5a7649a16ce16c1ec636b9a214ab17e8dc28b73629262eb157f36aeabd97b",
+      "reviewStatus": "bounded-neutral-foundation-ACCEPT; current-integration-metadata-final-head-CI-image-review-pending"
+    },
+    {
+      "path": "packages/memory-service/tests/test_native_provider.py",
+      "integratedBlob": "b15a99bce9f3da2da2378e29952c7aa043f9c787",
+      "reviewedSourceHead": "7c86a862854d34c6889099aeee82393be8808b80",
+      "reviewedSourcePath": "packages/memory-service/tests/test_native_provider.py",
+      "reviewedSourceBlob": "b15a99bce9f3da2da2378e29952c7aa043f9c787",
+      "transformation": "identical-reviewed-PR49-git-bytes",
+      "reviewArtifact": ".local-runtime/artifacts/pr49-rework-20261020/independent-final/review.md",
+      "reviewArtifactSHA256": "cce5a7649a16ce16c1ec636b9a214ab17e8dc28b73629262eb157f36aeabd97b",
+      "reviewStatus": "bounded-neutral-foundation-ACCEPT; current-integration-metadata-final-head-CI-image-review-pending"
+    },
+    {
+      "path": "packages/memory-service/tests/test_token_counting.py",
+      "integratedBlob": "f42849d11710a5e1dee946ab5cb6ca99ca80042e",
+      "reviewedSourceHead": "812ebb1ed9bdddf8ef3dc44f9aeb8387036607cd",
+      "reviewedSourcePath": "packages/memory-service/tests/test_token_counting.py",
+      "reviewedSourceBlob": "f42849d11710a5e1dee946ab5cb6ca99ca80042e",
+      "transformation": "identical-reviewed-PR49-git-bytes",
+      "reviewArtifact": ".local-runtime/artifacts/pr49-rework-20261020/independent-final/review.md",
+      "reviewArtifactSHA256": "cce5a7649a16ce16c1ec636b9a214ab17e8dc28b73629262eb157f36aeabd97b",
+      "reviewStatus": "bounded-neutral-foundation-ACCEPT; current-integration-metadata-final-head-CI-image-review-pending"
+    },
+    {
+      "path": "packages/memory-service/tests/test_wire_provider.py",
+      "integratedBlob": "7dbd650aeb7363fdfda0d5700889b3f2414e2fc4",
+      "reviewedSourceHead": "812ebb1ed9bdddf8ef3dc44f9aeb8387036607cd",
+      "reviewedSourcePath": "packages/memory-service/tests/test_wire_provider.py",
+      "reviewedSourceBlob": "7dbd650aeb7363fdfda0d5700889b3f2414e2fc4",
+      "transformation": "identical-reviewed-PR49-git-bytes",
+      "reviewArtifact": ".local-runtime/artifacts/pr49-rework-20261020/independent-final/review.md",
+      "reviewArtifactSHA256": "cce5a7649a16ce16c1ec636b9a214ab17e8dc28b73629262eb157f36aeabd97b",
+      "reviewStatus": "bounded-neutral-foundation-ACCEPT; current-integration-metadata-final-head-CI-image-review-pending"
     }
   ]
 }
