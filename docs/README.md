@@ -24,6 +24,7 @@
 - [Workspace access](architecture/workspace-access.md)
 - [Private instruction persistence](architecture/private-instructions.md)
 - [Provider adapters and turn helpers](architecture/provider-foundation.md)
+- [Compaction foundation](architecture/compaction-foundation.md)
 - [Worker and persistence boundaries](architecture/worker.md)
 - [Adding a modality](architecture/modality-extension-contract.md)
 - [Evaluation tools and reproducibility](development/evaluation.md)
