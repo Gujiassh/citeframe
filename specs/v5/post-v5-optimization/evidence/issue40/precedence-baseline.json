@@ -1,0 +1,62 @@
+[
+  {
+    "syntheticRole": "owner",
+    "requestBody": {},
+    "baseline": {
+      "status": 422,
+      "body": {
+        "detail": {
+          "code": "model_settings_invalid",
+          "message": "Invalid model settings."
+        }
+      }
+    },
+    "dependencyCandidate": {
+      "status": 422,
+      "body": {
+        "detail": {
+          "code": "model_settings_invalid",
+          "message": "Invalid model settings."
+        }
+      }
+    }
+  },
+  {
+    "syntheticRole": "member",
+    "requestBody": {},
+    "baseline": {
+      "status": 422,
+      "body": {
+        "detail": {
+          "code": "model_settings_invalid",
+          "message": "Invalid model settings."
+        }
+      }
+    },
+    "dependencyCandidate": {
+      "status": 403,
+      "body": {
+        "detail": "Only workspace owners can manage model settings."
+      }
+    }
+  },
+  {
+    "syntheticRole": "outsider",
+    "requestBody": {},
+    "baseline": {
+      "status": 422,
+      "body": {
+        "detail": {
+          "code": "model_settings_invalid",
+          "message": "Invalid model settings."
+        }
+      }
+    },
+    "dependencyCandidate": {
+      "status": 404,
+      "body": {
+        "detail": "Workspace not found."
+      }
+    }
+  }
+]

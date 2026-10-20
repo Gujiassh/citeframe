@@ -548,3 +548,169 @@ def test_provider_responses_accepts_completed_or_unspecified_message_status(stat
     ]
     instance, _ = adapter(ResponsesAdapter, events)
     assert instance.generate(request()) == "answer"
+
+
+@pytest.mark.parametrize("cls", [ResponsesAdapter, ChatCompletionsAdapter, AnthropicAdapter])
+@pytest.mark.parametrize("stage", ["started", "completed"])
+@pytest.mark.parametrize("error_type", [RuntimeError, ValueError, ProtocolError])
+def test_provider_observer_failure_has_stable_safe_boundary(cls, stage, error_type):
+    import traceback
+    sentinel = "synthetic-observer-private-diagnostic"
+    observed = []
+
+    def observer(event, **kwargs):
+        observed.append((event, kwargs["error_code"]))
+        if event in {stage, "failed"}:
+            raise error_type(sentinel)
+
+    instance, transport = adapter(cls, text_events(cls), observer=observer)
+    emitted = []
+    with pytest.raises(ProtocolError, match="^generation_observer_error$") as error:
+        for event in instance.stream_turn(request()):
+            emitted.append(event)
+    assert not any(isinstance(event, TurnComplete) for event in emitted)
+    assert observed[-1] == ("failed", "generation_observer_error")
+    assert (not transport.requests) if stage == "started" else transport.closed
+    assert not sentinel in "".join(traceback.format_exception(error.value)), "Observer diagnostic escaped"
+
+
+@pytest.mark.parametrize("cls", [ResponsesAdapter, ChatCompletionsAdapter, AnthropicAdapter])
+@pytest.mark.parametrize("failure", ["transport", "protocol", "cancelled", "generator_close"])
+def test_provider_failed_observer_preserves_primary_failure_and_cleanup(cls, failure):
+    observed = []
+
+    def observer(event, **kwargs):
+        observed.append((event, kwargs["error_code"]))
+        if event == "failed":
+            raise RuntimeError("synthetic-failed-observer-diagnostic")
+
+    instance, transport = adapter(cls, [] if failure == "protocol" else text_events(cls), observer=observer)
+    if failure == "transport":
+        def broken_lines():
+            raise OSError("synthetic-transport-diagnostic")
+            yield
+        transport.iter_lines = broken_lines
+    if failure == "cancelled":
+        instance.cancelled = lambda: transport.closed
+    stream = instance.stream_turn(request())
+    emitted = []
+    if failure == "generator_close":
+        assert isinstance(next(stream), TextDelta)
+        stream.close()
+        code = "generation_cancelled"
+    else:
+        code = {"transport": "generation_transport_error", "protocol": "generation_protocol_invalid", "cancelled": "generation_cancelled"}[failure]
+        with pytest.raises(ProtocolError) as error:
+            for event in stream:
+                emitted.append(event)
+        assert str(error.value) == code
+    assert transport.closed
+    assert observed[-1] == ("failed", code)
+    assert not any(isinstance(event, TurnComplete) for event in emitted)
+
+
+@pytest.mark.parametrize("cls", [ResponsesAdapter, ChatCompletionsAdapter, AnthropicAdapter])
+def test_provider_observer_close_after_terminal_stays_completed(cls):
+    observed = []
+
+    def observer(event, **kwargs):
+        observed.append(event)
+        if event == "failed":
+            raise RuntimeError("synthetic-failed-observer-diagnostic")
+
+    instance, transport = adapter(cls, text_events(cls), observer=observer)
+    stream = instance.stream_turn(request())
+    for event in stream:
+        if isinstance(event, TurnComplete):
+            stream.close()
+            break
+    assert transport.closed and observed == ["started", "completed"]
+
+
+def native_tool_batch(cls, calls):
+    events = [] if cls != AnthropicAdapter else [{"type": "message_start", "message": {}}]
+    for index, (call_id, name, arguments) in enumerate(calls):
+        if cls == ResponsesAdapter:
+            events.extend([
+                {"type": "response.output_item.added", "output_index": index, "item": {"type": "function_call", "call_id": call_id, "name": name}},
+                {"type": "response.function_call_arguments.delta", "output_index": index, "delta": arguments},
+                {"type": "response.function_call_arguments.done", "output_index": index, "arguments": arguments},
+            ])
+        elif cls == ChatCompletionsAdapter:
+            events.append({"choices": [{"delta": {"tool_calls": [{"index": index, "id": call_id, "function": {"name": name, "arguments": arguments}}]}, "finish_reason": None}]})
+        else:
+            events.extend([
+                {"type": "content_block_start", "index": index, "content_block": {"type": "tool_use", "id": call_id, "name": name, "input": {}}},
+                {"type": "content_block_delta", "index": index, "delta": {"type": "input_json_delta", "partial_json": arguments}},
+                {"type": "content_block_stop", "index": index},
+            ])
+    if cls == ResponsesAdapter:
+        events.append({"type": "response.completed", "response": {"status": "completed"}})
+    elif cls == ChatCompletionsAdapter:
+        events.extend([{"choices": [{"delta": {}, "finish_reason": "tool_calls"}]}, "[DONE]"])
+    else:
+        events.extend([{"type": "message_delta", "delta": {"stop_reason": "tool_use"}}, {"type": "message_stop"}])
+    return events
+
+
+NUMERIC_TOOL = ToolDefinition("numbers", "Synthetic numbers", '{"type":"object","properties":{"values":{"type":"array","items":{"type":"number"}}},"required":["values"],"additionalProperties":false}')
+
+
+@pytest.mark.parametrize("cls", [ResponsesAdapter, ChatCompletionsAdapter, AnthropicAdapter])
+@pytest.mark.parametrize("invalid", ["expanded_number", "high_surrogate", "low_surrogate"])
+@pytest.mark.parametrize("valid_first", [True, False])
+def test_provider_rejects_entire_canonical_batch_before_any_completed_call(cls, invalid, valid_first):
+    from citeframe_memory.adapters._wire import WireLimits
+    if invalid == "expanded_number":
+        arguments, name = '{"values":[' + ','.join(['1e9'] * 1500) + ']}', NUMERIC_TOOL.name
+    else:
+        arguments, name = json.dumps({"q": chr(0xd800 if invalid == "high_surrogate" else 0xdc00)}), TOOL.name
+    assert len(arguments.encode("utf-8")) <= WireLimits().max_argument_bytes
+    calls = [("valid-call", TOOL.name, '{"q":"valid"}'), ("invalid-call", name, arguments)]
+    if not valid_first:
+        calls.reverse()
+    instance, transport = adapter(cls, native_tool_batch(cls, calls))
+    emitted = []
+    with pytest.raises(ProtocolError, match="^generation_protocol_invalid$"):
+        for event in instance.stream_turn(request(tools=(TOOL, NUMERIC_TOOL))):
+            emitted.append(event)
+    assert transport.closed
+    assert not any(isinstance(event, (ToolCallComplete, Usage, TurnComplete)) for event in emitted)
+
+
+@pytest.mark.parametrize("cls", [ResponsesAdapter, ChatCompletionsAdapter, AnthropicAdapter])
+@pytest.mark.parametrize("limit_delta", [-1, 0])
+def test_provider_canonical_numeric_utf8_byte_boundary(cls, limit_delta):
+    from citeframe_memory.adapters._wire import WireLimits
+    from citeframe_memory.chat_loop.turns import collect_turn
+    raw = '{"values":[' + ','.join(['1e9'] * 20) + ']}'
+    canonical = '{"values":[' + ','.join(['1000000000.0'] * 20) + ']}'
+    limit = len(canonical.encode("utf-8")) + limit_delta
+    assert len(raw.encode("utf-8")) <= limit
+    instance, transport = adapter(cls, native_tool_batch(cls, [("numeric-call", NUMERIC_TOOL.name, raw)]), limits=WireLimits(max_argument_bytes=limit))
+    req = request(tools=(NUMERIC_TOOL,))
+    emitted = []
+    if limit_delta < 0:
+        with pytest.raises(ProtocolError, match="^generation_protocol_invalid$"):
+            for event in instance.stream_turn(req):
+                emitted.append(event)
+        assert not any(isinstance(event, (ToolCallComplete, TurnComplete)) for event in emitted)
+    else:
+        turn = collect_turn(instance.stream_turn(req), req)
+        assert turn.calls == (ToolCall("numeric-call", NUMERIC_TOOL.name, canonical),)
+        assert turn.reason == "tool_calls"
+    assert transport.closed
+
+
+@pytest.mark.parametrize("cls", [ResponsesAdapter, ChatCompletionsAdapter, AnthropicAdapter])
+def test_provider_valid_unicode_numeric_batch_preserves_ids_order_and_collector_parity(cls):
+    from citeframe_memory.adapters._wire import WireLimits
+    from citeframe_memory.chat_loop.turns import collect_turn
+    canonical = json.dumps({"q": "é猫" * 50}, ensure_ascii=False, separators=(",", ":"))
+    calls = [("first-call", TOOL.name, canonical), ("second-call", NUMERIC_TOOL.name, '{"values":[1e2]}')]
+    limit = max(len(canonical.encode("utf-8")), len('{"values":[100.0]}'.encode("utf-8")))
+    instance, transport = adapter(cls, native_tool_batch(cls, calls), limits=WireLimits(max_argument_bytes=limit))
+    req = request(tools=(TOOL, NUMERIC_TOOL))
+    turn = collect_turn(instance.stream_turn(req), req)
+    assert turn.calls == (ToolCall("first-call", TOOL.name, canonical), ToolCall("second-call", NUMERIC_TOOL.name, '{"values":[100.0]}'))
+    assert transport.closed and turn.reason == "tool_calls"

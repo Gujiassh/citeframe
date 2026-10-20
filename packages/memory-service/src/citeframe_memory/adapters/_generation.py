@@ -12,7 +12,7 @@ from citeframe_contracts.memory import (
 from ._requests import payload, prepare
 from ._schema import validate
 from ._streams import ResponsesState
-from ._wire import WireLimits, sse_events
+from ._wire import WireLimits, bounded_text, sse_events
 
 
 @dataclass(frozen=True)
@@ -42,7 +42,12 @@ class NativeGenerationAdapter:
 
     def _observe(self, event, code=None):
         if self.observer is not None:
-            self.observer(event, config_fingerprint=self.connection.config_fingerprint, error_code=code)
+            try:
+                self.observer(event, config_fingerprint=self.connection.config_fingerprint, error_code=code)
+            except Exception:
+                # Failure telemetry cannot replace the primary error or generator close.
+                if event != "failed":
+                    raise ProtocolError("generation_observer_error") from None
 
     def _cancel(self):
         if self.cancelled is not None and self.cancelled():
@@ -90,14 +95,20 @@ class NativeGenerationAdapter:
                         yield TextDelta(text)
                 self._cancel()
                 _, calls, usage = state.result(require_done=self.protocol != "openai_chat_completions")
+                completed_calls = []
                 for call_id, name, arguments in calls:
                     if name not in definitions:
                         raise ProtocolError("generation_unknown_tool")
                     validate(arguments, definitions[name])
+                    canonical = bounded_text(
+                        json.dumps(arguments, ensure_ascii=False, separators=(",", ":"), allow_nan=False),
+                        self.limits.max_argument_bytes, "arguments",
+                    )
+                    completed_calls.append(ToolCall(call_id, name, canonical))
             self._cancel()
-            for call_id, name, arguments in calls:
+            for call in completed_calls:
                 self._cancel()
-                yield ToolCallComplete(ToolCall(call_id, name, json.dumps(arguments, ensure_ascii=False, separators=(",", ":"), allow_nan=False)))
+                yield ToolCallComplete(call)
             self._cancel()
             yield Usage(usage.get("input_tokens"), usage.get("output_tokens"), "reported" if usage else "unknown")
             self._cancel()
