@@ -21,6 +21,7 @@
 - [API boundaries](architecture/api-contracts.md)
 - [Evidence and historical citations](architecture/evidence.md)
 - [Research execution and recovery](architecture/research-workflow-runtime.md)
+- [Research transcript projection](architecture/research-transcript-projection.md)
 - [Workspace access](architecture/workspace-access.md)
 - [Private instruction persistence](architecture/private-instructions.md)
 - [Private instruction management API](architecture/private-instruction-api.md)
