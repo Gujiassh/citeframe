@@ -1,29 +1,60 @@
 # Workspace authorization
 
-## Authentication and membership
+## Current API boundary
 
-The Web BFF authenticates its signed session and supplies `x-user-id` and `x-ai-pdf-internal-token` to FastAPI. In [`routers/deps.py`](../../apps/api/src/ai_pdf_api/routers/deps.py), `require_user_id` depends on `require_internal_api_token`; the token is checked before the forwarded user ID is trusted. A browser-supplied role does not grant membership. Public registration/login and authenticated workspace creation/listing have their own routes.
+The Web BFF authenticates its session and supplies `x-user-id` and
+`x-ai-pdf-internal-token`. FastAPI verifies the internal token before trusting the user ID.
+The workspace path is authorized against the database; browser-supplied role or user
+headers do not grant membership. Public registration/login and auth-only workspace
+creation/listing remain separate from workspace-member routes.
 
-`base_workspace_query_for_user` joins `Workspace` and `WorkspaceMembership`, filters by user ID, and excludes archived workspaces. `get_accessible_workspace(db, user_id, workspace_id)` adds the workspace ID filter and returns `(workspace, role)`. Missing or inaccessible workspaces return 404 `Workspace not found.`. Routes invoke this helper with their database session; it is an ordinary function, so repeated calls do not share a FastAPI dependency-cache entry.
+`routers/deps.py` owns the member policy and typed `WorkspaceAccess`:
+`user_id`, `workspace_id`, `role`, and the already-loaded `Workspace` ORM object.
+`require_workspace_member` excludes archived workspaces and returns the existing
+404 `Workspace not found.` response for missing membership. It keeps no cross-request
+state. `require_workspace_member_existing_user` preserves the routes that first require
+an existing user. In particular, an unknown user receives 401 on workspace detail and
+404 on a jobs request with otherwise valid internal authentication.
 
-Some routes also require a persisted User. `require_existing_user` returns 401 `Authenticated user not found.` for an unknown user. Workspace detail explicitly checks that user before membership; the jobs route checks membership without that extra user lookup. These entry points can therefore return different errors for the same unknown identity.
+`require_workspace_owner` is the default owner dependency. `WorkspaceOwnerDependency`
+configures the existing route-specific owner error message and shares its `check` method
+with validation-first route dependencies. No role values or owner privileges change.
 
-## Owner checks and validation
+## Validation and request caching
 
-Handlers apply operation-specific checks after membership lookup. Workspace settings and archival require the stored owner role. Model-settings and evaluation routers have local `_require_owner` helpers with their own 403 messages. Chat thread archival permits a workspace owner or that thread's creator. Resource-level and service-level checks still apply to these operations.
+All 56 workspace-path operations in jobs, model settings, workspaces, assets, chat,
+notes, research, and evaluation declare a typed access dependency. Simple reads use
+the shared member or owner callable directly. Routes with validated body/query inputs
+use thin local dependencies returning `WorkspaceRequest[T]`: FastAPI validates those
+inputs once, then the dependency applies the shared member/owner policy. The endpoint
+consumes those same typed inputs. Existing-user dependencies remain before validation
+where the baseline had that order.
 
-FastAPI validates declared body/query/header inputs, and authentication/database dependencies resolve before endpoint execution. Membership and owner checks in the endpoint body run after that declared input validation. Validation details and any additional user checks remain route-specific; authorization is not mounted as one eager workspace-wide dependency. Model settings use `SecretSafeRoute` to sanitize invalid bodies and model-configuration errors. Research uses its own structured error envelope.
+This preserves invalid-body/query responses before membership/owner errors. Model
+settings retain their secret-safe validation error body; research retains its distinct
+error envelope. No permission dependency is blanket-mounted ahead of route validation.
+FastAPI's default per-request dependency cache stays enabled. When a router dependency
+and a parameter share the same member callable, including a nested owner dependency,
+they share one membership query and one access object. Validation-first wrappers must
+also be reused as the same callable if mounted in more than one position; do not mount
+a separate eager member check on those routes.
 
-The route implementations are in [workspaces](../../apps/api/src/ai_pdf_api/routers/workspaces.py), [model settings](../../apps/api/src/ai_pdf_api/routers/model_settings.py), [evaluation](../../apps/api/src/ai_pdf_api/routers/evaluation.py), and [chat](../../apps/api/src/ai_pdf_api/routers/chat.py).
+SSE validates Accept and Last-Event-ID before its initial member lookup. That lookup
+uses a short session from the research event session factory. The handler opens another
+short session for the initial scoped run/events read, closing it before streaming.
+Polling retains fresh-session membership revalidation. No database session is retained
+for the lifetime of a stream.
 
-## Resource and write scope
+## Resource and write boundaries
 
-Membership authorizes access to a workspace; each requested job, asset, representation, thread, note, tag, run, artifact, or evaluation resource also needs a workspace-scoped lookup. For example, [`jobs.py`](../../apps/api/src/ai_pdf_api/routers/jobs.py) queries both job ID and workspace ID, and [`assets.py`](../../apps/api/src/ai_pdf_api/routers/assets.py) checks asset ID, workspace ID, and deletion state. Membership in workspaces A and B does not make B's resource valid on an A URL.
+Membership authorization does not authorize arbitrary resource IDs. Jobs, assets,
+representations, threads, notes, tags, runs, artifacts, and evaluation resources retain
+their workspace-scoped queries and nested-resource checks. A user who belongs to both
+A and B cannot address B resources through an A path.
 
-Report editing additionally checks creator identity, run state, `expectedVersion`, and original artifact identity/hash inside [`research_report_edit.py`](../../apps/api/src/ai_pdf_api/services/research/research_report_edit.py). Workspace ownership does not confer report-creator privileges. Publication/adoption locks, transactional persistence checks, and Worker archive/revocation behavior remain separate from HTTP membership lookup.
-
-## Research event streams
-
-[`research.py`](../../apps/api/src/ai_pdf_api/routers/research.py) validates `Accept` and `Last-Event-ID` before the initial membership lookup. One short session from `RESEARCH_EVENT_SESSION_FACTORY` authorizes the workspace, reads the scoped run and initial events, and closes before `StreamingResponse` is returned.
-
-The polling iterator opens fresh short sessions and revalidates membership before reading further events. It does not retain a database session for the stream's lifetime. Revoked membership or workspace archival is observed through those fresh queries.
+Report editing still checks creator identity, run state, expectedVersion, original
+artifact identity/hash, and transactional permission inside
+`services/research/research_report_edit.py`. Workspace ownership does not confer report
+creator privileges. Shared research-persistence checks, publication/adoption locks,
+and Worker runtime revocation behavior remain unchanged. This refactor does not extend
+Worker behavior for archived workspaces.

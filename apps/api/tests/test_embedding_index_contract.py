@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from ai_pdf_api.routers.deps import require_workspace_member_existing_user
+
 from datetime import UTC, datetime
 from uuid import uuid4
 
@@ -359,7 +361,7 @@ def test_reindex_snapshot_uses_active_contract_and_does_not_bypass_delete() -> N
         assert workspace is not None
         db.commit()
 
-        response = reindex_asset(asset.workspace_id, asset.id, user, db)
+        response = reindex_asset(asset.workspace_id, asset.id, db=db, access=require_workspace_member_existing_user(asset.workspace_id, user, db))
         assert response.job.jobType == "embed_chunks"
         job = db.get(IngestionJob, response.job.id)
         assert job is not None
@@ -395,7 +397,7 @@ def test_reindex_snapshot_uses_active_contract_and_does_not_bypass_delete() -> N
         from fastapi import HTTPException
 
         with pytest.raises(HTTPException) as error:
-            reindex_asset(asset.workspace_id, asset.id, user, db)
+            reindex_asset(asset.workspace_id, asset.id, db=db, access=require_workspace_member_existing_user(asset.workspace_id, user, db))
         assert error.value.status_code == 409
         detail = str(error.value.detail).lower()
         assert "delet" in detail

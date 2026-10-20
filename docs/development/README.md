@@ -39,7 +39,7 @@ uv run --project apps/api alembic -c apps/api/alembic.ini check
 git diff --check
 ```
 
-API includes PostgreSQL-backed tests; use local database and the explicit configuration required by each module. Deterministic fixtures do not replace PostgreSQL concurrency/recovery. CI builds evaluation images and exercises real service recovery/deployment scripts.
+API includes PostgreSQL-backed tests; use local database and the explicit configuration required by each module. Deterministic fixtures do not replace PostgreSQL concurrency/recovery. CI builds evaluation images and exercises real service recovery/deployment scripts. See [CI object storage](ci-storage.md) for image selection, fixed binaries, and coverage boundaries.
 
 Browser tests:
 
