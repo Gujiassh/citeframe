@@ -33,8 +33,8 @@ class StrictModel(BaseModel):
 
 
 class Conditions(StrictModel):
-    subject: str = Field(min_length=1, max_length=256)
-    applicability: str = Field(min_length=1, max_length=2000)
+    subject: str = Field(min_length=1, max_length=256, pattern=r"^[^\x00]*$")
+    applicability: str = Field(min_length=1, max_length=2000, pattern=r"^[^\x00]*$")
     effectiveFrom: AwareDatetime | None = None
 
 
@@ -44,7 +44,7 @@ class WorkspaceScope(StrictModel):
 
 class Statement(StrictModel):
     kind: Kind
-    content: str = Field(min_length=1, max_length=4000)
+    content: str = Field(min_length=1, max_length=4000, pattern=r"^[^\x00]*$")
     conditions: Conditions
     pinned: StrictBool = False
     validUntil: AwareDatetime | None = None

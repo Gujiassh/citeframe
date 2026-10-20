@@ -1,5 +1,9 @@
 """Opt-in real PostgreSQL oracles. Every test owns a fresh schema in a test-only DB."""
 from concurrent.futures import ThreadPoolExecutor
+from contextlib import contextmanager
+from hashlib import sha256
+from alembic.config import Config
+from alembic.script import ScriptDirectory
 from dataclasses import replace
 from datetime import UTC, datetime
 import importlib.util
@@ -73,8 +77,18 @@ print('neutral-import-pass')
     assert "neutral-import-pass" in subprocess.check_output([sys.executable, "-c", code], env=env, text=True)
 
 
-@pytest.fixture
-def pg():
+def migrate(engine,target,*,downgrade=False):
+    config=Config()
+    config.set_main_option("script_location",str(ROOT / "apps/api/alembic"))
+    scripts=ScriptDirectory.from_config(config)
+    revisions=scripts._downgrade_revs if downgrade else scripts._upgrade_revs
+    with engine.begin() as conn:
+        context=MigrationContext.configure(conn,opts={"fn":lambda current,_:revisions(target,current),"transactional_ddl":True})
+        with Operations.context(context):context.run_migrations()
+
+
+@contextmanager
+def migrated_private(target):
     url = os.environ.get("CITEFRAME_MEMORY42_POSTGRES_URL")
     if not url and os.environ.get("CI"):
         pytest.fail("CI requires CITEFRAME_MEMORY42_POSTGRES_URL; PostgreSQL oracles must not skip")
@@ -83,28 +97,40 @@ def pg():
     assert make_url(url).database == "citeframe_memory42_test", "Refusing non-test database"
     schema = "memory42_" + uuid4().hex
     admin = create_engine(url)
-    with admin.begin() as conn:
-        conn.execute(text(f'CREATE SCHEMA "{schema}"'))
-    engine = create_engine(url, pool_size=8, connect_args={"options": f"-c search_path={schema},public -c lock_timeout=8000 -c statement_timeout=15000"})
-    with engine.begin() as conn:
-        for table in (User.__table__, Workspace.__table__, WorkspaceMembership.__table__):
-            table.create(conn)
-        with Operations.context(MigrationContext.configure(conn)):
-            MIGRATION.upgrade()
-    uid, other, wid = (str(uuid4()) for _ in range(3))
-    with Session(engine) as db, db.begin():
-        for id_ in (uid, other):
-            db.add(User(id=id_, email=id_ + "@test.invalid", name="fixture", password_hash="unused", avatar_url=""))
-        db.flush()
-        db.add(Workspace(id=wid, name="fixture", created_by_user_id=other))
-        db.flush()
-        db.add_all([WorkspaceMembership(id=str(uuid4()), workspace_id=wid, user_id=uid, role="member"),
-                    WorkspaceMembership(id=str(uuid4()), workspace_id=wid, user_id=other, role="owner")])
-    yield engine, AccessContext(uid, wid, "management", "private"), other
-    engine.dispose()
-    with admin.begin() as conn:
-        conn.execute(text(f'DROP SCHEMA "{schema}" CASCADE'))
-    admin.dispose()
+    engine=None
+    try:
+        with admin.begin() as conn:
+            conn.execute(text("CREATE EXTENSION IF NOT EXISTS vector WITH SCHEMA public"))
+            conn.execute(text("CREATE EXTENSION IF NOT EXISTS pg_trgm WITH SCHEMA public"))
+            extensions=set(conn.execute(text("SELECT extname FROM pg_extension e JOIN pg_namespace n ON n.oid=e.extnamespace WHERE n.nspname='public'")).scalars())
+            assert {"vector","pg_trgm"} <= extensions
+            conn.execute(text(f'CREATE SCHEMA "{schema}"'))
+        engine=create_engine(url,pool_size=8,connect_args={"options":f"-c search_path={schema},public -c lock_timeout=8000 -c statement_timeout=15000"})
+        migrate(engine,target)
+        uid,other,wid=(str(uuid4()) for _ in range(3))
+        with Session(engine) as db,db.begin():
+            for id_ in (uid,other):
+                db.add(User(id=id_,email=id_+"@test.invalid",name="fixture",password_hash="unused",avatar_url=""))
+            db.flush()
+            db.add(Workspace(id=wid,name="fixture",created_by_user_id=other))
+            db.flush()
+            db.add_all([WorkspaceMembership(id=str(uuid4()),workspace_id=wid,user_id=uid,role="member"),
+                        WorkspaceMembership(id=str(uuid4()),workspace_id=wid,user_id=other,role="owner")])
+        yield engine,AccessContext(uid,wid,"management","private"),other
+    finally:
+        if engine is not None:engine.dispose()
+        with admin.begin() as conn:conn.execute(text(f'DROP SCHEMA IF EXISTS "{schema}" CASCADE'))
+        admin.dispose()
+
+
+@pytest.fixture
+def pg():
+    with migrated_private("u5c6d7e8f9a0") as value:yield value
+
+
+@pytest.fixture
+def pg_t4():
+    with migrated_private("t4b5c6d7e8f9") as value:yield value
 
 
 def command(engine, method, context, *args):
@@ -245,19 +271,25 @@ def test_revocation_archive_and_cross_workspace_fail_closed(pg):
         assert conn.scalar(text("SELECT count(*) FROM memory_records")) == 1
 
 
-def test_populated_down_refused_empty_down_up_preserves_native(pg):
-    engine, ctx, _ = pg
+def test_populated_down_refused_empty_down_up_preserves_native(pg_t4):
+    engine,ctx,_=pg_t4
+    with engine.connect() as conn:
+        before=conn.execute(text("SELECT jsonb_agg(to_jsonb(w)) FROM workspaces w")).scalar()
+        assert conn.scalar(text("SELECT version_num FROM alembic_version"))=="t4b5c6d7e8f9"
+    migrate(engine,"s3a4b5c6d7e8",downgrade=True)
+    with engine.connect() as conn:
+        assert conn.scalar(text("SELECT version_num FROM alembic_version"))=="s3a4b5c6d7e8"
+    migrate(engine,"t4b5c6d7e8f9")
     with engine.begin() as conn:
-        before = conn.execute(text("SELECT jsonb_agg(to_jsonb(w)) FROM workspaces w")).scalar()
-        with Operations.context(MigrationContext.configure(conn)):
-            MIGRATION.downgrade()
-            MIGRATION.upgrade()
-        after = conn.execute(text("SELECT jsonb_agg(to_jsonb(w)) FROM workspaces w")).scalar()
-        assert after == before
-    command(engine, "remember", ctx, request(), statement())
-    with engine.begin() as conn, Operations.context(MigrationContext.configure(conn)):
-        with pytest.raises(RuntimeError, match="approved export/erasure"):
-            MIGRATION.downgrade()
+        assert conn.execute(text("SELECT jsonb_agg(to_jsonb(w)) FROM workspaces w")).scalar()==before
+        conn.execute(text("""INSERT INTO memory_instructions(id,workspace_id,actor_user_id,operation,request_id,content,content_sha256,created_at)
+            VALUES(:id,:wid,:uid,'remember',:request,'historical',encode(sha256(convert_to('historical','UTF8')),'hex'),now())"""),
+            {"id":str(uuid4()),"wid":ctx.workspace_id,"uid":ctx.actor_user_id,"request":str(uuid4())})
+    with pytest.raises(RuntimeError,match="approved export/erasure"):
+        migrate(engine,"s3a4b5c6d7e8",downgrade=True)
+    with engine.connect() as conn:
+        assert conn.scalar(text("SELECT version_num FROM alembic_version"))=="t4b5c6d7e8f9"
+        assert conn.scalar(text("SELECT count(*) FROM memory_instructions"))==1
 
 
 
@@ -382,19 +414,120 @@ def test_cross_owner_and_cross_workspace_support_sql_rejected(pg):
 
 
 
-def test_frozen_migration_matches_current_six_table_models():
-    from sqlalchemy.dialects.postgresql import dialect
-    from sqlalchemy.schema import AddConstraint, CreateIndex, CreateTable
-    from citeframe_persistence.models.memory import instructions, sources, records, revisions, uses, operations
-    tables = (instructions, sources, records, revisions, uses, operations)
-    expected = [str(CreateTable(t).compile(dialect=dialect())).strip() for t in tables]
-    for table in tables:
-        expected.extend(str(CreateIndex(i).compile(dialect=dialect())).strip() for i in table.indexes)
-        expected.extend(str(AddConstraint(c).compile(dialect=dialect())).strip()
-                        for c in table.foreign_key_constraints if c.use_alter)
-    # SQLAlchemy pads comma-terminated DDL lines; keep committed SQL whitespace-clean.
-    expected = ["\n".join(line.rstrip(" \t") for line in ddl.split("\n")) for ddl in expected]
-    assert set(MIGRATION.DDL) == set(expected)
+def test_frozen_t4_migration_matches_historical_catalog(pg_t4):
+    from sqlalchemy import inspect
+    engine,_,_=pg_t4
+    frozen=json.dumps(MIGRATION.DDL,separators=(",",":"),ensure_ascii=False).encode()
+    assert sha256(frozen).hexdigest()=="1a2114ae27b2a0097a165dbfa9ad12ade251464028d3500f180ba9d797b1ad2f"
+    expected={'memory_instructions': {'id': False,
+                             'workspace_id': False,
+                             'actor_user_id': False,
+                             'operation': False,
+                             'request_id': False,
+                             'target_memory_id': True,
+                             'expected_version': True,
+                             'content': True,
+                             'content_sha256': True,
+                             'created_at': False,
+                             'erased_at': True},
+     'memory_sources': {'id': False,
+                        'workspace_id': False,
+                        'kind': False,
+                        'native_id': False,
+                        'instruction_id': False,
+                        'source_version': False,
+                        'native_version': False,
+                        'content_sha256': True,
+                        'actor_user_id': False,
+                        'audience': False,
+                        'owner_user_id': False,
+                        'state': False,
+                        'created_at': False,
+                        'invalidated_at': True},
+     'memory_records': {'id': False,
+                        'workspace_id': False,
+                        'owner_user_id': False,
+                        'scope_kind': False,
+                        'visibility': False,
+                        'current_version': False,
+                        'supersedes_id': True,
+                        'created_at': False},
+     'memory_revisions': {'workspace_id': False,
+                          'memory_id': False,
+                          'version': False,
+                          'revision_id': False,
+                          'intent': False,
+                          'validity': False,
+                          'cause': False,
+                          'kind': False,
+                          'content': True,
+                          'content_sha256': True,
+                          'confirmation': False,
+                          'confirmation_source_id': False,
+                          'conditions': True,
+                          'pinned': False,
+                          'valid_until': True,
+                          'instruction_id': False,
+                          'created_at': False,
+                          'erased_at': True},
+     'memory_uses': {'id': False,
+                     'workspace_id': False,
+                     'consumer_revision_id': False,
+                     'source_id': False,
+                     'use_mode': False,
+                     'atom_key': False,
+                     'support_group': False,
+                     'relation': False},
+     'memory_operations': {'id': False,
+                           'workspace_id': False,
+                           'actor_user_id': False,
+                           'request_id': False,
+                           'method': False,
+                           'path': False,
+                           'key': False,
+                           'request_sha256': False,
+                           'state': False,
+                           'resource_id': True,
+                           'result_version': True,
+                           'created_at': False,
+                           'settled_at': True,
+                           'http_status': True}}
+    checks={'memory_instructions': ['ck_instruction_operation',
+                             'ck_instruction_target',
+                             'ck_instruction_payload'],
+     'memory_operations': ['ck_memory_operation', 'ck_memory_operation_result'],
+     'memory_records': ['ck_memory_record_scope'],
+     'memory_revisions': ['ck_memory_revision_enums', 'ck_memory_revision_payload'],
+     'memory_sources': ['ck_source_identity', 'ck_source_state', 'ck_source_native_version'],
+     'memory_uses': ['ck_memory_use']}
+    indexes={'memory_instructions': [],
+     'memory_operations': [],
+     'memory_records': [],
+     'memory_revisions': [],
+     'memory_sources': ['uq_memory_source_current'],
+     'memory_uses': ['ix_memory_use_source']}
+    catalog=inspect(engine)
+    assert {name for name in catalog.get_table_names() if name.startswith("memory_")}==set(expected)
+    for name,columns in expected.items():
+        assert {c["name"]:c["nullable"] for c in catalog.get_columns(name)}==columns
+        assert {c["name"] for c in catalog.get_check_constraints(name)}==set(checks[name])
+        assert {i["name"] for i in catalog.get_indexes(name) if not i.get("duplicates_constraint")}==set(indexes[name])
+    with engine.connect() as conn:
+        assert conn.scalar(text("SELECT version_num FROM alembic_version"))=="t4b5c6d7e8f9"
+
+
+def test_current_six_table_models_match_full_u5_chain(pg):
+    from alembic.autogenerate import compare_metadata
+    from sqlalchemy import inspect
+    engine,_,_=pg
+    def include(obj,name,type_,reflected,compare_to):
+        return (name if type_=="table" else getattr(getattr(obj,"table",None),"name",None)) in MIGRATION.TABLES
+    with engine.connect() as conn:
+        assert conn.scalar(text("SELECT version_num FROM alembic_version"))=="u5c6d7e8f9a0"
+        columns={c["name"] for c in inspect(conn).get_columns("memory_uses")}
+        assert {"consumer_snapshot_id","consumer_call_id","consumer_call_part","used_snapshot_id","used_tool_call_id"} <= columns
+        context=MigrationContext.configure(conn,opts={"include_object":include,"compare_type":True,"compare_server_default":True})
+        assert compare_metadata(context,MemoryUse.metadata)==[]
 
 
 def test_forged_revision_hash_rejected(pg):

@@ -1,4 +1,4 @@
-name: Research real-service acceptance
+name: Service recovery
 
 on:
   pull_request:
@@ -37,12 +37,14 @@ jobs:
           ref: ${{ github.event.pull_request.head.sha }}
       - uses: astral-sh/setup-uv@v6
       - run: uv sync --project apps/api --frozen --extra dev
+      - name: Assemble fixed-version official MinIO binaries for CI
+        run: python3 infra/testing/ci_minio.py --output "$RUNNER_TEMP/minio-assembly"
       - name: Start isolated real S3
         run: |
           docker run -d --name research-fixture-s3 -p 9000:9000 \
             -e MINIO_ROOT_USER="$AI_PDF_MINIO_ACCESS_KEY" \
             -e MINIO_ROOT_PASSWORD="$AI_PDF_MINIO_SECRET_KEY" \
-            quay.io/minio/minio:RELEASE.2025-09-07T16-13-09Z@sha256:14cea493d9a34af32f524e538b8346cf79f3321eff8e708c1e2960462bd8936e \
+            "$(cat "$RUNNER_TEMP/minio-assembly/server.iid")" \
             server /data
           for attempt in $(seq 1 30); do
             if curl -fsS http://127.0.0.1:9000/minio/health/live; then exit 0; fi
@@ -69,5 +71,12 @@ jobs:
         if: always()
         with:
           name: research-services-${{ github.event.pull_request.head.sha }}
-          path: service-evidence/
+          path: |
+            service-evidence/
+            ${{ runner.temp }}/minio-assembly/Dockerfile
+            ${{ runner.temp }}/minio-assembly/LICENSE.*
+            ${{ runner.temp }}/minio-assembly/NOTICE
+            ${{ runner.temp }}/minio-assembly/*.json
+            ${{ runner.temp }}/minio-assembly/*.out
+            ${{ runner.temp }}/minio-assembly/*.err
 

@@ -627,3 +627,143 @@ def test_owner_error_serialization_holds_guards_until_bytes(api, monkeypatch, sc
         assert_error(client.get(url, headers=headers(ctx.actor_user_id)), 404, 'workspace_not_found')
     finally:
         event.remove(engine, 'after_cursor_execute', observe)
+
+
+# F50-R1: invalid persisted text must fail before a mutation identity is consumed.
+_NUL_FIELDS = ("content", "subject", "applicability")
+_UNICODE_CONTROLS = "ordinary Ω 中文 e\u0301 😀\n\tline\r\nend"
+
+
+def _nul_payload(action, request_id):
+    from copy import deepcopy
+    payload = deepcopy(CASES["baseBody"])
+    payload["requestId"] = request_id
+    if action == "correct":
+        payload.pop("scope")
+        payload.pop("sourceRefs")
+        payload["expectedVersion"] = 1
+    return payload
+
+
+def _statement_target(payload, field):
+    return payload if field == "content" else payload["conditions"]
+
+
+@pytest.mark.parametrize("action", ["create", "correct"])
+@pytest.mark.parametrize("field", _NUL_FIELDS)
+def test_statement_dto_rejects_nul(action, field):
+    from pydantic import ValidationError
+    from ai_pdf_api.schemas.memory import CreateRequest, CorrectionRequest
+    payload = _nul_payload(action, str(uuid4()))
+    _statement_target(payload, field)[field] = "F50-R1-private-sentinel\x00tail"
+    schema = CreateRequest if action == "create" else CorrectionRequest
+    with pytest.raises(ValidationError) as error:
+        schema.model_validate(payload)
+    expected = (field,) if field == "content" else ("conditions", field)
+    assert {tuple(item["loc"]) for item in error.value.errors()} == {expected}
+
+
+@pytest.mark.parametrize("action", ["create", "correct"])
+def test_statement_dto_preserves_unicode_and_newlines(action):
+    from ai_pdf_api.schemas.memory import CreateRequest, CorrectionRequest
+    payload = _nul_payload(action, str(uuid4()))
+    for field in _NUL_FIELDS:
+        _statement_target(payload, field)[field] = _UNICODE_CONTROLS
+    schema = CreateRequest if action == "create" else CorrectionRequest
+    value = schema.model_validate(payload).model_dump(mode="json")
+    assert value["content"] == _UNICODE_CONTROLS
+    assert value["conditions"]["subject"] == _UNICODE_CONTROLS
+    assert value["conditions"]["applicability"] == _UNICODE_CONTROLS
+
+
+def _private_mutation_state(engine):
+    from sqlalchemy import func
+    from citeframe_persistence.models.memory import (
+        MemoryInstruction, MemoryRecord, MemorySource, MemoryUse,
+    )
+    with Session(engine) as db:
+        counts = tuple(db.scalar(select(func.count()).select_from(model)) for model in (
+            MemoryInstruction, MemorySource, MemoryRecord, MemoryRevision, MemoryUse, MemoryOperation,
+        ))
+        versions = tuple(db.execute(select(MemoryRecord.id, MemoryRecord.current_version)
+                                    .order_by(MemoryRecord.id)).all())
+        return counts, versions
+
+
+@pytest.mark.parametrize("action", ["create", "correct"])
+@pytest.mark.parametrize("field", _NUL_FIELDS)
+def test_nul_http_rejects_without_dml_and_clean_identity_retry_commits(api, action, field):
+    client, engine, ctx, _ = api
+    original = seed(api) if action == "correct" else None
+    url = base(ctx) + "/memories"
+    if original is not None:
+        url += "/" + original.resource.memory_id + "/corrections"
+    rid, key = str(uuid4()), str(uuid4())
+    payload = _nul_payload(action, rid)
+    marker = "F50-R1-private-sentinel"
+    _statement_target(payload, field)[field] = marker + "\x00tail"
+    before = _private_mutation_state(engine)
+    writes = []
+    def observe(conn, cursor, statement, parameters, context, many):
+        command = statement.lstrip().split(None, 1)[0].upper()
+        if command in {"INSERT", "UPDATE", "DELETE"}:
+            writes.append(command)
+    event.listen(engine, "before_cursor_execute", observe)
+    try:
+        rejected = client.post(url, headers=headers(ctx.actor_user_id, key), json=payload)
+    finally:
+        event.remove(engine, "before_cursor_execute", observe)
+    assert_error(rejected, 422, "invalid_request", rid)
+    assert marker not in rejected.text and "\\u0000" not in rejected.text
+    assert writes == []
+    assert _private_mutation_state(engine) == before
+    assert_error(client.get(base(ctx) + "/memories/requests/" + rid,
+                            headers=headers(ctx.actor_user_id)), 404, "operation_not_found", rid)
+
+    # All accepted strings must retain their exact ordinary Unicode/control text.
+    for name in _NUL_FIELDS:
+        _statement_target(payload, name)[name] = _UNICODE_CONTROLS
+    accepted = client.post(url, headers=headers(ctx.actor_user_id, key), json=payload)
+    assert accepted.status_code == 201, accepted.text
+    receipt = accepted.json()
+    assert receipt["requestId"] == rid and receipt["resultVersion"] == 1
+    memory = receipt["memory"]
+    assert memory["content"] == _UNICODE_CONTROLS
+    assert memory["conditions"]["subject"] == _UNICODE_CONTROLS
+    assert memory["conditions"]["applicability"] == _UNICODE_CONTROLS
+    replay = client.post(url, headers=headers(ctx.actor_user_id, key), json=payload)
+    assert replay.status_code == 201 and replay.json() == receipt
+    with Session(engine) as db:
+        assert len(list(db.scalars(select(MemoryOperation).where(MemoryOperation.request_id == rid)))) == 1
+
+
+@pytest.mark.parametrize("action", ["create", "correct"])
+@pytest.mark.parametrize("denial", ["missing_auth", "bad_auth", "missing_workspace", "revoked_member"])
+def test_nul_input_preserves_auth_and_workspace_precedence(api, action, denial):
+    client, engine, ctx, _ = api
+    original = seed(api) if action == "correct" else None
+    rid, key = str(uuid4()), str(uuid4())
+    payload = _nul_payload(action, rid)
+    payload["content"] = "F50-R1-private-sentinel\x00tail"
+    auth = headers(ctx.actor_user_id, key)
+    workspace = ctx.workspace_id
+    if denial == "missing_auth":
+        auth.pop("x-ai-pdf-internal-token")
+    elif denial == "bad_auth":
+        auth["x-ai-pdf-internal-token"] = "wrong-synthetic-token"
+    elif denial == "missing_workspace":
+        workspace = str(uuid4())
+    else:
+        with engine.begin() as db:
+            db.execute(WorkspaceMembership.__table__.delete().where(
+                WorkspaceMembership.user_id == ctx.actor_user_id))
+    url = "/v1/workspaces/" + workspace + "/memories"
+    if original is not None:
+        url += "/" + original.resource.memory_id + "/corrections"
+    before = _private_mutation_state(engine)
+    response = client.post(url, headers=auth, json=payload)
+    status, code = ((401, "authentication_required") if denial in ("missing_auth", "bad_auth")
+                    else (404, "workspace_not_found"))
+    assert_error(response, status, code)
+    assert "F50-R1-private-sentinel" not in response.text and rid not in response.text
+    assert _private_mutation_state(engine) == before
